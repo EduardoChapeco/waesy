@@ -2,18 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
-import { getServerIdentity, assertStoreAccess, getSSRClient } from "@/lib/server-access";
-
-async function getAdminIdentity() {
- const { getServerIdentity } = await import("@/lib/server-access");
- const identity = await getServerIdentity();
-
- if (!identity.store_id || !["owner", "admin", "manager", "content"].includes(identity.role)) {
- throw new Error("Acesso negado");
- }
-
- return identity;
-}
+import {
+  getServerIdentity,
+  assertStoreAccess,
+  getSSRClient,
+  requireStoreManagerIdentity,
+} from "@/lib/server-access";
 
 // ---------------------------------------------------------------------------
 // Abandoned Carts
@@ -21,7 +15,7 @@ async function getAdminIdentity() {
 
 export const listAbandonedCarts = createServerFn({ method: "GET" }).handler(async () => {
  try {
- const identity = await getAdminIdentity();
+ const identity = await requireStoreManagerIdentity(["content"]);
  const db = getServerClient();
 
  const { data, error } = await db
@@ -48,7 +42,7 @@ export const updateAbandonedCartStatus = createServerFn({ method: "POST" })
  )
  .handler(async ({ data: input }) => {
  try {
- const identity = await getAdminIdentity();
+ const identity = await requireStoreManagerIdentity(["content"]);
  const db = getServerClient();
 
  const { data, error } = await db
@@ -72,7 +66,7 @@ export const updateAbandonedCartStatus = createServerFn({ method: "POST" })
 
 export const listMatchTimeCampaigns = createServerFn({ method: "GET" }).handler(async () => {
  try {
- const identity = await getAdminIdentity();
+ const identity = await requireStoreManagerIdentity(["content"]);
  const db = getServerClient();
 
  const { data, error } = await db
@@ -103,7 +97,7 @@ export const upsertMatchTimeCampaign = createServerFn({ method: "POST" })
  )
  .handler(async ({ data: input }) => {
  try {
- const identity = await getAdminIdentity();
+ const identity = await requireStoreManagerIdentity(["content"]);
  const db = getServerClient();
 
  const payload = {
@@ -143,7 +137,7 @@ export const upsertMatchTimeCampaign = createServerFn({ method: "POST" })
 
 export const listSocialPosts = createServerFn({ method: "GET" }).handler(async () => {
  try {
- const identity = await getAdminIdentity();
+ const identity = await requireStoreManagerIdentity(["content"]);
  const db = getServerClient();
 
  const { data, error } = await db
@@ -170,7 +164,7 @@ export const createSocialPost = createServerFn({ method: "POST" })
  )
  .handler(async ({ data: input }) => {
  try {
- const identity = await getAdminIdentity();
+ const identity = await requireStoreManagerIdentity(["content"]);
  const db = getServerClient();
 
  const { data, error } = await db

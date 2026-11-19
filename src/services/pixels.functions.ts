@@ -4,10 +4,63 @@ import crypto from "crypto";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess, resolveTenantStoreId } from "@/lib/server-access";
 import { logSystemError } from "@/lib/logger";
-import { encryptSecret } from "@/lib/crypto-vault.server";
+import { decryptSecret, encryptSecret } from "@/lib/crypto-vault.server";
 import { invalidateMicroCache, invalidateMicroCachePrefix } from "@/lib/cache/micro-cache";
 import { resolveKanbanStageSynonym } from "@/lib/niches/kanban-niche-taxonomy";
+import { slugify } from "@/lib/slug-utils";
 import { getActiveIntegrationPayload } from "@/services/integrations.functions";
+import {
+  selectMatchedPixelsForContext,
+  type PixelEnabledEvents,
+  type PixelProviderType,
+  type PixelRoutingContext,
+  type PixelRoutingRules,
+  type PublicSourcePixelDTO,
+} from "@/lib/pixel-routing";
+
+export type MarketingSourcePlatform =
+  | "meta_ads"
+  | "google_ads"
+  | "tiktok_ads"
+  | "web_portal"
+  | "whatsapp_organic"
+  | "referral"
+  | "offline"
+  | "custom";
+
+export interface MarketingSourcePixelDTO {
+  id: string;
+  store_id: string;
+  source_id: string;
+  name: string;
+  provider: PixelProviderType;
+  external_pixel_id: string;
+  ad_account_id?: string | null;
+  page_id?: string | null;
+  capi_token_configured: boolean;
+  test_event_code?: string | null;
+  enabled_events: PixelEnabledEvents;
+  routing_rules: PixelRoutingRules;
+  is_default: boolean;
+  is_active: boolean;
+  last_fired_at?: string | null;
+  events_24h?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface MarketingSourceDTO {
+  id: string;
+  store_id: string;
+  slug: string;
+  name: string;
+  platform: MarketingSourcePlatform;
+  description?: string | null;
+  is_active: boolean;
+  pixels: MarketingSourcePixelDTO[];
+  created_at?: string;
+  updated_at?: string;
+}
 
 export interface StorePixelConfigDTO {
   id?: string;
@@ -418,6 +471,30 @@ export const getPublicStorePixels = createServerFn({ method: "GET" })
       }
     } catch {}
 
+    let sourcePixels: PublicSourcePixelDTO[] = [];
+    try {
+      const { data: spRows } = await (supabase.from("marketing_source_pixels") as any)
+        .select("id, source_id, name, provider, external_pixel_id, enabled_events, routing_rules, is_default")
+        .eq("store_id", storeId)
+        .eq("is_active", true)
+        .order("is_default", { ascending: false })
+        .order("created_at", { ascending: true });
+      if (Array.isArray(spRows)) {
+        sourcePixels = spRows.map((p: any) => ({
+          id: String(p.id),
+          source_id: p.source_id ? String(p.source_id) : null,
+          name: String(p.name || p.external_pixel_id),
+          provider: p.provider as PixelProviderType,
+          external_pixel_id: String(p.external_pixel_id),
+          enabled_events: (p.enabled_events || {}) as PixelEnabledEvents,
+          routing_rules: (p.routing_rules || {}) as PixelRoutingRules,
+          is_default: Boolean(p.is_default),
+        }));
+      }
+    } catch {
+      // Tolerancia antes de aplicar migration 20270601000000
+    }
+
     return {
       meta_pixel_id: row.meta_pixel_id || storeSettings.meta_pixel_id || null,
       google_ads_id: cleanGoogleAdsId || null,
@@ -433,6 +510,7 @@ export const getPublicStorePixels = createServerFn({ method: "GET" })
       track_initiate_checkout: row.track_purchases ?? true,
       track_lead: row.track_quotes ?? true,
       track_whatsapp_click: row.track_whatsapp_leads ?? true,
+      source_pixels: sourcePixels,
     };
   });
 
@@ -458,6 +536,12 @@ export const dispatchMetaCapiEvent = createServerFn({ method: "POST" })
       eventId: z.string().min(1).max(200),
       eventSourceUrl: z.string().optional(),
       testEventCode: z.string().optional(),
+      sourcePixelId: z.string().uuid().optional().nullable(),
+      campaignId: z.string().optional().nullable(),
+      adId: z.string().optional().nullable(),
+      formId: z.string().optional().nullable(),
+      nicheId: z.string().optional().nullable(),
+      landingPath: z.string().optional().nullable(),
       customData: z.record(z.any()).optional(),
       userData: z
         .object({
@@ -511,20 +595,84 @@ export const dispatchMetaCapiEvent = createServerFn({ method: "POST" })
         }
       : null;
 
-    if (error || !config || !config.meta_pixel_id) {
-      return { sent: false, reason: "CAPI não configurado para esta loja" };
+    const metaSecrets = config
+      ? await migrateLegacyPixelSecrets(supabase, data.storeId, config as Record<string, any>)
+      : {};
+    const storeFallbackToken = typeof metaSecrets?.access_token === "string" ? metaSecrets.access_token.trim() : "";
+
+    // Busca Multi-Pixel ativo (marketing_source_pixels) e seleciona destinos por roteamento
+    type ResolvedCapiTarget = {
+      sourcePixelId: string | null;
+      externalPixelId: string;
+      token: string;
+      testEventCode: string;
+    };
+    const targets: ResolvedCapiTarget[] = [];
+
+    try {
+      const { data: multiPixels } = await (supabase.from("marketing_source_pixels") as any)
+        .select("id, provider, external_pixel_id, secret_payload_encrypted, test_event_code, enabled_events, routing_rules, is_default, is_active")
+        .eq("store_id", data.storeId)
+        .eq("provider", "meta_pixel")
+        .eq("is_active", true);
+
+      if (Array.isArray(multiPixels) && multiPixels.length > 0) {
+        const routingCtx: PixelRoutingContext = {
+          sourcePixelId: data.sourcePixelId || null,
+          campaignId: data.campaignId || (data.customData?.campaign_id ? String(data.customData.campaign_id) : null),
+          adId: data.adId || (data.customData?.ad_id ? String(data.customData.ad_id) : null),
+          formId: data.formId || (data.customData?.form_id ? String(data.customData.form_id) : null),
+          nicheId: data.nicheId || null,
+          landingPath: data.landingPath || data.eventSourceUrl || null,
+        };
+        const matched = selectMatchedPixelsForContext(multiPixels, routingCtx, data.eventName, "meta_pixel");
+        for (const mp of matched) {
+          let pixelToken = "";
+          let pixelTestCode = String(mp.test_event_code || "").trim();
+          if (mp.secret_payload_encrypted) {
+            try {
+              const dec = JSON.parse(decryptSecret(String(mp.secret_payload_encrypted)));
+              if (typeof dec?.access_token === "string") pixelToken = dec.access_token.trim();
+              if (typeof dec?.test_event_code === "string" && dec.test_event_code.trim()) {
+                pixelTestCode = dec.test_event_code.trim();
+              }
+            } catch {}
+          }
+          const resolvedTok = pixelToken || storeFallbackToken;
+          if (mp.external_pixel_id && resolvedTok) {
+            targets.push({
+              sourcePixelId: String(mp.id),
+              externalPixelId: String(mp.external_pixel_id),
+              token: resolvedTok,
+              testEventCode: pixelTestCode,
+            });
+          }
+        }
+      }
+    } catch {
+      // Fallback para store_pixel_configs caso migration ainda nao aplicada
     }
 
-    const metaSecrets = await migrateLegacyPixelSecrets(supabase, data.storeId, config as Record<string, any>);
-    const metaToken = typeof metaSecrets.access_token === "string" ? metaSecrets.access_token.trim() : "";
-    if (!metaToken) return { sent: false, reason: "Token CAPI não provisionado no cofre da loja" };
+    if (targets.length === 0) {
+      if (error || !config || !config.meta_pixel_id) {
+        return { sent: false, reason: "CAPI não configurado para esta loja" };
+      }
+      if (!storeFallbackToken) {
+        return { sent: false, reason: "Token CAPI não provisionado no cofre da loja" };
+      }
+      if (data.eventName === "Lead" && !config.track_lead) return { sent: false, reason: "Evento Lead desativado" };
+      if (data.eventName === "Contact" && !config.track_whatsapp_click) return { sent: false, reason: "Evento WhatsApp desativado" };
+      if (data.eventName === "AddToCart" && !config.track_add_to_cart) return { sent: false, reason: "Evento AddToCart desativado" };
+      if (data.eventName === "InitiateCheckout" && !config.track_initiate_checkout) return { sent: false, reason: "Evento Checkout desativado" };
+      if (data.eventName === "ViewContent" && !config.track_view_content) return { sent: false, reason: "Evento ViewContent desativado" };
 
-    // Valida se o evento específico está habilitado
-    if (data.eventName === "Lead" && !config.track_lead) return { sent: false, reason: "Evento Lead desativado" };
-    if (data.eventName === "Contact" && !config.track_whatsapp_click) return { sent: false, reason: "Evento WhatsApp desativado" };
-    if (data.eventName === "AddToCart" && !config.track_add_to_cart) return { sent: false, reason: "Evento AddToCart desativado" };
-    if (data.eventName === "InitiateCheckout" && !config.track_initiate_checkout) return { sent: false, reason: "Evento Checkout desativado" };
-    if (data.eventName === "ViewContent" && !config.track_view_content) return { sent: false, reason: "Evento ViewContent desativado" };
+      targets.push({
+        sourcePixelId: null,
+        externalPixelId: String(config.meta_pixel_id),
+        token: storeFallbackToken,
+        testEventCode: typeof metaSecrets.test_event_code === "string" ? metaSecrets.test_event_code.trim() : "",
+      });
+    }
 
     // Formata os dados do usuário com Hash SHA-256 (Padrão Meta Conversions API)
     const hashedUserData: Record<string, any> = {};
@@ -574,36 +722,80 @@ export const dispatchMetaCapiEvent = createServerFn({ method: "POST" })
       },
     };
 
-    const payload: Record<string, any> = {
-      data: [eventPayload],
-    };
+    let sentCount = 0;
+    let totalEventsReceived = 0;
+    const perPixelResults: Array<{ sourcePixelId: string | null; externalPixelId: string; sent: boolean; error?: any }> = [];
 
-    const configuredTestEventCode = typeof metaSecrets.test_event_code === "string" ? metaSecrets.test_event_code.trim() : "";
-    if ((data.testEventCode || configuredTestEventCode).trim()) {
-      payload.test_event_code = (data.testEventCode || configuredTestEventCode).trim();
-    }
-
-    try {
-      const res = await fetch(
-        `https://graph.facebook.com/v19.0/${config.meta_pixel_id}/events?access_token=${encodeURIComponent(metaToken)}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      const result = await res.json();
-      if (!res.ok) {
-        console.warn("[Meta CAPI warning]:", result);
-        return { sent: false, error: result };
+    for (const target of targets) {
+      const targetPayload: Record<string, any> = {
+        data: [eventPayload],
+      };
+      const effectiveTestCode = (data.testEventCode || target.testEventCode || "").trim();
+      if (effectiveTestCode) {
+        targetPayload.test_event_code = effectiveTestCode;
       }
 
-      return { sent: true, events_received: result.events_received };
-    } catch (fetchErr: any) {
-      console.error("[Meta CAPI error]:", fetchErr);
-      return { sent: false, error: fetchErr?.message };
+      try {
+        const res = await fetch(
+          `https://graph.facebook.com/v19.0/${encodeURIComponent(target.externalPixelId)}/events?access_token=${encodeURIComponent(target.token)}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(targetPayload),
+          }
+        );
+
+        const result = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          console.warn("[Meta CAPI warning]:", result);
+          perPixelResults.push({
+            sourcePixelId: target.sourcePixelId,
+            externalPixelId: target.externalPixelId,
+            sent: false,
+            error: result,
+          });
+        } else {
+          sentCount += 1;
+          totalEventsReceived += Number(result.events_received || 1);
+          perPixelResults.push({
+            sourcePixelId: target.sourcePixelId,
+            externalPixelId: target.externalPixelId,
+            sent: true,
+          });
+          if (target.sourcePixelId) {
+            await (supabase.from("marketing_source_pixels") as any)
+              .update({ last_fired_at: new Date().toISOString() })
+              .eq("id", target.sourcePixelId)
+              .eq("store_id", data.storeId)
+              .then(() => null, () => null);
+          }
+        }
+      } catch (fetchErr: any) {
+        console.error("[Meta CAPI error]:", fetchErr);
+        perPixelResults.push({
+          sourcePixelId: target.sourcePixelId,
+          externalPixelId: target.externalPixelId,
+          sent: false,
+          error: fetchErr?.message,
+        });
+      }
     }
+
+    if (sentCount === 0) {
+      return {
+        sent: false,
+        error: perPixelResults[0]?.error || "CAPI error",
+        perPixelResults,
+      };
+    }
+
+    return {
+      sent: true,
+      events_received: totalEventsReceived,
+      sourcePixelId: perPixelResults.find((p) => p.sent)?.sourcePixelId || null,
+      externalPixelId: perPixelResults.find((p) => p.sent)?.externalPixelId || null,
+      perPixelResults,
+    };
   });
 
 /**
@@ -832,6 +1024,11 @@ export const dispatchClosedLoopLeadQualification = createServerFn({ method: "POS
       profileId: z.string().optional().nullable(),
       sourceUrl: z.string().optional().nullable(),
       eventId: z.string().optional().nullable(),
+      sourcePixelId: z.string().uuid().optional().nullable(),
+      campaignId: z.string().optional().nullable(),
+      adId: z.string().optional().nullable(),
+      formId: z.string().optional().nullable(),
+      nicheId: z.string().optional().nullable(),
     })
   )
   .handler(async ({ data }) => {
@@ -857,7 +1054,7 @@ export const dispatchClosedLoopLeadQualification = createServerFn({ method: "POS
     const results: { meta?: any; google?: any } = {};
     const supabase = getServerClient();
 
-    // 1. Disparo Meta CAPI
+    // 1. Disparo Meta CAPI (Multi-Pixel com roteamento por campanha/anuncio/formulario/nicho)
     try {
       results.meta = await dispatchMetaCapiEvent({
         data: {
@@ -865,6 +1062,11 @@ export const dispatchClosedLoopLeadQualification = createServerFn({ method: "POS
           eventName: metaEventName,
           eventId,
           eventSourceUrl: data.sourceUrl || undefined,
+          sourcePixelId: data.sourcePixelId || null,
+          campaignId: data.campaignId || null,
+          adId: data.adId || null,
+          formId: data.formId || null,
+          nicheId: data.nicheId || null,
           userData: {
             email: data.email || undefined,
             phone: data.phone || undefined,
@@ -878,6 +1080,9 @@ export const dispatchClosedLoopLeadQualification = createServerFn({ method: "POS
             crm_stage: stageResolution.matchedStageKey,
             crm_purpose: effectivePurpose,
             lead_id: data.leadId,
+            ...(data.campaignId ? { campaign_id: data.campaignId } : {}),
+            ...(data.adId ? { ad_id: data.adId } : {}),
+            ...(data.formId ? { form_id: data.formId } : {}),
             value: data.conversionValue || 0,
             currency: "BRL",
             lead_event_source: "crm_pipeline",
@@ -919,7 +1124,7 @@ export const dispatchClosedLoopLeadQualification = createServerFn({ method: "POS
         continue;
       }
       try {
-        await (supabase.from("lead_conversion_telemetry") as any).insert({
+        const telemetryRow: Record<string, any> = {
           store_id: data.storeId,
           lead_id: data.leadId,
           event_name: entry.eventName,
@@ -928,7 +1133,19 @@ export const dispatchClosedLoopLeadQualification = createServerFn({ method: "POS
           channel: entry.channel,
           status: entry.result.sent ? "delivered" : "failed",
           response_data: entry.result,
-        });
+          ...(entry.channel === "meta_capi" && entry.result.sourcePixelId
+            ? { source_pixel_id: entry.result.sourcePixelId }
+            : {}),
+          ...(entry.channel === "meta_capi" && entry.result.externalPixelId
+            ? { external_pixel_id: entry.result.externalPixelId }
+            : {}),
+        };
+        const insTelemetry = await (supabase.from("lead_conversion_telemetry") as any).insert(telemetryRow);
+        if (insTelemetry?.error && /source_pixel_id|external_pixel_id|column/i.test(insTelemetry.error.message || "")) {
+          delete telemetryRow.source_pixel_id;
+          delete telemetryRow.external_pixel_id;
+          await (supabase.from("lead_conversion_telemetry") as any).insert(telemetryRow);
+        }
       } catch {
         // Nao interrompe o fluxo de movimentacao do Kanban por erro de auditoria
       }
@@ -955,6 +1172,7 @@ export const testStorePixelPipeline = createServerFn({ method: "POST" })
       storeId: z.string().optional(),
       channel: z.enum(["meta_capi", "google_ads", "both"]).default("both"),
       testEventCode: z.string().optional().nullable(),
+      sourcePixelId: z.string().uuid().optional().nullable(),
     })
   )
   .handler(async ({ data }) => {
@@ -975,6 +1193,7 @@ export const testStorePixelPipeline = createServerFn({ method: "POST" })
           eventName: "Lead",
           eventId: `${testEventId}_meta`,
           testEventCode: data.testEventCode?.trim() || undefined,
+          sourcePixelId: data.sourcePixelId || null,
           customData: { test_event: true, source: "workspace_pixel_diagnostic" },
           userData: { externalId: identity.id, email: identity.email || undefined },
         },
@@ -1031,6 +1250,11 @@ export const recordStorefrontAttributionVisit = createServerFn({ method: "POST" 
       formId: z.string().optional().nullable(),
       deviceId: z.string().optional().nullable(),
       visitorId: z.string().optional().nullable(),
+      clientCity: z.string().optional().nullable(),
+      clientState: z.string().optional().nullable(),
+      gpsLatitude: z.number().optional().nullable(),
+      gpsLongitude: z.number().optional().nullable(),
+      gpsSource: z.string().optional().nullable(),
     }),
   )
   .handler(async ({ data }) => {
@@ -1046,6 +1270,35 @@ export const recordStorefrontAttributionVisit = createServerFn({ method: "POST" 
         .maybeSingle();
       userPhone = prof?.phone || null;
       userEmail = identity.email || null;
+    }
+
+    let ipAddress: string | null = null;
+    let geoCity: string | null = data.clientCity || null;
+    let geoState: string | null = data.clientState || null;
+    let geoCountry: string | null = "BR";
+    let gpsLat: number | null = typeof data.gpsLatitude === "number" ? data.gpsLatitude : null;
+    let gpsLng: number | null = typeof data.gpsLongitude === "number" ? data.gpsLongitude : null;
+    let gpsSource: string | null = data.gpsSource || null;
+
+    try {
+      const { getRequest } = await import("@tanstack/start-server-core");
+      const { captureRequestTelemetry } = await import("@/lib/network-telemetry.server");
+      const req = getRequest();
+      const net = captureRequestTelemetry(req, {
+        city: data.clientCity || undefined,
+        state: data.clientState || undefined,
+        lat: gpsLat ?? undefined,
+        lng: gpsLng ?? undefined,
+      });
+      ipAddress = net.ip || null;
+      geoCity = data.clientCity || net.geo.city || null;
+      geoState = data.clientState || net.geo.state || null;
+      geoCountry = net.geo.country || "BR";
+      if (gpsLat === null && typeof net.geo.latitude === "number") gpsLat = net.geo.latitude;
+      if (gpsLng === null && typeof net.geo.longitude === "number") gpsLng = net.geo.longitude;
+      if (!gpsSource) gpsSource = net.geo.source || null;
+    } catch {
+      // Ambiente de teste sem request HTTP ativo
     }
 
     const { recordAttributionTouchpoint } = await import("@/services/omnichannel-attribution.server");
@@ -1079,6 +1332,13 @@ export const recordStorefrontAttributionVisit = createServerFn({ method: "POST" 
       entityId: data.entityId || null,
       entityTitle: data.entityTitle || null,
       capturedVia: "storefront_visit",
+      ipAddress,
+      geoCity,
+      geoState,
+      geoCountry,
+      gpsLatitude: gpsLat,
+      gpsLongitude: gpsLng,
+      gpsSource,
       metadata: {
         ...(data.gbraid ? { gbraid: data.gbraid } : {}),
         ...(data.wbraid ? { wbraid: data.wbraid } : {}),
@@ -1108,18 +1368,29 @@ export const getStoreAttributionOverview = createServerFn({ method: "GET" })
 
     const [tpRes, telemetryRes, threadsRes] = await Promise.all([
       (supabase.from("ad_attribution_touchpoints") as any)
-        .select("id, phone_e164, email, lead_code, ad_platform, utm_source, utm_medium, utm_campaign, ad_id, campaign_id, form_id, ad_headline, entity_type, entity_title, ctwa_clid, fbclid, gclid, captured_via, lead_id, thread_id, created_at")
+        .select("id, phone_e164, phone_digits, email, lead_code, ad_platform, utm_source, utm_medium, utm_campaign, ad_id, campaign_id, form_id, source_pixel_id, ad_headline, entity_type, entity_title, ctwa_clid, fbclid, gclid, captured_via, lead_id, thread_id, metadata, created_at")
         .eq("store_id", storeId)
         .gte("created_at", sinceIso)
         .order("created_at", { ascending: false })
-        .limit(40),
+        .limit(200),
       supabase
         .from("lead_conversion_telemetry")
-        .select("id, event_name, event_id, event_source, channel, lead_id, thread_id, status, response_data, dispatched_at")
+        .select("id, event_name, event_id, event_source, channel, lead_id, thread_id, source_pixel_id, external_pixel_id, status, response_data, dispatched_at")
         .eq("store_id", storeId)
         .gte("dispatched_at", sinceIso)
         .order("dispatched_at", { ascending: false })
-        .limit(40),
+        .limit(100)
+        .then(async (res: any) =>
+          res?.error && /source_pixel_id|external_pixel_id|column/i.test(res.error.message || "")
+            ? supabase
+                .from("lead_conversion_telemetry")
+                .select("id, event_name, event_id, event_source, channel, lead_id, thread_id, status, response_data, dispatched_at")
+                .eq("store_id", storeId)
+                .gte("dispatched_at", sinceIso)
+                .order("dispatched_at", { ascending: false })
+                .limit(100)
+            : res,
+        ),
       supabase
         .from("chat_threads")
         .select("id, guest_name, group_subject, primary_phone_e164, lead_id, attribution, updated_at")
@@ -1127,12 +1398,43 @@ export const getStoreAttributionOverview = createServerFn({ method: "GET" })
         .not("attribution", "eq", "{}")
         .gte("updated_at", sinceIso)
         .order("updated_at", { ascending: false })
-        .limit(20),
+        .limit(30),
     ]);
 
     const touchpoints = (tpRes?.data as any[]) || [];
     const telemetryLogs = (telemetryRes?.data as any[]) || [];
     const attributedThreads = (threadsRes?.data as any[]) || [];
+
+    const touchpointsByContact = new Map<string, number>();
+    const campaignsAgg = new Map<string, { campaign: string; touchpoints: number; ctwa: number; leads: Set<string> }>();
+    const pixelsAgg = new Map<string, { pixelId: string; delivered: number; failed: number }>();
+
+    for (const tp of touchpoints) {
+      const contactKey = tp.lead_id || tp.phone_digits || tp.thread_id || tp.email || tp.id;
+      touchpointsByContact.set(String(contactKey), (touchpointsByContact.get(String(contactKey)) || 0) + 1);
+      const campName = String(tp.utm_campaign || tp.campaign_id || tp.ad_headline || "").trim();
+      if (campName) {
+        const entry = campaignsAgg.get(campName) || { campaign: campName, touchpoints: 0, ctwa: 0, leads: new Set<string>() };
+        entry.touchpoints += 1;
+        if (tp.ctwa_clid) entry.ctwa += 1;
+        if (tp.lead_id || tp.phone_digits) entry.leads.add(String(tp.lead_id || tp.phone_digits));
+        campaignsAgg.set(campName, entry);
+      }
+    }
+    for (const log of telemetryLogs) {
+      const px = String(log.external_pixel_id || log.source_pixel_id || "").trim();
+      if (!px) continue;
+      const entry = pixelsAgg.get(px) || { pixelId: px, delivered: 0, failed: 0 };
+      if (log.status === "delivered" || log.status === "dispatched") entry.delivered += 1;
+      else if (log.status === "failed") entry.failed += 1;
+      pixelsAgg.set(px, entry);
+    }
+
+    const multiTouchContactsCount = Array.from(touchpointsByContact.values()).filter((c) => c > 1).length;
+    const avgTouchpointsPerContact =
+      touchpointsByContact.size > 0
+        ? Number((touchpoints.length / touchpointsByContact.size).toFixed(2))
+        : 0;
 
     return {
       touchpoints,
@@ -1140,6 +1442,9 @@ export const getStoreAttributionOverview = createServerFn({ method: "GET" })
       attributedThreads,
       summary: {
         totalTouchpoints: touchpoints.length,
+        uniqueContactsCount: touchpointsByContact.size,
+        multiTouchContactsCount,
+        avgTouchpointsPerContact,
         metaAdsCount: touchpoints.filter((t) => t.ad_platform === "meta_ads" || t.ctwa_clid || t.fbclid).length,
         googleAdsCount: touchpoints.filter((t) => t.ad_platform === "google_ads" || t.gclid).length,
         formSubmissionsCount: touchpoints.filter((t) => String(t.captured_via || "").includes("form")).length,
@@ -1148,7 +1453,283 @@ export const getStoreAttributionOverview = createServerFn({ method: "GET" })
         capiSuccessCount: telemetryLogs.filter((l) => l.status === "delivered" || l.status === "dispatched").length,
         capiErrorCount: telemetryLogs.filter((l) => l.status === "failed").length,
       },
+      topCampaigns: Array.from(campaignsAgg.values())
+        .map((c) => ({ campaign: c.campaign, touchpoints: c.touchpoints, ctwa: c.ctwa, uniqueContacts: c.leads.size }))
+        .sort((a, b) => b.touchpoints - a.touchpoints)
+        .slice(0, 10),
+      pixelBreakdown: Array.from(pixelsAgg.values()).slice(0, 10),
     };
+  });
+
+// ── Fontes de Aquisição & Multi-Pixel CRUD (EARS-04) ─────────────────────────
+function slugifySourceName(name: string): string {
+  return slugify(name).slice(0, 60) || "fonte";
+}
+
+export const listMarketingSourcesAndPixels = createServerFn({ method: "GET" })
+  .validator(z.object({ storeId: z.string().uuid().optional() }).optional())
+  .handler(async ({ data }): Promise<{ sources: MarketingSourceDTO[]; migrationReady: boolean }> => {
+    const identity = await getServerIdentity();
+    const storeId = data?.storeId || identity.store_id || (await resolveTenantStoreId());
+    if (!storeId) throw new Error("Identificador da loja não fornecido.");
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"], storeId);
+    const supabase = getServerClient();
+
+    try {
+      const [srcRes, pxRes, telRes] = await Promise.all([
+        (supabase.from("marketing_sources") as any)
+          .select("id, store_id, slug, name, platform, description, is_active, metadata, created_at, updated_at")
+          .eq("store_id", storeId)
+          .order("created_at", { ascending: true }),
+        (supabase.from("marketing_source_pixels") as any)
+          .select("id, store_id, source_id, name, provider, external_pixel_id, ad_account_id, page_id, capi_token_configured, test_event_code, enabled_events, routing_rules, is_default, is_active, last_fired_at, metadata, created_at, updated_at")
+          .eq("store_id", storeId)
+          .order("is_default", { ascending: false })
+          .order("created_at", { ascending: true }),
+        supabase
+          .from("lead_conversion_telemetry")
+          .select("source_pixel_id")
+          .eq("store_id", storeId)
+          .gte("dispatched_at", new Date(Date.now() - 86400_000).toISOString())
+          .limit(300),
+      ]);
+
+      if (srcRes.error && /relation|does not exist|schema/i.test(srcRes.error.message || "")) {
+        return { sources: [], migrationReady: false };
+      }
+
+      const countsByPixel = new Map<string, number>();
+      for (const t of (telRes.data || []) as any[]) {
+        if (t?.source_pixel_id) {
+          countsByPixel.set(String(t.source_pixel_id), (countsByPixel.get(String(t.source_pixel_id)) || 0) + 1);
+        }
+      }
+
+      const pixelsBySource = new Map<string, MarketingSourcePixelDTO[]>();
+      for (const p of (pxRes.data || []) as any[]) {
+        const dto: MarketingSourcePixelDTO = {
+          id: String(p.id),
+          store_id: String(p.store_id),
+          source_id: String(p.source_id),
+          name: String(p.name),
+          provider: p.provider as PixelProviderType,
+          external_pixel_id: String(p.external_pixel_id),
+          ad_account_id: p.ad_account_id || null,
+          page_id: p.page_id || null,
+          capi_token_configured: Boolean(p.capi_token_configured),
+          test_event_code: p.test_event_code || null,
+          enabled_events: (p.enabled_events || {}) as PixelEnabledEvents,
+          routing_rules: (p.routing_rules || {}) as PixelRoutingRules,
+          is_default: Boolean(p.is_default),
+          is_active: p.is_active !== false,
+          last_fired_at: p.last_fired_at || null,
+          events_24h: countsByPixel.get(String(p.id)) || 0,
+          created_at: p.created_at,
+          updated_at: p.updated_at,
+        };
+        const list = pixelsBySource.get(dto.source_id) || [];
+        list.push(dto);
+        pixelsBySource.set(dto.source_id, list);
+      }
+
+      const sources: MarketingSourceDTO[] = ((srcRes.data || []) as any[]).map((s) => ({
+        id: String(s.id),
+        store_id: String(s.store_id),
+        slug: String(s.slug),
+        name: String(s.name),
+        platform: s.platform as MarketingSourcePlatform,
+        description: s.description || null,
+        is_active: s.is_active !== false,
+        pixels: pixelsBySource.get(String(s.id)) || [],
+        created_at: s.created_at,
+        updated_at: s.updated_at,
+      }));
+
+      return { sources, migrationReady: true };
+    } catch {
+      return { sources: [], migrationReady: false };
+    }
+  });
+
+export const upsertMarketingSource = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional().nullable(),
+      storeId: z.string().uuid().optional(),
+      name: z.string().trim().min(2).max(120),
+      slug: z.string().trim().max(80).optional().nullable(),
+      platform: z
+        .enum(["meta_ads", "google_ads", "tiktok_ads", "web_portal", "whatsapp_organic", "referral", "offline", "custom"])
+        .default("meta_ads"),
+      description: z.string().trim().max(400).optional().nullable(),
+      isActive: z.boolean().optional().default(true),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    const storeId = data.storeId || identity.store_id;
+    if (!storeId) throw new Error("Identificador da loja não fornecido.");
+    assertStoreAccess(identity, ["owner", "admin", "manager"], storeId);
+
+    const supabase = getServerClient();
+    const nowIso = new Date().toISOString();
+    const slug = data.slug?.trim() ? slugifySourceName(data.slug) : slugifySourceName(data.name);
+    const payload = {
+      store_id: storeId,
+      slug,
+      name: data.name.trim(),
+      platform: data.platform,
+      description: data.description?.trim() || null,
+      is_active: data.isActive ?? true,
+      updated_at: nowIso,
+    };
+
+    if (data.id) {
+      const { data: updated, error } = await (supabase.from("marketing_sources") as any)
+        .update(payload)
+        .eq("id", data.id)
+        .eq("store_id", storeId)
+        .select("*")
+        .single();
+      if (error) throw new Error(`Falha ao atualizar fonte de marketing: ${error.message}`);
+      invalidateMicroCachePrefix(`pixels:public:${storeId}`);
+      return updated;
+    }
+
+    const { data: created, error } = await (supabase.from("marketing_sources") as any)
+      .upsert(payload, { onConflict: "store_id,slug" })
+      .select("*")
+      .single();
+    if (error) throw new Error(`Falha ao criar fonte de marketing: ${error.message}`);
+    invalidateMicroCachePrefix(`pixels:public:${storeId}`);
+    return created;
+  });
+
+export const deleteMarketingSource = createServerFn({ method: "POST" })
+  .validator(z.object({ id: z.string().uuid(), storeId: z.string().uuid().optional() }))
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    const storeId = data.storeId || identity.store_id;
+    if (!storeId) throw new Error("Identificador da loja não fornecido.");
+    assertStoreAccess(identity, ["owner", "admin", "manager"], storeId);
+    const { error } = await (getServerClient().from("marketing_sources") as any)
+      .delete()
+      .eq("id", data.id)
+      .eq("store_id", storeId);
+    if (error) throw new Error(`Falha ao excluir fonte: ${error.message}`);
+    invalidateMicroCachePrefix(`pixels:public:${storeId}`);
+    return { deleted: true, id: data.id };
+  });
+
+export const upsertMarketingSourcePixel = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional().nullable(),
+      storeId: z.string().uuid().optional(),
+      sourceId: z.string().uuid(),
+      name: z.string().trim().min(2).max(120),
+      provider: z.enum(["meta_pixel", "google_ads", "ga4", "tiktok_pixel", "custom_capi"]).default("meta_pixel"),
+      externalPixelId: z.string().trim().min(3).max(160),
+      adAccountId: z.string().trim().max(80).optional().nullable(),
+      pageId: z.string().trim().max(80).optional().nullable(),
+      capiAccessToken: z.string().trim().max(800).optional().nullable(),
+      testEventCode: z.string().trim().max(80).optional().nullable(),
+      enabledEvents: z.record(z.boolean()).optional(),
+      routingRules: z
+        .object({
+          campaign_ids: z.array(z.string().trim().min(1)).optional(),
+          ad_ids: z.array(z.string().trim().min(1)).optional(),
+          form_ids: z.array(z.string().trim().min(1)).optional(),
+          niche_ids: z.array(z.string().trim().min(1)).optional(),
+          landing_paths: z.array(z.string().trim().min(1)).optional(),
+        })
+        .optional(),
+      isDefault: z.boolean().optional().default(false),
+      isActive: z.boolean().optional().default(true),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    const storeId = data.storeId || identity.store_id;
+    if (!storeId) throw new Error("Identificador da loja não fornecido.");
+    assertStoreAccess(identity, ["owner", "admin", "manager"], storeId);
+
+    const supabase = getServerClient();
+    const nowIso = new Date().toISOString();
+
+    if (data.isDefault) {
+      await (supabase.from("marketing_source_pixels") as any)
+        .update({ is_default: false, updated_at: nowIso })
+        .eq("store_id", storeId)
+        .eq("provider", data.provider);
+    }
+
+    const tokenClean = data.capiAccessToken?.trim() || "";
+    const testCodeClean = data.testEventCode?.trim() || null;
+
+    const patch: Record<string, any> = {
+      store_id: storeId,
+      source_id: data.sourceId,
+      name: data.name.trim(),
+      provider: data.provider,
+      external_pixel_id: data.externalPixelId.trim(),
+      ad_account_id: data.adAccountId?.trim() || null,
+      page_id: data.pageId?.trim() || null,
+      ...(testCodeClean !== undefined ? { test_event_code: testCodeClean } : {}),
+      ...(data.enabledEvents ? { enabled_events: data.enabledEvents } : {}),
+      ...(data.routingRules ? { routing_rules: data.routingRules } : {}),
+      is_default: Boolean(data.isDefault),
+      is_active: data.isActive ?? true,
+      updated_at: nowIso,
+    };
+
+    if (tokenClean) {
+      patch.secret_payload_encrypted = encryptSecret(
+        JSON.stringify({
+          access_token: tokenClean,
+          ...(testCodeClean ? { test_event_code: testCodeClean } : {}),
+        }),
+      );
+      patch.capi_token_configured = true;
+    }
+
+    let saved: any = null;
+    if (data.id) {
+      const { data: updated, error } = await (supabase.from("marketing_source_pixels") as any)
+        .update(patch)
+        .eq("id", data.id)
+        .eq("store_id", storeId)
+        .select("id, store_id, source_id, name, provider, external_pixel_id, ad_account_id, page_id, capi_token_configured, test_event_code, enabled_events, routing_rules, is_default, is_active, last_fired_at, created_at, updated_at")
+        .single();
+      if (error) throw new Error(`Falha ao atualizar pixel: ${error.message}`);
+      saved = updated;
+    } else {
+      const { data: created, error } = await (supabase.from("marketing_source_pixels") as any)
+        .insert(patch)
+        .select("id, store_id, source_id, name, provider, external_pixel_id, ad_account_id, page_id, capi_token_configured, test_event_code, enabled_events, routing_rules, is_default, is_active, last_fired_at, created_at, updated_at")
+        .single();
+      if (error) throw new Error(`Falha ao adicionar pixel: ${error.message}`);
+      saved = created;
+    }
+
+    invalidateMicroCachePrefix(`pixels:public:${storeId}`);
+    return saved as MarketingSourcePixelDTO;
+  });
+
+export const deleteMarketingSourcePixel = createServerFn({ method: "POST" })
+  .validator(z.object({ id: z.string().uuid(), storeId: z.string().uuid().optional() }))
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    const storeId = data.storeId || identity.store_id;
+    if (!storeId) throw new Error("Identificador da loja não fornecido.");
+    assertStoreAccess(identity, ["owner", "admin", "manager"], storeId);
+    const { error } = await (getServerClient().from("marketing_source_pixels") as any)
+      .delete()
+      .eq("id", data.id)
+      .eq("store_id", storeId);
+    if (error) throw new Error(`Falha ao excluir pixel: ${error.message}`);
+    invalidateMicroCachePrefix(`pixels:public:${storeId}`);
+    return { deleted: true, id: data.id };
   });
 
 

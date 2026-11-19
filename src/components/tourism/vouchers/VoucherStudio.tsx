@@ -26,7 +26,7 @@ async function getHtml2Canvas() {
 }
 import { exportElementAsPdf, exportElementAsImage } from "@/lib/pdf-export";
 import { type Voucher, type VoucherFlight, type VoucherAccommodation, type VoucherTransfer } from "@/services/vouchers";
-import { StudioFrame, type CanvasFormat } from "@/components/studio/StudioFrame";
+import { StudioFrame, type CanvasFormat } from "@/components/tourism/studio/StudioFrame";
 import TemplateVoucherEmbarqueA4 from "./templates/TemplateVoucherEmbarqueA4";
 import TemplateVoucherStory from "./templates/TemplateVoucherStory";
 import { DocumentExportMenu } from "@/components/documents/DocumentExportMenu";

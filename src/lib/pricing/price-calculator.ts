@@ -145,3 +145,89 @@ export function formatCurrencyBRL(cents: number): string {
     currency: 'BRL',
   });
 }
+
+/**
+ * Simulador determinístico Tabela Price de financiamento imobiliário em centavos.
+ */
+export function calcPropertyFinancingMonthlyCents(input: {
+  finAmountCents: number;
+  monthlyInterestPct: number;
+  years: number;
+}): { monthlyPaymentCents: number; totalInstallments: number } {
+  const principal = Math.max(0, Math.round(input.finAmountCents || 0));
+  const months = Math.max(1, Math.round((input.years || 0) * 12));
+  if (principal <= 0) {
+    return { monthlyPaymentCents: 0, totalInstallments: months };
+  }
+  const rate = Math.max(0, input.monthlyInterestPct || 0) / 100;
+  if (rate <= 0) {
+    return {
+      monthlyPaymentCents: Math.round(principal / months),
+      totalInstallments: months,
+    };
+  }
+  const factor = Math.pow(1 + rate, months);
+  const monthly = (principal * rate * factor) / (factor - 1);
+  return {
+    monthlyPaymentCents: Number.isFinite(monthly) ? Math.round(monthly) : 0,
+    totalInstallments: months,
+  };
+}
+
+/**
+ * Consolida custo mensal real de locação imobiliária (Aluguel + Condomínio + IPTU/12) em centavos.
+ */
+export function calcRentalMonthlyTotalCents(input: {
+  rentCents: number;
+  condoCents?: number | null;
+  iptuAnnualCents?: number | null;
+}): {
+  rentCents: number;
+  condoCents: number;
+  iptuMonthlyCents: number;
+  totalMonthlyCents: number;
+} {
+  const rentCents = Math.max(0, Math.round(input.rentCents || 0));
+  const condoCents = Math.max(0, Math.round(input.condoCents || 0));
+  const iptuMonthlyCents = Math.max(0, Math.round((input.iptuAnnualCents || 0) / 12));
+  return {
+    rentCents,
+    condoCents,
+    iptuMonthlyCents,
+    totalMonthlyCents: rentCents + condoCents + iptuMonthlyCents,
+  };
+}
+
+export interface FipeDiscountSummary {
+  fipeCents: number;
+  priceCents: number;
+  diffCents: number;
+  diffPct: number;
+  relation: "below" | "above" | "equal";
+}
+
+/**
+ * Compara o preço anunciado de veículo contra o valor de referência Tabela FIPE em centavos.
+ */
+export function calcFipeDiscountSummary(input: {
+  priceCents: number;
+  fipeCents: number;
+}): FipeDiscountSummary | null {
+  const priceCents = Math.max(0, Math.round(input.priceCents || 0));
+  const fipeCents = Math.max(0, Math.round(input.fipeCents || 0));
+  if (priceCents <= 0 || fipeCents <= 0) return null;
+
+  const diffCents = priceCents - fipeCents;
+  const rawPct = (diffCents / fipeCents) * 100;
+  const diffPct = Number(rawPct.toFixed(1));
+  const relation =
+    diffCents < 0 ? "below" : diffCents > 0 ? "above" : "equal";
+
+  return {
+    fipeCents,
+    priceCents,
+    diffCents,
+    diffPct,
+    relation,
+  };
+}

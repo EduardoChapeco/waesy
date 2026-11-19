@@ -33,7 +33,7 @@ function MyContractsPage() {
 
   const filteredContracts = contracts.filter((c: UserContractVaultItemDTO) => {
     if (filterTab === "signed") return c.status === "signed";
-    if (filterTab === "pending") return c.status === "pending";
+    if (filterTab === "pending") return c.status === "pending" || (c.status as string) === "viewed";
     return true;
   });
 
@@ -42,8 +42,8 @@ function MyContractsPage() {
       <button
         type="button"
         onClick={() => setFilterTab("all")}
-        className={`h-11 min-h-11 sm:h-9 px-3 rounded-lg transition-colors duration-200 font-medium flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
-          filterTab === "all" ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground hover:text-foreground"
+        className={`h-11 min-h-11 px-3 rounded-lg transition-colors duration-200 motion-reduce:transition-none font-medium flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
+          filterTab === "all" ? "bg-card text-foreground font-semibold" : "text-muted-foreground hover:text-foreground"
         }`}
       >
         Todos ({contracts.length})
@@ -51,8 +51,8 @@ function MyContractsPage() {
       <button
         type="button"
         onClick={() => setFilterTab("signed")}
-        className={`h-11 min-h-11 sm:h-9 px-3 rounded-lg transition-colors duration-200 font-medium flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
-          filterTab === "signed" ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground hover:text-foreground"
+        className={`h-11 min-h-11 px-3 rounded-lg transition-colors duration-200 motion-reduce:transition-none font-medium flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
+          filterTab === "signed" ? "bg-card text-foreground font-semibold" : "text-muted-foreground hover:text-foreground"
         }`}
       >
         Assinados ({contracts.filter((c: any) => c.status === "signed").length})
@@ -60,11 +60,11 @@ function MyContractsPage() {
       <button
         type="button"
         onClick={() => setFilterTab("pending")}
-        className={`h-11 min-h-11 sm:h-9 px-3 rounded-lg transition-colors duration-200 font-medium flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
-          filterTab === "pending" ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground hover:text-foreground"
+        className={`h-11 min-h-11 px-3 rounded-lg transition-colors duration-200 motion-reduce:transition-none font-medium flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
+          filterTab === "pending" ? "bg-card text-foreground font-semibold" : "text-muted-foreground hover:text-foreground"
         }`}
       >
-        Pendentes ({contracts.filter((c: any) => c.status === "pending").length})
+        Pendentes ({contracts.filter((c: any) => c.status === "pending" || c.status === "viewed").length})
       </button>
     </div>
   );
@@ -132,8 +132,16 @@ function MyContractsPage() {
         <div className="bg-card border border-border/60 rounded-lg overflow-hidden shadow-xs divide-y divide-border/40">
           {filteredContracts.map((contract: UserContractVaultItemDTO) => {
             const isSigned = contract.status === "signed";
-            const signingUrl = `/assinar/${contract.signingToken}`;
-            const verifyUrl = `/verify/document/${contract.verificationCode}`;
+            const isTourismDirectToken =
+              contract.category === "tourism" &&
+              Boolean(contract.verificationCode) &&
+              contract.signingToken === contract.verificationCode;
+            const signingUrl = isTourismDirectToken
+              ? `/contrato/${contract.verificationCode}`
+              : `/assinar/${contract.signingToken}`;
+            const verifyUrl = isTourismDirectToken
+              ? `/contrato/${contract.verificationCode}`
+              : `/verify/document/${contract.verificationCode}`;
 
             return (
               <div
@@ -179,8 +187,10 @@ function MyContractsPage() {
                       variant={isSigned ? "default" : "secondary"}
                       className={`text-xs font-semibold ${
                         isSigned
-                          ? "bg-emerald-600 hover:bg-emerald-600 text-foreground"
-                          : "bg-warning/10 text-warning-strong  border border-warning/30"
+                          ? "bg-emerald-600 hover:bg-emerald-600 text-primary-foreground"
+                          : contract.status === "expired" || contract.status === "rejected"
+                            ? "bg-destructive/10 text-destructive border border-destructive/30"
+                            : "bg-warning/10 text-warning-strong border border-warning/30"
                       }`}
                     >
                       {isSigned ? (
@@ -191,7 +201,11 @@ function MyContractsPage() {
                       ) : (
                         <span className="flex items-center gap-1">
                           <Clock className="size-3 shrink-0" />
-                          Aguardando Assinatura
+                          {contract.status === "expired"
+                            ? "Expirado"
+                            : contract.status === "rejected"
+                              ? "Recusado"
+                              : "Aguardando Assinatura"}
                         </span>
                       )}
                     </Badge>

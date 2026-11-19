@@ -41,7 +41,18 @@ export const Route = createFileRoute("/_store/conta/empresa")({
         search: { returnUrl: location.pathname + location.searchStr },
       });
     }
-    return { session };
+
+    const firstStoreId = session.memberships?.[0]?.store_id || session.store_id;
+    if (firstStoreId) {
+      throw redirect({
+        to: "/workspace",
+        search: { storeId: firstStoreId },
+      });
+    }
+
+    throw redirect({
+      to: "/criar-negocio",
+    });
   },
   loader: async ({ location }) => {
     try {

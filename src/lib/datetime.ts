@@ -399,3 +399,28 @@ export function formatTimeOnly(iso: string | Date, timeZone = TZ): string {
   }
 }
 
+export function toDateInputValue(raw?: string | null): string {
+  if (!raw) return "";
+  const trimmed = String(raw).trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(trimmed)) return trimmed.slice(0, 10);
+  const brMatch = trimmed.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (brMatch) return `${brMatch[3]}-${brMatch[2]}-${brMatch[1]}`;
+  return "";
+}
+
+/**
+ * Formata timestamp ISO em data/hora curta pt-BR (dd/mm hh:mm).
+ */
+export function formatCompactDateTime(iso?: string | null): string {
+  if (!iso) return "";
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return parsed.toLocaleString("pt-BR", {
+    timeZone: TZ,
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+

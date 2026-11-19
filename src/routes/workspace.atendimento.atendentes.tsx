@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { getRealtimeChannel } from "@/services/realtime-channel";
 import { toast } from "sonner";
 import { Loader2, Settings2, Users } from "lucide-react";
 import { ErrorState } from "@/components/state/states";
@@ -91,6 +92,41 @@ function WorkspaceAtendimentoAtendentesPage() {
   const [instancePermissions, setInstancePermissions] = useState<InstanceMemberPermissionDTO[]>(
     loaderData.instancePermissions || [],
   );
+
+  useEffect(() => {
+    setMembers(loaderData.members || []);
+    setInstancePermissions(loaderData.instancePermissions || []);
+  }, [loaderData.members, loaderData.instancePermissions]);
+
+  useEffect(() => {
+    const storeId = store?.id;
+    if (!storeId) return;
+    let debounceTimer: number | null = null;
+    const refreshLive = () => {
+      if (debounceTimer !== null) window.clearTimeout(debounceTimer);
+      debounceTimer = window.setTimeout(async () => {
+        debounceTimer = null;
+        const [freshMembers, freshPerms] = await Promise.all([
+          listTeamMembers().catch(() => null),
+          listInstanceMemberPermissions({ data: { storeId } }).catch(() => null),
+        ]);
+        if (freshMembers) setMembers(freshMembers);
+        if (freshPerms) setInstancePermissions(freshPerms as InstanceMemberPermissionDTO[]);
+        void router.invalidate();
+      }, 600);
+    };
+    const filter = `store_id=eq.${storeId}`;
+    const { channel, unsubscribe } = getRealtimeChannel(`atendimento-atendentes:${storeId}`);
+    channel
+      ?.on("postgres_changes", { event: "*", schema: "public", table: "workspace_members", filter }, refreshLive)
+      .on("postgres_changes", { event: "*", schema: "public", table: "whatsapp_channel_live_state", filter }, refreshLive)
+      .on("postgres_changes", { event: "*", schema: "public", table: "whatsapp_instance_member_permissions", filter }, refreshLive)
+      .subscribe();
+    return () => {
+      if (debounceTimer !== null) window.clearTimeout(debounceTimer);
+      unsubscribe();
+    };
+  }, [store?.id, router]);
   const biAgentsMap = useMemo(() => {
     const map = new Map<string, any>();
     for (const a of loaderData.bi?.agents || []) {

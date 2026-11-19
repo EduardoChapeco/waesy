@@ -203,6 +203,9 @@ export const getDepartureWithChecklist = createServerFn({ method: 'GET' })
       ]);
 
     if (dErr || !departure) throw new Error('Embarque não encontrado.');
+    if (departure.store_id !== identity.store_id && identity.role !== 'platform_admin') {
+      throw new Error('Acesso não autorizado para este embarque.');
+    }
     if (cErr) throw new Error('Erro ao carregar checklist: ' + cErr.message);
     if (docErr) throw new Error('Erro ao carregar documentos: ' + docErr.message);
 
@@ -570,10 +573,23 @@ export const deleteDepartureCard = createServerFn({ method: 'POST' })
   .validator(z.object({ id: z.string().uuid() }))
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
-    assertStoreAccess(identity);
+    assertStoreAccess(identity, ['owner', 'admin', 'manager', 'seller']);
 
     const db = getServerClient();
-    const { error } = await db.from('travel_departures_kanban').delete().eq('id', data.id);
+    const { data: existing, error: fetchErr } = await db
+      .from('travel_departures_kanban')
+      .select('id, store_id')
+      .eq('id', data.id)
+      .maybeSingle();
+
+    if (fetchErr || !existing) throw new Error('Cartão de embarque não encontrado.');
+    assertStoreAccess(identity, ['owner', 'admin', 'manager', 'seller'], existing.store_id);
+
+    const { error } = await db
+      .from('travel_departures_kanban')
+      .delete()
+      .eq('id', data.id)
+      .eq('store_id', existing.store_id);
     if (error) throw new Error('Erro ao remover cartão: ' + error.message);
     return { success: true };
   });

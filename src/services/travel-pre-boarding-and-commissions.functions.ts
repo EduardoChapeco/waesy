@@ -1,8 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { assertStoreAccess, getServerIdentity, STAFF_ROLES } from "@/lib/server-access";
-import { getAirportByIata } from "@/lib/data/airports-catalog";
+import { assertStoreAccess, getServerIdentity, STAFF_ROLES, type ServerIdentity } from "@/lib/server-access";
 
 // ============================================================================
 // 1. CATÁLOGO DOS 41 MÓDULOS DO GERADOR INTELIGENTE DE PRÉ-EMBARQUE
@@ -242,14 +241,17 @@ const AIRPORT_IATA_DIRECTORY: Record<string, string> = {
   CUN: "Cancún — Aeroporto Internacional de Cancún (CUN)",
 };
 
-export function expandAirportCode(codeOrName: string): string {
+export function expandAirportCode(
+  codeOrName: string,
+  extraDirectory?: ReadonlyMap<string, { iata_code: string; city: string; name: string }>,
+): string {
   const clean = (codeOrName || "").trim().toUpperCase();
   if (AIRPORT_IATA_DIRECTORY[clean]) {
     return AIRPORT_IATA_DIRECTORY[clean];
   }
-  const globalAirport = getAirportByIata(clean);
-  if (globalAirport) {
-    return `${globalAirport.city} — ${globalAirport.name} (${globalAirport.iata_code})`;
+  const extraAirport = extraDirectory?.get(clean);
+  if (extraAirport) {
+    return `${extraAirport.city} — ${extraAirport.name} (${extraAirport.iata_code})`;
   }
   if (clean.length === 3 && /^[A-Z]{3}$/.test(clean)) {
     return `Aeroporto (${clean})`;
@@ -2558,220 +2560,239 @@ export const getAgencySalesAndCommissionConfigFn = createServerFn({ method: "GET
   .validator(GetAgencySalesAndCommissionConfigSchema)
   .handler(async ({ data }) => {
     const requestedStoreId = data?.storeId;
-    try {
-      const supabase = getServerClient();
-      const { getServerIdentity } = await import("@/lib/server-access");
-      const identity = await getServerIdentity();
-      const targetStoreId =
-        requestedStoreId && requestedStoreId !== "default"
-          ? requestedStoreId
-          : identity?.store_id || null;
+    const supabase = getServerClient();
+    const identity: ServerIdentity = await getServerIdentity();
+    const candidateStoreId =
+      requestedStoreId && requestedStoreId !== "default"
+        ? requestedStoreId
+        : identity?.store_id || undefined;
+    assertStoreAccess(identity, undefined, candidateStoreId);
+    const targetStoreId = identity.store_id || "";
 
-      const rawRole = String(identity?.role || "").toLowerCase();
-      let isManagerOrOwner = ["owner", "admin", "manager", "gerente", "diretor", "master", "platform_admin"].includes(rawRole);
+    const rawRole = String(identity.role || "").toLowerCase();
+    const isManagerOrOwner = [
+      "owner",
+      "store_owner",
+      "proprietario",
+      "admin",
+      "manager",
+      "gerente",
+      "diretor",
+      "finance",
+      "financeiro",
+      "master",
+      "platform_admin",
+    ].includes(rawRole);
 
-      if (!targetStoreId) {
-        return {
-          storeId: null,
-          userRole: rawRole || "agent",
-          isManagerOrOwner,
-          rows: [] as InlineSaleSpreadsheetRowInput[],
-          agents: [] as AgentCommissionProfile[],
-          operatorConfigs: [] as OperatorOverRetentionConfig[],
-          cancellationPolicies: [] as AgencyCancellationPolicyConfig[],
-          updatedAt: null as string | null,
-        };
+    const now = new Date();
+    const competenceMonth = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+
+    const [opRes, agentRes, ledgerRes, cancelRes, storeRes, membersRes, realMonthSheetsRes] = await Promise.all([
+      supabase
+        .from("agency_operator_rules")
+        .select("*")
+        .eq("store_id", targetStoreId)
+        .order("operator_name", { ascending: true }),
+      supabase
+        .from("agency_agent_commission_profiles")
+        .select("*")
+        .eq("store_id", targetStoreId)
+        .order("agent_name", { ascending: true }),
+      isManagerOrOwner
+        ? supabase
+            .from("agency_sales_commission_ledger")
+            .select("*")
+            .eq("store_id", targetStoreId)
+            .order("sale_date", { ascending: false })
+        : supabase
+            .from("agency_sales_commission_ledger")
+            .select("*")
+            .eq("store_id", targetStoreId)
+            .or(`agent_user_id.eq.${identity.id},agent_id.eq.${identity.id}`)
+            .order("sale_date", { ascending: false }),
+      supabase
+        .from("agency_contract_cancellation_policies")
+        .select("*")
+        .eq("store_id", targetStoreId)
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("stores")
+        .select("id, settings")
+        .eq("id", targetStoreId)
+        .maybeSingle(),
+      supabase
+        .from("workspace_members")
+        .select("profile_id, role, profiles(id, full_name)")
+        .eq("store_id", targetStoreId)
+        .eq("is_active", true),
+      supabase
+        .from("travel_sale_financial_sheets")
+        .select("seller_profile_id, seller_name, gross_sale_cents, booking_status")
+        .eq("store_id", targetStoreId)
+        .eq("competence_month", competenceMonth)
+        .neq("booking_status", "cancelada"),
+    ]);
+
+    const settingsObj =
+      storeRes.data?.settings && typeof storeRes.data.settings === "object"
+        ? (storeRes.data.settings as Record<string, any>)
+        : {};
+    const erpBlock =
+      settingsObj.travel_commissions_erp && typeof settingsObj.travel_commissions_erp === "object"
+        ? settingsObj.travel_commissions_erp
+        : {};
+
+    const operatorConfigs: OperatorOverRetentionConfig[] =
+      Array.isArray(opRes.data) && opRes.data.length > 0
+        ? opRes.data.map((r: any) => ({
+            operatorName: r.operator_name,
+            baseAgencyCommissionPct: Number(r.base_agency_commission_pct) || 0,
+            defaultRetentionPctWhenFinanced: Number(r.over_retention_pct_when_financed) || 0,
+            maxBoletoInstallments: Number(r.max_boleto_installments) || 1,
+            boletoRequiresDownpayment: Boolean(r.boleto_requires_downpayment),
+            boletoDownpaymentPct: Number(r.boleto_downpayment_pct) || 0,
+            maxCardInstallments: Number(r.max_card_installments) || 1,
+            pixDiscountPct: Number(r.pix_discount_pct) || 0,
+            paymentChannelCode: r.payment_channel_code || "portal_operadora",
+            paymentGuidanceTitle: r.payment_guidance_title || "",
+            paymentGuidanceInstructions: r.payment_guidance_instructions || "",
+            paymentPortalUrl: r.payment_portal_url || "",
+            cancellationFinePct: Number(r.cancellation_fine_pct) || 0,
+            cancellationFreeDaysBefore: Number(r.cancellation_free_days_before) || 0,
+            cancellationPolicyNotes: r.cancellation_policy_notes || "",
+          }))
+        : Array.isArray(erpBlock.operatorConfigs)
+          ? erpBlock.operatorConfigs
+          : [];
+
+    // Agregar volume mensal real por consultor diretamente do banco
+    const monthlyGrossByProfileId = new Map<string, number>();
+    const monthlyGrossByName = new Map<string, number>();
+    for (const s of realMonthSheetsRes.data || []) {
+      const gross = Number(s.gross_sale_cents || 0);
+      if (s.seller_profile_id) {
+        monthlyGrossByProfileId.set(
+          s.seller_profile_id,
+          (monthlyGrossByProfileId.get(s.seller_profile_id) || 0) + gross,
+        );
       }
-
-      if (identity?.user_id && !isManagerOrOwner) {
-        const { data: memberRow } = await supabase
-          .from("store_members")
-          .select("role")
-          .eq("store_id", targetStoreId)
-          .eq("user_id", identity.user_id)
-          .maybeSingle();
-        const memberRole = String(memberRow?.role || "").toLowerCase();
-        if (["owner", "admin", "manager", "gerente", "diretor", "master"].includes(memberRole)) {
-          isManagerOrOwner = true;
-        }
+      if (s.seller_name) {
+        const key = String(s.seller_name).trim().toLowerCase();
+        monthlyGrossByName.set(key, (monthlyGrossByName.get(key) || 0) + gross);
       }
+    }
 
-      const [opRes, agentRes, ledgerRes, cancelRes, storeRes] = await Promise.all([
-        supabase
-          .from("agency_operator_rules")
-          .select("*")
-          .eq("store_id", targetStoreId)
-          .order("operator_name", { ascending: true }),
-        supabase
-          .from("agency_agent_commission_profiles")
-          .select("*")
-          .eq("store_id", targetStoreId)
-          .order("agent_name", { ascending: true }),
-        supabase
-          .from("agency_sales_commission_ledger")
-          .select("*")
-          .eq("store_id", targetStoreId)
-          .order("sale_date", { ascending: false }),
-        supabase
-          .from("agency_contract_cancellation_policies")
-          .select("*")
-          .eq("store_id", targetStoreId)
-          .order("created_at", { ascending: true }),
-        supabase
-          .from("stores")
-          .select("id, settings")
-          .eq("id", targetStoreId)
-          .maybeSingle(),
-      ]);
-
-      if (!isManagerOrOwner && identity?.user_id) {
-        const { data: memberRow } = await supabase
-          .from("store_members")
-          .select("role")
-          .eq("store_id", targetStoreId)
-          .or(`user_id.eq.${identity.user_id},profile_id.eq.${identity.user_id}`)
-          .maybeSingle();
-        if (["owner", "admin", "manager", "gerente", "diretor", "master"].includes(String(memberRow?.role || "").toLowerCase())) {
-          isManagerOrOwner = true;
-        }
-      }
-
-      const settingsObj =
-        storeRes.data?.settings && typeof storeRes.data.settings === "object"
-          ? (storeRes.data.settings as Record<string, any>)
-          : {};
-      const erpBlock =
-        settingsObj.travel_commissions_erp && typeof settingsObj.travel_commissions_erp === "object"
-          ? settingsObj.travel_commissions_erp
-          : {};
-
-      const operatorConfigs: OperatorOverRetentionConfig[] =
-        Array.isArray(opRes.data) && opRes.data.length > 0
-          ? opRes.data.map((r: any) => ({
-              operatorName: r.operator_name,
-              baseAgencyCommissionPct: Number(r.base_agency_commission_pct) || 0,
-              defaultRetentionPctWhenFinanced: Number(r.over_retention_pct_when_financed) || 0,
-              maxBoletoInstallments: Number(r.max_boleto_installments) || 1,
-              boletoRequiresDownpayment: Boolean(r.boleto_requires_downpayment),
-              boletoDownpaymentPct: Number(r.boleto_downpayment_pct) || 0,
-              maxCardInstallments: Number(r.max_card_installments) || 1,
-              pixDiscountPct: Number(r.pix_discount_pct) || 0,
-              paymentChannelCode: r.payment_channel_code || "portal_operadora",
-              paymentGuidanceTitle: r.payment_guidance_title || "",
-              paymentGuidanceInstructions: r.payment_guidance_instructions || "",
-              paymentPortalUrl: r.payment_portal_url || "",
-              cancellationFinePct: Number(r.cancellation_fine_pct) || 0,
-              cancellationFreeDaysBefore: Number(r.cancellation_free_days_before) || 0,
-              cancellationPolicyNotes: r.cancellation_policy_notes || "",
-            }))
-          : Array.isArray(erpBlock.operatorConfigs)
-            ? erpBlock.operatorConfigs
-            : [];
-
-      const agents: AgentCommissionProfile[] =
-        Array.isArray(agentRes.data) && agentRes.data.length > 0
-          ? agentRes.data.map((a: any) => ({
-              agentId: a.agent_identifier,
+    const baseAgents: AgentCommissionProfile[] =
+      Array.isArray(agentRes.data) && agentRes.data.length > 0
+        ? agentRes.data.map((a: any) => {
+            const linkedProfileId = a.profile_id || a.user_id || null;
+            const realRev =
+              (linkedProfileId ? monthlyGrossByProfileId.get(linkedProfileId) : undefined) ??
+              monthlyGrossByName.get(String(a.agent_name || "").trim().toLowerCase()) ??
+              0;
+            return {
+              agentId: linkedProfileId || a.agent_identifier,
               agentName: a.agent_name,
               goalEvaluationBasis: (a.goal_evaluation_basis as GoalEvaluationBasis) || "gross_sale",
               commissionCalculationBasis:
                 (a.commission_calculation_basis as CommissionCalculationBasis) || "net_sale_plus_over",
               baseCommissionPct: Number(a.base_commission_pct) || 0,
               defaultOverCommissionPct: Number(a.default_over_commission_pct) || 0,
-              currentMonthAgencyRevenueCents: Number(a.current_month_revenue_cents) || 0,
+              currentMonthAgencyRevenueCents: realRev,
               tiers: Array.isArray(a.tiers) ? a.tiers : [],
-            }))
-          : Array.isArray(erpBlock.agents)
-            ? erpBlock.agents
-            : [];
+            };
+          })
+        : Array.isArray(erpBlock.agents) && erpBlock.agents.length > 0
+          ? erpBlock.agents
+          : (membersRes.data || []).map((m: any) => ({
+              agentId: m.profile_id,
+              agentName: m.profiles?.full_name || "Consultor",
+              goalEvaluationBasis: "gross_sale" as GoalEvaluationBasis,
+              commissionCalculationBasis: "net_sale_plus_over" as CommissionCalculationBasis,
+              baseCommissionPct: 0,
+              defaultOverCommissionPct: 0,
+              currentMonthAgencyRevenueCents: monthlyGrossByProfileId.get(m.profile_id) || 0,
+              tiers: [],
+            }));
 
-      const rows: InlineSaleSpreadsheetRowInput[] =
-        Array.isArray(ledgerRes.data) && ledgerRes.data.length > 0
-          ? ledgerRes.data.map((row: any) => ({
-              id: row.row_code || row.id,
-              saleDate: String(row.sale_date || "").slice(0, 10),
-              clientName: row.client_name || "",
-              passengersCount: Number(row.passengers_count) || 1,
-              operatorName: row.operator_name || "",
-              operatorPackageCode: row.operator_package_code || "",
-              contractSigned: Boolean(row.contract_signed),
-              bookingStatus: (row.booking_status as any) || "confirmada",
-              grossSaleCents: Number(row.gross_sale_cents) || 0,
-              taxesAndFeesCents: Number(row.taxes_and_fees_cents) || 0,
-              operatorTablePriceCents: Number(row.operator_table_price_cents) || 0,
-              baseCommissionPct: Number(row.base_commission_pct) || 0,
-              overRetentionFeePct: Number(row.over_retention_fee_pct) || 0,
-              paid100PctViaOperator: Boolean(row.paid_100pct_via_operator),
-              overPaymentMethod: (row.over_payment_method as OverPaymentMethod) || "operadora_financiado",
-              agentId: row.agent_id || "",
-              agentName: row.agent_name || "",
-              agentCommissionPctOverride:
-                row.agent_commission_pct_override != null ? Number(row.agent_commission_pct_override) : null,
-              agentOverCommissionPctOverride:
-                row.agent_over_commission_pct_override != null
-                  ? Number(row.agent_over_commission_pct_override)
-                  : null,
-              agentCommissionCentsOverride:
-                row.agent_commission_cents_override != null
-                  ? Number(row.agent_commission_cents_override)
-                  : null,
-              deductCommissionOnCancel: Boolean(row.deduct_commission_on_cancel),
-              managerCommissionClawbackCents:
-                row.manager_commission_clawback_cents != null
-                  ? Number(row.manager_commission_clawback_cents)
-                  : null,
-            }))
-          : Array.isArray(erpBlock.rows)
-            ? erpBlock.rows
-            : [];
+    const agents = isManagerOrOwner
+      ? baseAgents
+      : baseAgents.filter((ag) => ag.agentId === identity.id);
 
-      const cancellationPolicies: AgencyCancellationPolicyConfig[] =
-        Array.isArray(cancelRes.data) && cancelRes.data.length > 0
-          ? cancelRes.data.map((p: any) => ({
-              id: p.id,
-              policyName: p.policy_name,
-              isDefault: Boolean(p.is_default),
-              freeCancellationWindowDays: Number(p.free_cancellation_window_days) || 0,
-              anacRegretHours: Number(p.anac_regret_hours) || 24,
-              anacMinAdvanceDays: Number(p.anac_min_advance_days) || 7,
-              defaultFinePct: Number(p.default_fine_pct) || 0,
-              fineTiers: Array.isArray(p.fine_tiers) ? p.fine_tiers : [],
-              allowOperatorCreditConversion: Boolean(p.allow_operator_credit_conversion),
-              creditValidityMonths: Number(p.credit_validity_months) || 12,
-              contractClausesTemplate: p.contract_clauses_template || "",
-              reschedulingPolicyText: p.rescheduling_policy_text || "",
-            }))
-          : Array.isArray(erpBlock.cancellationPolicies)
-            ? erpBlock.cancellationPolicies
-            : [];
+    const rawRows: InlineSaleSpreadsheetRowInput[] =
+      Array.isArray(ledgerRes.data) && ledgerRes.data.length > 0
+        ? ledgerRes.data.map((row: any) => ({
+            id: row.row_code || row.id,
+            saleDate: String(row.sale_date || "").slice(0, 10),
+            clientName: row.client_name || "",
+            passengersCount: Number(row.passengers_count) || 1,
+            operatorName: row.operator_name || "",
+            operatorPackageCode: row.operator_package_code || "",
+            contractSigned: Boolean(row.contract_signed),
+            bookingStatus: (row.booking_status as any) || "confirmada",
+            grossSaleCents: Number(row.gross_sale_cents) || 0,
+            taxesAndFeesCents: Number(row.taxes_and_fees_cents) || 0,
+            operatorTablePriceCents: Number(row.operator_table_price_cents) || 0,
+            baseCommissionPct: Number(row.base_commission_pct) || 0,
+            overRetentionFeePct: Number(row.over_retention_fee_pct) || 0,
+            paid100PctViaOperator: Boolean(row.paid_100pct_via_operator),
+            overPaymentMethod: (row.over_payment_method as OverPaymentMethod) || "operadora_financiado",
+            agentId: row.agent_user_id || row.agent_id || "",
+            agentName: row.agent_name || "",
+            agentCommissionPctOverride:
+              row.agent_commission_pct_override != null ? Number(row.agent_commission_pct_override) : null,
+            agentOverCommissionPctOverride:
+              row.agent_over_commission_pct_override != null
+                ? Number(row.agent_over_commission_pct_override)
+                : null,
+            agentCommissionCentsOverride:
+              row.agent_commission_cents_override != null
+                ? Number(row.agent_commission_cents_override)
+                : null,
+            deductCommissionOnCancel: Boolean(row.deduct_commission_on_cancel),
+            managerCommissionClawbackCents:
+              row.manager_commission_clawback_cents != null
+                ? Number(row.manager_commission_clawback_cents)
+                : null,
+          }))
+        : [];
 
-      return {
-        storeId: targetStoreId,
-        userRole: isManagerOrOwner ? "manager" : rawRole || "agent",
-        isManagerOrOwner,
-        rows,
-        agents,
-        operatorConfigs,
-        cancellationPolicies,
-        updatedAt: typeof erpBlock.updatedAt === "string" ? erpBlock.updatedAt : null,
-      };
-    } catch {
-      return {
-        storeId: requestedStoreId || null,
-        userRole: "agent",
-        isManagerOrOwner: false,
-        rows: [] as InlineSaleSpreadsheetRowInput[],
-        agents: [] as AgentCommissionProfile[],
-        operatorConfigs: [] as OperatorOverRetentionConfig[],
-        cancellationPolicies: [] as AgencyCancellationPolicyConfig[],
-        updatedAt: null as string | null,
-      };
-    }
+    const cancellationPolicies: AgencyCancellationPolicyConfig[] =
+      Array.isArray(cancelRes.data) && cancelRes.data.length > 0
+        ? cancelRes.data.map((p: any) => ({
+            id: p.id,
+            policyName: p.policy_name,
+            isDefault: Boolean(p.is_default),
+            freeCancellationWindowDays: Number(p.free_cancellation_window_days) || 0,
+            anacRegretHours: Number(p.anac_regret_hours) || 24,
+            anacMinAdvanceDays: Number(p.anac_min_advance_days) || 7,
+            defaultFinePct: Number(p.default_fine_pct) || 0,
+            fineTiers: Array.isArray(p.fine_tiers) ? p.fine_tiers : [],
+            allowOperatorCreditConversion: Boolean(p.allow_operator_credit_conversion),
+            creditValidityMonths: Number(p.credit_validity_months) || 12,
+            contractClausesTemplate: p.contract_clauses_template || "",
+            reschedulingPolicyText: p.rescheduling_policy_text || "",
+          }))
+        : Array.isArray(erpBlock.cancellationPolicies)
+          ? erpBlock.cancellationPolicies
+          : [];
+
+    return {
+      storeId: targetStoreId,
+      userRole: isManagerOrOwner ? "manager" : rawRole || "agent",
+      isManagerOrOwner,
+      rows: rawRows,
+      agents,
+      operatorConfigs,
+      cancellationPolicies,
+      updatedAt: typeof erpBlock.updatedAt === "string" ? erpBlock.updatedAt : null,
+    };
   });
 
 const SaveAgencySalesAndCommissionConfigSchema = z.object({
   storeId: z.string().optional(),
   rows: z.array(z.any()).optional(),
+  removedRowIds: z.array(z.string()).optional(),
   agents: z.array(z.any()).optional(),
   operatorConfigs: z.array(z.any()).optional(),
   cancellationPolicies: z.array(z.any()).optional(),
@@ -2780,207 +2801,197 @@ const SaveAgencySalesAndCommissionConfigSchema = z.object({
 export const saveAgencySalesAndCommissionConfigFn = createServerFn({ method: "POST" })
   .validator(SaveAgencySalesAndCommissionConfigSchema)
   .handler(async ({ data }) => {
-    const { storeId: requestedStoreId, rows, agents, operatorConfigs, cancellationPolicies } = data;
+    const { storeId: requestedStoreId, rows, removedRowIds, agents, operatorConfigs, cancellationPolicies } = data;
     const nowIso = new Date().toISOString();
 
-    try {
-      const supabase = getServerClient();
-      const { getServerIdentity } = await import("@/lib/server-access");
-      const identity = await getServerIdentity();
-      const targetStoreId =
-        requestedStoreId && requestedStoreId !== "default"
-          ? requestedStoreId
-          : identity?.store_id || null;
+    const supabase = getServerClient();
+    const identity: ServerIdentity = await getServerIdentity();
+    const candidateStoreId =
+      requestedStoreId && requestedStoreId !== "default"
+        ? requestedStoreId
+        : identity?.store_id || undefined;
+    assertStoreAccess(
+      identity,
+      ["owner", "store_owner", "proprietario", "admin", "manager", "gerente", "diretor", "finance", "financeiro"],
+      candidateStoreId,
+    );
+    const targetStoreId = identity.store_id || "";
 
-      if (!targetStoreId) {
-        return { success: false, updatedAt: nowIso };
-      }
+    // 1. Persistir Operadoras em agency_operator_rules + sincronizar travel_suppliers
+    if (Array.isArray(operatorConfigs)) {
+      await supabase.from("agency_operator_rules").delete().eq("store_id", targetStoreId);
+      const validOps = operatorConfigs.filter((op: any) => op?.operatorName?.trim());
+      if (validOps.length > 0) {
+        await supabase.from("agency_operator_rules").insert(
+          validOps.map((op: any) => ({
+            store_id: targetStoreId,
+            operator_name: String(op.operatorName).trim(),
+            operator_slug: String(op.operatorName).trim().toLowerCase().replace(/[^a-z0-9]+/g, "_"),
+            base_agency_commission_pct: Number(op.baseAgencyCommissionPct) || 0,
+            over_retention_pct_when_financed: Number(op.defaultRetentionPctWhenFinanced) || 0,
+            max_boleto_installments: Number(op.maxBoletoInstallments) || 1,
+            boleto_requires_downpayment: Boolean(op.boletoRequiresDownpayment),
+            boleto_downpayment_pct: Number(op.boletoDownpaymentPct) || 0,
+            max_card_installments: Number(op.maxCardInstallments) || 1,
+            pix_discount_pct: Number(op.pixDiscountPct) || 0,
+            payment_channel_code: op.paymentChannelCode || "portal_operadora",
+            payment_guidance_title: op.paymentGuidanceTitle || "",
+            payment_guidance_instructions: op.paymentGuidanceInstructions || "",
+            payment_portal_url: op.paymentPortalUrl || null,
+            cancellation_fine_pct: Number(op.cancellationFinePct) || 0,
+            cancellation_free_days_before: Number(op.cancellationFreeDaysBefore) || 0,
+            cancellation_policy_notes: op.cancellationPolicyNotes || "",
+            updated_at: nowIso,
+          })),
+        );
 
-      const rawRole = String(identity?.role || "").toLowerCase();
-      let isManagerOrOwner = ["owner", "admin", "manager", "gerente", "diretor", "master", "platform_admin"].includes(rawRole);
-
-      const { data: storeRow } = await supabase
-        .from("stores")
-        .select("id, settings")
-        .eq("id", targetStoreId)
-        .maybeSingle();
-
-      if (identity?.user_id && !isManagerOrOwner) {
-        const { data: memberRow } = await supabase
-          .from("store_members")
-          .select("role")
-          .eq("store_id", targetStoreId)
-          .or(`user_id.eq.${identity.user_id},profile_id.eq.${identity.user_id}`)
-          .maybeSingle();
-        const memberRole = String(memberRow?.role || "").toLowerCase();
-        if (["owner", "admin", "manager", "gerente", "diretor", "master"].includes(memberRole)) {
-          isManagerOrOwner = true;
-        }
-      }
-
-      // 1. Persistir Operadoras em agency_operator_rules (exclusivo Gestor/Owner)
-      if (isManagerOrOwner && Array.isArray(operatorConfigs)) {
-        await supabase.from("agency_operator_rules").delete().eq("store_id", targetStoreId);
-        if (operatorConfigs.length > 0) {
-          await supabase.from("agency_operator_rules").insert(
-            operatorConfigs
-              .filter((op: any) => op?.operatorName?.trim())
-              .map((op: any) => ({
-                store_id: targetStoreId,
-                operator_name: String(op.operatorName).trim(),
-                operator_slug: String(op.operatorName)
-                  .trim()
-                  .toLowerCase()
-                  .replace(/[^a-z0-9]+/g, "_"),
-                base_agency_commission_pct: Number(op.baseAgencyCommissionPct) || 0,
-                over_retention_pct_when_financed: Number(op.defaultRetentionPctWhenFinanced) || 0,
-                max_boleto_installments: Number(op.maxBoletoInstallments) || 1,
-                boleto_requires_downpayment: Boolean(op.boletoRequiresDownpayment),
-                boleto_downpayment_pct: Number(op.boletoDownpaymentPct) || 0,
-                max_card_installments: Number(op.maxCardInstallments) || 1,
-                pix_discount_pct: Number(op.pixDiscountPct) || 0,
-                payment_channel_code: op.paymentChannelCode || "portal_operadora",
-                payment_guidance_title: op.paymentGuidanceTitle || "",
-                payment_guidance_instructions: op.paymentGuidanceInstructions || "",
-                payment_portal_url: op.paymentPortalUrl || null,
-                cancellation_fine_pct: Number(op.cancellationFinePct) || 0,
-                cancellation_free_days_before: Number(op.cancellationFreeDaysBefore) || 0,
-                cancellation_policy_notes: op.cancellationPolicyNotes || "",
-                updated_at: nowIso,
-              })),
-          );
-        }
-      }
-
-      // 2. Persistir Perfis de Comissionamento de Agentes em agency_agent_commission_profiles (exclusivo Gestor/Owner)
-      if (isManagerOrOwner && Array.isArray(agents)) {
-        await supabase.from("agency_agent_commission_profiles").delete().eq("store_id", targetStoreId);
-        if (agents.length > 0) {
-          await supabase.from("agency_agent_commission_profiles").insert(
-            agents
-              .filter((ag: any) => ag?.agentId && ag?.agentName)
-              .map((ag: any) => ({
-                store_id: targetStoreId,
-                agent_identifier: String(ag.agentId),
-                agent_name: String(ag.agentName),
-                goal_evaluation_basis: ag.goalEvaluationBasis || "gross_sale",
-                commission_calculation_basis: ag.commissionCalculationBasis || "net_sale_plus_over",
-                base_commission_pct: Number(ag.baseCommissionPct) || 0,
-                default_over_commission_pct: Number(ag.defaultOverCommissionPct) || 0,
-                current_month_revenue_cents: Number(ag.currentMonthAgencyRevenueCents) || 0,
-                tiers: Array.isArray(ag.tiers) ? ag.tiers : [],
-                updated_at: nowIso,
-              })),
-          );
-        }
-      }
-
-      // 3. Persistir Políticas de Cancelamento e Contrato em agency_contract_cancellation_policies (exclusivo Gestor/Owner)
-      if (isManagerOrOwner && Array.isArray(cancellationPolicies)) {
-        await supabase.from("agency_contract_cancellation_policies").delete().eq("store_id", targetStoreId);
-        if (cancellationPolicies.length > 0) {
-          await supabase.from("agency_contract_cancellation_policies").insert(
-            cancellationPolicies
-              .filter((pol: any) => pol?.policyName?.trim())
-              .map((pol: any) => ({
-                store_id: targetStoreId,
-                policy_name: String(pol.policyName).trim(),
-                is_default: Boolean(pol.isDefault),
-                free_cancellation_window_days: Number(pol.freeCancellationWindowDays) || 0,
-                anac_regret_hours: Number(pol.anacRegretHours) || 24,
-                anac_min_advance_days: Number(pol.anacMinAdvanceDays) || 7,
-                default_fine_pct: Number(pol.defaultFinePct) || 0,
-                fine_tiers: Array.isArray(pol.fineTiers) ? pol.fineTiers : [],
-                allow_operator_credit_conversion: Boolean(pol.allowOperatorCreditConversion),
-                credit_validity_months: Number(pol.creditValidityMonths) || 12,
-                contract_clauses_template: pol.contractClausesTemplate || "",
-                rescheduling_policy_text: pol.reschedulingPolicyText || "",
-                updated_at: nowIso,
-              })),
-          );
-        }
-      }
-
-      // 4. Persistir Planilha de Vendas em agency_sales_commission_ledger
-      if (Array.isArray(rows)) {
-        if (isManagerOrOwner) {
-          await supabase.from("agency_sales_commission_ledger").delete().eq("store_id", targetStoreId);
-        }
-        if (rows.length > 0) {
-          await supabase.from("agency_sales_commission_ledger").upsert(
-            rows.map((r: any) => ({
-              store_id: targetStoreId,
-              row_code: String(r.id || `row-${Date.now()}`),
-              sale_date: r.saleDate || nowIso.slice(0, 10),
-              client_name: r.clientName || "",
-              passengers_count: Number(r.passengersCount) || 1,
-              operator_name: r.operatorName || "",
-              operator_package_code: r.operatorPackageCode || "",
-              contract_signed: Boolean(r.contractSigned),
-              booking_status: r.bookingStatus || "confirmada",
-              gross_sale_cents: Number(r.grossSaleCents) || 0,
-              taxes_and_fees_cents: Number(r.taxesAndFeesCents) || 0,
-              operator_table_price_cents: Number(r.operatorTablePriceCents) || 0,
-              base_commission_pct: Number(r.baseCommissionPct) || 0,
-              over_retention_fee_pct: Number(r.overRetentionFeePct) || 0,
-              paid_100pct_via_operator: Boolean(r.paid100PctViaOperator),
-              over_payment_method: r.overPaymentMethod || "operadora_financiado",
-              agent_id: r.agentId || "",
-              agent_name: r.agentName || "",
-              agent_commission_pct_override: isManagerOrOwner ? r.agentCommissionPctOverride ?? null : null,
-              agent_over_commission_pct_override: isManagerOrOwner ? r.agentOverCommissionPctOverride ?? null : null,
-              agent_commission_cents_override: isManagerOrOwner ? r.agentCommissionCentsOverride ?? null : null,
-              deduct_commission_on_cancel: Boolean(r.deductCommissionOnCancel),
-              manager_commission_clawback_cents: isManagerOrOwner ? r.managerCommissionClawbackCents ?? null : null,
+        // Atualizar regras correspondentes no catálogo mestre `travel_suppliers`
+        for (const op of validOps) {
+          await supabase
+            .from("travel_suppliers")
+            .update({
+              commission_rate: Number(op.baseAgencyCommissionPct) || 0,
+              base_agency_commission_pct: Number(op.baseAgencyCommissionPct) || 0,
+              over_retention_pct_when_financed: Number(op.defaultRetentionPctWhenFinanced) || 0,
               updated_at: nowIso,
-            })),
-            { onConflict: "store_id,row_code" },
-          );
+            })
+            .eq("store_id", targetStoreId)
+            .ilike("name", String(op.operatorName).trim());
         }
       }
-
-      // Espelho sincronizado em stores.settings.travel_commissions_erp para resiliência
-      const currentSettings =
-        storeRow?.settings && typeof storeRow.settings === "object"
-          ? (storeRow.settings as Record<string, any>)
-          : {};
-      const currentErp =
-        currentSettings.travel_commissions_erp &&
-        typeof currentSettings.travel_commissions_erp === "object"
-          ? currentSettings.travel_commissions_erp
-          : {};
-
-      const nextErp = {
-        ...currentErp,
-        ...(rows !== undefined ? { rows } : {}),
-        ...(isManagerOrOwner && agents !== undefined ? { agents } : {}),
-        ...(isManagerOrOwner && operatorConfigs !== undefined ? { operatorConfigs } : {}),
-        ...(isManagerOrOwner && cancellationPolicies !== undefined ? { cancellationPolicies } : {}),
-        updatedAt: nowIso,
-        updatedBy: identity?.user_id || null,
-      };
-
-      await supabase
-        .from("stores")
-        .update({
-          settings: {
-            ...currentSettings,
-            travel_commissions_erp: nextErp,
-          },
-          updated_at: nowIso,
-        })
-        .eq("id", targetStoreId);
-
-      return {
-        success: true,
-        storeId: targetStoreId,
-        isManagerOrOwner,
-        updatedAt: nowIso,
-      };
-    } catch {
-      return {
-        success: false,
-        updatedAt: nowIso,
-      };
     }
+
+    // 2. Persistir Perfis de Comissionamento (Faixas & Metas) com vínculo UUID real quando houver
+    if (Array.isArray(agents)) {
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const validAgents = agents.filter((ag: any) => ag?.agentId && ag?.agentName);
+      for (const ag of validAgents) {
+        const isUuid = uuidRegex.test(String(ag.agentId));
+        await supabase.from("agency_agent_commission_profiles").upsert(
+          {
+            store_id: targetStoreId,
+            agent_identifier: String(ag.agentId),
+            profile_id: isUuid ? String(ag.agentId) : null,
+            user_id: isUuid ? String(ag.agentId) : null,
+            agent_name: String(ag.agentName),
+            goal_evaluation_basis: ag.goalEvaluationBasis || "gross_sale",
+            commission_calculation_basis: ag.commissionCalculationBasis || "net_sale_plus_over",
+            base_commission_pct: Number(ag.baseCommissionPct) || 0,
+            default_over_commission_pct: Number(ag.defaultOverCommissionPct) || 0,
+            tiers: Array.isArray(ag.tiers) ? ag.tiers : [],
+            updated_at: nowIso,
+          },
+          { onConflict: "store_id,agent_identifier" },
+        );
+      }
+    }
+
+    // 3. Persistir Políticas de Cancelamento e Contrato
+    if (Array.isArray(cancellationPolicies)) {
+      await supabase.from("agency_contract_cancellation_policies").delete().eq("store_id", targetStoreId);
+      const validPols = cancellationPolicies.filter((pol: any) => pol?.policyName?.trim());
+      if (validPols.length > 0) {
+        await supabase.from("agency_contract_cancellation_policies").insert(
+          validPols.map((pol: any) => ({
+            store_id: targetStoreId,
+            policy_name: String(pol.policyName).trim(),
+            is_default: Boolean(pol.isDefault),
+            free_cancellation_window_days: Number(pol.freeCancellationWindowDays) || 0,
+            anac_regret_hours: Number(pol.anacRegretHours) || 24,
+            anac_min_advance_days: Number(pol.anacMinAdvanceDays) || 7,
+            default_fine_pct: Number(pol.defaultFinePct) || 0,
+            fine_tiers: Array.isArray(pol.fineTiers) ? pol.fineTiers : [],
+            allow_operator_credit_conversion: Boolean(pol.allowOperatorCreditConversion),
+            credit_validity_months: Number(pol.creditValidityMonths) || 12,
+            contract_clauses_template: pol.contractClausesTemplate || "",
+            rescheduling_policy_text: pol.reschedulingPolicyText || "",
+            updated_at: nowIso,
+          })),
+        );
+      }
+    }
+
+    // 4. Remoção explícita apenas de linhas arquivadas/excluídas pelo gestor
+    if (Array.isArray(removedRowIds) && removedRowIds.length > 0) {
+      await supabase
+        .from("agency_sales_commission_ledger")
+        .delete()
+        .eq("store_id", targetStoreId)
+        .in("row_code", removedRowIds);
+    }
+
+    // 5. Upsert incremental e seguro + Sincronização com Ficha Financeira Mestre (`travel_sale_financial_sheets`)
+    if (Array.isArray(rows) && rows.length > 0) {
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const upsertRows = rows.map((r: any) => {
+        const isUuid = uuidRegex.test(String(r.agentId || ""));
+        return {
+          store_id: targetStoreId,
+          row_code: String(r.id || `row-${Date.now()}`),
+          sale_date: r.saleDate || nowIso.slice(0, 10),
+          client_name: r.clientName || "",
+          passengers_count: Number(r.passengersCount) || 1,
+          operator_name: r.operatorName || "",
+          operator_package_code: r.operatorPackageCode || "",
+          contract_signed: Boolean(r.contractSigned),
+          booking_status: r.bookingStatus || "confirmada",
+          gross_sale_cents: Number(r.grossSaleCents) || 0,
+          taxes_and_fees_cents: Number(r.taxesAndFeesCents) || 0,
+          operator_table_price_cents: Number(r.operatorTablePriceCents) || 0,
+          base_commission_pct: Number(r.baseCommissionPct) || 0,
+          over_retention_fee_pct: Number(r.overRetentionFeePct) || 0,
+          paid_100pct_via_operator: Boolean(r.paid100PctViaOperator),
+          over_payment_method: r.overPaymentMethod || "operadora_financiado",
+          agent_id: r.agentId || "",
+          agent_user_id: isUuid ? String(r.agentId) : null,
+          agent_name: r.agentName || "",
+          agent_commission_pct_override: r.agentCommissionPctOverride ?? null,
+          agent_over_commission_pct_override: r.agentOverCommissionPctOverride ?? null,
+          agent_commission_cents_override: r.agentCommissionCentsOverride ?? null,
+          deduct_commission_on_cancel: Boolean(r.deductCommissionOnCancel),
+          manager_commission_clawback_cents: r.managerCommissionClawbackCents ?? null,
+          updated_at: nowIso,
+        };
+      });
+
+      const { error: upErr } = await supabase
+        .from("agency_sales_commission_ledger")
+        .upsert(upsertRows, { onConflict: "store_id,row_code" });
+      if (upErr) {
+        throw new Error(`Erro ao salvar vendas na planilha: ${upErr.message}`);
+      }
+
+      // Espelhar na Ficha Financeira Mestre SSOT via helper server-side
+      const { syncTourismSaleToFinancialSheetServer } = await import("./travel-commissions-unified.functions");
+      for (const r of rows) {
+        if (Number(r.grossSaleCents || 0) <= 0) continue;
+        const isUuid = uuidRegex.test(String(r.agentId || ""));
+        await syncTourismSaleToFinancialSheetServer({
+          supabase,
+          storeId: String(targetStoreId),
+          actorProfileId: identity.id,
+          sellerProfileId: isUuid ? String(r.agentId) : null,
+          sellerName: r.agentName || "Consultor",
+          clientName: r.clientName || "Passageiro",
+          destination: r.operatorPackageCode || "Reserva",
+          primaryOperator: r.operatorName || "Operadora",
+          locatorCode: r.operatorPackageCode || r.id,
+          internalCode: String(r.id || `OP-${Date.now().toString().slice(-6)}`),
+          saleDate: r.saleDate || nowIso.slice(0, 10),
+          grossSaleCents: Number(r.grossSaleCents) || 0,
+          operatorTablePriceCents: Number(r.operatorTablePriceCents) || undefined,
+          taxesAndFeesCents: Number(r.taxesAndFeesCents) || 0,
+          baseCommissionPct: Number(r.baseCommissionPct) || undefined,
+          overPaymentMethod: r.overPaymentMethod || "operadora_financiado",
+          bookingStatus: r.bookingStatus === "arquivada" ? "cancelada" : r.bookingStatus || "confirmada",
+        }).catch(() => {});
+      }
+    }
+
+    return {
+      success: true,
+      storeId: targetStoreId,
+      isManagerOrOwner: true,
+      updatedAt: nowIso,
+    };
   });

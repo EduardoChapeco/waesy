@@ -10,11 +10,11 @@
 
 import React from "react";
 import { FullViewportKanban, KanbanColumnDefinition } from "@/components/workspace/kanban/full-viewport-kanban";
-import { NicheId, NicheStageConfig, getNicheManifest } from "@/lib/niche-manifest";
+import { NicheId, NicheStageConfig, getNicheManifest } from "@/lib/niches/niche-manifest";
 import { doesLeadBelongToStage } from "@/lib/niches/kanban-niche-taxonomy";
 import { StateMachineEntity, getAllowedTransitions, getStatusMeta } from "@/lib/state-machines";
 import { cn } from "@/lib/utils";
-import { ArrowRight, Clock, User, Phone, DollarSign } from "lucide-react";
+import { ArrowRight, Clock, User, Phone, DollarSign, Bell, Share2 } from "lucide-react";
 
 export interface NicheKanbanCardData {
   id: string;
@@ -26,6 +26,8 @@ export interface NicheKanbanCardData {
   slaDeadlineMinutes?: number;
   createdAt?: string;
   tags?: string[];
+  followUpAt?: string | null;
+  source?: string | null;
   custom_fields?: Record<string, any> | null;
   metadata?: Record<string, any>;
 }
@@ -78,6 +80,27 @@ export function NicheKanbanBoard({
       items: stageItems,
       renderItem: (item: NicheKanbanCardData) => {
         const allowedTransitions = getAllowedTransitions(entity, item.status);
+        const rawFollowUp = item.followUpAt || item.metadata?.follow_up_at;
+        const reminderMeta = rawFollowUp
+          ? (() => {
+              const due = new Date(rawFollowUp);
+              const now = new Date();
+              const isPastDue = due < now;
+              const isToday =
+                due.getFullYear() === now.getFullYear() &&
+                due.getMonth() === now.getMonth() &&
+                due.getDate() === now.getDate();
+              return {
+                isOverdue: isPastDue,
+                isToday,
+                label: isToday
+                  ? due.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+                  : due.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+              };
+            })()
+          : null;
+
+        const effectiveSource = item.source || item.metadata?.source || item.metadata?.channel;
 
         return (
           <div
@@ -141,11 +164,46 @@ export function NicheKanbanBoard({
                 {item.tags.slice(0, 3).map((tag: string, idx: number) => (
                   <span
                     key={idx}
-                    className="text-2xs font-medium px-2 py-1 rounded-md bg-muted text-muted-foreground"
+                    className="text-2xs font-semibold px-2 py-1 rounded-md bg-muted/60 border border-border/70 text-muted-foreground truncate max-w-28"
                   >
                     {tag}
                   </span>
                 ))}
+                {item.tags.length > 3 && (
+                  <span className="text-2xs font-bold px-2 py-1 rounded-md bg-muted text-muted-foreground">
+                    +{item.tags.length - 3}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Avisos de Lembrete / Alarme de Follow-up */}
+            {reminderMeta && (
+              <div
+                className={cn(
+                  "text-3xs font-mono font-bold px-2 py-1 rounded-md inline-flex items-center gap-2",
+                  reminderMeta.isOverdue
+                    ? "bg-rose-500/10 text-rose-600 border border-rose-500/30"
+                    : reminderMeta.isToday
+                      ? "bg-warning/10 text-warning border border-warning/30"
+                      : "bg-muted text-muted-foreground border border-border/60",
+                )}
+              >
+                <Bell className="size-3 shrink-0" />
+                <span className="truncate">
+                  {reminderMeta.isOverdue ? "Atrasado: " : reminderMeta.isToday ? "Hoje: " : "Alarme: "}
+                  {reminderMeta.label}
+                </span>
+              </div>
+            )}
+
+            {/* Canal de Origem */}
+            {effectiveSource && (
+              <div className="pt-1">
+                <span className="text-3xs font-mono font-semibold px-2 py-1 rounded-md bg-muted/50 border border-border/60 text-muted-foreground inline-flex items-center gap-1">
+                  <Share2 className="size-3 shrink-0 text-primary" />
+                  <span className="capitalize">{effectiveSource}</span>
+                </span>
               </div>
             )}
 

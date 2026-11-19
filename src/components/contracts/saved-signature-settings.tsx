@@ -17,6 +17,11 @@ interface SavedSignatureSettingsCardProps {
   description?: string;
   compact?: boolean;
   onUpdated?: (signatureUrl: string | null) => void;
+  onProfileChange?: (state: {
+    profileId: string | null;
+    savedSignature: string | null;
+    savedInitials: string | null;
+  }) => void;
   className?: string;
 }
 
@@ -25,10 +30,12 @@ export function SavedSignatureSettingsCard({
   description = "Cadastre sua assinatura e rubrica uma única vez para assinar contratos e documentos da equipe em 1 toque.",
   compact = false,
   onUpdated,
+  onProfileChange,
   className,
 }: SavedSignatureSettingsCardProps) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [profileId, setProfileId] = useState<string | null>(null);
   const [savedSignature, setSavedSignature] = useState<string | null>(null);
   const [savedInitials, setSavedInitials] = useState<string | null>(null);
   const [activePad, setActivePad] = useState<"none" | "signature" | "initials">("none");
@@ -38,8 +45,15 @@ export function SavedSignatureSettingsCard({
     getUserSignatureProfile()
       .then((res) => {
         if (!active) return;
-        setSavedSignature(res.savedSignature);
+        const effectiveSignature = res.savedSignature || res.savedInitials || null;
+        setProfileId(res.profileId || null);
+        setSavedSignature(effectiveSignature);
         setSavedInitials(res.savedInitials);
+        onProfileChange?.({
+          profileId: res.profileId || null,
+          savedSignature: effectiveSignature,
+          savedInitials: res.savedInitials,
+        });
       })
       .catch(() => {
         /* mantem estado inicial vazio */
@@ -59,10 +73,18 @@ export function SavedSignatureSettingsCard({
     setSaving(true);
     try {
       const res = await saveUserSignatureAndInitials({ data: payload });
-      setSavedSignature(res.savedSignature);
+      const effectiveSignature = res.savedSignature || res.savedInitials || null;
+      const resolvedProfileId = (res as any).profileId || profileId;
+      if (resolvedProfileId) setProfileId(resolvedProfileId);
+      setSavedSignature(effectiveSignature);
       setSavedInitials(res.savedInitials);
       setActivePad("none");
-      onUpdated?.(res.savedSignature);
+      onProfileChange?.({
+        profileId: resolvedProfileId,
+        savedSignature: effectiveSignature,
+        savedInitials: res.savedInitials,
+      });
+      onUpdated?.(effectiveSignature);
       toast.success(successMsg);
     } catch (err: any) {
       toast.error(err?.message || "Não foi possível salvar a assinatura.");
@@ -107,7 +129,7 @@ export function SavedSignatureSettingsCard({
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-            {savedSignature ? (
+            {savedSignature || savedInitials ? (
               <Badge variant="outline" className="text-xs text-emerald-700 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10 gap-1">
                 <CheckCircle2 className="size-3" />
                 Cadastrada
@@ -259,6 +281,7 @@ export function SavedSignatureSettingsCard({
           <DigitalSignatureCanvas
             initialSignatureUrl={savedInitials}
             placeholderText="Desenhe suas iniciais / rubrica aqui"
+            saveLabel="Salvar Rubrica"
             onSave={(dataUrl) =>
               persistSignature({ initialsImageBase64: dataUrl }, "Rubrica salva com sucesso.")
             }

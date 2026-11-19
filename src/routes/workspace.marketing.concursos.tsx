@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { SheetPage } from "@/components/ui/sheet-page";
 import { MediaUploader } from "@/components/ui/media-uploader";
-import { getNicheSemantics } from "@/lib/niche-semantics";
+import { getNicheSemantics } from "@/lib/niches/niche-semantics";
 import { getStoreSettings } from "@/services/store.functions";
 import { storeListConcursos, storeCreateConcurso, storeUpdateConcurso, storeCancelConcurso, storeDrawConcurso, storeGetConcursoParticipants } from "@/services/invite.functions";
 

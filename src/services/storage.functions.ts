@@ -75,6 +75,8 @@ const ALLOWED_BFF_BUCKETS = new Set([
   "covers",
   "avatars",
   "banners",
+  "home-banners",
+  "home-categories",
   "post-media",
   "public_media",
   "legal-documents",
@@ -82,7 +84,9 @@ const ALLOWED_BFF_BUCKETS = new Set([
   "order-receipts",
   "identity-vault",
   "store-assets",
+  "brand-assets",
   "destination-media",
+  "recipes",
   "social",
   "copilot-uploads",
 ]);
@@ -162,14 +166,20 @@ export const getSignedUploadUrl = createServerFn({ method: "POST" })
         "covers",
         "avatars",
         "banners",
+        "home-banners",
+        "home-categories",
         "post-media",
         "public_media",
         "legal-documents",
         "receipts",
+        "order-receipts",
         "identity-vault",
         "store-assets",
+        "brand-assets",
         "destination-media",
+        "recipes",
         "social",
+        "copilot-uploads",
       ]),
       contentType: z.string(),
     }),
@@ -183,12 +193,33 @@ export const getSignedUploadUrl = createServerFn({ method: "POST" })
       const ext = extensionForMime(normalizedType, fileName);
 
       const { getServerIdentity } = await import("@/lib/server-access");
-      const { store_id, id: userId } = await getServerIdentity();
-      if (!store_id && !userId) throw new Error("Não autorizado");
+      const { store_id, id: userId, role } = await getServerIdentity();
+      if (!userId) throw new Error("Faça login para enviar arquivos.");
 
-      enforceRateLimit(userId || store_id || "guest", "media_upload");
+      enforceRateLimit(userId, "media_upload");
 
-      const folder = store_id || userId;
+      const privateOrStaffBuckets = new Set([
+        "payment-proofs",
+        "rma-proofs",
+        "legal-documents",
+        "receipts",
+        "order-receipts",
+        "identity-vault",
+        "cms-media",
+        "banners",
+        "home-banners",
+        "home-categories",
+        "store-assets",
+        "brand-assets",
+        "destination-media",
+        "recipes",
+      ]);
+      const isStaffUser = role !== "customer" && Boolean(store_id);
+      if (privateOrStaffBuckets.has(bucket) && !isStaffUser && role !== "platform_admin") {
+        throw new Error("Bucket restrito à equipe da loja.");
+      }
+
+      const folder = isStaffUser && store_id ? store_id : userId;
       const uniqueName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${ext}`;
 
       // Tenta criar a URL assinada
@@ -377,6 +408,119 @@ export const uploadPostMedia = createServerFn({ method: "POST" })
       console.error("[storage] uploadPostMedia error:", e);
       throw new Error(e.message || "Erro no upload do arquivo.");
     }
+  });
+
+/**
+ * Upload autenticado de comprovante financeiro (payment-proofs) ou memória de grupo (post-media)
+ * validando vínculo do usuário com a viagem no servidor.
+ */
+export const uploadTravelerTripAttachment = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      tripId: z.string().uuid("ID de viagem inválido"),
+      kind: z.enum(["receipt", "group_memory"]),
+      fileName: z.string().min(1).max(256),
+      fileType: z.string().min(1).max(120),
+      base64Data: z.string().min(1),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const { tripId, kind, fileName, fileType, base64Data } = data;
+    validateMimeType(fileType);
+
+    const { getServerIdentity } = await import("@/lib/server-access");
+    const identity = await getServerIdentity();
+    if (!identity?.id) {
+      throw new Error("Faça login para enviar anexos nesta viagem.");
+    }
+
+    enforceRateLimit(identity.id, "media_upload");
+    const supabase = getServerClient();
+
+    const { data: trip, error: tripErr } = await supabase
+      .from("tourism_trips")
+      .select("id, store_id, customer_id, client_email, client_document")
+      .eq("id", tripId)
+      .maybeSingle();
+
+    if (tripErr || !trip) {
+      throw new Error("Viagem não encontrada.");
+    }
+
+    const isStaff =
+      identity.role === "platform_admin" ||
+      (identity.role !== "customer" && Boolean(identity.store_id) && identity.store_id === trip.store_id);
+
+    if (!isStaff) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("cpf")
+        .eq("id", identity.id)
+        .maybeSingle();
+      const userEmail = String(identity.email || "").trim().toLowerCase();
+      const rawUserCpf = String(profile?.cpf || "").replace(/\D/g, "");
+      const userCpf = rawUserCpf.length === 11 && !/^(\d)\1{10}$/.test(rawUserCpf) ? rawUserCpf : "";
+      const rawTripCpf = String(trip.client_document || "").replace(/\D/g, "");
+      const tripCpf = rawTripCpf.length === 11 && !/^(\d)\1{10}$/.test(rawTripCpf) ? rawTripCpf : "";
+
+      let isPassenger = false;
+      if (userEmail || userCpf) {
+        const { data: paxRows } = await supabase
+          .from("trip_passengers")
+          .select("email, document")
+          .eq("trip_id", tripId);
+        isPassenger = (paxRows || []).some((p: any) => {
+          const pCpf = String(p.document || "").replace(/\D/g, "");
+          return (
+            (Boolean(userEmail) && String(p.email || "").trim().toLowerCase() === userEmail) ||
+            (Boolean(userCpf) && pCpf === userCpf)
+          );
+        });
+      }
+
+      const isOwner =
+        trip.customer_id === identity.id ||
+        (Boolean(userEmail) && String(trip.client_email || "").trim().toLowerCase() === userEmail) ||
+        (Boolean(userCpf) && tripCpf === userCpf);
+
+      if (!isOwner && !isPassenger) {
+        throw new Error("Acesso negado para enviar anexos nesta viagem.");
+      }
+    }
+
+    const bucket = kind === "receipt" ? "payment-proofs" : "post-media";
+    const ext = (fileName.split(".").pop() || "bin").replace(/[^a-zA-Z0-9]/g, "").slice(0, 10) || "bin";
+    const objectPath = `${trip.store_id}/${tripId}/${identity.id}/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
+    const buffer = decodeInlineUpload(base64Data);
+
+    const { error: uploadError } = await supabase.storage.from(bucket).upload(objectPath, buffer, {
+      contentType: fileType,
+      upsert: true,
+    });
+    if (uploadError) {
+      throw new Error(`Falha ao gravar arquivo no Storage: ${uploadError.message}`);
+    }
+
+    let resolvedUrl: string;
+    if (PRIVATE_SIGNED_BUCKETS.has(bucket)) {
+      const { data: signedData, error: signErr } = await supabase.storage
+        .from(bucket)
+        .createSignedUrl(objectPath, 60 * 60 * 24);
+      if (signErr || !signedData?.signedUrl) {
+        throw new Error(`Arquivo salvo, mas falha ao assinar URL: ${signErr?.message || "URL ausente"}`);
+      }
+      resolvedUrl = signedData.signedUrl;
+    } else {
+      const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(objectPath);
+      resolvedUrl = publicUrlData.publicUrl;
+    }
+
+    return {
+      success: true,
+      url: resolvedUrl,
+      path: objectPath,
+      bucket,
+    };
   });
 
 /**
@@ -667,20 +811,21 @@ export const uploadProfileMediaDirect = createServerFn({ method: "POST" })
       const identity = await getServerIdentity();
       if (!identity.id) throw new Error("Faça login para atualizar a mídia do seu perfil.");
 
+      validateMimeType(fileType);
+      if (fileType.toLowerCase().includes("svg")) {
+        throw new Error("SVG não é permitido para mídia de perfil.");
+      }
+
       const supabase = getServerClient();
       const bucket =
         target === "avatar" || target === "creator_avatar"
           ? "avatars"
           : target === "cover" || target === "creator_cover"
             ? "covers"
-            : target === "biolink_banner"
-              ? "banners"
-              : "post-media";
-      const ext = fileName.split(".").pop() || "png";
+            : "banners";
+      const ext = extensionForMime(fileType, fileName);
       const uniqueName = `profiles/${identity.id}/${target}_${Date.now()}.${ext}`;
-
-      const base64Content = base64Data.includes(",") ? base64Data.split(",")[1] : base64Data;
-      const buffer = Buffer.from(base64Content, "base64");
+      const buffer = decodeInlineUpload(base64Data);
 
       let resolvedBucket = bucket;
       let { error: uploadError } = await supabase.storage.from(bucket).upload(uniqueName, buffer, {
@@ -706,22 +851,25 @@ export const uploadProfileMediaDirect = createServerFn({ method: "POST" })
 
       // Persistência Atômica Imediata no Banco de Dados
       if (target === "avatar") {
-        await supabase
+        const { error: dbErr } = await supabase
           .from("profiles")
           .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
           .eq("id", identity.id);
+        if (dbErr) throw new Error(`Erro ao atualizar avatar do perfil: ${dbErr.message}`);
       } else if (target === "cover") {
-        await supabase
+        const { error: dbErr } = await supabase
           .from("profiles")
           .update({ cover_url: publicUrl, updated_at: new Date().toISOString() })
           .eq("id", identity.id);
+        if (dbErr) throw new Error(`Erro ao atualizar capa do perfil: ${dbErr.message}`);
       } else if (target === "creator_avatar") {
-        await supabase
+        const { error: dbErr } = await supabase
           .from("creator_profiles")
           .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
           .eq("user_id", identity.id);
+        if (dbErr) throw new Error(`Erro ao atualizar avatar do criador: ${dbErr.message}`);
       } else if (target === "creator_cover") {
-        await supabase
+        const { error: dbErr } = await supabase
           .from("creator_profiles")
           .update({
             cover_url: publicUrl,
@@ -729,6 +877,13 @@ export const uploadProfileMediaDirect = createServerFn({ method: "POST" })
             updated_at: new Date().toISOString(),
           })
           .eq("user_id", identity.id);
+        if (dbErr) throw new Error(`Erro ao atualizar capa do criador: ${dbErr.message}`);
+      } else if (target === "biolink_banner") {
+        const { error: dbErr } = await supabase
+          .from("creator_profiles")
+          .update({ banner_url: publicUrl, updated_at: new Date().toISOString() })
+          .eq("user_id", identity.id);
+        if (dbErr) throw new Error(`Erro ao atualizar banner do biolink: ${dbErr.message}`);
       }
 
       return {
@@ -764,35 +919,6 @@ export const getSignedMediaDownloadUrl = createServerFn({ method: "POST" })
   });
 
 
-function assertSafeExternalMediaUrl(rawUrl: string): URL {
-  let parsed: URL;
-  try {
-    parsed = new URL(rawUrl);
-  } catch {
-    throw new Error("URL externa inválida.");
-  }
-  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
-    throw new Error("Apenas URLs HTTP/HTTPS são permitidas para ingestão.");
-  }
-  const host = parsed.hostname.toLowerCase();
-  if (
-    host === "localhost" ||
-    host === "127.0.0.1" ||
-    host === "0.0.0.0" ||
-    host === "::1" ||
-    host === "[::1]" ||
-    host.endsWith(".local") ||
-    host.endsWith(".internal") ||
-    /^10\./.test(host) ||
-    /^192\.168\./.test(host) ||
-    /^169\.254\./.test(host) ||
-    /^172\.(1[6-9]|2\d|3[0-1])\./.test(host)
-  ) {
-    throw new Error("Host bloqueado por política de segurança (SSRF Protection).");
-  }
-  return parsed;
-}
-
 /**
  * Ingestão segura server-side de mídia por URL externa:
  * Realiza download validado no servidor (anti-SSRF, validação MIME e limite de 20MB)
@@ -809,28 +935,43 @@ export const ingestExternalMediaUrl = createServerFn({ method: "POST" })
   .handler(async ({ data: { externalUrl, bucket, folder } }) => {
     assertAllowedBffBucket(bucket);
     assertSafeFolder(folder);
+    const { assertSafeExternalMediaUrl } = await import("@/lib/security/external-url.server");
     const parsedUrl = assertSafeExternalMediaUrl(externalUrl);
 
     const { getServerIdentity } = await import("@/lib/server-access");
     const identity = await getServerIdentity();
-    if (!identity.id && !identity.store_id) {
+    if (!identity.id) {
       throw new Error("Faça login para importar mídia por URL.");
     }
-    enforceRateLimit(identity.id || identity.store_id || "guest", "media_upload");
+    enforceRateLimit(identity.id, "media_upload");
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
     let response: Response;
     try {
-      response = await fetch(parsedUrl.toString(), {
-        method: "GET",
-        redirect: "follow",
-        signal: controller.signal,
-        headers: {
-          Accept: "image/*,video/*,*/*;q=0.8",
-          "User-Agent": "WaesyMediaIngestor/1.0",
-        },
-      });
+      let currentUrl = parsedUrl;
+      let hopCount = 0;
+      while (true) {
+        response = await fetch(currentUrl.toString(), {
+          method: "GET",
+          redirect: "manual",
+          signal: controller.signal,
+          headers: {
+            Accept: "image/*,video/*,*/*;q=0.8",
+            "User-Agent": "WaesyMediaIngestor/1.0",
+          },
+        });
+        if (response.status >= 300 && response.status < 400) {
+          const locationHeader = response.headers.get("location");
+          if (!locationHeader || hopCount >= 3) {
+            throw new Error("Redirecionamento externo bloqueado por segurança.");
+          }
+          currentUrl = assertSafeExternalMediaUrl(new URL(locationHeader, currentUrl).toString());
+          hopCount++;
+          continue;
+        }
+        break;
+      }
     } finally {
       clearTimeout(timeout);
     }

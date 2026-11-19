@@ -21,7 +21,7 @@ import { Label } from "@/components/ui/label";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { FiscalActionCluster } from "@/components/workspace/FiscalActionCluster";
-import TableReservationsPage from "@/routes/workspace.reservas";
+import TableReservationsPage from "@/components/reservations/table-reservations-manager";
 
 export const Route = createFileRoute("/workspace/pdv/comandas")({
  head: () => ({ meta: [{ title: "Comandas | PDV | Workspace Waesy" }] }),

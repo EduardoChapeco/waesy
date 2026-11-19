@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState, ErrorState } from "@/components/state/states";
+import { formatMoney as formatCurrencyCents } from "@/lib/money";
 import {
   Dialog,
   DialogContent,
@@ -69,13 +70,6 @@ const STATUS_META: Record<
   completed: { label: "Concluída", variant: "secondary" },
   cancelled: { label: "Cancelada", variant: "destructive" },
 };
-
-function formatCurrencyCents(cents: number): string {
-  return (Number(cents || 0) / 100).toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
-}
 
 function WorkspaceServiceOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);

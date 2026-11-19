@@ -24,7 +24,7 @@ import { ServicePackagesRail } from "@/components/commerce/service-packages-rail
 import { listPublicStorePackages } from "@/services/service-packages.functions";
 import { listPublishedProducts } from "@/services/catalog.functions";
 import type { ProductCardDTO } from "@/types/catalog";
-import { resolveNicheDepartments } from "@/lib/niche-helpers";
+import { resolveNicheDepartments } from "@/lib/niches/niche-helpers";
 import { useEffectiveViewport } from "@/design-system/vitrine";
 import {
   CommercialShowcaseTemplate,

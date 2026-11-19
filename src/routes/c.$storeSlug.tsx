@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
   ShieldCheck,
@@ -33,10 +33,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { getCustomerPortalBySlug } from "@/services/customer-portal.functions";
 import { getMuralFeed } from "@/services/social.functions";
 import { listCivilianEvents } from "@/services/events.functions";
-import { PortalContractsWidget } from "@/components/commerce/dynamic-sections/portal-contracts-widget";
-import { PortalCarnesBillsWidget } from "@/components/commerce/dynamic-sections/portal-carnes-bills-widget";
-import { PortalAppointmentsWidget } from "@/components/commerce/dynamic-sections/portal-appointments-widget";
-import { PortalOrdersRentalsWidget } from "@/components/commerce/dynamic-sections/portal-orders-rentals-widget";
+import { AppClientPortalTab } from "@/components/branded-app/app-client-portal-tab";
 import { FeedThreadPostCard } from "@/components/community/FeedThreadPostCard";
 import { CommunityJoinSheet } from "@/components/community/CommunityJoinSheet";
 import { toast } from "sonner";
@@ -54,6 +51,17 @@ export const Route = createFileRoute("/c/$storeSlug")({
       },
     ],
   }),
+  beforeLoad: async ({ params, location }) => {
+    const portal = await getCustomerPortalBySlug({ data: { slug: params.storeSlug } }).catch(() => null);
+    if (portal?.store) {
+      throw redirect({
+        to: "/app/$slug",
+        params: { slug: params.storeSlug },
+        search: (location.search as Record<string, any>) || {},
+        replace: true,
+      });
+    }
+  },
   loader: async ({ params }) => {
     try {
       const data = await getCustomerPortalBySlug({ data: { slug: params.storeSlug } });
@@ -69,32 +77,42 @@ export const Route = createFileRoute("/c/$storeSlug")({
 function CommunityAndPortalWhitelabelPage() {
   const { store, portalConfig } = ((Route.useLoaderData?.() as any) || {});
 
+  const urlPortalParams = React.useMemo(() => {
+    if (typeof window === "undefined") {
+      return { token: null as string | null, code: null as string | null, forcePortal: false };
+    }
+    const qs = new URLSearchParams(window.location.search);
+    const token = (qs.get("token") || qs.get("magic_token") || "").trim() || null;
+    const code = (qs.get("codigo") || qs.get("code") || "").trim() || null;
+    const tab = (qs.get("tab") || "").trim().toLowerCase();
+    return {
+      token,
+      code,
+      forcePortal: Boolean(token || code || tab === "portal" || tab === "minha_area" || tab === "conta"),
+    };
+  }, []);
+
   // Estado de navegação principal da comunidade (Threads-style + Portal)
-  const [activeMainTab, setActiveMainTab] = useState<string>("feed");
+  const [activeMainTab, setActiveMainTab] = useState<string>(() =>
+    urlPortalParams.forcePortal ? "portal" : "feed",
+  );
   const [isJoinSheetOpen, setIsJoinSheetOpen] = useState(false);
   const [isMember, setIsMember] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Estado de autenticação do cliente final no Portal do Cliente (Preservado 100%)
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [clientCpf, setClientCpf] = useState("");
-  const [clientEmail, setClientEmail] = useState("");
-  const [portalTab, setPortalTab] = useState("carnes");
-  const [isLoadingLogin, setIsLoadingLogin] = useState(false);
-
-  // Queries para Feed e Eventos da Comunidade
+  // Queries para Feed e Eventos da Comunidade (escopadas por store.id)
   const { data: feedData, isLoading: isLoadingFeed } = useQuery({
-    queryKey: ["community-posts", store?.slug],
-    queryFn: () => getMuralFeed({ data: { limit: 15 } }),
+    queryKey: ["community-posts", store?.id, store?.slug],
+    queryFn: () => getMuralFeed({ data: { store_id: store.id, limit: 15 } }),
     staleTime: 30_000,
-    enabled: !!store,
+    enabled: !!store?.id,
   });
 
   const { data: eventsData, isLoading: isLoadingEvents } = useQuery({
     queryKey: ["community-events", store?.id],
     queryFn: () => listCivilianEvents(),
     staleTime: 60_000,
-    enabled: !!store,
+    enabled: !!store?.id,
   });
 
   if (!store) {
@@ -108,27 +126,6 @@ function CommunityAndPortalWhitelabelPage() {
       </div>
     );
   }
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!clientCpf.trim() && !clientEmail.trim()) {
-      toast.error("Preencha seu CPF ou E-mail para acessar.");
-      return;
-    }
-    setIsLoadingLogin(true);
-    setTimeout(() => {
-      setIsLoadingLogin(false);
-      setIsAuthenticated(true);
-      toast.success("Acesso autorizado com sucesso!");
-    }, 600);
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setClientCpf("");
-    setClientEmail("");
-    toast.info("Você encerrou sua sessão no portal.");
-  };
 
   const handleShare = () => {
     const url = typeof window !== "undefined" ? window.location.href : "";
@@ -156,7 +153,9 @@ function CommunityAndPortalWhitelabelPage() {
       )
     : feedItems;
 
-  const eventsList = (eventsData as any[]) || [];
+  const eventsList = ((eventsData as any[]) || []).filter(
+    (ev: any) => !ev?.store_id || ev.store_id === store.id,
+  );
 
   return (
     <div className="min-h-dvh bg-background text-foreground flex flex-col selection:bg-primary/20 pb-24">
@@ -178,6 +177,18 @@ function CommunityAndPortalWhitelabelPage() {
 
           <div className="flex items-center gap-2 shrink-0">
             <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-2 border-border/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <Link to="/app/$slug" params={{ slug: store.slug }}>
+                <Smartphone className="size-4" />
+                <span>Abrir App Oficial</span>
+              </Link>
+            </Button>
+
+            <Button
               type="button"
               variant="outline"
               size="sm"
@@ -187,18 +198,6 @@ function CommunityAndPortalWhitelabelPage() {
               <Share2 className="size-3.5" />
               <span className="hidden sm:inline">Compartilhar</span>
             </Button>
-
-            {isAuthenticated && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLogout}
-                className="h-9 px-3 text-xs gap-2 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0"
-              >
-                <LogOut className="size-3.5" />
-                <span className="hidden sm:inline">Sair</span>
-              </Button>
-            )}
           </div>
         </div>
       </header>
@@ -453,163 +452,17 @@ function CommunityAndPortalWhitelabelPage() {
               </div>
             </TabsContent>
 
-            {/* ─── Aba 4: Portal do Cliente Completo (Preservação 100%) ─ */}
+            {/* ─── Aba 4: Portal do Cliente Completo ──────────────────────── */}
             <TabsContent value="portal" className="focus:outline-none space-y-6">
-              {!isAuthenticated ? (
-                /* Tela de Login Sem Senha (Magic Link / CPF) */
-                <div className="max-w-md mx-auto my-6 p-6 sm:p-8 rounded-2xl border border-border/80 bg-card shadow-xs space-y-6">
-                  <div className="text-center space-y-2">
-                    <div className="size-12 rounded-xl bg-primary/10 text-primary mx-auto flex items-center justify-center">
-                      <ShieldCheck className="size-6" />
-                    </div>
-                    <h2 className="text-lg font-bold text-foreground">
-                      Acesse sua Área do Cliente
-                    </h2>
-                    <p className="text-xs text-muted-foreground">
-                      Consulte seus contratos, carnês com PIX instantâneo e acompanhe seus pedidos e agendamentos.
-                    </p>
-                  </div>
-
-                  <Tabs defaultValue="cpf" className="w-full">
-                    <TabsList className="grid grid-cols-2 w-full min-h-11 p-1 bg-muted/60 rounded-xl">
-                      <TabsTrigger
-                        value="cpf"
-                        className="rounded-lg text-xs font-medium min-h-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        Acesso com CPF
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="magic"
-                        className="rounded-lg text-xs font-medium min-h-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        Magic Link E-mail
-                      </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="cpf" className="mt-4">
-                      <form onSubmit={handleLogin} className="space-y-4">
-                        <div className="space-y-2">
-                          <label className="text-xs font-semibold text-foreground">
-                            Digite seu CPF:
-                          </label>
-                          <Input
-                            type="text"
-                            placeholder="000.000.000-00"
-                            value={clientCpf}
-                            onChange={(e) => setClientCpf(e.target.value)}
-                            className="min-h-11 rounded-xl text-sm"
-                          />
-                        </div>
-                        <Button
-                          type="submit"
-                          disabled={isLoadingLogin}
-                          className="w-full min-h-11 h-11 rounded-xl font-bold text-xs gap-2"
-                        >
-                          {isLoadingLogin ? "Validando Acesso..." : "Entrar no Portal"}
-                          <ArrowRight className="size-4" />
-                        </Button>
-                      </form>
-                    </TabsContent>
-
-                    <TabsContent value="magic" className="mt-4">
-                      <form onSubmit={handleLogin} className="space-y-4">
-                        <div className="space-y-2">
-                          <label className="text-xs font-semibold text-foreground">
-                            Digite seu E-mail cadastrado:
-                          </label>
-                          <Input
-                            type="email"
-                            placeholder="seuemail@exemplo.com"
-                            value={clientEmail}
-                            onChange={(e) => setClientEmail(e.target.value)}
-                            className="min-h-11 rounded-xl text-sm"
-                          />
-                        </div>
-                        <Button
-                          type="submit"
-                          disabled={isLoadingLogin}
-                          className="w-full min-h-11 h-11 rounded-xl font-bold text-xs gap-2"
-                        >
-                          {isLoadingLogin ? "Enviando Link..." : "Receber Acesso Rápido"}
-                          <Mail className="size-4" />
-                        </Button>
-                      </form>
-                    </TabsContent>
-                  </Tabs>
-
-                  <div className="pt-2 text-center border-t border-border/50 text-2xs text-muted-foreground flex items-center justify-center gap-2">
-                    <Lock className="size-3.5 text-muted-foreground/80" />
-                    Ambiente protegido com criptografia de ponta a ponta
-                  </div>
-                </div>
-              ) : (
-                /* Painel do Cliente Autenticado (Multi-Módulos 360) */
-                <div className="space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/30 p-4 rounded-2xl border border-border/40">
-                    <div>
-                      <h2 className="text-base font-bold text-foreground">
-                        Espaço do Cliente
-                      </h2>
-                      <p className="text-xs text-muted-foreground">
-                        Transações e dados integrados com {store.name}.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Subnavegação do Portal */}
-                  <Tabs value={portalTab} onValueChange={setPortalTab} className="w-full">
-                    <TabsList className="flex flex-wrap w-full justify-start h-auto gap-2 bg-transparent p-0">
-                      <TabsTrigger
-                        value="carnes"
-                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground min-h-11 h-11 px-4 rounded-xl text-xs font-medium border border-border/60 bg-card gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        <QrCode className="size-4" />
-                        Carnês e PIX
-                      </TabsTrigger>
-
-                      <TabsTrigger
-                        value="contratos"
-                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground min-h-11 h-11 px-4 rounded-xl text-xs font-medium border border-border/60 bg-card gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        <FileText className="size-4" />
-                        Contratos
-                      </TabsTrigger>
-
-                      <TabsTrigger
-                        value="agendamentos"
-                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground min-h-11 h-11 px-4 rounded-xl text-xs font-medium border border-border/60 bg-card gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        <Calendar className="size-4" />
-                        Agendamentos
-                      </TabsTrigger>
-
-                      <TabsTrigger
-                        value="compras"
-                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground min-h-11 h-11 px-4 rounded-xl text-xs font-medium border border-border/60 bg-card gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        <Package className="size-4" />
-                        Compras e Locações
-                      </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="carnes" className="mt-6 focus:outline-none">
-                      <PortalCarnesBillsWidget />
-                    </TabsContent>
-
-                    <TabsContent value="contratos" className="mt-6 focus:outline-none">
-                      <PortalContractsWidget />
-                    </TabsContent>
-
-                    <TabsContent value="agendamentos" className="mt-6 focus:outline-none">
-                      <PortalAppointmentsWidget />
-                    </TabsContent>
-
-                    <TabsContent value="compras" className="mt-6 focus:outline-none">
-                      <PortalOrdersRentalsWidget />
-                    </TabsContent>
-                  </Tabs>
-                </div>
-              )}
+              <AppClientPortalTab
+                storeId={store.id}
+                storeSlug={store.slug}
+                storeName={store.name}
+                templateId="standard_catalog"
+                initialAccessToken={urlPortalParams.token}
+                initialClientCode={urlPortalParams.code}
+                storeWhatsapp={storeSettings?.whatsapp_phone || storeSettings?.contact_whatsapp || store.phone || null}
+              />
             </TabsContent>
           </Tabs>
         </div>

@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { formatMoney as formatBrlFromCents } from "@/lib/money";
 import { getStoreSettings } from "@/services/store.functions";
 import {
   listViabilityStudies,
@@ -87,13 +88,6 @@ const BMC_BLOCKS: Array<{
   { key: "cost_structure", label: "8. Estrutura de Custos", subtitle: "Ocupação, CMV e taxas operacionais" },
   { key: "revenue_streams", label: "9. Fontes de Receita", subtitle: "Ticket base, combos e recorrência" },
 ];
-
-function formatBrlFromCents(cents: number): string {
-  return (Number(cents || 0) / 100).toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
-}
 
 export function WorkspaceViabilityPage() {
   const loaderData = (Route.useLoaderData?.() as {

@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { formatStoreCategory } from "../niche-manifest";
+import { isVideoUrl } from "@/lib/media-utils";
 
 describe("formatStoreCategory", () => {
   it("translates technical niche slugs to human Portuguese", () => {
@@ -54,28 +55,6 @@ describe("isHealthyImageUrl", () => {
 });
 
 describe("isVideoUrl helper", () => {
-  const isVideoUrl = (url?: string | null): boolean => {
-    if (!url) return false;
-    const clean = url.split("?")[0].toLowerCase();
-    const lower = url.toLowerCase();
-    return (
-      clean.endsWith(".mp4") ||
-      clean.endsWith(".webm") ||
-      clean.endsWith(".mov") ||
-      clean.endsWith(".quicktime") ||
-      clean.endsWith(".m4v") ||
-      clean.endsWith(".ogg") ||
-      clean.endsWith(".avi") ||
-      clean.endsWith(".mkv") ||
-      clean.includes("video") ||
-      lower.includes(".mp4") ||
-      lower.includes(".webm") ||
-      lower.includes(".mov") ||
-      lower.includes("/video/") ||
-      lower.includes("video=")
-    );
-  };
-
   it("detects video files with standard extensions and query parameters", () => {
     expect(isVideoUrl("https://storage.waesy.com/post-1.mp4")).toBe(true);
     expect(isVideoUrl("https://storage.waesy.com/post-1.mp4?token=abc1234")).toBe(true);

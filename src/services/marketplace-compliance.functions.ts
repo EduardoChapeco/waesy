@@ -86,7 +86,7 @@ export const getStoreComplianceStatus = createServerFn({ method: "GET" })
 
     const { data: store, error: storeErr } = await supabase
       .from("stores")
-      .select("id, name, slug, plan_tier")
+      .select("id, name, slug, plan_tier, cnpj, phone, email, address, city, state, zip_code, settings")
       .eq("id", targetStoreId)
       .maybeSingle();
 
@@ -94,15 +94,42 @@ export const getStoreComplianceStatus = createServerFn({ method: "GET" })
       throw new Error("Loja não encontrada.");
     }
 
-    const { data: compliance } = await supabase
-      .from("marketplace_compliance")
-      .select("*")
-      .eq("store_id", targetStoreId)
-      .maybeSingle();
+    const [complianceRes, nfeConfigRes] = await Promise.all([
+      supabase
+        .from("marketplace_compliance")
+        .select("*")
+        .eq("store_id", targetStoreId)
+        .maybeSingle(),
+      supabase
+        .from("store_nfe_configs")
+        .select("razao_social, nome_fantasia, cnpj, inscricao_estadual, inscricao_municipal, accountant_email")
+        .eq("store_id", targetStoreId)
+        .maybeSingle(),
+    ]);
+
+    const compliance = complianceRes?.data;
+    const nfeConfig = nfeConfigRes?.data;
+    const settings = (store.settings as Record<string, any>) || {};
 
     const status: MarketplaceComplianceStatus | "NOT_REQUESTED" = compliance
       ? (compliance.status as MarketplaceComplianceStatus)
       : "NOT_REQUESTED";
+
+    // Unificação SSOT: se compliance estiver vazio ou com lacunas, consolida dados cadastrais da loja
+    const consolidatedCompliance = {
+      ...(compliance || {}),
+      store_id: targetStoreId,
+      legal_name: compliance?.legal_name || settings.corporate_name || nfeConfig?.razao_social || store.name || "",
+      trade_name: compliance?.trade_name || settings.trade_name || nfeConfig?.nome_fantasia || store.name || "",
+      cnpj: compliance?.cnpj || store.cnpj || nfeConfig?.cnpj || "",
+      state_registration: compliance?.state_registration || settings.state_registration || settings.state_tax_id || nfeConfig?.inscricao_estadual || "",
+      sac_phone: compliance?.sac_phone || settings.support_phone || store.phone || "",
+      sac_email: compliance?.sac_email || settings.support_email || store.email || "",
+      return_policy_url: compliance?.return_policy_url || settings.refund_policy_url || "",
+      fiscal_notes: compliance?.fiscal_notes || settings.fiscal_notes || "",
+      status,
+      is_prefilled: !compliance,
+    };
 
     return {
       storeId: store.id,
@@ -111,10 +138,11 @@ export const getStoreComplianceStatus = createServerFn({ method: "GET" })
       planTier: (store.plan_tier as PlanTier) || "FREE_MVP",
       isMarketplaceVerified: status === "APPROVED",
       complianceStatus: status,
-      cnpj: compliance?.cnpj || null,
+      cnpj: consolidatedCompliance.cnpj || null,
       verifiedBadgeLabel:
         status === "APPROVED" ? "Marketplace Verificado" : undefined,
-      compliance: compliance || null,
+      compliance: consolidatedCompliance,
+      isPreFilledFromStore: !compliance,
     };
   });
 
@@ -193,6 +221,51 @@ export const submitStoreCompliance = createServerFn({ method: "POST" })
 
     if (error) {
       throw new Error("Falha ao submeter conformidade da loja: " + error.message);
+    }
+
+    // Sincronização Bilateral SSOT: atualiza dados centrais na tabela stores e configurações fiscais
+    try {
+      const { data: currentStore } = await supabase
+        .from("stores")
+        .select("settings, phone, email, cnpj")
+        .eq("id", targetStoreId)
+        .maybeSingle();
+
+      const existingSettings = (currentStore?.settings as Record<string, any>) || {};
+      const updatedSettings = {
+        ...existingSettings,
+        corporate_name: data.legalName.trim(),
+        trade_name: data.tradeName ? data.tradeName.trim() : existingSettings.trade_name,
+        state_registration: data.stateRegistration || existingSettings.state_registration || null,
+        state_tax_id: data.stateRegistration || existingSettings.state_tax_id || null,
+        support_phone: data.sacPhone.trim(),
+        support_email: data.sacEmail.trim(),
+        refund_policy_url: data.returnPolicyUrl || existingSettings.refund_policy_url || null,
+        fiscal_notes: data.fiscalNotes || existingSettings.fiscal_notes || null,
+      };
+
+      await supabase
+        .from("stores")
+        .update({
+          cnpj: formattedCnpj,
+          phone: currentStore?.phone || data.sacPhone.trim(),
+          email: currentStore?.email || data.sacEmail.trim(),
+          settings: updatedSettings,
+        })
+        .eq("id", targetStoreId);
+
+      // Sincroniza espelho com store_nfe_configs caso exista
+      await supabase
+        .from("store_nfe_configs")
+        .update({
+          razao_social: data.legalName.trim(),
+          nome_fantasia: data.tradeName ? data.tradeName.trim() : null,
+          cnpj: cleanCnpj,
+          inscricao_estadual: data.stateRegistration || null,
+        })
+        .eq("store_id", targetStoreId);
+    } catch (syncErr) {
+      console.warn("[marketplace-compliance] Aviso de sincronização bilateral SSOT:", syncErr);
     }
 
     return {

@@ -328,6 +328,14 @@ async function processClaimedRow(db: ReturnType<typeof getServerClient>, row: Cl
             message_id: result.externalMessageId,
           },
         });
+        await db
+          .from("chat_threads")
+          .update({
+            last_message_at: nowIso,
+            last_message_text: text.slice(0, 280),
+            updated_at: nowIso,
+          })
+          .eq("id", row.thread_id);
       }
     }
     const schedId =

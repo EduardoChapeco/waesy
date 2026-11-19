@@ -6,7 +6,7 @@ import {
   validateEarsSyntax,
   detectVagueTerms,
   formatEarsStatement,
-} from '@/lib/ears-validator';
+} from '@/lib/ai/ears-validator';
 
 describe('Skill prompt-optimizer & EARS Methodology Engine', () => {
   describe('EARS Pattern Classification', () => {

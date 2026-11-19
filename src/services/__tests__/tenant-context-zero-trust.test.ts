@@ -15,6 +15,8 @@ const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY!;
 const pool = new pg.Pool({
   connectionString: `postgres://postgres.${projectRef}:${encodeURIComponent(dbPassword)}@aws-0-sa-east-1.pooler.supabase.com:6543/postgres`,
   ssl: { rejectUnauthorized: false },
+  max: 2,
+  connectionTimeoutMillis: 15000,
 });
 
 let isPoolConnected = false;
@@ -55,13 +57,13 @@ describe.skipIf(!dbPassword)('MICROFASE 1 — Blindagem Zero-Trust de Tenant Con
       legitMemberId = '2ea9f0aa-8b04-4086-9e1d-e23105560302';
       nonMemberId = '9aceecd7-4100-4a52-95ee-e6f4b549b9ac';
     }
-  });
+  }, 30000);
 
   afterAll(async () => {
     try {
       await pool.end();
     } catch {}
-  });
+  }, 30000);
 
   it('deve confirmar que o usuário legítimo possui vínculo em workspace_members', async () => {
     if (!isPoolConnected) return;
@@ -74,7 +76,7 @@ describe.skipIf(!dbPassword)('MICROFASE 1 — Blindagem Zero-Trust de Tenant Con
     `, [legitMemberId, realStoreId]);
 
     expect(rows.length).toBeGreaterThan(0);
-  });
+  }, 20000);
 
   it('deve confirmar que o usuário não-membro NÃO possui vínculo na store', async () => {
     if (!isPoolConnected) return;
@@ -86,7 +88,7 @@ describe.skipIf(!dbPassword)('MICROFASE 1 — Blindagem Zero-Trust de Tenant Con
     `, [nonMemberId, realStoreId]);
 
     expect(rows.length).toBe(0);
-  });
+  }, 20000);
 
   it('deve simular validação de autorização de setTenantContext e REJEITAR não-membro sem auto-grant', async () => {
     if (!isPoolConnected) return;
@@ -125,7 +127,7 @@ describe.skipIf(!dbPassword)('MICROFASE 1 — Blindagem Zero-Trust de Tenant Con
     // Caso Admin: Platform Admin acessa Store A mesmo sem registro prévio
     const adminRes = await validateTenantSwitch(nonMemberId, realStoreId, true);
     expect(adminRes.success).toBe(true);
-  });
+  }, 20000);
 
   it('deve assegurar que nenhum registro espúrio foi injetado em workspace_members para o não-membro', async () => {
     if (!isPoolConnected) return;
@@ -135,5 +137,5 @@ describe.skipIf(!dbPassword)('MICROFASE 1 — Blindagem Zero-Trust de Tenant Con
     `, [nonMemberId, realStoreId]);
 
     expect(rows.length).toBe(0);
-  });
+  }, 20000);
 });

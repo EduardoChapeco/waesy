@@ -68,10 +68,6 @@ BEGIN
       WHERE p.id = v_caller AND p.role IN ('admin', 'super_admin', 'platform_admin')
     )
     OR EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = _store_id AND s.owner_id = v_caller
-    )
-    OR EXISTS (
       SELECT 1 FROM public.workspace_members wm
       WHERE wm.store_id = _store_id AND wm.profile_id = v_caller
     )

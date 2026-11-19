@@ -427,4 +427,3 @@ function MyActivityPage() {
     </div>
   );
 }
-export default MyActivityPage;

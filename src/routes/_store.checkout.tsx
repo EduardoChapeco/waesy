@@ -34,7 +34,7 @@ import { CreditCardNumberInput, CardExpiryInput, CardCvvInput } from "@/componen
 import { Surface } from "@/components/ui/surface";
 import { ErrorState } from "@/components/state/states";
 import { DeliverySelector } from "@/components/checkout/delivery-selector";
-import { getNicheSemantics } from "@/lib/niche-semantics";
+import { getNicheSemantics } from "@/lib/niches/niche-semantics";
 
 const EMPTY_CART_FALLBACK = {
   id: "",
@@ -50,13 +50,14 @@ const EMPTY_CART_FALLBACK = {
 
 export const Route = createFileRoute("/_store/checkout")({
   head: () => ({ meta: [{ title: "Checkout | Waesy" }] }),
-  validateSearch: (search: Record<string, unknown>): { store?: string } => {
+  validateSearch: (search: Record<string, unknown>): { store?: string; app?: string } => {
     return {
       store: (search.store as string) || undefined,
+      app: (search.app as string) || undefined,
     };
   },
-  loaderDeps: ({ search: { store } }) => ({ store }),
-  loader: async ({ deps: { store } }) => {
+  loaderDeps: ({ search: { store, app } }) => ({ store, app }),
+  loader: async ({ deps: { store, app } }) => {
     try {
       const [cart, globalCarts, userProfile, userAddresses] = await Promise.all([
         getCart(store ? { data: { storeId: store } } : undefined),
@@ -96,6 +97,7 @@ export const Route = createFileRoute("/_store/checkout")({
         userProfile: userProfile || null,
         userAddresses: userAddresses || [],
         checkoutConfig: (checkoutConfigRes as CheckoutDynamicConfig | null) || null,
+        appSlug: app || null,
         loadError: null as string | null,
       };
     } catch (err: any) {
@@ -154,6 +156,7 @@ function CheckoutPageContent({ loaderData }: { loaderData: any }) {
     userAddresses,
     isGatewayConfigured,
     checkoutConfig,
+    appSlug,
   } = loaderData;
   const navigate = useNavigate();
   const router = useRouter();
@@ -1017,13 +1020,14 @@ function CheckoutPageContent({ loaderData }: { loaderData: any }) {
  await refreshCart().catch(() => {});
 
  const remainingCarts = globalCarts.filter((c: any) => c.id !== cart.id);
- if (remainingCarts.length > 0) {
+ if (remainingCarts.length > 0 && !appSlug) {
  toast.info(`Mais ${remainingCarts.length} pedido(s) pendente(s)`);
  navigate({ to: "/checkout" });
  } else {
  navigate({
  to: "/pedido/$publicToken/confirmacao",
  params: { publicToken: (res as any).orderToken as string },
+ search: appSlug ? { app: appSlug } : undefined,
  });
  }
  } catch (err: unknown) {
@@ -1079,7 +1083,12 @@ function CheckoutPageContent({ loaderData }: { loaderData: any }) {
  </p>
  </div>
  <Button asChild className="rounded-lg px-6 h-11 min-h-11 font-bold text-xs">
- <Link to="/">Explorar Produtos</Link>
+ <Link
+ to={appSlug ? "/app/$slug" : "/"}
+ params={appSlug ? { slug: appSlug } : undefined}
+ >
+ {appSlug ? "Voltar ao Aplicativo" : "Explorar Produtos"}
+ </Link>
  </Button>
  </div>
  );
@@ -1091,9 +1100,10 @@ function CheckoutPageContent({ loaderData }: { loaderData: any }) {
  <div className="flex items-center justify-between gap-4 pb-2">
  <div className="flex items-center gap-3">
  <Link
- to="/"
+ to={appSlug ? "/app/$slug" : "/"}
+ params={appSlug ? { slug: appSlug } : undefined}
  className="size-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
- aria-label="Voltar"
+ aria-label={appSlug ? "Voltar ao app" : "Voltar"}
  >
  <ArrowLeft className="size-5" />
  </Link>
@@ -1118,11 +1128,11 @@ function CheckoutPageContent({ loaderData }: { loaderData: any }) {
 
           
         {/* ── Omni-Checkout Multi-Loja: Seletor de Lojas com Carrinho Aberto (V141) ── */}
-        {globalCarts && globalCarts.length > 1 && (
+        {globalCarts && globalCarts.length > 1 && !appSlug && (
           <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-foreground flex items-center gap-2">
-                <Store className="size-3.5 text-primary" />
+                <Store className="size-4 text-primary" />
                 <span>Omni-Checkout: Pedidos Segregados por Loja ({globalCarts.length} lojas)</span>
               </span>
               <span className="text-xs text-muted-foreground">

@@ -33,7 +33,7 @@ describe("Integridade de rotas e navegação — W10", () => {
     expect(workspace).toContain('createFileRoute("/workspace")');
     expect(workspace).toContain("getUserSession()");
     expect(workspace).toContain('throw redirect({ to: "/entrar"');
-    expect(workspace).toContain('throw redirect({ to: "/criar-negocio" });');
+    expect(workspace).toContain('throw redirect({ to: "/onboarding/empresa" });');
     expect(workspace).toContain("errorComponent: WorkspaceErrorComponent");
   });
 

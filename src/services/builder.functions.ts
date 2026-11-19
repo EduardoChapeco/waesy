@@ -19,7 +19,7 @@ import {
   type ExperienceNode,
   type ExperiencePage,
   type ExperienceType,
-} from "@/lib/builder-types";
+} from "@/lib/builder/builder-types";
 
 // ---------------------------------------------------------------------------
 // Store Profile Hydration Helper
@@ -1544,7 +1544,7 @@ export const getOrCreateHomeDocument = createServerFn({ method: "POST" })
 
       // 4. Inject template nodes if requested
       const templateId = input?.template_id ?? "blank";
-      const { HOME_TEMPLATES_LIBRARY } = await import("@/lib/home-templates-library");
+      const { HOME_TEMPLATES_LIBRARY } = await import("@/lib/builder/home-templates-library");
       const preset = HOME_TEMPLATES_LIBRARY[templateId];
       const { randomUUID } = await import("crypto");
       const seedNodes = preset ? preset.nodesFactory(() => randomUUID()) : [];
@@ -1590,7 +1590,7 @@ export const applyHomeTemplate = createServerFn({ method: "POST" })
         throw new Error("Documento não encontrado ou sem permissão.");
       }
 
-      const { HOME_TEMPLATES_LIBRARY } = await import("@/lib/home-templates-library");
+      const { HOME_TEMPLATES_LIBRARY } = await import("@/lib/builder/home-templates-library");
       const { randomUUID } = await import("crypto");
 
       const preset = HOME_TEMPLATES_LIBRARY[input.template_id];
@@ -2590,7 +2590,7 @@ export const getPublicExperienceDocumentBySlug = createServerFn({ method: "GET" 
       let version = versions && versions.length > 0 ? versions[0] : null;
       if (!version && input.slug === "home" && input.document_type === "storefront") {
         // Auto-seed published version for home document
-        const { HOME_TEMPLATES_LIBRARY } = await import("@/lib/home-templates-library");
+        const { HOME_TEMPLATES_LIBRARY } = await import("@/lib/builder/home-templates-library");
         const { randomUUID } = await import("crypto");
         const defaultPreset =
           HOME_TEMPLATES_LIBRARY["minimalist_luxury"] || Object.values(HOME_TEMPLATES_LIBRARY)[0];

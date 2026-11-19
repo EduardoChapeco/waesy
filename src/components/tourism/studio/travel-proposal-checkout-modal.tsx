@@ -7,10 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { PhoneField } from "@/components/ui/phone-field";
 import { formatMoney } from "@/lib/money";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, CheckCircle2, CreditCard, Info, Loader2, ShieldCheck, Users, Wallet } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, CreditCard, ExternalLink, Info, Loader2, MessageCircle, ShieldAlert, ShieldCheck, Users, Wallet } from "lucide-react";
 import { approveTravelProposal, type TravelProposalDTO } from "@/services/travel-proposal.functions";
+import { cn } from "@/lib/utils";
 
-type PaymentPreference = "pix" | "cartao_operadora" | "financiamento_bancario" | "faturado_agencia";
+type Step = "passengers" | "preference" | "review" | "processing" | "success";
+type PaymentPreference = "pix" | "cartao_operadora" | "financiamento_bancario" | "faturado_agencia" | "gateway_online";
 type PassengerForm = { name: string; document: string; birthDate: string; roomPreference: string };
 
 interface TravelProposalCheckoutModalProps {
@@ -18,6 +20,8 @@ interface TravelProposalCheckoutModalProps {
   onClose: () => void;
   proposal: TravelProposalDTO;
   selectedOptionId?: string | null;
+  initialPaymentPreference?: PaymentPreference | null;
+  initialInstallments?: number;
   onSuccess?: () => void;
 }
 
@@ -26,10 +30,12 @@ export function TravelProposalCheckoutModal({
   onClose,
   proposal,
   selectedOptionId = null,
+  initialPaymentPreference = null,
+  initialInstallments = 1,
   onSuccess,
 }: TravelProposalCheckoutModalProps) {
   const totalPassengers = Math.max(1, (proposal.adults_count || 1) + (proposal.children_count || 0));
-  const [step, setStep] = useState<"passengers" | "preference" | "processing" | "success">("passengers");
+  const [step, setStep] = useState<Step>("passengers");
   const [leadName, setLeadName] = useState(proposal.client_name || "");
   const [leadDocument, setLeadDocument] = useState("");
   const [leadBirthDate, setLeadBirthDate] = useState("");
@@ -39,9 +45,23 @@ export function TravelProposalCheckoutModal({
   const [additionalPassengers, setAdditionalPassengers] = useState<PassengerForm[]>(() =>
     Array.from({ length: Math.max(0, totalPassengers - 1) }, () => ({ name: "", document: "", birthDate: "", roomPreference: "Quarto 1 - Duplo / Casal" })),
   );
-  const [paymentPreference, setPaymentPreference] = useState<PaymentPreference | null>(null);
-  const [paymentInstallments, setPaymentInstallments] = useState(1);
+  const [paymentPreference, setPaymentPreference] = useState<PaymentPreference | null>(initialPaymentPreference);
+  const [paymentInstallments, setPaymentInstallments] = useState(
+    Math.min(12, Math.max(1, initialInstallments || 1)),
+  );
+  const [simulationAgreed, setSimulationAgreed] = useState(false);
+  const [acceptanceProtocol, setAcceptanceProtocol] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+    if (initialPaymentPreference) {
+      setPaymentPreference(initialPaymentPreference);
+    }
+    if (initialInstallments && initialInstallments >= 1) {
+      setPaymentInstallments(Math.min(12, Math.max(1, initialInstallments)));
+    }
+  }, [isOpen, initialPaymentPreference, initialInstallments]);
 
   const selectedOption = useMemo(
     () => proposal.options?.find((option) => option.id === selectedOptionId),
@@ -124,16 +144,24 @@ export function TravelProposalCheckoutModal({
     } catch (error) {
       const message = error instanceof Error ? error.message : "Não foi possível registrar o aceite.";
       toast.error(message);
-      setStep("preference");
+      setStep("review");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const cleanAgencyPhone = (proposal.web_page?.whatsapp_phone || proposal.agency_whatsapp || proposal.client_whatsapp || "").replace(/\D/g, "");
+  const formattedAgencyPhone = cleanAgencyPhone.startsWith("55") ? cleanAgencyPhone : cleanAgencyPhone ? `55${cleanAgencyPhone}` : "";
+  const showGatewayOnline = Boolean(proposal.web_page?.allow_online_gateway_payment);
+  const gatewayUrl = proposal.web_page?.payment_gateway_url?.trim() || "";
+
   const closeDialog = (open: boolean) => {
     if (open) return;
     onClose();
-    if (step !== "success") setStep("passengers");
+    if (step !== "success") {
+      setStep("passengers");
+      setSimulationAgreed(false);
+    }
   };
 
   return (
@@ -151,10 +179,38 @@ export function TravelProposalCheckoutModal({
               </DialogDescription>
             </div>
             <Badge variant="outline" className="shrink-0 text-xs">
-              {step === "passengers" ? "Passageiros" : step === "preference" ? "Preferência" : step === "processing" ? "Enviando" : "Registrado"}
+              {step === "passengers"
+                ? "Passageiros"
+                : step === "preference"
+                  ? "Pagamento"
+                  : step === "review"
+                    ? "Revisão"
+                    : step === "processing"
+                      ? "Enviando"
+                      : "Registrado"}
             </Badge>
           </div>
         </DialogHeader>
+
+        {/* Stepper Visual de 4 Etapas */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 py-2 border-b border-border/40 text-xs font-semibold">
+          <div className={cn("flex items-center gap-2", step === "passengers" ? "text-primary font-bold" : "text-muted-foreground")}>
+            <span className={cn("size-5 rounded-full flex items-center justify-center text-xs", step === "passengers" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>1</span>
+            <span className="truncate">Passageiros</span>
+          </div>
+          <div className={cn("flex items-center gap-2", step === "preference" ? "text-primary font-bold" : "text-muted-foreground")}>
+            <span className={cn("size-5 rounded-full flex items-center justify-center text-xs", step === "preference" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>2</span>
+            <span className="truncate">Pagamento</span>
+          </div>
+          <div className={cn("flex items-center gap-2", step === "review" ? "text-primary font-bold" : "text-muted-foreground")}>
+            <span className={cn("size-5 rounded-full flex items-center justify-center text-xs", step === "review" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>3</span>
+            <span className="truncate">Revisão</span>
+          </div>
+          <div className={cn("flex items-center gap-2", step === "success" ? "text-emerald-600 font-bold" : "text-muted-foreground")}>
+            <span className={cn("size-5 rounded-full flex items-center justify-center text-xs", step === "success" ? "bg-emerald-600 text-primary-foreground" : "bg-muted text-muted-foreground")}>4</span>
+            <span className="truncate">Sucesso</span>
+          </div>
+        </div>
 
         {step === "passengers" && (
           <div className="space-y-5 pt-2">
@@ -289,7 +345,7 @@ export function TravelProposalCheckoutModal({
             <div className="rounded-lg border border-border/60 bg-muted/20 p-4 space-y-2">
               <p className="text-sm font-medium">Preferência de pagamento</p>
               <p className="text-sm text-muted-foreground">
-                Esta escolha é apenas uma preferência. A agência confirmará disponibilidade, condições e cobrança separadamente.
+                Selecione como prefere efetuar o acerto da sua viagem. A agência confirmará condições e emitirá o contrato correspondente.
               </p>
             </div>
 
@@ -301,7 +357,7 @@ export function TravelProposalCheckoutModal({
                 className={`min-h-11 rounded-lg border p-4 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${paymentPreference === "pix" ? "border-primary bg-primary/5" : "border-border/60 hover:bg-muted/40"}`}
               >
                 <span className="flex items-center gap-2 text-sm font-medium"><Wallet className="size-4 text-primary" /> Pix</span>
-                <span className="mt-2 block text-sm text-muted-foreground">Sem código Pix ou cobrança nesta etapa.</span>
+                <span className="mt-2 block text-sm text-muted-foreground">Chave Pix da agência e comprovante via sistema.</span>
               </button>
               <button
                 type="button"
@@ -309,8 +365,8 @@ export function TravelProposalCheckoutModal({
                 onClick={() => setPaymentPreference("cartao_operadora")}
                 className={`min-h-11 rounded-lg border p-4 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${paymentPreference === "cartao_operadora" ? "border-primary bg-primary/5" : "border-border/60 hover:bg-muted/40"}`}
               >
-                <span className="flex items-center gap-2 text-sm font-medium"><CreditCard className="size-4 text-primary" /> Cartão</span>
-                <span className="mt-2 block text-sm text-muted-foreground">A agência confirmará parcelas e aprovação.</span>
+                <span className="flex items-center gap-2 text-sm font-medium"><CreditCard className="size-4 text-primary" /> Cartão de Crédito</span>
+                <span className="mt-2 block text-sm text-muted-foreground">Parcelamento direto pela operadora ou maquininha.</span>
               </button>
               <button
                 type="button"
@@ -318,7 +374,7 @@ export function TravelProposalCheckoutModal({
                 onClick={() => setPaymentPreference("financiamento_bancario")}
                 className={`min-h-11 rounded-lg border p-4 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${paymentPreference === "financiamento_bancario" ? "border-primary bg-primary/5" : "border-border/60 hover:bg-muted/40"}`}
               >
-                <span className="flex items-center gap-2 text-sm font-medium"><CreditCard className="size-4 text-primary" /> Financiamento</span>
+                <span className="flex items-center gap-2 text-sm font-medium"><CreditCard className="size-4 text-primary" /> Financiamento Bancário</span>
                 <span className="mt-2 block text-sm text-muted-foreground">Sujeito à análise e às condições do banco.</span>
               </button>
               <button
@@ -327,9 +383,28 @@ export function TravelProposalCheckoutModal({
                 onClick={() => setPaymentPreference("faturado_agencia")}
                 className={`min-h-11 rounded-lg border p-4 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${paymentPreference === "faturado_agencia" ? "border-primary bg-primary/5" : "border-border/60 hover:bg-muted/40"}`}
               >
-                <span className="flex items-center gap-2 text-sm font-medium"><Wallet className="size-4 text-primary" /> Faturado pela agência</span>
-                <span className="mt-2 block text-sm text-muted-foreground">Disponibilidade e prazo serão confirmados pela agência.</span>
+                <span className="flex items-center gap-2 text-sm font-medium"><Wallet className="size-4 text-primary" /> Faturado pela Agência</span>
+                <span className="mt-2 block text-sm text-muted-foreground">Boleto ou convênio corporativo sob aprovação prévia.</span>
               </button>
+
+              {showGatewayOnline && (
+                <button
+                  type="button"
+                  aria-pressed={paymentPreference === "gateway_online"}
+                  onClick={() => setPaymentPreference("gateway_online")}
+                  className={`min-h-11 rounded-lg border p-4 text-left sm:col-span-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${paymentPreference === "gateway_online" ? "border-primary bg-primary/10 ring-1 ring-primary" : "border-primary/40 bg-primary/5 hover:bg-primary/10"}`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                      <CreditCard className="size-4 text-primary" /> Pagamento Online Seguro (Gateway Integrado)
+                    </span>
+                    <Badge className="bg-primary/20 text-primary border-primary/30 text-xs">Recomendado</Badge>
+                  </div>
+                  <span className="mt-2 block text-xs text-muted-foreground">
+                    Link de pagamento online seguro configurado pela agência com aprovação instantânea.
+                  </span>
+                </button>
+              )}
             </div>
 
             {["cartao_operadora", "financiamento_bancario"].includes(paymentPreference || "") && (
@@ -339,20 +414,111 @@ export function TravelProposalCheckoutModal({
               </div>
             )}
 
-            <div className="rounded-lg border border-border/60 p-4 space-y-2" role="note">
-              <p className="text-sm font-medium flex items-center gap-2"><Info className="size-4 text-primary" /> Antes de enviar</p>
-              <p className="text-sm text-muted-foreground">
-                O aceite será registrado para análise da agência. Ainda não há reserva confirmada, pagamento, bilhete ou voucher emitido; nenhum dado de cartão será solicitado.
-              </p>
-            </div>
-
             <div className="flex flex-col-reverse sm:flex-row sm:justify-between gap-3 border-t border-border/40 pt-4">
               <Button type="button" variant="outline" onClick={() => setStep("passengers")} className="h-11 min-h-11 gap-2 focus-visible:ring-2 focus-visible:ring-ring">
                 <ArrowLeft className="size-4" /> Voltar
               </Button>
-              <Button type="button" onClick={handleSubmitAcceptance} disabled={!paymentPreference || isSubmitting || proposal.status !== "sent" || !proposal.snapshot_hash} className="h-11 min-h-11 gap-2 focus-visible:ring-2 focus-visible:ring-ring">
+              <Button
+                type="button"
+                onClick={() => setStep("review")}
+                disabled={!paymentPreference}
+                className="h-11 min-h-11 gap-2 focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <span>Revisar e Confirmar</span> <ArrowRight className="size-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === "review" && (
+          <div className="space-y-5 pt-2">
+            <div className="rounded-lg border border-border/60 bg-muted/20 p-4 space-y-2">
+              <p className="text-sm font-semibold flex items-center gap-2 text-foreground">
+                <ShieldCheck className="size-4 text-primary" /> Revisão do Manifesto e Condições
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Confira os dados dos viajantes e a modalidade de pagamento antes de registrar o aceite definitivo.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div className="p-4 rounded-lg border border-border/70 bg-card space-y-1">
+                <span className="font-semibold text-muted-foreground uppercase tracking-wider text-xs">Passageiro Principal</span>
+                <p className="text-sm font-bold text-foreground">{leadName}</p>
+                <p className="text-muted-foreground">Doc: {leadDocument} {leadPhone ? `· ${leadPhone}` : ""}</p>
+              </div>
+              <div className="p-4 rounded-lg border border-border/70 bg-card space-y-1">
+                <span className="font-semibold text-muted-foreground uppercase tracking-wider text-xs">Opção & Investimento</span>
+                <p className="text-sm font-bold text-foreground">{selectedOption?.name || proposal.title}</p>
+                <p className="font-semibold text-primary">{hasPrice ? formatMoney(configuredTotal) : "A confirmar"}</p>
+              </div>
+              <div className="p-4 rounded-lg border border-border/70 bg-card space-y-1 sm:col-span-2">
+                <span className="font-semibold text-muted-foreground uppercase tracking-wider text-xs">Forma de Pagamento Escolhida</span>
+                <p className="text-sm font-medium text-foreground">
+                  {paymentPreference === "pix"
+                    ? "Pix à Vista"
+                    : paymentPreference === "cartao_operadora"
+                      ? `Cartão de Crédito (${paymentInstallments}x)`
+                      : paymentPreference === "financiamento_bancario"
+                        ? `Financiamento Bancário (${paymentInstallments}x)`
+                        : paymentPreference === "faturado_agencia"
+                          ? "Faturado pela Agência"
+                          : paymentPreference === "gateway_online"
+                            ? "Pagamento Online via Gateway Integrado"
+                            : "Não especificado"}
+                </p>
+                {additionalPassengers.length > 0 && (
+                  <p className="text-muted-foreground pt-1 border-t border-border/40 mt-1">
+                    +{additionalPassengers.length} acompanhante(s): {additionalPassengers.map((p) => p.name).filter(Boolean).join(", ")}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Aviso Legal de Simulação Orçamentária */}
+            {proposal.web_page?.show_simulation_disclaimer !== false && (
+              <div className="rounded-xl border border-warning/50 bg-warning/10 p-4 space-y-3">
+                <div className="flex items-start gap-2">
+                  <ShieldAlert className="size-5 text-warning-strong shrink-0 mt-1" />
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold text-foreground uppercase tracking-wider">Aviso Legal de Simulação Orçamentária</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line break-words">
+                      {proposal.web_page?.simulation_disclaimer_text ||
+                        "Esta proposta constitui uma cotação e simulação preliminar. Valores, disponibilidades e tarifas aéreas ou hoteleiras estão sujeitos a confirmação final pela agência e operadoras no ato da emissão formal."}
+                    </p>
+                  </div>
+                </div>
+                <label className="flex items-start gap-2 pt-2 border-t border-warning/20 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={simulationAgreed}
+                    onChange={(e) => setSimulationAgreed(e.target.checked)}
+                    className="mt-1 rounded border-input size-4 text-primary focus:ring-primary"
+                  />
+                  <span className="text-xs text-foreground font-medium">
+                    Declaro que li e compreendo que esta é uma simulação sujeita à confirmação de disponibilidade da agência.
+                  </span>
+                </label>
+              </div>
+            )}
+
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-between gap-3 border-t border-border/40 pt-4">
+              <Button type="button" variant="outline" onClick={() => setStep("preference")} className="h-11 min-h-11 gap-2 focus-visible:ring-2 focus-visible:ring-ring">
+                <ArrowLeft className="size-4" /> Voltar
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSubmitAcceptance}
+                disabled={
+                  isSubmitting ||
+                  proposal.status !== "sent" ||
+                  !proposal.snapshot_hash ||
+                  (proposal.web_page?.show_simulation_disclaimer !== false && !simulationAgreed)
+                }
+                className="h-11 min-h-11 gap-2 focus-visible:ring-2 focus-visible:ring-ring bg-primary text-primary-foreground font-bold"
+              >
                 {isSubmitting ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <ShieldCheck className="size-4" />}
-                {isSubmitting ? "Enviando" : "Registrar aceite"}
+                {isSubmitting ? "Registrando Aceite..." : "Confirmar e Registrar Aceite"}
               </Button>
             </div>
           </div>
@@ -362,20 +528,57 @@ export function TravelProposalCheckoutModal({
           <div className="py-12 text-center space-y-3" role="status" aria-live="polite">
             <Loader2 className="size-8 animate-spin motion-reduce:animate-none mx-auto text-primary" />
             <p className="text-sm font-medium">Registrando o aceite</p>
-            <p className="text-sm text-muted-foreground">Nenhuma cobrança ou reserva será criada nesta etapa.</p>
+            <p className="text-sm text-muted-foreground">Validando integridade da proposta e gerando protocolo...</p>
           </div>
         )}
 
         {step === "success" && (
-          <div className="py-8 text-center space-y-4" role="status" aria-live="polite">
-            <CheckCircle2 className="size-9 mx-auto text-primary" />
+          <div className="py-8 text-center space-y-5" role="status" aria-live="polite">
+            <CheckCircle2 className="size-10 mx-auto text-emerald-600" />
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Aceite registrado</h3>
-              <p className="mx-auto max-w-prose text-sm text-muted-foreground">
-                A agência revisará o manifesto, a opção e a preferência informada. Não há reserva confirmada nem pagamento; a agência entrará em contato para os próximos passos.
+              <Badge variant="outline" className="text-xs font-mono font-bold border-emerald-500/40 text-emerald-700 bg-emerald-500/10 px-3 py-1">
+                Protocolo: #{acceptanceProtocol || (proposal.public_token || "").slice(0, 8).toUpperCase()}
+              </Badge>
+              <h3 className="text-lg font-bold text-foreground">Aceite Registrado com Sucesso!</h3>
+              <p className="mx-auto max-w-prose text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                A agência recebeu seus dados e já iniciou o processo de bloqueio e confirmação com os fornecedores parceiros.
               </p>
             </div>
-            <Button type="button" onClick={onClose} className="h-11 min-h-11 focus-visible:ring-2 focus-visible:ring-ring">Fechar</Button>
+
+            {paymentPreference === "gateway_online" && gatewayUrl && (
+              <div className="p-4 rounded-xl border border-primary/40 bg-primary/5 space-y-3 max-w-md mx-auto text-left">
+                <div className="flex items-center gap-2 text-sm font-bold text-foreground">
+                  <CreditCard className="size-4 text-primary" /> Pagamento Online Liberado
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  A agência disponibilizou o gateway direto para finalização do pagamento com segurança:
+                </p>
+                <Button asChild className="w-full h-11 min-h-11 rounded-xl font-bold gap-2 bg-primary text-primary-foreground">
+                  <a href={gatewayUrl} target="_blank" rel="noopener noreferrer">
+                    <span>Efetuar Pagamento Online</span>
+                    <ExternalLink className="size-4" />
+                  </a>
+                </Button>
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+              {formattedAgencyPhone && (
+                <Button asChild variant="outline" className="h-11 min-h-11 rounded-xl gap-2 border-emerald-500/40 text-emerald-700">
+                  <a
+                    href={`https://wa.me/${formattedAgencyPhone}?text=${encodeURIComponent(`Olá! Acabei de registrar o aceite da proposta ${proposal.title} (Protocolo #${acceptanceProtocol || (proposal.public_token || "").slice(0, 8).toUpperCase()}).`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <MessageCircle className="size-4 text-emerald-600" />
+                    <span>Avisar Agência no WhatsApp</span>
+                  </a>
+                </Button>
+              )}
+              <Button type="button" onClick={onClose} className="h-11 min-h-11 px-6 rounded-xl font-semibold focus-visible:ring-2 focus-visible:ring-ring">
+                Fechar
+              </Button>
+            </div>
           </div>
         )}
       </DialogContent>

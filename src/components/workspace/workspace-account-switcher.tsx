@@ -1,12 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Store, ChevronsUpDown, Search, Check, Plus, Settings, User, Building2, ExternalLink } from "lucide-react";
+import { Store, ChevronsUpDown, Check, Settings, ExternalLink } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { getNicheSemantics } from "@/lib/niche-semantics";
+import { getNicheSemantics } from "@/lib/niches/niche-semantics";
 
 interface WorkspaceAccountSwitcherProps {
   memberships: any[];
@@ -16,8 +14,7 @@ interface WorkspaceAccountSwitcherProps {
   userEmail?: string;
   userAvatarUrl?: string | null;
   isSwitching: boolean;
-  onSwitchStore: (storeId: string) => void;
-  onSwitchToPersonal?: () => void;
+  onSwitchStore?: (storeId: string) => void;
 }
 
 export function WorkspaceAccountSwitcher({
@@ -28,35 +25,12 @@ export function WorkspaceAccountSwitcher({
   userEmail,
   userAvatarUrl,
   isSwitching,
-  onSwitchStore,
-  onSwitchToPersonal,
 }: WorkspaceAccountSwitcherProps) {
   const [open, setOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [avatarFailed, setAvatarFailed] = useState(false);
 
-  const filteredStores = useMemo(() => {
-    if (!searchQuery.trim()) return memberships;
-    const q = searchQuery.toLowerCase();
-    return memberships.filter(
-      (m) =>
-        m.name?.toLowerCase().includes(q) ||
-        (m.slug || m.store_slug)?.toLowerCase().includes(q) ||
-        m.city?.toLowerCase().includes(q) ||
-        m.segment?.toLowerCase().includes(q)
-    );
-  }, [memberships, searchQuery]);
-
   const userInitial = (userDisplayName || "U").charAt(0).toUpperCase();
-
-  const handlePersonalClick = () => {
-    setOpen(false);
-    if (onSwitchToPersonal) {
-      onSwitchToPersonal();
-    } else {
-      window.location.href = "/conta";
-    }
-  };
+  const activeMembership = memberships.find((m) => m.store_id === activeStoreId);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -140,101 +114,28 @@ export function WorkspaceAccountSwitcher({
           </Link>
         </div>
 
-        {/* ── 2. Busca de Empresas (se houver mais de 2 negócios) ── */}
-        {memberships.length > 2 && (
-          <div className="relative px-1">
-            <Search className="size-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar empresa..."
-              className="h-9 pl-8 pr-3 text-xs rounded-lg bg-muted/40 border-border/50 focus-visible:ring-1 focus-visible:ring-ring"
-            />
-          </div>
-        )}
-
-        {/* ── 3. Lista de Negócios / Empresas do Usuário ── */}
-        <div className="space-y-1 max-h-56 overflow-y-auto no-scrollbar px-1">
+        {/* ── 2. Identidade Operacional do Tenant Isolado ── */}
+        <div className="space-y-2 px-1">
           <div className="flex items-center justify-between px-1 py-1">
             <span className="text-2xs font-mono font-bold uppercase tracking-wider text-muted-foreground">
-              Minhas Empresas ({memberships.length})
+              Empresa Conectada
             </span>
-            <Link
-              to="/workspace/lojas"
-              onClick={() => setOpen(false)}
-              className="text-2xs font-bold text-foreground hover:underline flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <span>Gerenciar</span>
-              <ExternalLink className="size-2.5" />
-            </Link>
+            {memberships.length > 1 && (
+              <Link
+                to="/auth/portal-selector"
+                onClick={() => setOpen(false)}
+                className="text-2xs font-bold text-foreground hover:underline flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <span>Trocar Empresa</span>
+                <ExternalLink className="size-2.5" />
+              </Link>
+            )}
           </div>
 
-          {filteredStores.length === 0 ? (
-            <div className="py-4 text-center text-xs text-muted-foreground">
-              Nenhuma empresa encontrada para &quot;{searchQuery}&quot;.
-            </div>
-          ) : (
-            filteredStores.map((m) => {
-              const isCurrent = m.store_id === activeStoreId;
-              return (
-                <button
-                  key={m.store_id}
-                  type="button"
-                  onClick={() => {
-                    if (!isCurrent) {
-                      onSwitchStore(m.store_id);
-                      setOpen(false);
-                    }
-                  }}
-                  className={cn(
-                    "w-full flex items-center justify-between p-2 rounded-xl transition-colors cursor-pointer text-left h-11 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    isCurrent
-                      ? "bg-muted text-foreground"
-                      : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    {m.logo_url ? (
-                      <img
-                        src={m.logo_url}
-                        alt=""
-                        className="size-7 rounded-lg object-cover shrink-0 bg-muted"
-                      />
-                    ) : (
-                      <div className="size-7 rounded-lg bg-muted text-muted-foreground flex items-center justify-center font-bold text-xs shrink-0">
-                        {m.name ? m.name.slice(0, 2).toUpperCase() : "LJ"}
-                      </div>
-                    )}
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold truncate text-foreground">
-                        {m.name || "Empresa"}
-                      </p>
-                      <p className="text-2xs text-muted-foreground truncate">
-                        {m.city ? `${m.city} • ` : ""}
-                        {m.segment || "Comércio"}
-                      </p>
-                    </div>
-                  </div>
-                  {isCurrent && (
-                    <div className="size-5 rounded-full bg-foreground text-background flex items-center justify-center shrink-0">
-                      <Check className="size-3" />
-                    </div>
-                  )}
-                </button>
-              );
-            })
-          )}
-        </div>
-
-        {/* ── 4. Alternância para Conta Pessoal Civil ── */}
-        <div className="pt-2 border-t border-border/40 px-1 space-y-1">
-          <span className="text-2xs font-mono font-bold uppercase tracking-wider text-muted-foreground px-1 block">
-            Conta Pessoal
-          </span>
-          <button
-            type="button"
-            onClick={handlePersonalClick}
-            className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-muted/60 transition-colors cursor-pointer text-left h-11 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group"
+          <div
+            className={cn(
+              "w-full flex items-center justify-between p-2 rounded-xl bg-muted text-foreground text-left min-h-11",
+            )}
           >
             <div className="flex items-center gap-3 min-w-0">
               {userAvatarUrl && !avatarFailed ? (
@@ -245,40 +146,24 @@ export function WorkspaceAccountSwitcher({
                   className="size-7 rounded-full object-cover shrink-0 bg-muted"
                 />
               ) : (
-                <div className="size-7 rounded-full bg-muted text-foreground flex items-center justify-center font-bold text-xs shrink-0">
-                  {userInitial || <User className="size-3.5" />}
+                <div className="size-7 rounded-full bg-foreground text-background flex items-center justify-center font-bold text-xs shrink-0">
+                  {userInitial}
                 </div>
               )}
               <div className="min-w-0">
-                <p className="text-xs font-bold text-foreground truncate">
+                <p className="text-xs font-bold truncate text-foreground">
                   {userDisplayName}
                 </p>
                 <p className="text-2xs text-muted-foreground truncate">
-                  {userEmail || "Acessar conta civil, pedidos e favoritos"}
+                  {activeMembership?.role || "Operador"}
+                  {userEmail ? ` • ${userEmail}` : ""}
                 </p>
               </div>
             </div>
-            <ExternalLink className="size-3 text-muted-foreground group-hover:text-foreground shrink-0" />
-          </button>
-        </div>
-
-        {/* ── 5. Rodapé Operacional: Criar Novo Negócio ── */}
-        <div className="pt-2 border-t border-border px-1">
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="w-full text-xs font-bold rounded-lg h-11 min-h-11 gap-2 justify-center border-border bg-card hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <Link
-              to="/criar-negocio"
-              onClick={() => setOpen(false)}
-              className="flex items-center justify-center gap-2 size-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <Plus className="size-3.5" />
-              <span>Cadastrar Novo Negócio</span>
-            </Link>
-          </Button>
+            <div className="size-5 rounded-full bg-foreground text-background flex items-center justify-center shrink-0">
+              <Check className="size-3" />
+            </div>
+          </div>
         </div>
       </PopoverContent>
     </Popover>

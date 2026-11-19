@@ -165,6 +165,46 @@ export const OMNI_APP_BLUEPRINTS: Record<OmniAppId, OmniAppBlueprint> = {
     dataRequirements: { entity: "products", tableManagement: true },
   },
 
+  tourism: {
+    id: "tourism",
+    name: "Turismo, Pacotes & Corporativo",
+    tagline: "Experiência padrão CVC/Decolar com cotação via API, pacotes e portal do viajante",
+    description: "Provisiona catálogo turístico completo, dock de canais (Pacotes, Aéreo, Hotéis, Ônibus, Aluguel, Corporativo), cotação direta na API e área do viajante.",
+    iconName: "Plane",
+    category: "services",
+    version: "2.0.0",
+    defaultChannel: "storefront_pwa",
+    pages: [
+      {
+        slug: "turismo",
+        title: "Viagens & Pacotes",
+        pageType: "showcase",
+        isHome: true,
+        initialBlocks: [
+          { type: "tourism_quote_hero", props: { showOverlay: true } },
+          { type: "tourism_services_grid", props: { columns: 4 } },
+          { type: "tourism_destinations_carousel", props: { title: "Destinos em Destaque" } },
+        ],
+        seo: { title: "Pacotes de Viagens e Turismo", description: "Explore roteiros, passagens aéreas, hotéis e atendimento corporativo.", allowIndexing: true },
+      },
+      {
+        slug: "minhas-viagens",
+        title: "Minhas Viagens & Vouchers",
+        pageType: "dashboard",
+        requiredRoles: ["member"],
+        initialBlocks: [
+          { type: "customer_travel_portal", props: { headline: "Minhas Viagens & Vouchers" } },
+        ],
+        seo: { title: "Portal do Viajante", description: "Acompanhe reservas, vouchers e embarques.", allowIndexing: false },
+      },
+    ],
+    navItems: [
+      { id: "home", label: "Viagens", icon: "Compass", targetSlug: "turismo" },
+      { id: "trips", label: "Minhas Viagens", icon: "Briefcase", targetSlug: "minhas-viagens" },
+    ],
+    dataRequirements: { entity: "services", bookingCalendar: true },
+  },
+
   events: {
     id: "events",
     name: "Eventos, Shows & Ingressos",

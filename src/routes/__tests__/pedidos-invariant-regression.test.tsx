@@ -85,7 +85,7 @@ vi.mock("@/lib/audio-chimes", () => ({
 }));
 
 import { Route as PedidosRoute } from "@/routes/workspace.pedidos.index";
-import TableReservationsPage from "@/routes/workspace.reservas";
+import TableReservationsPage from "@/components/reservations/table-reservations-manager";
 
 function renderToHtml(ui: React.ReactElement) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });

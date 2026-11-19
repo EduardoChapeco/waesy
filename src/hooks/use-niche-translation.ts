@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { getNicheTranslation, NicheTermKey, NicheDictionaryTerms } from "@/lib/niche-dictionary";
-import { NicheSemantics } from "@/lib/niche-semantics";
+import { getNicheTranslation, NicheTermKey, NicheDictionaryTerms } from "@/lib/niches/niche-dictionary";
+import { NicheSemantics } from "@/lib/niches/niche-semantics";
 
 export { useNicheTaxonomy } from "./use-niche-taxonomy";
 

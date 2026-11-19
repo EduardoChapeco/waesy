@@ -35,6 +35,10 @@ interface CorporateVollConciergeViewProps {
   companyAccount?: any;
   companyName?: string;
   userName?: string;
+  agencyName?: string;
+  agencyId?: string;
+  corporatePortalUrl?: string;
+  corporatePortalLabel?: string;
   className?: string;
   /** WhatsApp da agencia (somente digitos). Sem valor, o concierge fica oculto. */
   whatsappNumber?: string;
@@ -44,6 +48,10 @@ export function CorporateVollConciergeView({
   companyAccount,
   companyName,
   userName = "Viajante Corporativo",
+  agencyName = "Agência Parceira",
+  agencyId,
+  corporatePortalUrl,
+  corporatePortalLabel = "Abrir App de Viagens Corporativas",
   className,
   whatsappNumber,
 }: CorporateVollConciergeViewProps) {
@@ -65,7 +73,7 @@ export function CorporateVollConciergeView({
 
     // Redireciona com mensagem pré-formatada para o WhatsApp corporativo da agência
     const encoded = encodeURIComponent(
-      `Olá, Excelência Tour! Sou ${userName} da empresa ${companyName || "Parceira"} e gostaria de suporte para minha viagem: ${conciergeMsg}`
+      `Olá, ${agencyName}! Sou ${userName} da empresa ${companyName || "Parceira"} e gostaria de suporte para minha viagem: ${conciergeMsg}`
     );
     window.open(`https://wa.me/${whatsappNumber.replace(/\D/g, "")}?text=${encoded}`, "_blank", "noopener,noreferrer");
     setConciergeMsg("");
@@ -79,16 +87,23 @@ export function CorporateVollConciergeView({
       return;
     }
 
+    const resolvedCompanyId = companyAccount?.company_id || companyAccount?.id;
+    const resolvedAgencyId = agencyId || companyAccount?.agency_id;
+    if (!resolvedCompanyId || !resolvedAgencyId) {
+      toast.error("Acesse ou cadastre sua conta empresarial para concluir o vínculo corporativo automático.");
+      return;
+    }
+
     setIsSubmittingLink(true);
     try {
       // Disparo real para a Server Function de homologação corporativa B2B
       await requestCompanyAgencyLink({
         data: {
-          companyId: companyAccount?.company_id || companyAccount?.id || "00000000-0000-0000-0000-000000000001",
-          agencyId: companyAccount?.agency_id || "00000000-0000-0000-0000-000000000002",
+          companyId: resolvedCompanyId,
+          agencyId: resolvedAgencyId,
         },
       });
-      toast.success("Solicitação de vínculo corporativo enviada à Excelência Tour! Entraremos em contato para homologar a linha de crédito.");
+      toast.success(`Solicitação de vínculo corporativo enviada para ${agencyName}! Entraremos em contato para homologar a linha de crédito.`);
       setLinkDialogOpen(false);
       setCnpj("");
       setTradeName("");
@@ -137,8 +152,20 @@ export function CorporateVollConciergeView({
           </div>
         </div>
 
-        {/* Acesso ao Painel Completo do Workspace */}
-        <div className="flex items-center gap-2">
+        {/* Acesso ao Painel Completo do Workspace ou Portal Externo */}
+        <div className="flex items-center flex-wrap gap-2">
+          {corporatePortalUrl && (
+            <Button
+              asChild
+              className="h-11 min-h-11 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <a href={corporatePortalUrl} target="_blank" rel="noopener noreferrer">
+                <Briefcase size={16} weight="bold" />
+                <span>{corporatePortalLabel}</span>
+                <ArrowRight size={14} />
+              </a>
+            </Button>
+          )}
           {isLinked ? (
             <Button
               asChild
@@ -168,7 +195,7 @@ export function CorporateVollConciergeView({
         <div className="rounded-xl border border-dashed border-orange-500/40 bg-orange-500/5 p-5 space-y-4">
           <div className="space-y-1">
             <span className="text-xs font-extrabold uppercase tracking-wider text-orange-600 px-2 py-1 rounded-full bg-orange-500/10 inline-block">
-              Solução Corporativa Waesy & Excelência Tour
+              Solução Corporativa · {agencyName}
             </span>
             <h3 className="text-sm sm:text-base font-bold text-foreground">
               Simplifique 100% das viagens a trabalho da sua equipe
@@ -350,7 +377,7 @@ export function CorporateVollConciergeView({
           <div className="flex items-center gap-2">
             <ChatCircleDots size={18} className="text-orange-500" weight="bold" />
             <span className="text-xs font-bold text-foreground">
-              Concierge de Viagens Excelência Tour
+              Concierge de Viagens · {agencyName}
             </span>
           </div>
           <span className="text-xs text-muted-foreground">

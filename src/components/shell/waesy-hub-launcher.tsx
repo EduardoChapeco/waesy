@@ -54,7 +54,7 @@ export function WaesyHubLauncher({ compact = false }: WaesyHubLauncherProps) {
           type="button"
           aria-label="Abrir Hub Waesy de Aplicativos"
           title="Hub Waesy"
-          className="inline-flex h-11 min-h-11 items-center justify-center gap-2 rounded-lg border border-border bg-muted/50 px-3 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+          className="inline-flex h-11 min-h-11 min-w-11 items-center justify-center gap-2 rounded-lg border border-border bg-muted/50 px-3 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
         >
           <SquaresFour className="size-4 text-primary shrink-0" weight="bold" />
           {!compact && <span className="hidden md:inline">Hub Waesy</span>}

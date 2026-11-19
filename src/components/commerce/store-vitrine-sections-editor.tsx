@@ -28,6 +28,9 @@ export interface VitrineSectionConfig {
   title: string;
   enabled: boolean;
   city_filter?: string | null;
+  layout_mode?: "carousel" | "grid" | "list" | "bento" | "infinite";
+  source_type?: string;
+  source_id?: string | null;
   cards?: VitrineCardItem[];
 }
 
@@ -121,6 +124,12 @@ export function StoreVitrineSectionsEditor({
     toast.success("Card removido da vitrine.");
   };
 
+  const handleLayoutChange = (sectionId: string, layout_mode: VitrineSectionConfig["layout_mode"]) => {
+    setSections((prev) =>
+      prev.map((s) => (s.id === sectionId ? { ...s, layout_mode } : s)),
+    );
+  };
+
   const handleSaveAll = () => {
     // Garante que infinite feed continue no final
     const withoutInfinite = sections.filter((s) => s.type !== "infinite_feed");
@@ -133,10 +142,7 @@ export function StoreVitrineSectionsEditor({
     const finalSections = [...withoutInfinite, infiniteSection];
 
     onSave(finalSections);
-    try {
-      localStorage.setItem(`store_vitrine_sections_${storeId}`, JSON.stringify(finalSections));
-    } catch {}
-    toast.success("Vitrine personalizada salva com sucesso!");
+    toast.success("Seções salvas e sincronizadas com o banco de dados!");
     onOpenChange(false);
   };
 
@@ -215,6 +221,21 @@ export function StoreVitrineSectionsEditor({
 
                   {!isInfinite && (
                     <div className="flex items-center gap-1 shrink-0">
+                      <Select
+                        value={section.layout_mode || "carousel"}
+                        onValueChange={(val) =>
+                          handleLayoutChange(section.id, val as VitrineSectionConfig["layout_mode"])
+                        }
+                      >
+                        <SelectTrigger className="h-11 min-h-11 w-28 rounded-lg text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="carousel">Carrossel</SelectItem>
+                          <SelectItem value="grid">Grade</SelectItem>
+                          <SelectItem value="list">Lista</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <Button
                         size="sm"
                         variant="ghost"

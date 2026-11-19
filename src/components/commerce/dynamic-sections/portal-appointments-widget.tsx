@@ -4,6 +4,7 @@ import { Calendar, Clock, MapPin, CheckCircle2, AlertCircle, RefreshCw } from "l
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { EmptyState } from "@/components/state/states";
 import { cn } from "@/lib/utils";
 
 export interface PortalAppointmentItem {
@@ -26,25 +27,7 @@ interface PortalAppointmentsWidgetProps {
 }
 
 export function PortalAppointmentsWidget({ content, design_tokens }: PortalAppointmentsWidgetProps) {
- const appointments: PortalAppointmentItem[] = content?.appointments || [
- {
- id: "apt-001",
- service_name: "Revisão Periódica & Alinhamento",
- professional_name: "Eng. Marcos Silva",
- scheduled_at: "2026-09-12T10:00:00Z",
- status: "confirmed",
- location: "Unidade Central - Box 04",
- notes: "Trazer manual e chave reserva.",
- },
- {
- id: "apt-002",
- service_name: "Embarque Excursão Serra Gaúcha",
- professional_name: "Guia Turístico Roberto",
- scheduled_at: "2026-09-25T07:30:00Z",
- status: "confirmed",
- location: "Terminal Turístico - Portão B",
- },
- ];
+ const appointments: PortalAppointmentItem[] = content?.appointments || [];
 
  return (
  <div className={cn("w-full max-w-5xl mx-auto py-8 px-4", design_tokens?.className)}>
@@ -62,6 +45,12 @@ export function PortalAppointmentsWidget({ content, design_tokens }: PortalAppoi
  </div>
  </div>
 
+ {appointments.length === 0 ? (
+ <EmptyState
+ title="Nenhum agendamento encontrado"
+ description="Seus horários e atendimentos confirmados com esta empresa aparecerão aqui."
+ />
+ ) : (
  <div className="grid grid-cols-1 gap-4">
  {appointments.map((apt) => (
  <div
@@ -122,6 +111,7 @@ export function PortalAppointmentsWidget({ content, design_tokens }: PortalAppoi
  </div>
  ))}
  </div>
+ )}
  </div>
  );
 }

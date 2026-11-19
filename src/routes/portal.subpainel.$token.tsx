@@ -33,6 +33,7 @@ import {
   createSubpanelOrder,
 } from "@/services/events.functions";
 import { formatMoney } from "@/lib/money";
+import { isUuid } from "@/lib/utils";
 
 export const Route = createFileRoute("/portal/subpainel/$token")({
   head: ({ loaderData }: any) => ({
@@ -189,7 +190,6 @@ function EventSubpanelPortalPage() {
 
     startTransition(async () => {
       try {
-        const isUuid = (val: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
         const payloadItems = cart.map((i) => ({
           productId: isUuid(i.product.id) ? i.product.id : undefined,
           productName: i.product.name,

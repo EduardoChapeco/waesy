@@ -16,6 +16,10 @@ import {
   inspectCanonicalSessionFromCookies,
   parseRawCookieStringPreservingDuplicates,
 } from "@/lib/auth-cookie-sanitizer";
+import {
+  clearNodeFallbackInflightMap,
+  getRequestScopedInflightMap,
+} from "@/lib/request-inflight";
 
 export type { ServerIdentity };
 export { assertStoreAccess, STAFF_ROLES } from "@/lib/identity-core";
@@ -24,16 +28,17 @@ interface CacheEntry {
   identity: ServerIdentity;
   expiresAt: number;
 }
+const MAX_IDENTITY_MEMO_ENTRIES = 500;
 const IDENTITY_MEMO_CACHE = new Map<string, CacheEntry>();
-const IDENTITY_INFLIGHT_MAP = new Map<string, Promise<ServerIdentity>>();
 
 /** Invalida todo o cache em memória de identidades (chamado em logout ou troca de tenant). */
 export function clearIdentityCache(): void {
   IDENTITY_MEMO_CACHE.clear();
-  IDENTITY_INFLIGHT_MAP.clear();
+  clearNodeFallbackInflightMap("identity");
+  getRequestScopedInflightMap<ServerIdentity>("identity")?.clear();
 }
 
-function resolveMemoKey(rawCookie: string, host: string): string {
+function resolveMemoKey(rawCookie: string, host: string, isWorkspace = false): string {
   try {
     if (!rawCookie && host === "unknown-host") return "unscoped";
     const sbPattern = new RegExp(["sb-", "[^;]+", "-auth-token", "[^;]*"].join(""), "g");
@@ -41,7 +46,10 @@ function resolveMemoKey(rawCookie: string, host: string): string {
       ...(rawCookie.match(/waesy-auth-token[^;]*/g) || []),
       ...(rawCookie.match(sbPattern) || []),
     ].join("&") || "guest";
-    const ctx = rawCookie.match(/waesy_[^;]+/g)?.join("&") || "";
+    const ctx = [
+      ...(rawCookie.match(/waesy_[^;]+/g) || []),
+      ...(isWorkspace ? ["ws:1"] : []),
+    ].join("&");
     return `${host}|${sb}|${ctx}`;
   } catch {
     return "unscoped";
@@ -51,18 +59,14 @@ function resolveMemoKey(rawCookie: string, host: string): string {
 export function isBootstrapPlatformAdminEmail(email?: string | null): boolean {
   const normalizedEmail = (email || "").trim().toLowerCase();
   if (!normalizedEmail) return false;
-  const allowlist = new Set([
-    "contato@usewaesy.com",
-    "admin@usewaesy.com",
-    "meuwaesy@gmail.com",
-    "meuwider@gmail.com",
-    "excelenciatour.smo@gmail.com",
-    "admin@jah.com",
-    ...(process.env.WAESY_MASTER_EMAILS || "")
+  const allowlist = new Set(
+    [process.env.WAESY_MASTER_EMAILS, process.env.BOOTSTRAP_MASTER_EMAILS]
+      .filter(Boolean)
+      .join(",")
       .split(",")
       .map((e) => e.trim().toLowerCase())
       .filter(Boolean),
-  ]);
+  );
   return allowlist.has(normalizedEmail);
 }
 
@@ -75,6 +79,8 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
   let evt: any = null;
   let capturedCookie = "";
   let capturedHost = "unknown-host";
+  let capturedReferer = "";
+  let capturedUrl = "";
   try {
     evt = getEvent();
     if (evt?.context?.__server_identity__) {
@@ -89,19 +95,44 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
     const host = getRequestHeader("host") || "unknown-host";
     capturedHost = host;
   } catch {}
+  try {
+    capturedReferer = getRequestHeader("referer") || "";
+  } catch {}
+  try {
+    capturedUrl = evt?.node?.req?.url || getRequestHeader("x-forwarded-uri") || "";
+  } catch {}
 
-  // 1. Micro-cache em memória de 10 segundos para Server Functions concorrentes
-  const memoKey = resolveMemoKey(capturedCookie, capturedHost);
+  const hasTenantCookie = Boolean(
+    capturedCookie &&
+      /(?:waesy_active_tenant|jah_active_tenant|waesy_store_id)=[a-f0-9-]+/i.test(capturedCookie),
+  );
+  const hasStoreContextCookie = Boolean(
+    capturedCookie && /waesy_active_context=store/i.test(capturedCookie),
+  );
+  const isWorkspaceRequest =
+    capturedReferer.includes("/workspace") ||
+    capturedUrl.includes("/workspace") ||
+    getRequestHeader("x-waesy-context") === "store" ||
+    (hasTenantCookie && hasStoreContextCookie);
+
+  // 1. Micro-cache em memória de 10 segundos (apenas objetos resolvidos, nunca Promises cross-request)
+  const memoKey = resolveMemoKey(capturedCookie, capturedHost, isWorkspaceRequest);
   const now = Date.now();
+  const inflightMap = memoKey !== "unscoped"
+    ? getRequestScopedInflightMap<ServerIdentity>("identity", evt)
+    : null;
   if (memoKey !== "unscoped") {
     const cached = IDENTITY_MEMO_CACHE.get(memoKey);
-    if (cached && cached.expiresAt > now && cached.identity?.id) {
-      if (evt?.context) evt.context.__server_identity__ = cached.identity;
-      return cached.identity;
+    if (cached) {
+      if (cached.expiresAt > now && cached.identity?.id) {
+        if (evt?.context) evt.context.__server_identity__ = cached.identity;
+        return cached.identity;
+      }
+      IDENTITY_MEMO_CACHE.delete(memoKey);
     }
 
-    // Deduplicação de Promises em voo: impede que N chamadas simultâneas disparem N refreshes concorrentes
-    const inflight = IDENTITY_INFLIGHT_MAP.get(memoKey);
+    // Deduplicação intra-requisição estrita (nunca compartilha Promises entre requisições HTTP no Worker)
+    const inflight = inflightMap?.get(memoKey);
     if (inflight) {
       const resolved = await inflight;
       if (evt?.context) evt.context.__server_identity__ = resolved;
@@ -341,6 +372,7 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
       isBootstrapPlatformAdminEmail(user?.email);
 
     // ── Passo 4: Resolver contexto ativo (Civil vs Creator vs Store) a partir do cookie capturado
+    let explicitContextCookie: string | null = null;
     let activeContext = "civil";
     let activeStoreId: string | null = null;
 
@@ -348,7 +380,8 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
       if (capturedCookie) {
         const matches = [...capturedCookie.matchAll(/waesy_active_context=([^;]+)/g)];
         if (matches.length > 0) {
-          activeContext = decodeURIComponent(matches[matches.length - 1][1].trim());
+          explicitContextCookie = decodeURIComponent(matches[matches.length - 1][1].trim());
+          activeContext = explicitContextCookie;
         }
       }
     } catch {}
@@ -391,29 +424,28 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
         } catch {}
       } else if (memberships.length === 0) {
         try {
-          const { data: latestStore } = await serverClient
+          const { data: rootStore } = await serverClient
             .from("stores")
             .select("id, name, slug, email, phone, cnpj, address, city, state, zip_code, settings, logo_url")
-            .order("created_at", { ascending: false })
-            .limit(1)
+            .eq("is_platform_root", true)
             .maybeSingle();
-          if (latestStore) {
-            const settings = (latestStore.settings as Record<string, any>) || {};
+          if (rootStore) {
+            const settings = (rootStore.settings as Record<string, any>) || {};
             memberships.push({
-              store_id: latestStore.id,
+              store_id: rootStore.id,
               role: "owner",
-              name: latestStore.name || "Minha Empresa",
-              slug: latestStore.slug || "loja",
-              logo_url: latestStore.logo_url || settings.logoUrl || settings.logo_url || null,
-              segment: settings.segment || settings.type || settings.niche || null,
-              type: settings.type || settings.segment || null,
-              category: settings.category || settings.segment || null,
-              city: latestStore.city || null,
-              state: latestStore.state || null,
+              name: rootStore.name || "Waesy Matriz",
+              slug: rootStore.slug || "waesy",
+              logo_url: rootStore.logo_url || settings.logoUrl || settings.logo_url || null,
+              segment: settings.segment || settings.type || settings.niche || "marketplace",
+              type: settings.type || settings.segment || "marketplace",
+              category: settings.category || settings.segment || "marketplace",
+              city: rootStore.city || null,
+              state: rootStore.state || null,
               settings: settings,
             });
-            if (!activeStoreId && activeContext !== "civil") {
-              activeStoreId = latestStore.id;
+            if (!activeStoreId && explicitContextCookie !== "civil") {
+              activeStoreId = rootStore.id;
             }
           }
         } catch {}
@@ -424,18 +456,29 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
       ? memberships.find((m) => m.store_id === activeStoreId)
       : null;
 
-    if (activeContext === "civil") {
-      // Se houver tenant explicitamente selecionado e o usuário for membro ou admin master, preserva a loja
+    const isExplicitWorkspace = isWorkspaceRequest || (hasTenantCookie && memberships.length > 0);
+
+    if (isExplicitWorkspace) {
+      // Isolamento Estrito de Workspace: dentro do módulo /workspace ou com tenant corporativo ativo,
+      // o contexto é INVARIAVELMENTE 'store'.
+      // Resíduos de cookies civis (ex: waesy_active_context=civil gravados na vitrine) JAMAIS rebaixam o staff corporativo.
+      activeContext = "store";
       if (matchedMembership) {
         activeStoreId = matchedMembership.store_id;
       } else if (isPlatformAdmin && activeStoreId) {
-        // Preserva tenant selecionado por admin master
-      } else {
-        activeStoreId = null;
+        // Admin master com permissão de acesso à loja ativa
+      } else if (memberships.length > 0) {
+        activeStoreId = memberships[0].store_id;
       }
-    } else if (activeContext === "creator") {
+    } else if (explicitContextCookie === "civil") {
+      // Zero-Trust Civil Root (DEC-206): fora do workspace, quando o cookie waesy_active_context=civil está explicitamente presente,
+      // opera estritamente no escopo civil pessoal sem vazar privilégios operacionais na vitrine.
       activeStoreId = null;
-    } else if (activeContext === "store") {
+      activeContext = "civil";
+    } else if (explicitContextCookie === "creator") {
+      activeStoreId = null;
+      activeContext = "creator";
+    } else if (explicitContextCookie === "store") {
       if (matchedMembership) {
         activeStoreId = matchedMembership.store_id;
       } else if (isPlatformAdmin && activeStoreId) {
@@ -443,8 +486,12 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
       } else {
         activeStoreId = memberships[0]?.store_id || null;
       }
+      activeContext = "store";
     } else {
-      activeStoreId = matchedMembership ? matchedMembership.store_id : null;
+      // Sem cookie waesy_active_context explícito: se o usuário é membro de equipe/loja, entra direto no contexto store
+      activeStoreId = matchedMembership
+        ? matchedMembership.store_id
+        : memberships[0]?.store_id || null;
       activeContext = activeStoreId ? "store" : "civil";
     }
 
@@ -491,6 +538,10 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
       evt.context.__server_identity__ = resolvedIdentity;
     }
     if (memoKey !== "unscoped" && resolvedIdentity?.id) {
+      if (IDENTITY_MEMO_CACHE.size >= MAX_IDENTITY_MEMO_ENTRIES) {
+        const oldestKey = IDENTITY_MEMO_CACHE.keys().next().value;
+        if (oldestKey) IDENTITY_MEMO_CACHE.delete(oldestKey);
+      }
       IDENTITY_MEMO_CACHE.set(memoKey, {
         identity: resolvedIdentity,
         expiresAt: Date.now() + 10_000,
@@ -500,15 +551,15 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
     return resolvedIdentity;
   })();
 
-  if (memoKey !== "unscoped") {
-    IDENTITY_INFLIGHT_MAP.set(memoKey, resolutionPromise);
+  if (memoKey !== "unscoped" && inflightMap) {
+    inflightMap.set(memoKey, resolutionPromise);
   }
 
   try {
     return await resolutionPromise;
   } finally {
-    if (memoKey !== "unscoped") {
-      IDENTITY_INFLIGHT_MAP.delete(memoKey);
+    if (memoKey !== "unscoped" && inflightMap) {
+      inflightMap.delete(memoKey);
     }
   }
 }

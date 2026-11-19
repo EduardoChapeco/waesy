@@ -547,18 +547,59 @@ export const publishExtractedTravelPackageToCatalogAndMatchRadar = createServerF
       supabase,
     );
 
-    // 3. Verifica também leads abertos no Kanban Comercial com mesmo destino para alerta imediato
-    const normalizedDest = (destination_city || "").trim();
-    let matchedLeads: Array<{ id: string; name: string; phone: string | null; destination: string | null; status: string }> = [];
-    if (normalizedDest.length >= 3) {
-      const { data: crmLeads } = await supabase
-        .from("leads_crm")
-        .select("id, name, phone, destination, status")
-        .eq("store_id", identity.store_id)
-        .in("status", ["new", "contacted", "qualified", "proposal"])
-        .ilike("destination", `%${normalizedDest}%`)
-        .limit(20);
-      matchedLeads = crmLeads || [];
+    // 3. Executa também o motor unificado contra leads ativos do Kanban CRM e persiste oportunidades reais
+    let matchedLeads: Array<{
+      id: string;
+      name: string;
+      phone: string | null;
+      destination: string | null;
+      status: string;
+      matchScore?: number;
+      requiresChildRequote?: boolean;
+      effectiveTotalCents?: number;
+    }> = [];
+    try {
+      const [{ internalEvaluateSupplyAgainstAllLeads }, { normalizeLegacyOfferToCanonical }] = await Promise.all([
+        import("./opportunity-radar.functions"),
+        import("@/lib/travel/opportunity-matching-engine"),
+      ]);
+      const canonicalOffer = normalizeLegacyOfferToCanonical({
+        id: createdOffer.id,
+        source_type: "ocr_quote",
+        title: createdOffer.title,
+        destination_city: destination_city || title,
+        destination_iata: arrival_iata || null,
+        origin_city: departure_city || null,
+        origin_iata: departure_iata || null,
+        departure_date: departure_date || null,
+        return_date: return_date || null,
+        total_cents: price_cents || 0,
+        adults_count: 2,
+        children_count: 0,
+        inclusions,
+        meal_plan: dynamicFields.meal_plan,
+        hotel_stars: dynamicFields.hotel_stars,
+      });
+      const radarRes = await internalEvaluateSupplyAgainstAllLeads({
+        storeId: identity.store_id,
+        offer: canonicalOffer,
+        sourceClassifiedId: createdOffer.id,
+      });
+      matchedLeads = radarRes.matchedLeads
+        .filter((m) => Boolean(m.leadId))
+        .slice(0, 20)
+        .map((m) => ({
+          id: String(m.leadId),
+          name: m.fullName,
+          phone: m.whatsapp,
+          destination: m.destinationRequested,
+          status: m.matchTier,
+          matchScore: m.matchScore,
+          requiresChildRequote: m.requiresChildRequote,
+          effectiveTotalCents: m.effectiveTotalCents,
+        }));
+    } catch {
+      // Fallback defensivo caso alguma tabela auxiliar não exista
     }
 
     return {

@@ -50,12 +50,14 @@ export const inviteTeamMemberSchema = teamMemberOperationalFieldsSchema.extend({
   email: z.string().email(),
   fullName: z.string().min(1),
   role: z.enum(["admin", "manager", "seller", "cashier", "finance", "content", "stock", "support"]),
+  initialPassword: z.string().min(6, "A senha inicial deve ter no mínimo 6 caracteres.").max(120).optional().nullable(),
 });
 
 export const updateTeamMemberProfileSchema = teamMemberOperationalFieldsSchema.extend({
   profileId: z.string().uuid(),
   fullName: z.string().min(1).optional(),
   role: z.enum(["owner", "admin", "manager", "seller", "cashier", "finance", "content", "stock", "support"]).optional(),
+  newPassword: z.string().min(6, "A nova senha deve ter no mínimo 6 caracteres.").max(120).optional().nullable(),
 });
 
 export const toggleAgentPresenceSchema = z.object({
@@ -526,14 +528,24 @@ export async function _inviteTeamMember(
     }
   }
 
+  const requestedPassword = input.initialPassword?.trim() || null;
+  const effectiveInitialPassword =
+    requestedPassword && requestedPassword.length >= 6
+      ? requestedPassword
+      : "Waesy" + Math.random().toString(36).slice(-8) + "!";
+  let wasCreatedNewAuthUser = false;
+
   if (!targetUserId) {
-    // 1. Tenta criar usuário novo
+    // 1. Tenta criar usuário novo já confirmado para acesso direto ao Workspace (sem conta civil)
     const { data: authData, error: authError } = await db.auth.admin.createUser({
       email: normalizedEmail,
-      password: "Waesy" + Math.random().toString(36).slice(-8) + "!",
+      password: effectiveInitialPassword,
       email_confirm: true,
       user_metadata: {
         full_name: input.fullName,
+        store_id: identity.store_id,
+        role: input.role,
+        is_staff_account: true,
       },
     });
 
@@ -555,6 +567,7 @@ export async function _inviteTeamMember(
       }
     } else if (authData?.user?.id) {
       targetUserId = authData.user.id;
+      wasCreatedNewAuthUser = true;
     }
   }
 
@@ -568,10 +581,29 @@ export async function _inviteTeamMember(
     });
   }
 
+  // Se o gestor definiu explicitamente uma senha inicial para usuário que não pertence a outra loja, aplica no Auth Admin
+  if (!wasCreatedNewAuthUser && requestedPassword && requestedPassword.length >= 6 && typeof db?.auth?.admin?.updateUserById === "function") {
+    try {
+      const { data: otherStoreLinks } = await db
+        .from("workspace_members")
+        .select("store_id")
+        .eq("profile_id", targetUserId)
+        .neq("store_id", identity.store_id);
+      if (!Array.isArray(otherStoreLinks) || otherStoreLinks.length === 0) {
+        await db.auth.admin.updateUserById(targetUserId, {
+          password: requestedPassword,
+          email_confirm: true,
+        });
+      }
+    } catch (pwErr) {
+      console.warn("[admin-team] Aviso ao aplicar senha inicial no usuário existente:", pwErr);
+    }
+  }
+
   // 2. Cria ou preenche apenas lacunas no perfil sem sobrescrever identidade global de outra loja
   const { data: existingProfile } = await db
     .from("profiles")
-    .select("id, full_name, phone")
+    .select("id, full_name, phone, approval_status")
     .eq("id", targetUserId)
     .maybeSingle();
 
@@ -579,6 +611,7 @@ export async function _inviteTeamMember(
     const profileUpsert: Record<string, any> = {
       id: targetUserId,
       full_name: input.fullName,
+      approval_status: "approved",
     };
     if (input.phone !== undefined) {
       profileUpsert.phone = input.phone?.trim() || null;
@@ -592,12 +625,22 @@ export async function _inviteTeamMember(
     if (!existingProfile.phone && input.phone?.trim()) {
       profileFill.phone = input.phone.trim();
     }
+    if (existingProfile.approval_status && existingProfile.approval_status !== "approved") {
+      profileFill.approval_status = "approved";
+    }
     if (Object.keys(profileFill).length > 0) {
       await db.from("profiles").update(profileFill).eq("id", targetUserId);
     }
   }
 
   const partnerLawEligible = storeRow ? isPartnerLawEligibleStore(storeRow) : false;
+  const resolvedSegment = String(
+    (storeRow?.settings as any)?.segment || storeRow?.primary_niche_id || "",
+  )
+    .trim()
+    .toLowerCase();
+  const isTourismStore =
+    resolvedSegment === "tourism" || String(storeRow?.vertical_sku || "").toLowerCase().includes("turis");
   const resolvedContractType =
     input.contractType === "partner_law" && storeRow && !partnerLawEligible
       ? "clt"
@@ -619,7 +662,7 @@ export async function _inviteTeamMember(
     can_manage_whatsapp_qr: input.canManageWhatsappQr ?? false,
     only_assigned_or_sector: input.onlyAssignedOrSector ?? false,
     contract_type: resolvedContractType,
-    commission_percent: input.commissionPercent ?? 60,
+    commission_percent: input.commissionPercent ?? (isTourismStore ? 0 : partnerLawEligible ? 60 : 0),
     fee_bearer: input.feeBearer ?? "proportional",
     can_view_unmasked_contacts: input.canViewUnmaskedContacts ?? false,
     auto_deduct_supplies: input.autoDeductSupplies ?? true,
@@ -643,7 +686,14 @@ export async function _inviteTeamMember(
     resolvedLinks.departmentId !== undefined || resolvedLinks.defaultDepartmentSlug !== undefined,
   );
 
-  return { status: "success" as const, profileId: targetUserId, member: savedMember || memberPayload };
+  return {
+    status: "success" as const,
+    profileId: targetUserId,
+    member: savedMember || memberPayload,
+    email: normalizedEmail,
+    initialPassword: wasCreatedNewAuthUser || Boolean(requestedPassword) ? effectiveInitialPassword : null,
+    directAccessPath: `/painel?email=${encodeURIComponent(normalizedEmail)}&returnUrl=/workspace`,
+  };
 }
 
 export const inviteTeamMember = createServerFn({ method: "POST" })
@@ -730,6 +780,26 @@ export async function _updateTeamMemberProfile(
     }
   }
 
+  const requestedNewPassword = input.newPassword?.trim() || null;
+  let passwordUpdated = false;
+  if (requestedNewPassword) {
+    if (!canMutateGlobalProfile) {
+      throw new Error(
+        "Este colaborador também possui vínculo em outra empresa; a senha só pode ser alterada pelo próprio titular.",
+      );
+    }
+    if (typeof db?.auth?.admin?.updateUserById === "function") {
+      const { error: pwError } = await db.auth.admin.updateUserById(input.profileId, {
+        password: requestedNewPassword,
+        email_confirm: true,
+      });
+      if (pwError) {
+        throw new Error(`Erro ao definir nova senha do colaborador: ${pwError.message}`);
+      }
+      passwordUpdated = true;
+    }
+  }
+
   const partnerLawEligible = storeRow ? isPartnerLawEligibleStore(storeRow) : true;
   const resolvedEditContractType =
     input.contractType === "partner_law" && storeRow && !partnerLawEligible
@@ -778,7 +848,7 @@ export async function _updateTeamMemberProfile(
     resolvedLinks.departmentId !== undefined || resolvedLinks.defaultDepartmentSlug !== undefined,
   );
 
-  return { status: "success" as const, member: updatedMember };
+  return { status: "success" as const, member: updatedMember, passwordUpdated };
 }
 
 export const updateTeamMemberProfile = createServerFn({ method: "POST" })

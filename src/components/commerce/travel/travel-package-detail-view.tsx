@@ -9,6 +9,9 @@ import { WeatherWidget } from "@/components/classifieds/weather-widget";
 import { MapLibreCanvas, type MapMarkerItem } from "@/components/mobility/maplibre-canvas";
 import { downloadTripIcsFile } from "@/services/travel-calendar-export";
 import { CANONICAL_BUS_CATEGORIES, CANONICAL_GUIDE_SERVICES, DEPARTURE_STATUS_CONFIG, type DepartureOption } from "@/lib/classifieds/canonical-airports";
+import { ProposalWebShowcase } from "@/components/tourism/studio/proposal-web-showcase";
+import { ExcursionAndPackageBlocks } from "@/components/tourism/studio/excursion-and-package-blocks";
+import { blueprintFromPackage, blueprintToTravelProposalDTO } from "@/lib/tourism/travel-blueprint";
 
 interface TravelPackageDetailViewProps {
  packageData?: Partial<TravelPackageData>;
@@ -42,6 +45,15 @@ export function TravelPackageDetailView({
   const [activeTab, setActiveTab] = useState<"destination" | "resort" | "itinerary" | "explore">("destination");
   const [expandedDays, setExpandedDays] = useState<Record<number, boolean>>({ 1: true });
   const [selectedDepartureId, setSelectedDepartureId] = useState<string | null>(null);
+  const hasRichBlueprintData = Boolean(
+    (packageData as any)?.web_page_config ||
+      (Array.isArray((packageData as any)?.hotels) && (packageData as any).hotels.length > 0) ||
+      (Array.isArray((packageData as any)?.transfers) && (packageData as any).transfers.length > 0) ||
+      (Array.isArray((packageData as any)?.tours) && (packageData as any).tours.length > 0),
+  );
+  const [layoutMode, setLayoutMode] = useState<"editorial" | "classic">(
+    hasRichBlueprintData ? "editorial" : "classic",
+  );
   const { isCompact, isExpanded } = useWindowSizeClass();
 
  const destination = (packageData?.destination || {}) as any;
@@ -242,7 +254,26 @@ export function TravelPackageDetailView({
     });
   };
 
- const handleBooking = () => {
+  const packageBlueprint = useMemo(
+    () =>
+      blueprintFromPackage(packageData || {}, {
+        title: productTitle,
+        priceCents: effectivePriceCents,
+        compareAtCents: compareAtCents ?? null,
+        coverImageUrl: coverImageUrl || mediaUrls[0] || null,
+        mediaUrls,
+        agencyName: storeName,
+        agencyPhone: storePhone || null,
+      }),
+    [packageData, productTitle, effectivePriceCents, compareAtCents, coverImageUrl, mediaUrls, storeName, storePhone],
+  );
+
+  const packageEditorialProposal = useMemo(
+    () => blueprintToTravelProposalDTO(packageBlueprint),
+    [packageBlueprint],
+  );
+
+  const handleBooking = () => {
  if (onReserveClick) {
  onReserveClick(selectedDeparture || undefined);
  return;
@@ -282,6 +313,28 @@ export function TravelPackageDetailView({
  </div>
 
         <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/50 border border-border">
+            <button
+              type="button"
+              onClick={() => setLayoutMode("editorial")}
+              className={cn(
+                "h-11 min-h-11 sm:h-8 sm:min-h-0 px-3 text-xs font-bold rounded-md cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                layoutMode === "editorial" ? "bg-background text-foreground" : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              Editorial
+            </button>
+            <button
+              type="button"
+              onClick={() => setLayoutMode("classic")}
+              className={cn(
+                "h-11 min-h-11 sm:h-8 sm:min-h-0 px-3 text-xs font-bold rounded-md cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                layoutMode === "classic" ? "bg-background text-foreground" : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              Clássico
+            </button>
+          </div>
           {resort.duration_text && (
             <span className="text-xs font-mono text-muted-foreground border border-border/80 px-2 py-1 rounded-full">
               {resort.duration_text}
@@ -321,7 +374,8 @@ export function TravelPackageDetailView({
         </div>
       )}
 
- {/* Abas dinâmicas com omissão de estados vazios (Invariante B.33), piso 44px (DL-14) e foco teclado (DL-15) */}
+      {/* Abas dinâmicas com omissão de estados vazios (Invariante B.33), piso 44px (DL-14) e foco teclado (DL-15) */}
+      {layoutMode === "classic" && (
         <nav className="flex w-full max-w-4xl mx-auto px-2 justify-between border-t border-border/40 text-xs font-semibold overflow-x-auto scroll-area-carousel no-scrollbar">
           {availableTabs.map((tab) => {
             const Icon = tab.icon;
@@ -345,7 +399,32 @@ export function TravelPackageDetailView({
             );
           })}
         </nav>
+      )}
  </header>
+
+ {layoutMode === "editorial" ? (
+   <div className="max-w-5xl mx-auto px-2 sm:px-4 w-full pb-12">
+     <ProposalWebShowcase
+       proposal={packageEditorialProposal}
+       ctaLabel={isPriceOnQuote ? "Solicitar Orçamento" : "Reservar Pacote"}
+       onAcceptClick={handleBooking}
+       whatsappHref={
+         storePhone
+           ? `https://wa.me/${storePhone.replace(/\D/g, "").startsWith("55") ? storePhone.replace(/\D/g, "") : `55${storePhone.replace(/\D/g, "")}`}?text=${encodeURIComponent(`Olá! Tenho interesse no pacote "${productTitle}".`)}`
+           : null
+       }
+       supplementarySlot={
+         <ExcursionAndPackageBlocks
+           departureOptions={departureOptions}
+           boardingPoints={packageBlueprint.boardingPoints}
+           selectedDepartureId={selectedDeparture?.id || null}
+           onSelectDeparture={(id) => setSelectedDepartureId(id)}
+         />
+       }
+     />
+   </div>
+ ) : (
+   <>
 
  {/* ── 2. Conteúdo Principal das Abas ── */}
  <main className="flex-1 pb-32 max-w-4xl mx-auto w-full">
@@ -1421,6 +1500,8 @@ export function TravelPackageDetailView({
  </Button>
  </div>
  </footer>
+   </>
+ )}
  </div>
  );
 }

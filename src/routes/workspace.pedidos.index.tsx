@@ -20,12 +20,12 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "
 import { listOrders, updateOrderStatus } from "@/services/order.functions";
 import { approvePayment } from "@/services/payment.functions";
 import { getStoreSettings } from "@/services/store.functions";
-import { getNicheSemantics } from "@/lib/niche-semantics";
+import { getNicheSemantics } from "@/lib/niches/niche-semantics";
 import { formatMoney } from "@/lib/money";
 import { formatDateTime } from "@/lib/datetime";
 import { ShippingLabelModal } from "@/components/commerce/shipping-label-modal";
 import { generateContractFromOrder } from "@/services/contracts.functions";
-import { KDSPage } from "@/routes/workspace.pedidos.gestor";
+import { KDSPage } from "@/components/workspace/orders/kds-order-manager";
 import { Kanban } from "lucide-react";
 
 export const Route = createFileRoute("/workspace/pedidos/")({

@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { getRealtimeChannel } from "@/services/realtime-channel";
 import { ErrorState } from "@/components/state/states";
 import { toast } from "sonner";
 import {
@@ -45,6 +46,7 @@ import {
   syncStoreWhatsAppGroups,
   triggerGroupCampaignOverflowNow,
   upsertGroupOverflowCampaign,
+  updateWhatsAppGroupRoleAndPrefsFn,
   type RepeatedGroupMemberSummary,
   type WhatsAppGroupCampaignDTO,
   type WhatsAppGroupDirectoryDTO,
@@ -129,6 +131,32 @@ function WorkspaceAtendimentoGruposPage() {
   const [campAdminsRaw, setCampAdminsRaw] = useState("");
   const [campLeadFormId, setCampLeadFormId] = useState<string>("none");
   const [rotatingCampId, setRotatingCampId] = useState<string | null>(null);
+  const [updatingGroupId, setUpdatingGroupId] = useState<string | null>(null);
+
+  const handleUpdateRole = async (
+    groupId: string,
+    groupRole: "unclassified" | "promo_offers" | "internal_team" | "client_vip" | "operational"
+  ) => {
+    if (!store?.id) return;
+    setUpdatingGroupId(groupId);
+    try {
+      await updateWhatsAppGroupRoleAndPrefsFn({
+        data: {
+          storeId: store.id,
+          groupId,
+          groupRole,
+          silenceLeadCapture: groupRole === "internal_team",
+          autoPublishEligible: groupRole === "promo_offers",
+        },
+      });
+      toast.success("Papel do grupo atualizado com sucesso.");
+      await refreshData();
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao atualizar papel do grupo.");
+    } finally {
+      setUpdatingGroupId(null);
+    }
+  };
 
   const refreshData = async () => {
     const [gData, cData] = await Promise.all([
@@ -139,6 +167,34 @@ function WorkspaceAtendimentoGruposPage() {
     setRepeatedMembers(gData?.repeatedMembers || []);
     setCampaigns(cData || []);
   };
+
+  useEffect(() => {
+    if (!store?.id) return;
+    const rt = getRealtimeChannel(`whatsapp-groups-${store.id}`);
+    if (!rt.channel) return;
+    void rt.ensureAuth?.();
+
+    const triggerRefresh = () => {
+      void refreshData().catch(() => {});
+    };
+
+    rt.channel
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "whatsapp_groups_directory", filter: `store_id=eq.${store.id}` },
+        triggerRefresh,
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "whatsapp_channel_live_state", filter: `store_id=eq.${store.id}` },
+        triggerRefresh,
+      )
+      .subscribe();
+
+    return () => {
+      rt.unsubscribe();
+    };
+  }, [store?.id]);
 
   const handleSyncGroups = async () => {
     setIsSyncing(true);
@@ -405,6 +461,40 @@ function WorkspaceAtendimentoGruposPage() {
                     <span>{grp.member_count} membros</span>
                     <span>•</span>
                     <span>{grp.admin_count} admins</span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/40">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-xs text-muted-foreground">Papel:</Label>
+                      <Select
+                        value={grp.group_role || "unclassified"}
+                        disabled={updatingGroupId === grp.id}
+                        onValueChange={(val: any) => handleUpdateRole(grp.id, val)}
+                      >
+                        <SelectTrigger className="h-11 min-h-11 w-44 text-xs font-semibold">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="unclassified">Não classificado</SelectItem>
+                          <SelectItem value="promo_offers">Ofertas & Promoções</SelectItem>
+                          <SelectItem value="internal_team">Equipe Interna (Privado)</SelectItem>
+                          <SelectItem value="client_vip">Clientes VIP</SelectItem>
+                          <SelectItem value="operational">Operacional</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {grp.group_role === "internal_team" ? (
+                      <span className="text-xs text-warning font-medium flex items-center gap-1">
+                        <Shield className="size-3.5" />
+                        CRM & Disparos Silenciados
+                      </span>
+                    ) : grp.group_role === "promo_offers" ? (
+                      <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                        <CheckCircle2 className="size-3.5" />
+                        Elegível p/ Ofertas Hot
+                      </span>
+                    ) : null}
                   </div>
                 </div>
 

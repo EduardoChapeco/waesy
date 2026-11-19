@@ -43,6 +43,8 @@ import { getStoreSettings } from "@/services/store.functions";
 import { getNicheSemantics, isPartnerLawEligibleStore } from "@/lib/niches/niche-semantics";
 import { RolePermissionsMatrix } from "@/components/workspace/RolePermissionsMatrix";
 import { PartnerAgreementEditor } from "@/components/workspace/PartnerAgreementEditor";
+import { EmployeeCommercialProfilePanel } from "@/components/tourism/EmployeeCommercialProfilePanel";
+import { Award } from "lucide-react";
 import { SeoGeoOptimizationPanel, type SeoGeoMetadata } from "@/components/seo";
 import { Switch } from "@/components/ui/switch";
 import { SavedSignatureSettingsCard } from "@/components/contracts/saved-signature-settings";
@@ -164,16 +166,24 @@ export default function WorkspaceTeamPage() {
     store = null,
     loadError = null,
   } = ((Route.useLoaderData?.() as any) || {});
-  const teamSigByProfileId = new Map<string, { hasSavedSignature: boolean; hasSavedInitials: boolean }>(
-    (Array.isArray(teamSignatureStatuses) ? teamSignatureStatuses : []).map((s: any) => [
-      String(s.profileId || ""),
-      { hasSavedSignature: Boolean(s.hasSavedSignature), hasSavedInitials: Boolean(s.hasSavedInitials) },
-    ]),
-  );
+  const teamSigByProfileId = new Map<string, { hasSavedSignature: boolean; hasSavedInitials: boolean }>();
+  for (const s of Array.isArray(teamSignatureStatuses) ? teamSignatureStatuses : []) {
+    const val = { hasSavedSignature: Boolean(s.hasSavedSignature), hasSavedInitials: Boolean(s.hasSavedInitials) };
+    if (s.profileId) teamSigByProfileId.set(String(s.profileId), val);
+    if (s.memberId) teamSigByProfileId.set(String(s.memberId), val);
+  }
+  const [liveUserSigProfile, setLiveUserSigProfile] = useState<{
+    profileId: string | null;
+    savedSignature: string | null;
+    savedInitials: string | null;
+  } | null>(null);
   const router = useRouter();
   const semantics = getNicheSemantics(store);
   const showPartnerLaw = isPartnerLawEligibleStore(store);
   const defaultContractType: "clt" | "pj" | "partner_law" = showPartnerLaw ? "partner_law" : "clt";
+  const isTourismStore = (store?.niche_id || store?.niche || "") === "tourism";
+  const defaultTeamCommissionPercent = isTourismStore ? 0 : 60;
+  const [selectedMemberCommercial, setSelectedMemberCommercial] = useState<any | null>(null);
 
   const [activeTab, setActiveTab] = useState<"members" | "contractors" | "jobs" | "permissions" | "partner_agreement">("members");
 
@@ -200,6 +210,7 @@ export default function WorkspaceTeamPage() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteName, setInviteName] = useState("");
   const [invitePhone, setInvitePhone] = useState("");
+  const [inviteInitialPassword, setInviteInitialPassword] = useState("");
   const [inviteRole, setInviteRole] = useState<
     "admin" | "manager" | "seller" | "cashier" | "finance" | "content" | "stock" | "support"
   >("seller");
@@ -212,7 +223,7 @@ export default function WorkspaceTeamPage() {
   const [inviteCanManageWhatsappQr, setInviteCanManageWhatsappQr] = useState<boolean>(false);
   const [inviteOnlyAssignedOrSector, setInviteOnlyAssignedOrSector] = useState<boolean>(false);
   const [inviteContractType, setInviteContractType] = useState<"clt" | "pj" | "partner_law">(defaultContractType);
-  const [inviteCommissionPercent, setInviteCommissionPercent] = useState<number>(60);
+  const [inviteCommissionPercent, setInviteCommissionPercent] = useState<number>(defaultTeamCommissionPercent);
   const [inviteFeeBearer, setInviteFeeBearer] = useState<"store_100" | "pro_100" | "split_50" | "proportional">("proportional");
   const [inviteCanViewContacts, setInviteCanViewContacts] = useState<boolean>(false);
   const [inviteAutoDeductSupplies, setInviteAutoDeductSupplies] = useState<boolean>(true);
@@ -224,6 +235,7 @@ export default function WorkspaceTeamPage() {
   const [editMemberForm, setEditMemberForm] = useState({
     fullName: "",
     phone: "",
+    newPassword: "",
     role: "seller" as "admin" | "manager" | "seller" | "cashier" | "finance" | "content" | "stock" | "support",
     isOwner: false,
     departmentId: "__none__",
@@ -236,7 +248,7 @@ export default function WorkspaceTeamPage() {
     canManageWhatsappQr: false,
     onlyAssignedOrSector: false,
     contractType: defaultContractType as "clt" | "pj" | "partner_law",
-    commissionPercent: 60,
+    commissionPercent: defaultTeamCommissionPercent,
     feeBearer: "proportional" as "store_100" | "pro_100" | "split_50" | "proportional",
     canViewUnmaskedContacts: false,
     autoDeductSupplies: true,
@@ -270,6 +282,32 @@ export default function WorkspaceTeamPage() {
  const [memberToRemove, setMemberToRemove] = useState<any | null>(null);
  const [isRemoving, setIsRemoving] = useState(false);
 
+ const buildMemberDirectPanelUrl = (email?: string | null) => {
+  const origin =
+   typeof window !== "undefined" && window.location?.origin
+    ? window.location.origin
+    : "https://waesy.com.br";
+  const cleanEmail = (email || "").trim().toLowerCase();
+  if (!cleanEmail) return `${origin}/painel?returnUrl=/workspace`;
+  return `${origin}/painel?email=${encodeURIComponent(cleanEmail)}&returnUrl=/workspace`;
+ };
+
+ const handleCopyMemberAccessLink = async (member: any, customPassword?: string) => {
+  const url = buildMemberDirectPanelUrl(member?.email);
+  const roleLabel = ROLE_DEFINITIONS[member?.role]?.label || member?.role || "Colaborador";
+  const textToCopy = customPassword
+   ? `Acesso ao Painel (${store?.name || "Workspace"}):\nLink: ${url}\nE-mail: ${member?.email || ""}\nSenha: ${customPassword}\nFunção: ${roleLabel}`
+   : url;
+  try {
+   if (typeof navigator !== "undefined" && navigator.clipboard) {
+    await navigator.clipboard.writeText(textToCopy);
+    toast.success("Link de acesso direto copiado!");
+   }
+  } catch {
+   toast.error("Não foi possível copiar automaticamente.");
+  }
+ };
+
  const handleOpenEditMember = (member: any) => {
   const memberContract = member.contract_type || defaultContractType;
   const safeMemberContract = !showPartnerLaw && memberContract === "partner_law" ? "clt" : memberContract;
@@ -277,6 +315,7 @@ export default function WorkspaceTeamPage() {
   setEditMemberForm({
    fullName: member.full_name || "",
    phone: member.phone || "",
+   newPassword: "",
    role: (member.role === "owner" ? "admin" : member.role || "seller") as any,
    isOwner: member.role === "owner",
    departmentId: member.department_id || "__none__",
@@ -299,14 +338,19 @@ export default function WorkspaceTeamPage() {
  const handleSaveEditMember = async (e: React.FormEvent) => {
   e.preventDefault();
   if (!editingMember) return;
+  if (editMemberForm.newPassword.trim() && editMemberForm.newPassword.trim().length < 6) {
+   toast.error("A nova senha de acesso deve ter pelo menos 6 caracteres.");
+   return;
+  }
   setIsSavingMember(true);
   try {
    const selectedDept = (departments || []).find((d: any) => d.id === editMemberForm.departmentId);
-   await updateTeamMemberProfile({
+   const res = await updateTeamMemberProfile({
     data: {
      profileId: editingMember.id,
      fullName: editMemberForm.fullName.trim() || undefined,
      phone: editMemberForm.phone.trim() || null,
+     newPassword: editMemberForm.newPassword.trim() || undefined,
      role: editMemberForm.isOwner ? undefined : editMemberForm.role,
      departmentId: editMemberForm.departmentId !== "__none__" ? editMemberForm.departmentId : null,
      defaultDepartmentSlug: selectedDept?.slug || null,
@@ -326,7 +370,11 @@ export default function WorkspaceTeamPage() {
      autoDeductSupplies: editMemberForm.autoDeductSupplies,
     },
    });
-   toast.success("Vínculos operacionais e contratuais atualizados.");
+   if ((res as any)?.passwordUpdated) {
+    toast.success("Vínculos e nova senha de acesso salvos com sucesso!");
+   } else {
+    toast.success("Vínculos operacionais e contratuais atualizados.");
+   }
    setEditingMember(null);
    router.invalidate();
   } catch (err: any) {
@@ -342,15 +390,20 @@ export default function WorkspaceTeamPage() {
  toast.error("Preencha o nome e o e-mail do colaborador.");
  return;
  }
+ if (inviteInitialPassword.trim() && inviteInitialPassword.trim().length < 6) {
+ toast.error("A senha inicial deve ter no mínimo 6 caracteres.");
+ return;
+ }
 
  setIsInviting(true);
  try {
  const selectedDept = (departments || []).find((d: any) => d.id === inviteDepartmentId);
- await inviteTeamMember({
+ const inviteRes = await inviteTeamMember({
  data: {
  email: inviteEmail.trim(),
  fullName: inviteName.trim(),
  phone: invitePhone.trim() || null,
+ initialPassword: inviteInitialPassword.trim() || null,
  role: inviteRole,
  departmentId: inviteDepartmentId !== "__none__" ? inviteDepartmentId : null,
  defaultDepartmentSlug: selectedDept?.slug || null,
@@ -370,11 +423,16 @@ export default function WorkspaceTeamPage() {
  },
  });
 
- toast.success("Colaborador vinculado à sua loja com sucesso!");
+ await handleCopyMemberAccessLink(
+  { email: inviteEmail.trim(), role: inviteRole },
+  (inviteRes as any)?.initialPassword || inviteInitialPassword.trim() || undefined,
+ );
+ toast.success("Colaborador vinculado! As credenciais e o link direto foram copiados.");
  setIsInviteOpen(false);
  setInviteEmail("");
  setInviteName("");
  setInvitePhone("");
+ setInviteInitialPassword("");
  setInviteRole("seller");
  setInviteDepartmentId("__none__");
  setInviteWhatsappInstanceId("__none__");
@@ -603,6 +661,7 @@ export default function WorkspaceTeamPage() {
   compact
   title="Minha Assinatura para Contratos"
   description="Cadastre sua assinatura e rubrica para assinar documentos deste workspace em 1 toque."
+  onProfileChange={(state) => setLiveUserSigProfile(state)}
   onUpdated={() => router.invalidate()}
  />
 
@@ -706,9 +765,17 @@ export default function WorkspaceTeamPage() {
   </Badge>
  )}
  {(() => {
-  const sigStatus = teamSigByProfileId.get(String(m.id || ""));
-  if (!sigStatus) return null;
-  return sigStatus.hasSavedSignature ? (
+  const memberIdStr = String(m.id || "");
+  const memberProfileIdStr = String(m.profile_id || m.id || "");
+  const sigStatus = teamSigByProfileId.get(memberIdStr) || teamSigByProfileId.get(memberProfileIdStr);
+  const isCurrentLoggedMember = Boolean(
+   liveUserSigProfile?.profileId && (liveUserSigProfile.profileId === memberIdStr || liveUserSigProfile.profileId === memberProfileIdStr),
+  );
+  if (!sigStatus && !isCurrentLoggedMember) return null;
+  const hasSavedDigitalSig = isCurrentLoggedMember
+   ? Boolean(liveUserSigProfile?.savedSignature || liveUserSigProfile?.savedInitials)
+   : Boolean(sigStatus?.hasSavedSignature || sigStatus?.hasSavedInitials);
+  return hasSavedDigitalSig ? (
    <Badge
     variant="outline"
     className="text-xs px-2 py-1 font-medium rounded-lg gap-1 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
@@ -734,6 +801,26 @@ export default function WorkspaceTeamPage() {
  </div>
 
  <div className="flex flex-wrap items-center gap-2 self-end sm:self-center">
+ <Button
+  type="button"
+  variant="outline"
+  size="sm"
+  onClick={() => handleCopyMemberAccessLink(m)}
+  className="h-11 min-h-11 sm:h-9 rounded-lg text-xs font-semibold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+ >
+  <ExternalLink className="size-3.5 text-primary" />
+  <span>Link de Acesso</span>
+ </Button>
+ <Button
+  type="button"
+  variant="outline"
+  size="sm"
+  onClick={() => setSelectedMemberCommercial(m)}
+  className="h-11 min-h-11 sm:h-9 rounded-lg text-xs font-semibold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+ >
+  <Award className="size-3.5 text-primary" />
+  <span>Vendas & Prêmios</span>
+ </Button>
  <Button
   type="button"
   variant="outline"
@@ -1042,7 +1129,7 @@ export default function WorkspaceTeamPage() {
  )}
 
  <TabsContent value="permissions" className="space-y-6 pt-4">
- <RolePermissionsMatrix storeId={storeId} />
+ <RolePermissionsMatrix storeId={storeId} storeNiche={store?.niche_id || store?.niche || undefined} />
  </TabsContent>
  </Tabs>
 
@@ -1250,6 +1337,21 @@ export default function WorkspaceTeamPage() {
  className="pl-9 h-11 min-h-11 rounded-lg text-xs bg-muted/30"
  />
  </div>
+ </div>
+ </div>
+
+ <div className="space-y-2 text-left">
+ <Label className="text-xs font-bold text-foreground">Senha Inicial de Acesso ao Painel (Opcional)</Label>
+ <div className="relative">
+ <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+ <Input
+ type="text"
+ minLength={6}
+ placeholder="Defina uma senha (mín. 6 dígitos) para entrada direta sem conta civil"
+ value={inviteInitialPassword}
+ onChange={(e) => setInviteInitialPassword(e.target.value)}
+ className="pl-9 h-11 min-h-11 rounded-lg text-xs bg-muted/30 font-mono"
+ />
  </div>
  </div>
 
@@ -1706,6 +1808,67 @@ export default function WorkspaceTeamPage() {
             )}
 
             <div className="border-t border-border/50 pt-4 space-y-3 text-left">
+              <p className="text-xs font-bold text-foreground">Acesso Direto ao Painel (Sem Conta Civil)</p>
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold">Link Direto do Colaborador</Label>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Input
+                    readOnly
+                    value={buildMemberDirectPanelUrl(editingMember?.email)}
+                    className="h-11 min-h-11 rounded-lg text-xs font-mono bg-muted/30 flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() =>
+                      handleCopyMemberAccessLink(
+                        { ...editingMember, role: editMemberForm.role },
+                        editMemberForm.newPassword.trim() || undefined,
+                      )
+                    }
+                    className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+                  >
+                    <ExternalLink className="size-3.5 text-primary" />
+                    <span>Copiar Link</span>
+                  </Button>
+                  {(editMemberForm.phone || editingMember?.phone) && (
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+                    >
+                      <a
+                        href={`https://wa.me/55${String(editMemberForm.phone || editingMember?.phone || "").replace(/\D/g, "")}?text=${encodeURIComponent(
+                          `Olá ${editMemberForm.fullName || editingMember?.full_name || ""}, seu acesso direto ao painel (${ROLE_DEFINITIONS[editMemberForm.role]?.label || editMemberForm.role}) está liberado:\nLink: ${buildMemberDirectPanelUrl(editingMember?.email)}\nE-mail: ${editingMember?.email || ""}${editMemberForm.newPassword.trim() ? `\nSenha: ${editMemberForm.newPassword.trim()}` : ""}`,
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Smartphone className="size-3.5 text-primary" />
+                        <span>Enviar WhatsApp</span>
+                      </a>
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Definir / Redefinir Senha de Acesso</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    minLength={6}
+                    value={editMemberForm.newPassword}
+                    onChange={(e) => setEditMemberForm({ ...editMemberForm, newPassword: e.target.value })}
+                    placeholder="Digite uma nova senha (mín. 6 dígitos) se quiser alterar"
+                    className="pl-9 h-11 min-h-11 rounded-lg text-xs font-mono"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-border/50 pt-4 space-y-3 text-left">
               <p className="text-xs font-bold text-foreground">Operação de Atendimento & WhatsApp</p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1925,6 +2088,30 @@ export default function WorkspaceTeamPage() {
               </Button>
             </SheetFooter>
           </form>
+        </SheetContent>
+      </Sheet>
+
+      {/* Sheet de Produção Comercial & Premiações Por Fora do Membro */}
+      <Sheet
+        open={Boolean(selectedMemberCommercial)}
+        onOpenChange={(open) => !open && setSelectedMemberCommercial(null)}
+      >
+        <SheetContent side="right" className="sm:max-w-3xl w-full p-6 overflow-y-auto pt-safe-modal">
+          <SheetHeader className="pb-4 border-b border-border mb-4">
+            <SheetTitle className="flex items-center gap-2">
+              <Award className="size-5 text-primary" />
+              {selectedMemberCommercial?.full_name || "Perfil Comercial"}
+            </SheetTitle>
+            <SheetDescription>
+              Vendas mensais, crescimento comparativo, faixa ativa e recibos por fora da folha CLT.
+            </SheetDescription>
+          </SheetHeader>
+          {selectedMemberCommercial && (
+            <EmployeeCommercialProfilePanel
+              profileId={selectedMemberCommercial.id}
+              canManagePayouts
+            />
+          )}
         </SheetContent>
       </Sheet>
  </div>

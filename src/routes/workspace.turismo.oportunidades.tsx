@@ -1,5 +1,6 @@
+import { Link } from "@tanstack/react-router";
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useId } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Phone,
@@ -23,6 +24,10 @@ import {
   Upload,
   LayoutGrid,
   Columns,
+  RefreshCw,
+  AlertTriangle,
+  Calculator,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -52,8 +57,69 @@ import {
   publishExtractedTravelPackageToCatalogAndMatchRadar,
   type ExtractedTravelAdDTO,
 } from "@/services/travel-ai-extractor.functions";
+import { Switch } from "@/components/ui/switch";
+import { CurrencyField } from "@/components/ui/currency-field";
+import {
+  listUnifiedRadarOpportunitiesFn,
+  reEvaluateUnifiedRadarFn,
+  updateUnifiedOpportunityStatusFn,
+  analyzeIncomingOfferAgainstPipelineFn,
+  type UnifiedRadarOpportunityItem,
+  type IncomingOfferPipelineAnalysis,
+} from "@/services/opportunity-radar.functions";
+import { DestinationTagsPicker } from "@/components/tourism/shared/destination-tags-picker";
+import { TravelPeriodTagsPicker } from "@/components/tourism/shared/travel-period-tags-picker";
+import { RoomOccupancyBuilder } from "@/components/tourism/shared/room-occupancy-builder";
+import { TravelIntentAiImporter } from "@/components/tourism/shared/travel-intent-ai-importer";
+import type {
+  StructuredDestinationTag,
+  StructuredPeriodSpec,
+  StructuredRoomOccupancy,
+} from "@/lib/travel/opportunity-matching-engine";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
+
+function mapUnifiedItemToUiMatch(item: UnifiedRadarOpportunityItem) {
+  return {
+    id: item.id,
+    originTable: item.originTable,
+    sourceType: item.sourceType,
+    leadId: item.leadId,
+    interestId: item.interestId,
+    matchScore: item.matchScore,
+    matchTier: item.matchTier,
+    status: item.normalizedStatus,
+    rawStatus: item.rawStatus,
+    requiresChildRequote: item.requiresChildRequote,
+    alreadyProposedRecently: item.alreadyProposedRecently,
+    childSimulation: item.childSimulation,
+    historicalCheck: item.historicalCheck,
+    matchReasons: item.matchReasons,
+    warnings: item.warnings,
+    customerRoomsSummary: item.customerRoomsSummary,
+    approachDraft: item.whatsappPitchDraft,
+    dimensions: item.matchReasons.map((r, i) => ({
+      dimension: i === 0 ? "destination" : "budget",
+      weight: 35,
+      score: 35,
+      details: r,
+    })),
+    contact: {
+      name: item.customerName,
+      phone: item.customerPhone,
+    },
+    offerSnapshot: {
+      title: item.offerTitle,
+      destinationCity: item.destinationCity,
+      datesDisplayText: item.departureDate || item.customerPeriodLabel || "Período definido",
+      totalPriceCents: item.quotedTotalCents,
+      effectiveTotalCents: item.effectiveTotalCents,
+      installmentCount: null as number | null,
+      installmentCents: 0,
+    },
+    createdAt: item.createdAt,
+  };
+}
 
 export const Route = createFileRoute("/workspace/turismo/oportunidades")({
   head: () => ({
@@ -61,12 +127,15 @@ export const Route = createFileRoute("/workspace/turismo/oportunidades")({
   }),
   loader: async () => {
     try {
-      const [matches, interests, contacts, store] = await Promise.all([
-        listOpportunityMatchesFn({ data: { minScore: 50, limit: 100 } }).catch(() => []),
+      const [unifiedRes, interests, contacts, store] = await Promise.all([
+        listUnifiedRadarOpportunitiesFn({
+          data: { statusFilter: "all", sourceTypeFilter: "all", limit: 150 },
+        }).catch(() => ({ items: [], totalCount: 0 })),
         listTravelInterestsFn({ data: { limit: 100 } }).catch(() => []),
         listCommercialContactsFn({ data: { limit: 100 } }).catch(() => []),
         getStoreSettings().catch(() => null),
       ]);
+      const matches = (unifiedRes.items || []).map(mapUnifiedItemToUiMatch);
       return { matches, interests, contacts, store };
     } catch (err) {
       console.error("[loader:workspace.turismo.oportunidades] Fallback:", err);
@@ -87,10 +156,13 @@ export default function WorkspaceTurismoOportunidadesPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("opportunities");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [sourceTypeFilter, setSourceTypeFilter] = useState("all");
+  const [isReevaluating, setIsReevaluating] = useState(false);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [isNewInterestOpen, setIsNewInterestOpen] = useState(false);
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const [isOcrScannerOpen, setIsOcrScannerOpen] = useState(false);
+  const [isOfferAnalyzerOpen, setIsOfferAnalyzerOpen] = useState(false);
   const [isWhatsAppExtensionOpen, setIsWhatsAppExtensionOpen] = useState(false);
   const [boardGrouping, setBoardGrouping] = useState<"stage" | "month" | "destination" | "temperature" | "grid">("stage");
   const [selectedMatch, setSelectedMatch] = useState<any | null>(null);
@@ -104,6 +176,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
         `Oferta "${res.offer.title}" publicada! ${res.radarMatchesFound} match(es) gerados no Radar e ${res.matchedCrmLeadsCount} lead(s) compatíveis.`,
       );
       queryClient.invalidateQueries({ queryKey: ["travel-opportunities"] });
+      queryClient.invalidateQueries({ queryKey: ["unified-radar-opportunities"] });
       queryClient.invalidateQueries({ queryKey: ["travel-interests"] });
       setIsOcrScannerOpen(false);
     } catch (err: any) {
@@ -111,12 +184,42 @@ export default function WorkspaceTurismoOportunidadesPage() {
     }
   };
 
-  // Queries TanStack
-  const { data: matches = initialMatches || [] } = useQuery({
-    queryKey: ["travel-opportunities", statusFilter],
-    queryFn: () => listOpportunityMatchesFn({ data: { status: statusFilter, minScore: 50, limit: 100 } }),
+  // Queries TanStack (Unificando Leads/Propostas/Capturas + Pacotes)
+  const {
+    data: matches = initialMatches || [],
+    isLoading: isLoadingRadar,
+    isError: isErrorRadar,
+    refetch: refetchRadar,
+  } = useQuery({
+    queryKey: ["unified-radar-opportunities", statusFilter, sourceTypeFilter],
+    queryFn: async () => {
+      const res = await listUnifiedRadarOpportunitiesFn({
+        data: {
+          statusFilter:
+            statusFilter === "high_priority" ? "all" : (statusFilter as any),
+          sourceTypeFilter: sourceTypeFilter as any,
+          limit: 150,
+        },
+      });
+      return (res.items || []).map(mapUnifiedItemToUiMatch);
+    },
     initialData: initialMatches,
   });
+
+  const handleReevaluateRadar = async () => {
+    setIsReevaluating(true);
+    try {
+      const res = await reEvaluateUnifiedRadarFn({ data: { maxSuppliesToScan: 30 } });
+      await queryClient.invalidateQueries({ queryKey: ["unified-radar-opportunities"] });
+      toast.success(
+        `Radar reavaliado: ${res.scannedSupplies} oferta(s)/proposta(s) cruzadas, ${res.totalMatchesFound} oportunidade(s) verificadas.`
+      );
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao reavaliar radar.");
+    } finally {
+      setIsReevaluating(false);
+    }
+  };
 
   const { data: interests = initialInterests || [] } = useQuery({
     queryKey: ["travel-interests", statusFilter],
@@ -132,15 +235,74 @@ export default function WorkspaceTurismoOportunidadesPage() {
 
   // Mutações
   const recordInteractionMutation = useMutation({
-    mutationFn: recordCommercialInteractionFn,
-    onSuccess: () => {
+    mutationFn: async (vars: {
+      data: {
+        matchId: string;
+        originTable?: "travel_opportunities" | "travel_opportunity_matches";
+        status: "reviewed" | "approached" | "dismissed" | "restore";
+        approachNotes?: string;
+      };
+    }) => {
+      if (vars.data.originTable === "travel_opportunities") {
+        return updateUnifiedOpportunityStatusFn({
+          data: {
+            opportunityId: vars.data.matchId,
+            originTable: "travel_opportunities",
+            action: vars.data.status,
+          },
+        });
+      }
+      return recordCommercialInteractionFn({
+        data: {
+          matchId: vars.data.matchId,
+          status: vars.data.status === "restore" ? "reviewed" : vars.data.status,
+          approachNotes: vars.data.approachNotes,
+        },
+      });
+    },
+    onSuccess: (_res, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["unified-radar-opportunities"] });
       queryClient.invalidateQueries({ queryKey: ["travel-opportunities"] });
-      toast.success("Interação registrada com sucesso");
+      if (vars.data.status === "dismissed") {
+        toast.success("Oportunidade descartada.", {
+          duration: 7000,
+          action: {
+            label: "Desfazer",
+            onClick: () =>
+              recordInteractionMutation.mutate({
+                data: {
+                  matchId: vars.data.matchId,
+                  originTable: vars.data.originTable,
+                  status: "restore",
+                  approachNotes: "Restaurado pelo operador",
+                },
+              }),
+          },
+        });
+      } else {
+        toast.success(
+          vars.data.status === "restore" ? "Oportunidade restaurada!" : "Interação registrada com sucesso"
+        );
+      }
     },
     onError: (err: any) => {
       toast.error(`Falha ao registrar: ${err.message}`);
     },
   });
+
+  const handleDismissMatch = (match: any) => {
+    recordInteractionMutation.mutate({
+      data: {
+        matchId: match.id,
+        originTable: match.originTable,
+        status: "dismissed",
+        approachNotes: "Descartado pelo corretor no Radar",
+      },
+    });
+    if (selectedMatch?.id === match.id) {
+      setSelectedMatch(null);
+    }
+  };
 
   const promoteToCrmMutation = useMutation({
     mutationFn: promoteOpportunityToCrmLeadFn,
@@ -288,6 +450,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
       recordInteractionMutation.mutate({
         data: {
           matchId: match.id,
+          originTable: match.originTable,
           status: "approached",
           approachNotes: "Copy copiado para envio pelo corretor",
         },
@@ -308,6 +471,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
     recordInteractionMutation.mutate({
       data: {
         matchId: match.id,
+        originTable: match.originTable,
         status: "approached",
         approachNotes: "WhatsApp disparado diretamente pelo navegador",
       },
@@ -337,7 +501,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
 
       {/* Navegação entre Abas */}
       <div className="px-4 py-2 border-b border-border bg-card flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant={activeTab === "opportunities" ? "default" : "outline"}
             size="sm"
@@ -345,7 +509,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
             className="h-11 min-h-11 px-4 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring"
           >
             <TrendingUp className="size-4 mr-2" />
-            Oportunidades do Radar ({matches.length})
+            Radar ({matches.length})
           </Button>
           <Button
             variant={activeTab === "interests" ? "default" : "outline"}
@@ -354,7 +518,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
             className="h-11 min-h-11 px-4 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Calendar className="size-4 mr-2" />
-            Backlog de Interesses ({interests.length})
+            Interesses ({interests.length})
           </Button>
           <Button
             variant={activeTab === "contacts" ? "default" : "outline"}
@@ -363,7 +527,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
             className="h-11 min-h-11 px-4 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Users className="size-4 mr-2" />
-            Contatos Pré-CRM ({contacts.length})
+            Pré-CRM ({contacts.length})
           </Button>
           <Button
             variant={isOcrScannerOpen ? "default" : "outline"}
@@ -372,7 +536,16 @@ export default function WorkspaceTurismoOportunidadesPage() {
             className="h-11 min-h-11 px-4 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Upload className="size-4 mr-2" />
-            Escanear Oferta OCR & Cruzar Leads
+            Escanear OCR
+          </Button>
+          <Button
+            variant={isOfferAnalyzerOpen ? "default" : "outline"}
+            size="sm"
+            onClick={() => setIsOfferAnalyzerOpen(true)}
+            className="h-11 min-h-11 px-4 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Calculator className="size-4 mr-2" />
+            Analisar Orçamento
           </Button>
           <Button
             variant={isWhatsAppExtensionOpen ? "default" : "outline"}
@@ -380,8 +553,8 @@ export default function WorkspaceTurismoOportunidadesPage() {
             onClick={() => setIsWhatsAppExtensionOpen(true)}
             className="h-11 min-h-11 px-4 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <Phone className="size-4 mr-2 text-emerald-600 dark:text-emerald-400" />
-            Extensão WhatsApp
+            <Phone className="size-4 mr-2 text-success" />
+            WhatsApp
           </Button>
         </div>
 
@@ -389,7 +562,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
         {activeTab === "opportunities" && (
           <div className="flex flex-wrap items-center gap-2">
             {/* Seletor de Agrupamento Multi-Board */}
-            <div className="flex items-center gap-1 border border-border rounded-lg p-1 bg-muted/20">
+            <div className="flex flex-wrap items-center gap-1 border border-border rounded-lg p-1 bg-muted/20">
               <Button
                 variant={boardGrouping === "stage" ? "default" : "ghost"}
                 size="sm"
@@ -438,7 +611,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
             </div>
 
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48 h-11 min-h-11 bg-background text-sm">
+              <SelectTrigger aria-label="Filtrar por status" className="w-full sm:w-48 h-11 min-h-11 bg-background text-sm">
                 <SelectValue placeholder="Filtrar status" />
               </SelectTrigger>
               <SelectContent>
@@ -450,6 +623,30 @@ export default function WorkspaceTurismoOportunidadesPage() {
                 <SelectItem value="dismissed">Descartadas</SelectItem>
               </SelectContent>
             </Select>
+
+            <Select value={sourceTypeFilter} onValueChange={setSourceTypeFilter}>
+              <SelectTrigger aria-label="Filtrar por origem" className="w-full sm:w-48 h-11 min-h-11 bg-background text-sm">
+                <SelectValue placeholder="Origem da Oferta" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as Origens</SelectItem>
+                <SelectItem value="proposal">Propostas Enviadas</SelectItem>
+                <SelectItem value="quote_capture">Capturas InfoTravel</SelectItem>
+                <SelectItem value="catalog_package">Pacotes / Ofertas</SelectItem>
+                <SelectItem value="agency_quote">Cotações Salvas</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isReevaluating}
+              onClick={handleReevaluateRadar}
+              className="h-11 min-h-11 px-4 text-xs font-medium gap-2 focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <RefreshCw className={cn("size-4 motion-reduce:animate-none", isReevaluating && "animate-spin motion-reduce:animate-none")} />
+              <span>{isReevaluating ? "Reavaliando..." : "Reavaliar Radar"}</span>
+            </Button>
           </div>
         )}
       </div>
@@ -462,7 +659,21 @@ export default function WorkspaceTurismoOportunidadesPage() {
 
         {activeTab === "opportunities" && (
           <div className="space-y-4">
-            {filteredMatches.length === 0 ? (
+            {isLoadingRadar && matches.length === 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[1, 2, 3].map((k) => (
+                  <Card key={k} className="p-4 h-48 animate-pulse motion-reduce:animate-none bg-muted/30" />
+                ))}
+              </div>
+            ) : isErrorRadar && matches.length === 0 ? (
+              <Card className="p-8 text-center border-destructive/40 flex flex-col items-center gap-3">
+                <AlertTriangle className="size-8 text-destructive" />
+                <p className="text-sm font-medium text-foreground">Falha ao carregar o Radar.</p>
+                <Button variant="outline" onClick={() => refetchRadar()} className="h-11 min-h-11 px-4">
+                  Tentar Novamente
+                </Button>
+              </Card>
+            ) : filteredMatches.length === 0 ? (
               <Card className="p-12 text-center border-dashed border-border flex flex-col items-center justify-center">
                 <TrendingUp className="size-12 text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold text-foreground">Nenhuma oportunidade encontrada</h3>
@@ -470,14 +681,14 @@ export default function WorkspaceTurismoOportunidadesPage() {
                   Quando novas ofertas de pacotes forem publicadas ou importadas, o motor determinístico cruzará os
                   dados com o backlog de interesses e exibirá as combinações aqui.
                 </p>
-                <div className="flex items-center gap-3 mt-6">
+                <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
                   <Button
                     variant="default"
                     onClick={() => setIsNewInterestOpen(true)}
                     className="h-11 min-h-11 px-4 focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <Plus className="size-4 mr-2" />
-                    Cadastrar Primeiro Interesse
+                    Novo Interesse
                   </Button>
                   <Button
                     variant="outline"
@@ -485,7 +696,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
                     className="h-11 min-h-11 px-4 focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <Upload className="size-4 mr-2" />
-                    Importar Lista em Lote
+                    Importar Lote
                   </Button>
                 </div>
               </Card>
@@ -523,6 +734,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
                               onOpenWhatsApp={handleOpenWhatsApp}
                               onCopyApproach={handleCopyApproach}
                               onInspect={setSelectedMatch}
+                              onDismiss={handleDismissMatch}
                             />
                           ))
                         )}
@@ -540,6 +752,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
                     onOpenWhatsApp={handleOpenWhatsApp}
                     onCopyApproach={handleCopyApproach}
                     onInspect={setSelectedMatch}
+                    onDismiss={handleDismissMatch}
                   />
                 ))}
               </div>
@@ -642,7 +855,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
 
                   <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs">
                     {c.linkedCrmLeadId ? (
-                      <span className="text-emerald-600 font-medium flex items-center gap-1">
+                      <span className="text-success font-medium flex items-center gap-1">
                         <CheckCircle2 className="size-3.5" /> Vinculado ao CRM
                       </span>
                     ) : (
@@ -676,8 +889,8 @@ export default function WorkspaceTurismoOportunidadesPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold text-foreground">Score Final Composto</span>
                   <Badge
-                    variant={selectedMatch.matchScore >= 80 ? "default" : "secondary"}
-                    className="text-sm font-bold px-3 py-1 bg-emerald-600 text-primary-foreground"
+                    variant={selectedMatch.matchScore >= 80 ? "success" : "secondary"}
+                    className="text-sm font-bold px-3 py-1"
                   >
                     {selectedMatch.matchScore}/100 Pts
                   </Badge>
@@ -690,29 +903,76 @@ export default function WorkspaceTurismoOportunidadesPage() {
                 </p>
               </div>
 
-              {/* Decomposição das 5 Dimensões */}
+              {/* Decomposição das 5 Dimensões + Simulação Infantil & Histórico */}
               <div className="space-y-3">
-                <h4 className="text-sm font-semibold text-foreground">Decomposição Algébrica</h4>
-                <div className="space-y-2">
-                  {(selectedMatch.dimensions || []).map((d: any) => (
-                    <div key={d.dimension} className="p-3 bg-card border border-border rounded-lg space-y-1">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-semibold uppercase text-muted-foreground">
-                          {d.dimension === "destination"
-                            ? "Destino"
-                            : d.dimension === "budget"
-                            ? "Orçamento & Parcela"
-                            : d.dimension === "dates"
-                            ? "Datas & Temporada"
-                            : d.dimension === "party"
-                            ? "Composição Familiar"
-                            : "Inclusões Solicitadas"}
-                        </span>
-                        <span className="font-bold text-foreground">
-                          {d.score} / {d.weight} pts
-                        </span>
+                <h4 className="text-sm font-semibold text-foreground">Critérios & Verificação do Match</h4>
+
+                {selectedMatch.childSimulation?.applied && (
+                  <div className="p-3 bg-muted/30 border border-border rounded-lg space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-semibold text-foreground">Simulação de Crianças (0–17a)</span>
+                      <Badge variant="warning" className="text-xs">
+                        {formatMoney(selectedMatch.childSimulation.simulatedTotalCents || 0)}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{selectedMatch.childSimulation.reasonPt}</p>
+                    {Array.isArray(selectedMatch.childSimulation.perChildBreakdown) &&
+                      selectedMatch.childSimulation.perChildBreakdown.length > 0 && (
+                        <div className="space-y-1 pt-1 border-t border-border/50">
+                          {selectedMatch.childSimulation.perChildBreakdown.map((ch: any, idx: number) => (
+                            <div key={idx} className="flex items-center justify-between text-xs text-muted-foreground">
+                              <span>
+                                Criança {idx + 1}: {ch.bandLabel}
+                              </span>
+                              <span className="font-mono font-semibold text-foreground">
+                                {formatMoney(ch.estimatedCostCents || 0)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                  </div>
+                )}
+
+                {selectedMatch.historicalCheck && selectedMatch.historicalCheck.sampleCount >= 2 && (
+                  <div className="p-3 bg-muted/30 border border-border rounded-lg space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-semibold text-foreground">Comparativo Histórico</span>
+                      <Badge
+                        variant={selectedMatch.historicalCheck.verdict === "great_deal" ? "success" : "secondary"}
+                        className="text-xs"
+                      >
+                        {selectedMatch.historicalCheck.historicalSavingsPct != null
+                          ? `${selectedMatch.historicalCheck.historicalSavingsPct > 0 ? "-" : "+"}${Math.abs(Math.round(selectedMatch.historicalCheck.historicalSavingsPct))}% vs mediana`
+                          : "Alinhado"}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{selectedMatch.historicalCheck.verdictLabelPt}</p>
+                  </div>
+                )}
+
+                {selectedMatch.alreadyProposedRecently && (
+                  <div className="p-3 bg-warning/15 border border-warning/30 rounded-lg flex items-start gap-2 text-xs text-warning-strong">
+                    <AlertTriangle className="size-3.5 shrink-0 mt-1" />
+                    <span>Este cliente já recebeu uma proposta ou abordagem recente para o mesmo destino.</span>
+                  </div>
+                )}
+
+                {Array.isArray(selectedMatch.warnings) && selectedMatch.warnings.length > 0 && (
+                  <div className="p-3 bg-warning/15 border border-warning/30 rounded-lg space-y-1">
+                    {selectedMatch.warnings.map((w: string, i: number) => (
+                      <div key={i} className="flex items-start gap-2 text-xs text-warning-strong">
+                        <AlertTriangle className="size-3.5 shrink-0 mt-1" />
+                        <span>{w}</span>
                       </div>
-                      <p className="text-xs text-muted-foreground">{d.details}</p>
+                    ))}
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  {(selectedMatch.dimensions || []).map((d: any, idx: number) => (
+                    <div key={`${d.dimension}-${idx}`} className="p-3 bg-card border border-border rounded-lg space-y-1">
+                      <p className="text-xs text-foreground">{d.details}</p>
                     </div>
                   ))}
                 </div>
@@ -740,30 +1000,56 @@ export default function WorkspaceTurismoOportunidadesPage() {
               <div className="pt-4 border-t border-border flex flex-col gap-3">
                 <Button
                   onClick={() => handleOpenWhatsApp(selectedMatch)}
-                  className="w-full h-11 min-h-11 bg-emerald-600 hover:bg-emerald-700 text-primary-foreground font-medium focus-visible:ring-2 focus-visible:ring-ring"
+                  className="w-full h-11 min-h-11 bg-primary text-primary-foreground font-medium focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <MessageSquare className="size-4 mr-2" />
                   Abrir Conversa no WhatsApp
                 </Button>
 
-                <Button
-                  variant="outline"
-                  onClick={() =>
-                    promoteToCrmMutation.mutate({
-                      data: {
-                        matchId: selectedMatch.id,
-                        notes: "Promovido via Radar Comercial pelo corretor.",
-                      },
-                    })
-                  }
-                  disabled={promoteToCrmMutation.isPending || selectedMatch.status === "promoted_to_crm"}
-                  className="w-full h-11 min-h-11 font-medium focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <UserCheck className="size-4 mr-2" />
-                  {selectedMatch.status === "promoted_to_crm"
-                    ? "Já Promovido ao CRM"
-                    : "Promover Oportunidade ao CRM Formal"}
-                </Button>
+                {selectedMatch.leadId ? (
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="w-full h-11 min-h-11 font-medium focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Link to="/workspace/turismo" search={{ leadId: selectedMatch.leadId } as any}>
+                      <ExternalLink className="size-4 mr-2" />
+                      Abrir no Funil
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      promoteToCrmMutation.mutate({
+                        data: {
+                          matchId: selectedMatch.id,
+                          notes: "Promovido via Radar Comercial pelo corretor.",
+                        },
+                      })
+                    }
+                    disabled={promoteToCrmMutation.isPending || selectedMatch.status === "promoted_to_crm"}
+                    className="w-full h-11 min-h-11 font-medium focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <UserCheck className="size-4 mr-2" />
+                    {selectedMatch.status === "promoted_to_crm"
+                      ? "Já no CRM"
+                      : "Promover ao CRM"}
+                  </Button>
+                )}
+
+                {selectedMatch.status !== "dismissed" && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => handleDismissMatch(selectedMatch)}
+                    disabled={recordInteractionMutation.isPending}
+                    className="w-full h-11 min-h-11 text-destructive hover:text-destructive hover:bg-destructive/10 font-medium focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <X className="size-4 mr-2" />
+                    Descartar
+                  </Button>
+                )}
               </div>
             </div>
           )}
@@ -791,6 +1077,16 @@ export default function WorkspaceTurismoOportunidadesPage() {
           queryClient.invalidateQueries({ queryKey: ["travel-opportunities"] });
           queryClient.invalidateQueries({ queryKey: ["commercial-contacts"] });
           setIsBulkImportOpen(false);
+        }}
+      />
+
+      {/* Modal de Análise de Orçamento x Pipeline */}
+      <OfferAnalyzerSheet
+        open={isOfferAnalyzerOpen}
+        onOpenChange={setIsOfferAnalyzerOpen}
+        onPersisted={() => {
+          queryClient.invalidateQueries({ queryKey: ["unified-radar-opportunities"] });
+          queryClient.invalidateQueries({ queryKey: ["travel-opportunities"] });
         }}
       />
 
@@ -825,26 +1121,34 @@ interface NewInterestSheetProps {
 function NewInterestSheet({ open, onOpenChange, onSuccess }: NewInterestSheetProps) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [destinations, setDestinations] = useState("");
+  const [destinationTags, setDestinationTags] = useState<StructuredDestinationTag[]>([]);
   const [title, setTitle] = useState("");
-  const [targetMonth, setTargetMonth] = useState("2026-07");
+  const [periodSpec, setPeriodSpec] = useState<StructuredPeriodSpec>({
+    mode: "month_list",
+    targetMonths: ["2026-07"],
+    seasonTags: [],
+    flexibilityDays: 3,
+    flexibleAnytime: false,
+  });
+  const [roomOccupancies, setRoomOccupancies] = useState<StructuredRoomOccupancy[]>([
+    { roomNumber: 1, roomLabel: "Quarto 1", adultsCount: 2, childrenCount: 0, childrenAges: [] },
+  ]);
+  const [maxTotalBudget, setMaxTotalBudget] = useState("");
   const [maxInstallment, setMaxInstallment] = useState("");
-  const [adults, setAdults] = useState("2");
-  const [children, setChildren] = useState("0");
   const [notes, setNotes] = useState("");
+  const [rawMarkdown, setRawMarkdown] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !phone.trim() || !destinations.trim()) {
-      toast.error("Preencha nome, telefone e ao menos um destino");
+    if (!name.trim() || !phone.trim() || destinationTags.length === 0) {
+      toast.error("Preencha nome, telefone e selecione ao menos um destino da lista");
       return;
     }
 
     try {
       setIsSubmitting(true);
 
-      // 1. Criar ou atualizar contato pré-CRM
       const contact = await upsertCommercialContactFn({
         data: {
           name: name.trim(),
@@ -855,47 +1159,74 @@ function NewInterestSheet({ open, onOpenChange, onSuccess }: NewInterestSheetPro
         },
       });
 
-      const destList = destinations
-        .split(",")
-        .map((d) => d.trim())
-        .filter(Boolean);
-
+      const destList = destinationTags.map((d) => d.label);
       const installmentCents = maxInstallment ? Math.round(parseFloat(maxInstallment) * 100) : null;
+      const totalCents = maxTotalBudget ? Math.round(parseFloat(maxTotalBudget) * 100) : null;
+      const totalAdults = roomOccupancies.reduce((sum, r) => sum + (r.adultsCount || 1), 0);
+      const allChildrenAges = roomOccupancies.flatMap((r) => r.childrenAges || []);
 
-      // 2. Criar interesse de viagem
+      const mappedFlex =
+        periodSpec.mode === "flexible_anytime" || periodSpec.flexibleAnytime
+          ? "flexible_anytime"
+          : periodSpec.startDate
+            ? "exact_dates"
+            : periodSpec.seasonTags.length > 0 && periodSpec.targetMonths.length === 0
+              ? "specific_season"
+              : "specific_month";
+
       await upsertTravelInterestFn({
         data: {
           contactId: contact.id,
           title: title.trim() || `${destList[0]} em Família`,
           destinations: destList,
+          destinationTags,
+          periodTags: periodSpec.seasonTags,
+          flexibilityDays: periodSpec.flexibilityDays,
+          roomOccupancies,
+          rawIntentMarkdown: rawMarkdown.trim() || null,
           dates: {
-            flexibility: "specific_month",
-            targetMonths: [targetMonth],
+            flexibility: mappedFlex,
+            targetMonths: periodSpec.targetMonths,
+            exactDepartureDate: periodSpec.startDate || null,
+            exactReturnDate: periodSpec.endDate || null,
           },
           party: {
-            adults: parseInt(adults, 10) || 2,
-            children: parseInt(children, 10) || 0,
-            childrenAges: [],
-            roomConfiguration: "family",
+            adults: totalAdults || 2,
+            children: allChildrenAges.length,
+            childrenAges: allChildrenAges,
+            roomConfiguration: roomOccupancies.length > 1 ? "custom" : "family",
           },
           budget: {
+            maxTotalBudgetCents: totalCents,
             maxInstallmentCents: installmentCents,
             preferredInstallments: 12,
-            priceBasisPreference: "per_person",
+            priceBasisPreference: "total_package",
           },
           inclusionsWanted: ["all_inclusive", "aereo_incluso"],
           urgency: "moderate",
-          sourceInquiryText: notes.trim() || null,
+          sourceInquiryText: notes.trim() || rawMarkdown.trim() || null,
         },
       });
 
-      toast.success("Interesse registrado com sucesso na memória comercial!");
+      toast.success("Interesse estruturado salvo e cruzado com ofertas ativas!");
       setName("");
       setPhone("");
-      setDestinations("");
+      setDestinationTags([]);
       setTitle("");
+      setMaxTotalBudget("");
       setMaxInstallment("");
       setNotes("");
+      setRawMarkdown("");
+      setPeriodSpec({
+        mode: "month_list",
+        targetMonths: ["2026-07"],
+        seasonTags: [],
+        flexibilityDays: 3,
+        flexibleAnytime: false,
+      });
+      setRoomOccupancies([
+        { roomNumber: 1, roomLabel: "Quarto 1", adultsCount: 2, childrenCount: 0, childrenAges: [] },
+      ]);
       onSuccess();
     } catch (err: any) {
       toast.error(`Falha ao registrar: ${err.message}`);
@@ -913,66 +1244,93 @@ function NewInterestSheet({ open, onOpenChange, onSuccess }: NewInterestSheetPro
             Novo Interesse Comercial
           </SheetTitle>
           <SheetDescription>
-            Cadastre a intenção de viagem do passageiro para monitoramento e matching automático de ofertas.
+            Cadastre destinos, período, quartos e idades (0–17 anos) para matching real sem falsos positivos.
           </SheetDescription>
         </SheetHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="passenger-name">Nome do Viajante *</Label>
-            <Input
-              id="passenger-name"
-              placeholder="Ex: Mariana Souza"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="h-11 min-h-11"
-              required
-            />
-          </div>
+          <TravelIntentAiImporter
+            mode="lead_intent"
+            onApply={(parsed) => {
+              if (parsed.contact.fullName) setName(parsed.contact.fullName);
+              if (parsed.contact.whatsapp) setPhone(parsed.contact.whatsapp);
+              if (parsed.destinations.length > 0) setDestinationTags(parsed.destinations);
+              if (parsed.period.mode !== "unspecified") setPeriodSpec(parsed.period);
+              if (parsed.rooms.length > 0) setRoomOccupancies(parsed.rooms);
+              if (parsed.preferences.summaryTitle) setTitle(parsed.preferences.summaryTitle);
+              if (parsed.budget.maxTotalBudgetCents) {
+                setMaxTotalBudget(String(Math.round(parsed.budget.maxTotalBudgetCents / 100)));
+              }
+              if (parsed.budget.maxInstallmentCents) {
+                setMaxInstallment(String(Math.round(parsed.budget.maxInstallmentCents / 100)));
+              }
+              setRawMarkdown(parsed.rawMarkdownPreserved);
+              if (!notes) setNotes(parsed.rawMarkdownPreserved);
+              toast.success("Campos preenchidos a partir do texto!");
+            }}
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="passenger-phone">Telefone / WhatsApp *</Label>
-            <Input
-              id="passenger-phone"
-              placeholder="Ex: (49) 98877-6655"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="h-11 min-h-11"
-              required
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="passenger-name">Nome do Viajante *</Label>
+              <Input
+                id="passenger-name"
+                placeholder="Ex: Mariana Souza"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="h-11 min-h-11"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="passenger-phone">Telefone / WhatsApp *</Label>
+              <Input
+                id="passenger-phone"
+                placeholder="Ex: (49) 98877-6655"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="h-11 min-h-11"
+                required
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="travel-title">Título do Projeto de Viagem</Label>
             <Input
               id="travel-title"
-              placeholder="Ex: Férias de Julho em Família no Caribe"
+              placeholder="Ex: Férias de Julho em Família no Nordeste"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="h-11 min-h-11"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="travel-destinations">Destinos Aceitos (separados por vírgula) *</Label>
-            <Input
-              id="travel-destinations"
-              placeholder="Ex: Punta Cana, Cancún, Caribe, Maceió"
-              value={destinations}
-              onChange={(e) => setDestinations(e.target.value)}
-              className="h-11 min-h-11"
-              required
-            />
-          </div>
+          <DestinationTagsPicker
+            value={destinationTags}
+            onChange={setDestinationTags}
+          />
 
-          <div className="grid grid-cols-2 gap-4">
+          <TravelPeriodTagsPicker
+            value={periodSpec}
+            onChange={setPeriodSpec}
+          />
+
+          <RoomOccupancyBuilder
+            value={roomOccupancies}
+            onChange={setRoomOccupancies}
+          />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="target-month">Mês Alvo Previsto</Label>
+              <Label htmlFor="max-total-budget">Orçamento Total (R$)</Label>
               <Input
-                id="target-month"
-                type="month"
-                value={targetMonth}
-                onChange={(e) => setTargetMonth(e.target.value)}
+                id="max-total-budget"
+                type="number"
+                placeholder="Ex: 12000"
+                value={maxTotalBudget}
+                onChange={(e) => setMaxTotalBudget(e.target.value)}
                 className="h-11 min-h-11"
               />
             </div>
@@ -989,36 +1347,11 @@ function NewInterestSheet({ open, onOpenChange, onSuccess }: NewInterestSheetPro
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="party-adults">Adultos</Label>
-              <Input
-                id="party-adults"
-                type="number"
-                min="1"
-                value={adults}
-                onChange={(e) => setAdults(e.target.value)}
-                className="h-11 min-h-11"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="party-children">Crianças</Label>
-              <Input
-                id="party-children"
-                type="number"
-                min="0"
-                value={children}
-                onChange={(e) => setChildren(e.target.value)}
-                className="h-11 min-h-11"
-              />
-            </div>
-          </div>
-
           <div className="space-y-2">
             <Label htmlFor="inquiry-notes">Observações do Atendimento</Label>
             <Textarea
               id="inquiry-notes"
-              placeholder="Ex: Preferem resort pé na areia com recreação infantil para 2 crianças de 5 e 8 anos."
+              placeholder="Preferências de hotel, embarque, observações do cliente..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="min-h-24"
@@ -1057,6 +1390,7 @@ interface OpportunityMatchCardProps {
   onOpenWhatsApp: (match: any) => void;
   onCopyApproach: (match: any) => void;
   onInspect: (match: any) => void;
+  onDismiss: (match: any) => void;
 }
 
 function OpportunityMatchCard({
@@ -1064,6 +1398,7 @@ function OpportunityMatchCard({
   onOpenWhatsApp,
   onCopyApproach,
   onInspect,
+  onDismiss,
 }: OpportunityMatchCardProps) {
   const isHighPriority = match.matchScore >= 80;
 
@@ -1072,39 +1407,44 @@ function OpportunityMatchCard({
       className={cn(
         "p-4 border transition-colors flex flex-col justify-between rounded-xl",
         isHighPriority
-          ? "border-emerald-500/40 bg-emerald-500/5 hover:border-emerald-500/60"
+          ? "border-success/40 bg-success/5 hover:border-success/60"
           : "border-border bg-card hover:border-border/80"
       )}
     >
       <div>
-        {/* Cabeçalho do Card com Score */}
-        <div className="flex items-center justify-between gap-2 mb-3">
-          <Badge
-            variant={isHighPriority ? "default" : "secondary"}
-            className={cn(
-              "px-3 py-1 font-semibold text-xs tracking-wide",
-              isHighPriority
-                ? "bg-emerald-600 text-primary-foreground"
-                : "bg-muted text-foreground"
+        {/* Cabeçalho do Card com Score & Origem */}
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <Badge variant={isHighPriority ? "success" : "secondary"} className="px-3 py-1 font-semibold text-xs">
+            {Math.round(Number(match.matchScore || 0))}% Match
+          </Badge>
+          <div className="flex items-center gap-2">
+            {match.sourceType && (
+              <Badge variant="outline" className="text-xs font-medium">
+                {match.sourceType === "proposal"
+                  ? "Proposta"
+                  : match.sourceType === "quote_capture"
+                    ? "Captura"
+                    : match.sourceType === "agency_quote"
+                      ? "Cotação"
+                      : "Pacote"}
+              </Badge>
             )}
-          >
-            {match.matchScore}% Compatibilidade
-          </Badge>
-          <Badge variant="outline" className="text-xs uppercase font-medium">
-            {match.status === "promoted_to_crm"
-              ? "Promovido"
-              : match.status === "approached"
-              ? "Abordado"
-              : match.status === "engaged"
-              ? "Em Conversa"
-              : match.status === "dismissed"
-              ? "Descartado"
-              : "Novo"}
-          </Badge>
+            <Badge variant="outline" className="text-xs uppercase font-medium">
+              {match.status === "promoted_to_crm"
+                ? "Promovido"
+                : match.status === "approached"
+                  ? "Abordado"
+                  : match.status === "engaged"
+                    ? "Em Conversa"
+                    : match.status === "dismissed"
+                      ? "Descartado"
+                      : "Novo"}
+            </Badge>
+          </div>
         </div>
 
         {/* Dados do Viajante e Destino */}
-        <h4 className="text-base font-semibold text-foreground break-words text-wrap leading-tight">
+        <h4 className="text-base font-semibold text-foreground break-words leading-tight">
           {match.contact?.name || "Passageiro Interessado"}
         </h4>
         <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
@@ -1115,7 +1455,7 @@ function OpportunityMatchCard({
         <div className="mt-4 pt-3 border-t border-border/60 space-y-2">
           <div className="flex items-start gap-2">
             <MapPin className="size-4 text-primary shrink-0 mt-1" />
-            <div className="text-sm font-medium text-foreground break-words text-wrap leading-tight">
+            <div className="text-sm font-medium text-foreground break-words leading-tight">
               {match.offerSnapshot?.title || "Pacote de Viagem"}
             </div>
           </div>
@@ -1125,12 +1465,40 @@ function OpportunityMatchCard({
             <span>{match.offerSnapshot?.datesDisplayText || "Período flexível"}</span>
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
-            <DollarSign className="size-3.5 text-emerald-600 shrink-0" />
-            <span>
-              {match.offerSnapshot?.installmentCount}x de{" "}
-              {formatMoney(match.offerSnapshot?.installmentCents || 0)}
-            </span>
+          {match.customerRoomsSummary && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Users className="size-3.5 shrink-0" />
+              <span>{match.customerRoomsSummary}</span>
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-foreground">
+            <DollarSign className="size-3.5 text-primary shrink-0" />
+            {match.offerSnapshot?.installmentCount && match.offerSnapshot?.installmentCents ? (
+              <span>
+                {match.offerSnapshot.installmentCount}x de{" "}
+                {formatMoney(match.offerSnapshot.installmentCents)}
+              </span>
+            ) : (
+              <span>
+                {match.requiresChildRequote ? "Simulado " : ""}
+                {formatMoney(match.offerSnapshot?.effectiveTotalCents || match.offerSnapshot?.totalPriceCents || 0)}
+              </span>
+            )}
+            {match.requiresChildRequote && (
+              <Badge variant="warning" className="text-xs">Simulação CHD</Badge>
+            )}
+            {match.historicalCheck?.historicalSavingsPct != null &&
+              Number(match.historicalCheck.historicalSavingsPct) >= 8 && (
+                <Badge variant="success" className="text-xs">
+                  -{Math.round(Number(match.historicalCheck.historicalSavingsPct))}% histórico
+                </Badge>
+              )}
+            {match.alreadyProposedRecently && (
+              <Badge variant="outline" className="text-xs text-warning-strong border-warning/40">
+                Proposta recente
+              </Badge>
+            )}
           </div>
         </div>
       </div>
@@ -1140,7 +1508,7 @@ function OpportunityMatchCard({
         <Button
           size="sm"
           onClick={() => onOpenWhatsApp(match)}
-          className="flex-1 h-11 min-h-11 font-medium bg-emerald-600 hover:bg-emerald-700 text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex-1 h-11 min-h-11 font-medium bg-success hover:bg-success/90 text-success-foreground focus-visible:ring-2 focus-visible:ring-ring"
         >
           <MessageSquare className="size-4 mr-2" />
           WhatsApp
@@ -1163,6 +1531,17 @@ function OpportunityMatchCard({
         >
           <SlidersHorizontal className="size-4" />
         </Button>
+        {match.status !== "dismissed" && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDismiss(match)}
+            aria-label="Descartar oportunidade"
+            className="h-11 min-h-11 px-3 text-destructive hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <X className="size-4" />
+          </Button>
+        )}
       </div>
     </Card>
   );
@@ -1194,6 +1573,7 @@ function BulkImportSheet({ open, onOpenChange, onSuccess }: BulkImportSheetProps
       maxInstallmentCents?: number;
       adults: number;
       children: number;
+      childrenAges: number[];
       notes?: string;
     }> = [];
 
@@ -1227,7 +1607,17 @@ function BulkImportSheet({ open, onOpenChange, onSuccess }: BulkImportSheetProps
 
       const adults = parseInt(parts[5]?.trim() || "2", 10) || 2;
       const children = parseInt(parts[6]?.trim() || "0", 10) || 0;
-      const notes = parts[7]?.trim() || undefined;
+      const col7 = parts[7]?.trim() || "";
+      const col8 = parts[8]?.trim() || "";
+      const looksLikeAges = /^\d+(?:[;|/\s]+\d+)*$/.test(col7);
+      const agesToken = col8 ? col7 : looksLikeAges ? col7 : "";
+      const childrenAges = agesToken
+        ? agesToken
+            .split(/[;|/\s]+/)
+            .map((n) => parseInt(n.trim(), 10))
+            .filter((n) => !Number.isNaN(n) && n >= 0 && n <= 17)
+        : [];
+      const notes = col8 || (!looksLikeAges && col7 ? col7 : undefined);
 
       result.push({
         name,
@@ -1236,7 +1626,8 @@ function BulkImportSheet({ open, onOpenChange, onSuccess }: BulkImportSheetProps
         targetMonth,
         maxInstallmentCents,
         adults,
-        children,
+        children: Math.max(children, childrenAges.length),
+        childrenAges,
         notes,
       });
     }
@@ -1314,7 +1705,7 @@ function BulkImportSheet({ open, onOpenChange, onSuccess }: BulkImportSheetProps
             />
             <p className="text-xs text-muted-foreground">
               Formato esperado por linha:{" "}
-              <code className="text-foreground">Nome, WhatsApp, Destinos, Mês (YYYY-MM), Parcela Máx, Adultos, Crianças, Notas</code>
+              <code className="text-foreground">Nome, WhatsApp, Destinos, Mês (YYYY-MM), Parcela Máx, Adultos, Crianças, Idades (ex: 5;11), Notas</code>
             </p>
           </div>
 
@@ -1328,7 +1719,7 @@ function BulkImportSheet({ open, onOpenChange, onSuccess }: BulkImportSheetProps
                 size="sm"
                 onClick={() =>
                   setRawText(
-                    "Mariana Souza, 49999112233, Punta Cana/Caribe, 2026-07, 800, 2, 2, Resort all inclusive\nCarlos Eduardo, 49988223344, Cancún, 2026-09, 750, 2, 0, Lua de mel\nLuciana Prado, 49991556677, Maceió/Nordeste, 2026-10, 500, 2, 1, Férias em família"
+                    "Mariana Souza, 49999112233, Punta Cana/Caribe, 2026-07, 800, 2, 2, 5;11, Resort all inclusive\nCarlos Eduardo, 49988223344, Cancún, 2026-09, 750, 2, 0, , Lua de mel\nLuciana Prado, 49991556677, Maceió/Nordeste, 2026-10, 500, 2, 1, 8, Férias em família"
                   )
                 }
                 className="h-11 min-h-11 px-3 text-xs text-primary"
@@ -1338,7 +1729,7 @@ function BulkImportSheet({ open, onOpenChange, onSuccess }: BulkImportSheetProps
             </div>
             <Textarea
               id="raw-text-input"
-              placeholder="Exemplo: Mariana Souza, 49999112233, Punta Cana, 2026-07, 800, 2, 2"
+              placeholder="Exemplo: Mariana Souza, 49999112233, Punta Cana, 2026-07, 800, 2, 2, 5;11"
               value={rawText}
               onChange={(e) => setRawText(e.target.value)}
               className="min-h-36 font-mono text-xs"
@@ -1365,6 +1756,7 @@ function BulkImportSheet({ open, onOpenChange, onSuccess }: BulkImportSheetProps
                       <th className="p-2">Telefone</th>
                       <th className="p-2">Destino</th>
                       <th className="p-2">Mês</th>
+                      <th className="p-2">Grupo / Idades</th>
                       <th className="p-2">Parcela Máx</th>
                     </tr>
                   </thead>
@@ -1375,6 +1767,10 @@ function BulkImportSheet({ open, onOpenChange, onSuccess }: BulkImportSheetProps
                         <td className="p-2 font-mono text-muted-foreground">{item.phone}</td>
                         <td className="p-2">{item.destinations.join(", ")}</td>
                         <td className="p-2 text-muted-foreground">{item.targetMonth || "Qualquer"}</td>
+                        <td className="p-2 text-muted-foreground">
+                          {item.adults} ADT{item.children > 0 ? ` + ${item.children} CHD` : ""}
+                          {item.childrenAges.length > 0 ? ` (${item.childrenAges.join(", ")}a)` : ""}
+                        </td>
                         <td className="p-2 font-medium">
                           {item.maxInstallmentCents ? formatMoney(item.maxInstallmentCents) : "Livre"}
                         </td>
@@ -1405,6 +1801,374 @@ function BulkImportSheet({ open, onOpenChange, onSuccess }: BulkImportSheetProps
             </Button>
           </div>
         </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+// ============================================================================
+// COMPONENTE: ANALISADOR DE ORÇAMENTO RECEBIDO X PIPELINE + HISTÓRICO + CHD
+// ============================================================================
+
+interface OfferAnalyzerSheetProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onPersisted: () => void;
+}
+
+function OfferAnalyzerSheet({ open, onOpenChange, onPersisted }: OfferAnalyzerSheetProps) {
+  const analyzerId = useId();
+  const [title, setTitle] = useState("");
+  const [destinationCity, setDestinationCity] = useState("");
+  const [originCity, setOriginCity] = useState("");
+  const [departureDate, setDepartureDate] = useState("");
+  const [returnDate, setReturnDate] = useState("");
+  const [quotedAdultsCount, setQuotedAdultsCount] = useState(2);
+  const [quotedChildAgesRaw, setQuotedChildAgesRaw] = useState("");
+  const [totalPriceCents, setTotalPriceCents] = useState<number>(0);
+  const [airfarePerAdultCents, setAirfarePerAdultCents] = useState<number>(0);
+  const [transferPerAdultCents, setTransferPerAdultCents] = useState<number>(0);
+  const [persistMatches, setPersistMatches] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysis, setAnalysis] = useState<IncomingOfferPipelineAnalysis | null>(null);
+
+  const parsedQuotedChildAges = useMemo(() => {
+    return quotedChildAgesRaw
+      .split(/[,;\s/|]+/)
+      .map((t) => parseInt(t.trim(), 10))
+      .filter((n) => !Number.isNaN(n) && n >= 0 && n <= 17)
+      .slice(0, 12);
+  }, [quotedChildAgesRaw]);
+
+  const handleRunAnalysis = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!destinationCity.trim() || destinationCity.trim().length < 2) {
+      toast.error("Informe o destino da cotação recebida.");
+      return;
+    }
+    setIsAnalyzing(true);
+    try {
+      const res = await analyzeIncomingOfferAgainstPipelineFn({
+        data: {
+          title: title.trim() || undefined,
+          destinationCity: destinationCity.trim(),
+          originCity: originCity.trim() || undefined,
+          departureDate: departureDate.trim() || undefined,
+          returnDate: returnDate.trim() || undefined,
+          quotedAdultsCount: Math.max(1, Number(quotedAdultsCount) || 2),
+          quotedChildrenAges: parsedQuotedChildAges,
+          totalPriceCents: Math.max(0, Number(totalPriceCents) || 0),
+          airfarePerAdultCents: airfarePerAdultCents > 0 ? airfarePerAdultCents : undefined,
+          transferPerAdultCents: transferPerAdultCents > 0 ? transferPerAdultCents : undefined,
+          persistMatches,
+          minScore: 55,
+        },
+      });
+      setAnalysis(res);
+      if (persistMatches && res.persistedCount > 0) {
+        toast.success(`${res.persistedCount} oportunidade(s) gravadas no Radar!`);
+        onPersisted();
+      } else {
+        toast.success(`${res.matchedCount} lead(s) compatíveis encontrados no funil.`);
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao analisar orçamento contra o Radar.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto p-6 space-y-6">
+        <SheetHeader>
+          <SheetTitle className="text-xl font-bold flex items-center gap-2">
+            <Calculator className="size-5 text-primary" />
+            <span>Analisar Orçamento Recebido</span>
+          </SheetTitle>
+          <SheetDescription>
+            Compare com o histórico de preços da agência e simule tarifas CHD (2–11a) contra todo o funil de leads.
+          </SheetDescription>
+        </SheetHeader>
+
+        <TravelIntentAiImporter
+          mode="offer_quote"
+          onApply={(parsed) => {
+            if (parsed.destinations[0]) {
+              setDestinationCity(parsed.destinations[0].city || parsed.destinations[0].label);
+            }
+            if (parsed.period.startDate) setDepartureDate(parsed.period.startDate);
+            if (parsed.period.endDate) setReturnDate(parsed.period.endDate);
+            if (parsed.preferences.summaryTitle) setTitle(parsed.preferences.summaryTitle);
+            if (parsed.rooms.length > 0) {
+              const adts = parsed.rooms.reduce((s, r) => s + r.adultsCount, 0);
+              const chds = parsed.rooms.flatMap((r) => r.childrenAges || []);
+              if (adts > 0) setQuotedAdultsCount(adts);
+              if (chds.length > 0) setQuotedChildAgesRaw(chds.join(", "));
+            }
+            if (parsed.budget.maxTotalBudgetCents) {
+              setTotalPriceCents(parsed.budget.maxTotalBudgetCents);
+            }
+            toast.success("Dados extraídos para análise!");
+          }}
+        />
+
+        <form onSubmit={handleRunAnalysis} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor={`${analyzerId}-dest`}>Destino *</Label>
+              <Input
+                id={`${analyzerId}-dest`}
+                value={destinationCity}
+                onChange={(e) => setDestinationCity(e.target.value)}
+                placeholder="Ex: Maceió ou Punta Cana"
+                className="h-11 min-h-11"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`${analyzerId}-origin`}>Origem (Opcional)</Label>
+              <Input
+                id={`${analyzerId}-origin`}
+                value={originCity}
+                onChange={(e) => setOriginCity(e.target.value)}
+                placeholder="Ex: XAP / FLN / GRU"
+                className="h-11 min-h-11"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor={`${analyzerId}-start`}>Data Ida</Label>
+              <Input
+                id={`${analyzerId}-start`}
+                type="date"
+                value={departureDate}
+                onChange={(e) => setDepartureDate(e.target.value)}
+                className="h-11 min-h-11"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`${analyzerId}-end`}>Data Volta</Label>
+              <Input
+                id={`${analyzerId}-end`}
+                type="date"
+                value={returnDate}
+                onChange={(e) => setReturnDate(e.target.value)}
+                className="h-11 min-h-11"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`${analyzerId}-title`}>Título da Oferta</Label>
+              <Input
+                id={`${analyzerId}-title`}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Ex: Promo Aéreo + Resort"
+                className="h-11 min-h-11"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor={`${analyzerId}-adults`}>Adultos na Cotação</Label>
+              <Input
+                id={`${analyzerId}-adults`}
+                type="number"
+                min={1}
+                max={20}
+                value={quotedAdultsCount}
+                onChange={(e) => setQuotedAdultsCount(Math.max(1, Number(e.target.value) || 2))}
+                className="h-11 min-h-11"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`${analyzerId}-chd`}>Idades Crianças Cotadas (Opcional)</Label>
+              <Input
+                id={`${analyzerId}-chd`}
+                value={quotedChildAgesRaw}
+                onChange={(e) => setQuotedChildAgesRaw(e.target.value)}
+                placeholder="Ex: 5, 11"
+                className="h-11 min-h-11"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor={`${analyzerId}-total`}>Valor Total Cotado (R$)</Label>
+              <CurrencyField
+                id={`${analyzerId}-total`}
+                value={totalPriceCents || undefined}
+                onChange={(v) => setTotalPriceCents(v ?? 0)}
+                placeholder="0,00"
+                className="h-11 min-h-11 font-mono"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`${analyzerId}-airfare`}>Aéreo p/ Adulto (Sim. CHD)</Label>
+              <CurrencyField
+                id={`${analyzerId}-airfare`}
+                value={airfarePerAdultCents || undefined}
+                onChange={(v) => setAirfarePerAdultCents(v ?? 0)}
+                placeholder="0,00"
+                className="h-11 min-h-11 font-mono"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`${analyzerId}-transfer`}>Transfer p/ Adulto</Label>
+              <CurrencyField
+                id={`${analyzerId}-transfer`}
+                value={transferPerAdultCents || undefined}
+                onChange={(v) => setTransferPerAdultCents(v ?? 0)}
+                placeholder="0,00"
+                className="h-11 min-h-11 font-mono"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-3 rounded-lg bg-muted/30 p-3">
+            <Label htmlFor={`${analyzerId}-persist`} className="text-xs font-medium text-foreground cursor-pointer">
+              Salvar matches detectados no painel Radar
+            </Label>
+            <Switch
+              id={`${analyzerId}-persist`}
+              checked={persistMatches}
+              onCheckedChange={setPersistMatches}
+            />
+          </div>
+
+          <Button
+            type="submit"
+            disabled={isAnalyzing}
+            className="w-full h-11 min-h-11 font-semibold focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {isAnalyzing ? "Analisando..." : "Simular Radar"}
+          </Button>
+        </form>
+
+        {analysis && (
+          <div className="space-y-4 pt-4 border-t border-border">
+            {analysis.historicalCheck && (
+              <div className="p-4 rounded-xl bg-muted/30 space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-bold text-foreground">Termômetro Histórico do Destino</span>
+                  <Badge
+                    variant={analysis.historicalCheck.verdict === "great_deal" ? "success" : "secondary"}
+                    className="text-xs"
+                  >
+                    {analysis.historicalCheck.sampleCount >= 2 && analysis.historicalCheck.historicalSavingsPct != null
+                      ? `${analysis.historicalCheck.historicalSavingsPct > 0 ? "-" : "+"}${Math.abs(Math.round(analysis.historicalCheck.historicalSavingsPct))}% vs mediana`
+                      : `${analysis.historicalCheck.sampleCount} amostras`}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">{analysis.historicalCheck.verdictLabelPt}</p>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-foreground">
+                  Leads Compatíveis ({analysis.matchedCount} de {analysis.evaluatedDemandsCount} avaliados)
+                </span>
+                <span className="font-mono text-muted-foreground">
+                  Base adulto: {formatMoney(analysis.perAdultCents)}
+                </span>
+              </div>
+
+              {analysis.matchedLeads.length === 0 ? (
+                <div className="p-6 text-center text-xs text-muted-foreground rounded-lg bg-muted/20">
+                  Nenhum lead atingiu score mínimo com os critérios de destino, datas e ocupação informados.
+                </div>
+              ) : (
+                <div className="divide-y divide-border rounded-xl border border-border bg-card overflow-hidden">
+                  {analysis.matchedLeads.map((lead, idx) => {
+                    const cleanPhone = (lead.whatsapp || "").replace(/\D/g, "");
+                    return (
+                      <div key={`${lead.leadId || lead.interestId || lead.fullName}-${idx}`} className="p-4 space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-foreground truncate">{lead.fullName}</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {lead.roomsSummary || lead.destinationRequested}
+                            </p>
+                          </div>
+                          <Badge variant={lead.matchScore >= 80 ? "success" : "secondary"} className="text-xs shrink-0">
+                            {Math.round(lead.matchScore)}% Match
+                          </Badge>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2 text-xs">
+                          <span className="font-bold text-foreground">
+                            {lead.requiresChildRequote ? "Simulado CHD: " : "Total: "}
+                            {formatMoney(lead.effectiveTotalCents)}
+                          </span>
+                          {lead.clientBudgetCents != null && lead.clientBudgetCents > 0 && (
+                            <Badge variant="outline" className="text-2xs">
+                              Verba: {formatMoney(lead.clientBudgetCents)}
+                            </Badge>
+                          )}
+                          {lead.requiresChildRequote && (
+                            <Badge variant="warning" className="text-2xs">Recotar CHD</Badge>
+                          )}
+                          {lead.alreadyProposedRecently && (
+                            <Badge variant="outline" className="text-2xs text-warning-strong border-warning/40">
+                              Proposta recente
+                            </Badge>
+                          )}
+                        </div>
+
+                        {lead.childSimulation?.applied && (
+                          <p className="text-xs text-muted-foreground">{lead.childSimulation.reasonPt}</p>
+                        )}
+
+                        {lead.reasons.length > 0 && (
+                          <p className="text-2xs text-muted-foreground">{lead.reasons.slice(0, 3).join(" · ")}</p>
+                        )}
+
+                        <div className="flex flex-wrap items-center gap-2 pt-1">
+                          {cleanPhone && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={() => {
+                                window.open(
+                                  `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(lead.suggestedPitchPt)}`,
+                                  "_blank",
+                                  "noopener,noreferrer"
+                                );
+                              }}
+                              className="h-11 min-h-11 px-3 bg-success hover:bg-success/90 text-success-foreground text-xs"
+                            >
+                              <MessageSquare className="size-3.5 mr-2" />
+                              WhatsApp
+                            </Button>
+                          )}
+                          {lead.leadId && (
+                            <Button
+                              asChild
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-11 min-h-11 px-3 text-xs"
+                            >
+                              <Link to="/workspace/turismo" search={{ leadId: lead.leadId } as any}>
+                                <ExternalLink className="size-3.5 mr-2" />
+                                Abrir Lead
+                              </Link>
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );

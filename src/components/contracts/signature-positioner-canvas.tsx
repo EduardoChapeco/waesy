@@ -39,6 +39,8 @@ interface SignaturePositionerCanvasProps {
   selectedSignerIndex?: number;
   onSelectedSignerIndexChange?: (idx: number) => void;
   readOnly?: boolean;
+  isEditingInPage?: boolean;
+  onContentMarkdownChange?: (text: string) => void;
 }
 
 export const FIELD_TAGS = [
@@ -69,6 +71,8 @@ export function SignaturePositionerCanvas({
   selectedSignerIndex,
   onSelectedSignerIndexChange,
   readOnly = false,
+  isEditingInPage = false,
+  onContentMarkdownChange,
 }: SignaturePositionerCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const fieldsRef = useRef(fields);
@@ -381,7 +385,46 @@ export function SignaturePositionerCanvas({
               <span className="shrink-0">Página {currentPage}</span>
             </div>
 
-            {/* Conteúdo Real da Folha: PDF Nativo, Imagem Digitalizada ou Minuta Renderizada */}
+            {/* Floating toolbar when in-page editing is enabled */}
+            {isEditingInPage && !readOnly && onContentMarkdownChange && !isPdfSource && !isImageSource && (
+              <div className="px-4 py-2 border-b border-border/60 bg-muted/40 flex flex-wrap items-center justify-between gap-2 text-xs relative z-10">
+                <span className="text-2xs font-semibold text-primary uppercase tracking-wider">
+                  Redação Direta na Folha
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => onContentMarkdownChange((contentMarkdown || "") + "\n## Nova Cláusula\n")}
+                    className="h-11 min-h-11 sm:h-8 sm:min-h-0 px-2 rounded-md border border-border bg-card text-2xs font-semibold hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    + Cláusula
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onContentMarkdownChange((contentMarkdown || "") + "\n**Texto em destaque** ")}
+                    className="h-11 min-h-11 sm:h-8 sm:min-h-0 px-2 rounded-md border border-border bg-card text-2xs font-bold hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    B
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onContentMarkdownChange((contentMarkdown || "") + "\n*Texto em itálico* ")}
+                    className="h-11 min-h-11 sm:h-8 sm:min-h-0 px-2 rounded-md border border-border bg-card text-2xs italic hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    I
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onContentMarkdownChange((contentMarkdown || "") + "\n| Item | Valor |\n| :--- | ---: |\n| Item 01 | R$ 0,00 |\n")}
+                    className="h-11 min-h-11 sm:h-8 sm:min-h-0 px-2 rounded-md border border-border bg-card text-2xs font-semibold hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    Tabela
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Conteúdo Real da Folha: PDF Nativo, Imagem Digitalizada ou Minuta Renderizada / Editável */}
             <div className="relative flex-1 overflow-hidden">
               {isPdfSource && sourceFileSignedUrl ? (
                 <iframe
@@ -396,6 +439,15 @@ export function SignaturePositionerCanvas({
                     src={sourceFileSignedUrl}
                     alt={sourceFileName || documentTitle || "Documento anexado"}
                     className="max-w-full max-h-full object-contain pointer-events-none"
+                  />
+                </div>
+              ) : isEditingInPage && onContentMarkdownChange && !readOnly ? (
+                <div className="h-full px-8 py-6 flex flex-col">
+                  <textarea
+                    value={contentMarkdown || ""}
+                    onChange={(e) => onContentMarkdownChange(e.target.value)}
+                    placeholder="Comece a redigir o contrato diretamente nesta folha A4..."
+                    className="w-full h-full resize-none bg-transparent border-0 focus:outline-none font-serif text-sm text-foreground/90 leading-relaxed"
                   />
                 </div>
               ) : (paginatedPages[currentPage - 1] || "").trim().length > 0 ? (

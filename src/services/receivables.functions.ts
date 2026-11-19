@@ -4,6 +4,12 @@ import { getServerClient } from "@/lib/supabase";
 import { getIdentity } from "./identity.functions";
 import { getServerIdentity, assertStoreAccess, assertManagerAccess, requirePlatformAdmin } from "@/lib/server-access";
 import { recordLedgerEntryCore } from "@/services/immutable-ledger.functions";
+import { buildBrandedClientPortalUrl } from "@/lib/branded-app-links";
+import { sanitizePhoneDigits } from "@/lib/phone-match";
+import {
+  issueOrReuseCustomerAppTokenInternal,
+  resolveScopedClientPortalToken,
+} from "@/services/branded-app.functions";
 
 // ==============================================================================
 // 1. FUNÇÕES LEGADAS / COMPATIBILIDADE DE NEGOCIAÇÕES DIRETAS
@@ -260,6 +266,139 @@ export const listClientCarnes = createServerFn({ method: "GET" }).handler(async 
     };
   });
 
+  // Reconciliação unificada de boletos de viagens (travel_trip_installment_boletos) no Carnê Digital do Cliente
+  try {
+    const { data: userProfile } = await supabase
+      .from("profiles")
+      .select("cpf")
+      .eq("id", identity.id)
+      .maybeSingle();
+    const userEmail = String((identity as any).email || "").trim().toLowerCase();
+    const userCpf = String((userProfile as any)?.cpf || "").replace(/\D/g, "");
+
+    const tripFilters: string[] = [`customer_id.eq.${identity.id}`];
+    if (userEmail && userEmail.includes("@")) tripFilters.push(`client_email.ilike.${userEmail}`);
+    if (userCpf.length >= 9) tripFilters.push(`client_document.ilike.%${userCpf}%`);
+
+    const { data: userTrips } = await supabase
+      .from("tourism_trips")
+      .select("id, store_id, title, destination_city, trip_number, total_cents, stores(id, name, logo_url, phone)")
+      .or(tripFilters.join(","))
+      .limit(40);
+
+    const tripMap = new Map((userTrips || []).map((t: any) => [t.id, t]));
+    const tripIds = Array.from(tripMap.keys());
+    const boletoOrFilters: string[] = [`client_profile_id.eq.${identity.id}`];
+    if (tripIds.length > 0) boletoOrFilters.push(`trip_id.in.(${tripIds.join(",")})`);
+
+    const { data: travelBoletos } = await supabase
+      .from("travel_trip_installment_boletos")
+      .select("*")
+      .or(boletoOrFilters.join(","))
+      .order("installment_number", { ascending: true });
+
+    const boletosByTrip = new Map<string, any[]>();
+    for (const bol of travelBoletos || []) {
+      const list = boletosByTrip.get(bol.trip_id) || [];
+      list.push(bol);
+      boletosByTrip.set(bol.trip_id, list);
+    }
+
+    for (const [tripId, tripBoletos] of boletosByTrip.entries()) {
+      const tripInfo: any = tripMap.get(tripId) || {
+        id: tripId,
+        title: `Viagem #${tripId.slice(0, 8)}`,
+        destination_city: "Turismo",
+      };
+      let tPaid = 0;
+      let tRem = 0;
+      let tPaidCount = 0;
+      let tLateCount = 0;
+
+      const mappedInsts = tripBoletos.map((b: any) => {
+        const isPaid = b.status === "reconciled" || b.status === "waived";
+        const isPendingConc = b.status === "receipt_uploaded";
+        const dueDate = new Date(b.due_date);
+        const isOverdue = !isPaid && b.due_date && dueDate < now;
+        const amt = Number(b.amount_cents || 0);
+
+        if (isPaid) {
+          tPaid += amt;
+          totalPaidCents += amt;
+          tPaidCount++;
+        } else {
+          tRem += amt;
+          totalDebtCents += amt;
+          if (isOverdue || b.status === "overdue") {
+            tLateCount++;
+            overdueInstallmentsCount++;
+          }
+          if (isPendingConc) pendingConciliationCount++;
+          if (!nextDueCandidate || dueDate < new Date(nextDueCandidate.dueDate)) {
+            nextDueCandidate = {
+              carneTitle: tripInfo.title || `Viagem ${tripInfo.destination_city}`,
+              storeName: tripInfo.stores?.name || "Agência de Turismo",
+              installmentNumber: b.installment_number,
+              amountCents: amt,
+              dueDate: b.due_date,
+              isLate: Boolean(isOverdue),
+            };
+          }
+        }
+
+        return {
+          id: b.id,
+          receivable_id: `trip-${tripId}`,
+          installment_number: b.installment_number,
+          due_date: b.due_date,
+          original_amount_cents: amt,
+          final_amount_cents: amt,
+          amount_cents: amt,
+          paid_amount_cents: isPaid ? amt : 0,
+          status: isPaid ? "paid" : isOverdue ? "late" : "pending",
+          conciliation_status: isPendingConc ? "pending" : isPaid ? "approved" : null,
+          boleto_pdf_url: b.boleto_pdf_url || null,
+          digitable_line: b.digitable_line || null,
+          pix_copy_paste: b.pix_copia_e_cola || null,
+          external_payment_link: b.external_payment_link || null,
+          proof_url: b.receipt_file_url || null,
+          is_overdue: Boolean(isOverdue),
+        };
+      });
+
+      const isAllPaid = tRem === 0 && mappedInsts.length > 0;
+      if (!isAllPaid) activeCarnesCount++;
+
+      enrichedCarnes.push({
+        id: `trip-carne-${tripId}`,
+        title: `${tripInfo.title || tripInfo.destination_city} (${tripInfo.trip_number || "Viagem"})`,
+        description: `Parcelamento de viagem · Portal: /viajante/viagem/${tripId}`,
+        status: isAllPaid ? "settled" : "active",
+        total_cents: mappedInsts.reduce((acc, i) => acc + i.amount_cents, 0),
+        installments_count: mappedInsts.length,
+        origin_type: "tourism_trip",
+        trip_id: tripId,
+        store: tripInfo.stores || null,
+        creditor: null,
+        contract: null,
+        order: null,
+        installments: mappedInsts,
+        created_at: tripBoletos[0]?.created_at || new Date().toISOString(),
+        summary: {
+          paidCents: tPaid,
+          remainingCents: tRem,
+          paidCount: tPaidCount,
+          totalCount: mappedInsts.length,
+          lateCount: tLateCount,
+          progressPercent:
+            mappedInsts.length > 0 ? Math.round((tPaidCount / mappedInsts.length) * 100) : 0,
+        },
+      });
+    }
+  } catch (travelCarneErr) {
+    console.warn("[receivables] Aviso ao sincronizar boletos de viagens no carnê:", travelCarneErr);
+  }
+
   const metrics: ClientCarneMetric = {
     totalDebtCents,
     totalPaidCents,
@@ -278,14 +417,14 @@ export const submitInstallmentProof = createServerFn({ method: "POST" })
       installmentId: z.string().uuid(),
       proofUrl: z.string().url("URL de comprovante inválida"),
       notes: z.string().optional(),
+      storeId: z.string().uuid().optional(),
+      accessToken: z.string().trim().max(240).optional().nullable(),
     }),
   )
   .handler(async ({ data: input }) => {
     const supabase = getServerClient();
-    const identity = await getIdentity();
-    if (!identity?.id) throw new Error("Usuário não autenticado");
 
-    // Fetch installment + receivable to verify debtor
+    // Fetch installment + receivable to verify debtor (via account session OR store-scoped Magic Token)
     const { data: inst, error: instErr } = await supabase
       .from("receivable_installments")
       .select("*, receivable:receivable_id(*)")
@@ -295,8 +434,46 @@ export const submitInstallmentProof = createServerFn({ method: "POST" })
     if (instErr || !inst) throw new Error("Parcela não encontrada.");
 
     const rec = inst.receivable as any;
-    if (rec.debtor_id !== identity.id) {
-      throw new Error("Você não tem autorização para anexar comprovante a esta parcela.");
+    let authorizedActorId: string | null = null;
+
+    if (input.accessToken && rec?.store_id) {
+      const targetStoreId = input.storeId || rec.store_id;
+      if (targetStoreId !== rec.store_id) {
+        throw new Error("Você não tem autorização para anexar comprovante a esta parcela.");
+      }
+      const tokenRow = await resolveScopedClientPortalToken(supabase, rec.store_id, input.accessToken);
+      if (tokenRow) {
+        const directIdMatch =
+          (tokenRow.customer_id && tokenRow.customer_id === rec.debtor_id) ||
+          (tokenRow.crm_customer_id && tokenRow.crm_customer_id === rec.debtor_id);
+        if (directIdMatch) {
+          authorizedActorId = rec.debtor_id;
+        } else if (tokenRow.customer_phone_digits && rec.debtor_id) {
+          const { data: debtorProf } = await supabase
+            .from("profiles")
+            .select("phone")
+            .eq("id", rec.debtor_id)
+            .maybeSingle();
+          const debtorDigits = sanitizePhoneDigits(debtorProf?.phone);
+          const tokDigits = sanitizePhoneDigits(tokenRow.customer_phone_digits);
+          if (
+            debtorDigits.length >= 8 &&
+            tokDigits.length >= 8 &&
+            debtorDigits.slice(-8) === tokDigits.slice(-8)
+          ) {
+            authorizedActorId = rec.debtor_id;
+          }
+        }
+      }
+    }
+
+    if (!authorizedActorId) {
+      const identity = await getIdentity();
+      if (!identity?.id) throw new Error("Usuário não autenticado");
+      if (rec.debtor_id !== identity.id) {
+        throw new Error("Você não tem autorização para anexar comprovante a esta parcela.");
+      }
+      authorizedActorId = identity.id;
     }
 
     if (inst.status === "paid") {
@@ -325,7 +502,7 @@ export const submitInstallmentProof = createServerFn({ method: "POST" })
     // Notificar o lojista/credor sobre o comprovante
     try {
       const creditorTargetId = rec.creditor_id;
-      if (creditorTargetId && creditorTargetId !== identity.id) {
+      if (creditorTargetId && creditorTargetId !== authorizedActorId) {
         await supabase.from("notifications").insert({
           user_id: creditorTargetId,
           type: "receivable_proof_submitted",
@@ -1066,7 +1243,7 @@ export const generateInstallmentWhatsAppReminder = createServerFn({ method: "POS
         reminders_sent_count,
         receivable:receivable_id(
           id, title, store_id, creditor_id, debtor_id,
-          store:store_id(name, phone),
+          store:store_id(id, name, slug, phone, custom_domain, settings),
           debtor:debtor_id(id, full_name, phone)
         )
       `)
@@ -1089,22 +1266,51 @@ export const generateInstallmentWhatsAppReminder = createServerFn({ method: "POS
 
     const storeName = store?.name || "Nossa Loja";
     const storePixKey = store?.phone || "";
+    const storeSettings = (store?.settings && typeof store.settings === "object" ? store.settings : {}) as Record<string, any>;
+
+    let portalUrl = "https://waesy.com.br/conta/carnes";
+    if (rec?.store_id && store?.slug) {
+      let issuedAccess: { portal_url?: string | null; magic_token?: string | null; client_code?: string | null } | null = null;
+      if (debtor?.id || rawPhone) {
+        try {
+          issuedAccess = await issueOrReuseCustomerAppTokenInternal(supabase, {
+            storeId: rec.store_id,
+            customerId: debtor?.id || null,
+            customerName: clientName,
+            customerPhone: rawPhone || null,
+            createdBy: serverIdentity.id,
+          });
+        } catch {
+          issuedAccess = null;
+        }
+      }
+      portalUrl =
+        issuedAccess?.portal_url ||
+        buildBrandedClientPortalUrl({
+          slug: store.slug,
+          customDomain: store.custom_domain || null,
+          customDomainStatus: storeSettings?.custom_domain_status || null,
+          magicToken: issuedAccess?.magic_token || null,
+          clientCode: issuedAccess?.client_code || null,
+          fallbackOrigin: "https://waesy.com.br",
+        });
+    }
 
     let messageText = "";
     if (input.template === "friendly") {
       messageText = `Olá, *${clientName}*! Tudo bem?\n\nPassando para lembrar que a Parcela *${inst.installment_number}* de *"${rec.title}"* no valor de *${amountFormatted}* vence em *${dueDateFormatted}*.\n\n` +
         (storePixKey ? `*Chave PIX da Loja:* \`${storePixKey}\`\n\n` : "") +
-        `Você pode acessar e anexar seu comprovante pelo seu Carnê Digital:\nhttps://waesy.com.br/conta/carnes\n\nQualquer dúvida estamos à disposição! — *${storeName}*`;
+        `Você pode acessar e anexar seu comprovante pelo App Oficial de *${storeName}*:\n${portalUrl}\n\nQualquer dúvida estamos à disposição! — *${storeName}*`;
     } else if (input.template === "due_warning") {
       messageText = `Olá, *${clientName}*!\n\nAviso importante: a Parcela *${inst.installment_number}* de *"${rec.title}"* no valor de *${amountFormatted}* venceu/está com vencimento em *${dueDateFormatted}*.\n\n` +
         `Para regularizar sem juros adicionais e manter sua conta em dia, utilize a chave PIX ou envie seu comprovante pelo aplicativo:\n` +
         (storePixKey ? `*Chave PIX:* \`${storePixKey}\`\n` : "") +
-        `https://waesy.com.br/conta/carnes\n\nObrigado! — *${storeName}*`;
+        `${portalUrl}\n\nObrigado! — *${storeName}*`;
     } else if (input.template === "overdue_discount") {
       const disc = input.discountOfferedPercent || 10;
       messageText = `Olá, *${clientName}*! Condição especial de quitação:\n\nA *${storeName}* preparou um desconto exclusivo de *${disc}%* para a quitação da Parcela *${inst.installment_number}* de *"${rec.title}"* hoje!\n\n` +
         (storePixKey ? `*Pague via PIX:* \`${storePixKey}\`\n` : "") +
-        `Envie o comprovante pelo link:\nhttps://waesy.com.br/conta/carnes\n\nAproveite essa oportunidade!`;
+        `Envie o comprovante pelo link do App Oficial:\n${portalUrl}\n\nAproveite essa oportunidade!`;
     } else {
       messageText = input.customMessage || `Olá, ${clientName}! Informamos sobre a Parcela ${inst.installment_number} de "${rec.title}" (${amountFormatted}) com vencimento em ${dueDateFormatted}.`;
     }
@@ -1125,7 +1331,7 @@ export const generateInstallmentWhatsAppReminder = createServerFn({ method: "POS
         type: "billing_reminder",
         title: "Lembrete de Cobrança da Loja",
         message: `Lembrete sobre a Parcela ${inst.installment_number} de "${rec.title}" (${amountFormatted}).`,
-        link_url: "/conta/carnes",
+        link_url: store?.slug ? `/app/${store.slug}?tab=minha_area` : "/conta/carnes",
       });
     }
 

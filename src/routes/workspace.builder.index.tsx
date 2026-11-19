@@ -30,6 +30,7 @@ import { ArtifactCreativePost } from "@/components/chat/artifacts/ArtifactCreati
 import { ArtifactInteractiveTable } from "@/components/chat/artifacts/ArtifactInteractiveTable";
 import { ArtifactTravelDossier } from "@/components/chat/artifacts/ArtifactTravelDossier";
 import { exportElementAsImage, exportElementAsPdf } from "@/lib/pdf-export";
+import { isUuid } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/builder/")({
   head: () => ({ meta: [{ title: "Builder Unificado | Workspace Waesy" }] }),
@@ -57,9 +58,7 @@ function WorkspaceBuilderIndexPage() {
     (d) => d.id === selectedDocId && d.source === "experience_page"
   );
 
-  const isUuid =
-    Boolean(selectedDocId) &&
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(selectedDocId!);
+  const hasValidDocUuid = isUuid(selectedDocId);
 
   const {
     data: activeDoc,
@@ -67,7 +66,7 @@ function WorkspaceBuilderIndexPage() {
     refetch: refetchActiveDoc,
   } = useQuery({
     queryKey: ["workspace-builder-doc", selectedDocId],
-    enabled: Boolean(isUuid && !matchingExperienceDoc),
+    enabled: Boolean(hasValidDocUuid && !matchingExperienceDoc),
     queryFn: () => getBuilderDocumentFn({ data: { documentId: selectedDocId! } }),
   });
 

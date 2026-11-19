@@ -9,10 +9,11 @@
  * Nenhum dado de autenticação é passado aos scripts externos.
  */
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { collectClientAttribution } from "@/lib/attribution-collector";
 import { getPublicStorePixels, recordStorefrontAttributionVisit } from "@/services/pixels.functions";
+import { selectMatchedPixelsForContext, type PublicSourcePixelDTO } from "@/lib/pixel-routing";
 
 interface StoreAnalyticsInjectorProps {
   /** ID da loja ativa para persistir touchpoints de atribuição (anúncio -> vitrine -> CRM/WhatsApp) */
@@ -56,12 +57,60 @@ export function StoreAnalyticsInjector({
   void isPixelsLoading;
   void isPixelsError;
 
-  const pixelId = (dbPixels?.meta_pixel_id || storeSettings?.meta_pixel_id || undefined) as string | undefined;
+  const multiPixels = useMemo(
+    () =>
+      (Array.isArray((dbPixels as any)?.source_pixels)
+        ? ((dbPixels as any).source_pixels as PublicSourcePixelDTO[])
+        : []),
+    [dbPixels],
+  );
+  const currentAttr = useMemo(() => (typeof window !== "undefined" ? collectClientAttribution() : {}), []);
+  const routingContext = useMemo(
+    () => ({
+      campaignId: (currentAttr as any).campaignId || null,
+      adId: (currentAttr as any).adId || null,
+      formId: (currentAttr as any).formId || null,
+      landingPath: typeof window !== "undefined" ? window.location.pathname : null,
+    }),
+    [currentAttr],
+  );
+
+  const metaPixelIds = useMemo(() => {
+    const matched = selectMatchedPixelsForContext(multiPixels, routingContext, "PageView", "meta_pixel")
+      .map((p) => p.external_pixel_id)
+      .filter(Boolean);
+    const primary = (dbPixels?.meta_pixel_id || storeSettings?.meta_pixel_id || undefined) as string | undefined;
+    return Array.from(new Set([...(primary ? [primary] : []), ...matched]));
+  }, [multiPixels, routingContext, dbPixels?.meta_pixel_id, storeSettings?.meta_pixel_id]);
+
+  const ga4Ids = useMemo(() => {
+    const matched = selectMatchedPixelsForContext(multiPixels, routingContext, "PageView", "ga4")
+      .map((p) => p.external_pixel_id)
+      .filter(Boolean);
+    const primary = (dbPixels?.google_analytics_id || storeSettings?.ga4_measurement_id || undefined) as string | undefined;
+    return Array.from(new Set([...(primary ? [primary] : []), ...matched]));
+  }, [multiPixels, routingContext, dbPixels?.google_analytics_id, storeSettings?.ga4_measurement_id]);
+
+  const googleAdsIds = useMemo(() => {
+    const matched = selectMatchedPixelsForContext(multiPixels, routingContext, "PageView", "google_ads")
+      .map((p) => p.external_pixel_id)
+      .filter(Boolean);
+    const primary = (dbPixels?.google_ads_id || storeSettings?.google_ads_id || undefined) as string | undefined;
+    return Array.from(new Set([...(primary ? [primary] : []), ...matched]));
+  }, [multiPixels, routingContext, dbPixels?.google_ads_id, storeSettings?.google_ads_id]);
+
+  const tiktokPixelIds = useMemo(() => {
+    const matched = selectMatchedPixelsForContext(multiPixels, routingContext, "PageView", "tiktok_pixel")
+      .map((p) => p.external_pixel_id)
+      .filter(Boolean);
+    const primary = (dbPixels?.tiktok_pixel_id || storeSettings?.tiktok_pixel_id || undefined) as string | undefined;
+    return Array.from(new Set([...(primary ? [primary] : []), ...matched]));
+  }, [multiPixels, routingContext, dbPixels?.tiktok_pixel_id, storeSettings?.tiktok_pixel_id]);
+
   const gtmId = (dbPixels?.gtm_id || storeSettings?.gtm_id || undefined) as string | undefined;
-  const ga4Id = (dbPixels?.google_analytics_id || storeSettings?.ga4_measurement_id || undefined) as string | undefined;
-  const googleAdsId = (dbPixels?.google_ads_id || storeSettings?.google_ads_id || undefined) as string | undefined;
+  const ga4Id = ga4Ids[0];
+  const googleAdsId = googleAdsIds[0];
   const googleAdsLabel = (dbPixels?.google_ads_conversion_label || storeSettings?.google_ads_conversion_label || undefined) as string | undefined;
-  const tiktokPixelId = (dbPixels?.tiktok_pixel_id || storeSettings?.tiktok_pixel_id || undefined) as string | undefined;
   const googleSiteVerification = (dbPixels?.google_site_verification || storeSettings?.google_site_verification || undefined) as string | undefined;
   const metaDomainVerification = (dbPixels?.meta_domain_verification || storeSettings?.meta_domain_verification || undefined) as string | undefined;
   const canTrackViewContent = dbPixels?.track_view_content ?? true;
@@ -91,35 +140,42 @@ export function StoreAnalyticsInjector({
     }
   }, [googleSiteVerification, metaDomainVerification]);
 
-  // ── Meta Pixel ────────────────────────────────────────────────────────────
+  // ── Meta Pixel (Multi-Pixel com deduplicacao DOM) ──────────────────────────
   useEffect(() => {
-    if (!pixelId) return;
-    if (document.getElementById(`meta-pixel-${pixelId}`)) return;
+    if (metaPixelIds.length === 0) return;
 
-    const script = document.createElement("script");
-    script.id = `meta-pixel-${pixelId}`;
-    script.innerHTML = `
-      !function(f,b,e,v,n,t,s)
-      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', '${pixelId}');
-      fbq('track', 'PageView');
-    `;
-    document.head.appendChild(script);
+    if (!document.getElementById("waesy-meta-fbevents-base")) {
+      const baseScript = document.createElement("script");
+      baseScript.id = "waesy-meta-fbevents-base";
+      baseScript.innerHTML = `
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+      `;
+      document.head.appendChild(baseScript);
+    }
 
-    const noscript = document.createElement("noscript");
-    noscript.innerHTML = `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1"/>`;
-    document.head.appendChild(noscript);
-  }, [pixelId]);
+    for (const pxId of metaPixelIds) {
+      if (document.getElementById(`meta-pixel-${pxId}`)) continue;
+      const script = document.createElement("script");
+      script.id = `meta-pixel-${pxId}`;
+      script.innerHTML = `
+        fbq('init', '${pxId}');
+        fbq('trackSingle', '${pxId}', 'PageView');
+      `;
+      document.head.appendChild(script);
+    }
+  }, [metaPixelIds]);
 
-  // ── Google Ads & Google Analytics 4 (gtag.js unificado) ───────────────────
+  // ── Google Ads & Google Analytics 4 (gtag.js multi-id unificado) ──────────
   useEffect(() => {
-    const primaryTag = ga4Id || googleAdsId;
+    const allGoogleTags = Array.from(new Set([...ga4Ids, ...googleAdsIds]));
+    const primaryTag = allGoogleTags[0];
     if (!primaryTag) return;
 
     if (googleAdsId && googleAdsLabel) {
@@ -134,7 +190,7 @@ export function StoreAnalyticsInjector({
       document.head.appendChild(gtagLoader);
     }
 
-    const configScriptId = `waesy-gtag-config-${primaryTag}`;
+    const configScriptId = `waesy-gtag-config-${allGoogleTags.join("_")}`;
     if (!document.getElementById(configScriptId)) {
       window.dataLayer = window.dataLayer || [];
       if (typeof window.gtag !== "function") {
@@ -149,12 +205,11 @@ export function StoreAnalyticsInjector({
         function gtag(){window.dataLayer.push(arguments);}
         window.gtag = window.gtag || gtag;
         gtag('js', new Date());
-        ${ga4Id ? `gtag('config', '${ga4Id}');` : ""}
-        ${googleAdsId ? `gtag('config', '${googleAdsId}');` : ""}
+        ${allGoogleTags.map((id) => `gtag('config', '${id}');`).join("\n        ")}
       `;
       document.head.appendChild(configScript);
     }
-  }, [ga4Id, googleAdsId, googleAdsLabel]);
+  }, [ga4Ids, googleAdsIds, googleAdsId, googleAdsLabel]);
 
   // ── Evento ViewContent / view_item (produto/classificado) ─────────────────
   useEffect(() => {
@@ -162,14 +217,16 @@ export function StoreAnalyticsInjector({
     if (!canTrackViewContent) return;
     const fire = () => {
       const valueNum = productData.priceCents != null ? Number((productData.priceCents / 100).toFixed(2)) : 0;
-      if (pixelId && typeof window.fbq === "function" && valueNum > 0) {
-        window.fbq("track", "ViewContent", {
-          content_ids: [productData.id],
-          content_name: productData.name,
-          content_category: productData.category,
-          value: valueNum,
-          currency: productData.currency || "BRL",
-        });
+      if (metaPixelIds.length > 0 && typeof window.fbq === "function" && valueNum > 0) {
+        for (const pxId of metaPixelIds) {
+          window.fbq("trackSingle", pxId, "ViewContent", {
+            content_ids: [productData.id],
+            content_name: productData.name,
+            content_category: productData.category,
+            value: valueNum,
+            currency: productData.currency || "BRL",
+          });
+        }
       }
       if ((ga4Id || googleAdsId) && typeof window.gtag === "function") {
         window.gtag("event", "view_item", {
@@ -181,24 +238,25 @@ export function StoreAnalyticsInjector({
     };
     const t = setTimeout(fire, 800);
     return () => clearTimeout(t);
-  }, [pixelId, ga4Id, googleAdsId, canTrackViewContent, pageContext, productData]);
+  }, [metaPixelIds, ga4Id, googleAdsId, canTrackViewContent, pageContext, productData]);
 
-  // ── TikTok Pixel ──────────────────────────────────────────────────────────
+  // ── TikTok Pixel (Multi-Pixel) ────────────────────────────────────────────
   useEffect(() => {
-    if (!tiktokPixelId) return;
-    if (document.getElementById(`tiktok-pixel-${tiktokPixelId}`)) return;
-
-    const script = document.createElement("script");
-    script.id = `tiktok-pixel-${tiktokPixelId}`;
-    script.innerHTML = `
-      !function (w, d, t) {
-        w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var o=document.createElement("script");o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)};
-        ttq.load('${tiktokPixelId}');
-        ttq.page();
-      }(window, document, 'ttq');
-    `;
-    document.head.appendChild(script);
-  }, [tiktokPixelId]);
+    if (tiktokPixelIds.length === 0) return;
+    for (const tkId of tiktokPixelIds) {
+      if (document.getElementById(`tiktok-pixel-${tkId}`)) continue;
+      const script = document.createElement("script");
+      script.id = `tiktok-pixel-${tkId}`;
+      script.innerHTML = `
+        !function (w, d, t) {
+          w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var o=document.createElement("script");o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)};
+          ttq.load('${tkId}');
+          ttq.page();
+        }(window, document, 'ttq');
+      `;
+      document.head.appendChild(script);
+    }
+  }, [tiktokPixelIds]);
 
   // ── Google Tag Manager ────────────────────────────────────────────────────
   useEffect(() => {
@@ -273,6 +331,11 @@ export function StoreAnalyticsInjector({
         formId: attr.formId || null,
         deviceId: attr.deviceId || null,
         visitorId: attr.deviceId || null,
+        clientCity: attr.clientCity || null,
+        clientState: attr.clientState || null,
+        gpsLatitude: attr.gpsLatitude ?? null,
+        gpsLongitude: attr.gpsLongitude ?? null,
+        gpsSource: attr.gpsSource || null,
       },
     }).catch(() => {});
   }, [storeId, pageContext, productData?.id, productData?.name]);

@@ -20,11 +20,23 @@ import {
   listTravelSaleFinancialSheets,
   upsertTravelSaleFinancialSheet,
 } from "@/services/travel-financials.functions";
+import { reconcileOperatorReceivableFn } from "@/services/travel-operator-billing.functions";
+import {
+  getAgencySalesAnalyticsDashboardFn,
+  recalculateMonthCommissionsFn,
+} from "@/services/travel-commissions-unified.functions";
+import { createOffPayrollAwardReceiptFn } from "@/services/travel-commission-payouts.functions";
 import { InlineSalesSpreadsheetAndGoalsPanel } from "@/components/tourism/InlineSalesSpreadsheetAndGoalsPanel";
+import { OperatorBillingPanel } from "@/components/tourism/OperatorBillingPanel";
+import {
+  CommissionAwardReceiptModal,
+  type OffPayrollReceiptRecord,
+} from "@/components/tourism/CommissionAwardReceiptModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -51,6 +63,7 @@ import {
   Wallet,
   History,
   Edit3,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -120,7 +133,15 @@ interface SaleFinancialRecord {
   margin_on_sale_pct: number;
   margin_on_revenue_pct: number;
 
-  settlement_method: "fatura_abatida" | "deposito_bancario" | "pix" | "credito_operadora" | "cartao_virtual" | "misto";
+  settlement_method:
+    | "fatura_abatida"
+    | "comissao_balcao_a_vista"
+    | "abatimento_saldo_devedor"
+    | "deposito_bancario"
+    | "pix"
+    | "credito_operadora"
+    | "cartao_virtual"
+    | "misto";
   expected_receipt_cents: number;
   received_cents: number;
   expected_receipt_date?: string;
@@ -152,6 +173,15 @@ function TravelSalesFinancialCompositionPage() {
   const [sheets, setSheets] = useState<SaleFinancialRecord[]>(
     Array.isArray(initialSheets) ? initialSheets : []
   );
+  const [activeTab, setActiveTab] = useState("operacoes");
+  const [competenceMonth, setCompetenceMonth] = useState(
+    () => `${new Date().getUTCFullYear()}-${String(new Date().getUTCMonth() + 1).padStart(2, "0")}`,
+  );
+  const [agencyAnalytics, setAgencyAnalytics] = useState<Awaited<
+    ReturnType<typeof getAgencySalesAnalyticsDashboardFn>
+  > | null>(null);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
+  const [activeReceipt, setActiveReceipt] = useState<OffPayrollReceiptRecord | null>(null);
 
   // Filtros Gerenciais
   const [operatorFilter, setOperatorFilter] = useState<string>("ALL");
@@ -566,20 +596,78 @@ function TravelSalesFinancialCompositionPage() {
     }
   };
 
-  const handleMarkReceived = (id: string) => {
-    setSheets((prev) =>
-      prev.map((s) =>
-        s.id === id
-          ? {
-              ...s,
-              receivable_status: "recebido",
-              received_cents: s.expected_receipt_cents,
-              actual_receipt_date: new Date().toISOString().slice(0, 10),
-            }
-          : s
-      )
-    );
-    toast.success("Recebimento de comissão + over liquidado com sucesso!");
+  const loadAgencyAnalytics = async (month = competenceMonth) => {
+    setLoadingAnalytics(true);
+    try {
+      const res = await getAgencySalesAnalyticsDashboardFn({ data: { competenceMonth: month } });
+      setAgencyAnalytics(res);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao carregar painel de prêmios por fora.");
+    } finally {
+      setLoadingAnalytics(false);
+    }
+  };
+
+  const handleMarkReceived = async (sheet: SaleFinancialRecord) => {
+    try {
+      const res = await reconcileOperatorReceivableFn({
+        data: {
+          sheetId: sheet.id,
+          receivedCents: sheet.expected_receipt_cents || sheet.agency_revenue_cents || 0,
+          actualReceiptDate: new Date().toISOString().slice(0, 10),
+        },
+      });
+      if (res?.sheet) {
+        const persistedSheets = await listTravelSaleFinancialSheets({ data: {} });
+        setSheets(persistedSheets as SaleFinancialRecord[]);
+      }
+      toast.success("Baixa real registrada no DRE e na operadora.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao baixar recebimento da operadora.");
+    }
+  };
+
+  const handleRecalculateTiers = async () => {
+    try {
+      const res = await recalculateMonthCommissionsFn({ data: { competenceMonth } });
+      const persistedSheets = await listTravelSaleFinancialSheets({ data: {} });
+      setSheets(persistedSheets as SaleFinancialRecord[]);
+      await loadAgencyAnalytics(competenceMonth);
+      toast.success(
+        `${res.recalculatedCount} venda(s) recalculada(s) pelas faixas oficiais de ${competenceMonth}.`,
+      );
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao recalcular faixas mensais.");
+    }
+  };
+
+  const handlePayAgentOffPayroll = async (agent: any) => {
+    if (!agent?.unpaidEligibleSheetIds?.length) {
+      toast.error("Nenhuma venda liberada para emitir recibo a este agente.");
+      return;
+    }
+    try {
+      const res = await createOffPayrollAwardReceiptFn({
+        data: {
+          beneficiaryProfileId: agent.profileId || null,
+          beneficiaryEmployeeId: agent.employeeId || null,
+          beneficiaryName: agent.agentName,
+          competenceMonth,
+          sheetIds: agent.unpaidEligibleSheetIds,
+          payoutNature: "premiacao_variavel_por_fora",
+          payoutChannel: "off_payroll_award",
+          paymentMethod: "pix",
+          markPaidImmediately: true,
+        },
+      });
+      toast.success(`Recibo ${res.receipt.receipt_code} gerado por fora da folha CLT.`);
+      await loadAgencyAnalytics(competenceMonth);
+      const persistedSheets = await listTravelSaleFinancialSheets({ data: {} });
+      setSheets(persistedSheets as SaleFinancialRecord[]);
+      setActiveReceipt(res.receipt);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao gerar recibo de premiação.");
+    }
   };
 
   return (
@@ -588,44 +676,69 @@ function TravelSalesFinancialCompositionPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-5">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <Badge className="bg-primary/10 text-primary border border-primary/25 text-xs font-bold">
-              Backoffice Exclusivo da Agência
-            </Badge>
             <Badge variant="outline" className="text-xs font-semibold">
-              8 Blocos Auditáveis
+              Backoffice Financeiro da Agência
+            </Badge>
+            <Badge variant="secondary" className="text-xs font-semibold">
+              Repasse Por Fora da Folha CLT
             </Badge>
           </div>
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-            Financeiro da Venda & Composição de Reservas
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+            Comissões, Cobrança de Operadoras & Premiações
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Controle exato de Venda Bruta, Taxas Não Comissionáveis, Venda Líquida, Comissão, Over Líquido, Receita da Agência, Custos Internos, Resultado e Notas Fiscais.
+            Controle de Venda Bruta, Taxas, Receita Líquida da Agência, Borderôs de Operadoras e Recibos Por Fora.
           </p>
         </div>
 
-        <Button
-          onClick={handleOpenNewSheet}
-          className="h-11 min-h-11 px-5 rounded-lg font-bold text-xs sm:text-sm gap-2 cursor-pointer"
-        >
-          <Plus className="size-4" />
-          <span>Nova Composição Financeira</span>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Input
+            type="month"
+            aria-label="Competência mensal"
+            className="h-11 w-40"
+            value={competenceMonth}
+            onChange={(e) => {
+              const nextMonth = e.target.value;
+              setCompetenceMonth(nextMonth);
+              if (activeTab === "premiacoes") {
+                void loadAgencyAnalytics(nextMonth);
+              }
+            }}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleRecalculateTiers}
+            className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2"
+          >
+            <RefreshCw className="size-4" />
+            <span>Recalcular Faixas</span>
+          </Button>
+          <Button
+            onClick={handleOpenNewSheet}
+            variant="default"
+            className="h-11 min-h-11 px-5 rounded-lg font-bold text-xs sm:text-sm gap-2 cursor-pointer focus-visible:ring-2"
+          >
+            <Plus className="size-4" />
+            <span>Nova Composição</span>
+          </Button>
+        </div>
       </div>
 
       {/* ── Painel de Indicadores Contábeis Separados (Sem Confundir Venda com Receita) ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Volume Bruto vs Venda Líquida */}
-        <div className="p-4 rounded-2xl border border-foreground/15 bg-foreground text-background space-y-2">
+        <div className="p-4 rounded-2xl border border-border bg-card space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold">
             <span>1. Venda Bruta vs. Líquida</span>
             <DollarSign className="size-4 text-primary" />
           </div>
-          <p className="text-xl font-black text-background font-mono tabular-nums">
+          <p className="text-xl font-bold text-foreground font-mono tabular-nums">
             {formatMoney(totals.grossSale)}
           </p>
-          <div className="text-xs text-muted-foreground flex items-center justify-between pt-1 border-t border-border/40">
+          <div className="text-xs text-muted-foreground flex items-center justify-between pt-1 border-t border-border/60">
             <span>Venda Líquida (s/ taxas):</span>
-            <strong className="text-background font-mono tabular-nums">{formatMoney(totals.netSale)}</strong>
+            <strong className="text-foreground font-mono tabular-nums">{formatMoney(totals.netSale)}</strong>
           </div>
         </div>
 
@@ -635,7 +748,7 @@ function TravelSalesFinancialCompositionPage() {
             <span>2. Receita da Agência (Comissão + Over)</span>
             <TrendingUp className="size-4 text-primary" />
           </div>
-          <p className="text-xl font-black text-primary font-mono tabular-nums">
+          <p className="text-xl font-bold text-primary font-mono tabular-nums">
             {formatMoney(totals.agencyRevenue)}
           </p>
           <div className="text-xs text-muted-foreground flex items-center justify-between pt-1 border-t border-primary/20">
@@ -650,7 +763,7 @@ function TravelSalesFinancialCompositionPage() {
             <span>3. Resultado Final (Lucro Real)</span>
             <Wallet className="size-4 text-emerald-600" />
           </div>
-          <p className="text-xl font-black text-emerald-700 dark:text-emerald-400 font-mono tabular-nums">
+          <p className="text-xl font-bold text-emerald-700 dark:text-emerald-400 font-mono tabular-nums">
             {formatMoney(totals.netResult)}
           </p>
           <div className="text-xs text-muted-foreground flex items-center justify-between pt-1 border-t border-emerald-500/20">
@@ -664,23 +777,47 @@ function TravelSalesFinancialCompositionPage() {
         </div>
 
         {/* Card 4: Conciliação de Recebimento & Operadoras */}
-        <div className="p-4 rounded-2xl border border-foreground/15 bg-foreground text-background space-y-2">
+        <div className="p-4 rounded-2xl border border-border bg-card space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold">
             <span>4. A Receber das Operadoras</span>
             <Clock className="size-4 text-warning-strong" />
           </div>
-          <p className="text-xl font-black text-warning-strong  font-mono tabular-nums">
+          <p className="text-xl font-bold text-warning-strong font-mono tabular-nums">
             {formatMoney(Math.max(0, totals.expectedReceipt - totals.received))}
           </p>
-          <div className="text-xs text-muted-foreground flex items-center justify-between pt-1 border-t border-border/40">
+          <div className="text-xs text-muted-foreground flex items-center justify-between pt-1 border-t border-border/60">
             <span>Já Recebido:</span>
-            <strong className="text-emerald-600 font-mono">{formatMoney(totals.received)}</strong>
+            <strong className="text-emerald-700 dark:text-emerald-300 font-mono">{formatMoney(totals.received)}</strong>
           </div>
         </div>
       </div>
 
-      {/* ── Planilha Editável In-Page de Vendas, Over (16% Operadora), Metas de Agentes e Cancelamentos ── */}
-      <InlineSalesSpreadsheetAndGoalsPanel />
+      <Tabs
+        value={activeTab}
+        onValueChange={(next) => {
+          setActiveTab(next);
+          if (next === "premiacoes" && !agencyAnalytics) {
+            void loadAgencyAnalytics(competenceMonth);
+          }
+        }}
+        className="space-y-4 motion-reduce:transition-none"
+      >
+        <TabsList className="w-full justify-start overflow-x-auto carousel h-auto p-1 gap-1">
+          <TabsTrigger value="operacoes" className="h-11 px-4 text-xs font-semibold">
+            Operações & 8 Blocos
+          </TabsTrigger>
+          <TabsTrigger value="cobranca" className="h-11 px-4 text-xs font-semibold">
+            Cobrança Operadoras (Borderô & NFS-e)
+          </TabsTrigger>
+          <TabsTrigger value="premiacoes" className="h-11 px-4 text-xs font-semibold">
+            Premiações Por Fora & Recibos
+          </TabsTrigger>
+          <TabsTrigger value="regras" className="h-11 px-4 text-xs font-semibold">
+            Planilha, Faixas & Cancelamento
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="operacoes" className="space-y-4">
 
       {/* ── Barra de Filtros Operacionais (Operadora, Recebimento, Nota Fiscal, Busca) ── */}
       <div className="p-4 rounded-lg border border-border/60 bg-card space-y-3">
@@ -759,7 +896,7 @@ function TravelSalesFinancialCompositionPage() {
             <tbody className="divide-y divide-border/50 text-xs">
               {filteredSheets.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                  <td colSpan={8} className="py-12 text-center text-muted-foreground">
                     <div className="max-w-md mx-auto space-y-3">
                       <Receipt className="size-8 mx-auto text-muted-foreground/60" />
                       <p className="text-sm font-semibold text-foreground">Nenhuma operação lançada nesta visualização</p>
@@ -835,7 +972,7 @@ function TravelSalesFinancialCompositionPage() {
                     </td>
 
                     <td className="py-4 px-4 text-right font-mono">
-                      <span className="px-2 py-1 rounded-lg bg-primary/10 text-primary font-black text-sm inline-block">
+                      <span className="px-2 py-1 rounded-lg bg-primary/10 text-primary font-bold text-sm inline-block">
                         {formatMoney(sheet.agency_revenue_cents)}
                       </span>
                     </td>
@@ -844,7 +981,7 @@ function TravelSalesFinancialCompositionPage() {
                       <div className="text-xs text-muted-foreground">
                         Custos: -{formatMoney(sheet.internal_costs_cents)}
                       </div>
-                      <div className="font-black text-sm text-emerald-700 dark:text-emerald-400">
+                      <div className="font-bold text-sm text-emerald-700 dark:text-emerald-400">
                         {formatMoney(sheet.net_result_cents)}
                       </div>
                       <div className="text-xs text-muted-foreground">
@@ -874,7 +1011,7 @@ function TravelSalesFinancialCompositionPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => handleOpenEditSheet(sheet)}
-                          className="h-11 px-3 rounded-lg text-xs font-bold gap-1 cursor-pointer"
+                          className="h-11 px-3 rounded-lg text-xs font-bold gap-1 cursor-pointer focus-visible:ring-2"
                         >
                           <Edit3 className="size-3.5" />
                           <span>Abrir 8 Blocos</span>
@@ -882,8 +1019,8 @@ function TravelSalesFinancialCompositionPage() {
                         {sheet.receivable_status !== "recebido" && (
                           <Button
                             size="sm"
-                            onClick={() => handleMarkReceived(sheet.id)}
-                            className="h-11 px-3 rounded-lg text-xs font-bold cursor-pointer"
+                            onClick={() => handleMarkReceived(sheet)}
+                            className="h-11 px-3 rounded-lg text-xs font-bold cursor-pointer focus-visible:ring-2"
                           >
                             Baixar
                           </Button>
@@ -897,10 +1034,162 @@ function TravelSalesFinancialCompositionPage() {
           </table>
         </div>
       </div>
+        </TabsContent>
+
+        <TabsContent value="cobranca" className="space-y-4">
+          <OperatorBillingPanel
+            competenceMonth={competenceMonth}
+            onReconciled={async () => {
+              const refreshed = await listTravelSaleFinancialSheets({ data: {} });
+              setSheets(refreshed as SaleFinancialRecord[]);
+            }}
+          />
+        </TabsContent>
+
+        <TabsContent value="premiacoes" className="space-y-4">
+          <div className="p-4 rounded-xl border border-border bg-card space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-base font-semibold text-foreground">
+                  Premiações Variáveis Por Fora (Separado do Holerite CLT) — {competenceMonth}
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  Liquide as vendas elegíveis gerando Recibo Automático e lançamento em Premiação Comercial no Financeiro.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 min-h-11 focus-visible:ring-2"
+                onClick={() => loadAgencyAnalytics(competenceMonth)}
+              >
+                <RefreshCw className="size-4 mr-2" />
+                Atualizar Painel
+              </Button>
+            </div>
+
+            {loadingAnalytics ? (
+              <div className="h-40 rounded-xl bg-muted animate-pulse motion-reduce:animate-none" />
+            ) : !agencyAnalytics ? (
+              <div className="py-8 text-center text-xs text-muted-foreground">
+                Clique em "Atualizar Painel" para carregar o comparativo por agente.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="overflow-x-auto table border border-border rounded-xl">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/50 text-xs text-muted-foreground">
+                      <tr>
+                        <th className="text-left px-3 py-2 font-medium">Consultor</th>
+                        <th className="text-left px-3 py-2 font-medium">Faixa Ativa</th>
+                        <th className="text-right px-3 py-2 font-medium">Vendas Brutas</th>
+                        <th className="text-right px-3 py-2 font-medium">Cresc. MoM</th>
+                        <th className="text-right px-3 py-2 font-medium">Liberado p/ Recibo</th>
+                        <th className="text-right px-3 py-2 font-medium">Pago Por Fora</th>
+                        <th className="text-right px-3 py-2 font-medium">Ação</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {agencyAnalytics.agentsBreakdown.map((ag: any) => (
+                        <tr key={ag.profileId || ag.agentName}>
+                          <td className="px-3 py-2 font-medium text-foreground">
+                            <div>{ag.agentName}</div>
+                            <div className="text-xs text-muted-foreground">{ag.salesCount} reserva(s)</div>
+                          </td>
+                          <td className="px-3 py-2">
+                            <Badge variant="outline">{ag.activeTierName}</Badge>
+                          </td>
+                          <td className="px-3 py-2 text-right tabular-nums">
+                            {formatMoney(ag.grossSalesCents)}
+                          </td>
+                          <td className="px-3 py-2 text-right tabular-nums text-xs">
+                            {ag.prevMonthGrowthPct >= 0 ? "+" : ""}
+                            {ag.prevMonthGrowthPct.toFixed(1)}%
+                          </td>
+                          <td className="px-3 py-2 text-right tabular-nums font-semibold text-blue-700 dark:text-blue-300">
+                            {formatMoney(ag.awardEligibleCents)}
+                          </td>
+                          <td className="px-3 py-2 text-right tabular-nums text-emerald-700 dark:text-emerald-300">
+                            {formatMoney(ag.awardPaidCents)}
+                          </td>
+                          <td className="px-3 py-2 text-right">
+                            {ag.unpaidEligibleSheetIds.length > 0 ? (
+                              <Button
+                                type="button"
+                                variant="secondary"
+                                className="h-11 min-h-11 focus-visible:ring-2"
+                                onClick={() => handlePayAgentOffPayroll(ag)}
+                              >
+                                <Receipt className="size-4 mr-2" />
+                                Pagar e Emitir Recibo
+                              </Button>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">Sem pendências</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {agencyAnalytics.receipts.length > 0 && (
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-semibold text-foreground">
+                      Recibos Automáticos Emitidos na Competência
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {agencyAnalytics.receipts.map((rec: any) => (
+                        <div
+                          key={rec.id}
+                          className="p-3 rounded-xl border border-border bg-background flex items-center justify-between gap-3"
+                        >
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">
+                              {rec.receipt_code} — {rec.beneficiary_name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {rec.sales_count} venda(s) • Líquido {formatMoney(rec.net_paid_cents)}
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="h-11 min-h-11 focus-visible:ring-2"
+                            onClick={() => setActiveReceipt(rec)}
+                          >
+                            Abrir Recibo
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="regras" className="space-y-4">
+          <InlineSalesSpreadsheetAndGoalsPanel />
+        </TabsContent>
+      </Tabs>
+
+      <CommissionAwardReceiptModal
+        receipt={activeReceipt}
+        open={Boolean(activeReceipt)}
+        onOpenChange={(open) => !open && setActiveReceipt(null)}
+        canMarkPaid
+        onUpdated={async () => {
+          await loadAgencyAnalytics(competenceMonth);
+          const refreshed = await listTravelSaleFinancialSheets({ data: {} });
+          setSheets(refreshed as SaleFinancialRecord[]);
+        }}
+      />
 
       {/* ── Modal Completo: Composição Financeira da Reserva (Os 8 Blocos) ── */}
       <Dialog open={isSheetModalOpen} onOpenChange={setIsSheetModalOpen}>
-        <DialogContent className="sm:max-w-4xl p-5 sm:p-6 rounded-lg max-h-screen overflow-y-auto space-y-6">
+        <DialogContent className="sm:max-w-4xl p-5 sm:p-6 rounded-lg max-h-screen overflow-y-auto space-y-6 pt-safe-modal">
           <DialogHeader className="border-b border-border/50 pb-4">
             <div className="flex items-center gap-2">
               <Badge className="bg-primary/10 text-primary border border-primary/25 text-xs font-bold">
@@ -908,7 +1197,7 @@ function TravelSalesFinancialCompositionPage() {
               </Badge>
               <span className="text-xs font-mono text-muted-foreground">{internalCode}</span>
             </div>
-            <DialogTitle className="text-lg sm:text-xl font-black text-foreground flex items-center gap-2">
+            <DialogTitle className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
               <Calculator className="size-5 text-primary" />
               <span>Financeiro da Venda — 8 Blocos Auditáveis</span>
             </DialogTitle>
@@ -1442,7 +1731,7 @@ function TravelSalesFinancialCompositionPage() {
           {/* BLOCO 6: Resultado da Venda e Margens */}
           <div className="p-5 rounded-lg border-2 border-emerald-500/40 bg-emerald-500/5 space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+              <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
                 Bloco 6 — Resultado Líquido Final da Venda (Lucro Real da Agência)
               </h3>
               <div className="flex items-center gap-2 font-mono text-xs font-bold">
@@ -1527,7 +1816,7 @@ function TravelSalesFinancialCompositionPage() {
 
             {/* Bloco 8 */}
             <div className="p-4 rounded-lg border border-border/60 bg-card space-y-3">
-              <h3 className="text-xs font-black uppercase tracking-wider text-foreground flex items-center gap-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
                 <Receipt className="size-4 text-primary" />
                 <span>Bloco 8 — Documento Fiscal / Nota Fiscal</span>
               </h3>

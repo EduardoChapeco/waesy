@@ -3,6 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   ADMIN_MASTER_ISOLATED_ROUTES,
+  WORKSPACE_REDIRECT_COMPAT_ROUTES,
   getMasterSidebarPillars,
   getSidebarConfig,
   resolveWorkspaceNavigation,
@@ -139,7 +140,8 @@ describe("Workspace Master Sidebar Pillars & Multi-Niche Completeness", () => {
     expect(tourismPaths).toContain("/workspace/turismo/contratos");
 
     const gastroPaths = getSidebarConfig("gastronomy").flatMap((g) => g.items.map((i) => i.path));
-    expect(gastroPaths).toContain("/workspace/pedidos/gestor");
+    expect(gastroPaths).toContain("/workspace/pedidos");
+    expect(gastroPaths).not.toContain("/workspace/pedidos/gestor");
     expect(gastroPaths).toContain("/workspace/estoque");
     expect(gastroPaths).toContain("/workspace/pedidos/entregadores");
   });
@@ -150,9 +152,10 @@ describe("Workspace Master Sidebar Pillars & Multi-Niche Completeness", () => {
       .readdirSync(routesDir)
       .filter((f) => f.startsWith("workspace.") && f.endsWith(".tsx"));
 
-    const isolatedPaths = new Set<string>(
-      ADMIN_MASTER_ISOLATED_ROUTES.map((r) => r.path),
-    );
+    const isolatedPaths = new Set<string>([
+      ...ADMIN_MASTER_ISOLATED_ROUTES.map((r) => r.path),
+      ...WORKSPACE_REDIRECT_COMPAT_ROUTES.map((r) => r.path),
+    ]);
 
     const staticWorkspaceRoutes = Array.from(
       new Set(

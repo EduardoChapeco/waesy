@@ -88,7 +88,7 @@ export const sendAiMessageSchema = z.object({
   replyToId: z.string().uuid().optional(),
   attachments: z.array(z.string().url()).default([]),
   quickToolMode: z
-    .enum(["default", "website_builder", "interactive_map", "document", "creative_post"])
+    .enum(["default", "website_builder", "interactive_map", "document", "creative_post", "hot_offer"])
     .optional(),
   userLat: z.number().optional(),
   userLng: z.number().optional(),
@@ -3220,7 +3220,7 @@ export const renameAiConversationThread = createServerFn({ method: "POST" })
 export const executeGuestCopilotMessageSchema = z.object({
   message: z.string().min(1, "Mensagem não pode ser vazia").max(2000),
   quickToolMode: z
-    .enum(["default", "website_builder", "interactive_map", "document", "creative_post"])
+    .enum(["default", "website_builder", "interactive_map", "document", "creative_post", "hot_offer"])
     .optional(),
   userLat: z.number().optional(),
   userLng: z.number().optional(),
@@ -3775,5 +3775,24 @@ export const getCopilotExecutionStateFn = createServerFn({ method: "GET" })
       state: loaded.execution.state || {},
       steps: loaded.steps,
     };
+  });
+
+export const listPendingAiChatApprovals = createServerFn({ method: "GET" })
+  .validator(z.object({ limit: z.number().int().min(1).max(50).optional() }).optional())
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) return [];
+    const db = getServerClient();
+    const { data: rows, error } = await db
+      .from("copilot_action_approvals")
+      .select("id, action_type, payload, status, requested_at, expires_at, store_id, user_id")
+      .eq("status", "pending")
+      .eq("user_id", identity.id)
+      .order("requested_at", { ascending: false })
+      .limit(data?.limit ?? 10);
+    if (error) {
+      throw new Error(error.message || "Não foi possível carregar aprovações.");
+    }
+    return rows || [];
   });
 

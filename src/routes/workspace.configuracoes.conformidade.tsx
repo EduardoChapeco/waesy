@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ShieldCheck, Building2, CheckCircle2, Clock, AlertTriangle, FileText, Phone, Mail, HelpCircle, Loader2 } from "lucide-react";
+import { ShieldCheck, Building2, CheckCircle2, Clock, AlertTriangle, FileText, Phone, Mail, HelpCircle, Loader2, Search } from "lucide-react";
 import { toast } from "sonner";
 
 import { getStoreMarketplaceCompliance, submitMarketplaceCompliance } from "@/services/marketplace-compliance.functions";
+import { lookupCnpj } from "@/services/public-apis.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -12,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 export const Route = createFileRoute("/workspace/configuracoes/conformidade")({
-  head: () => ({ meta: [{ title: "Conformidade & Marketplace Oficial | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Conformidade Fiscal & Dados Jurídicos | Workspace Waesy" }] }),
   component: WorkspaceConformidadePage,
 });
 
@@ -33,6 +34,7 @@ export function WorkspaceConformidadePage() {
   const [sacEmail, setSacEmail] = useState("");
   const [returnPolicyUrl, setReturnPolicyUrl] = useState("");
   const [fiscalNotes, setFiscalNotes] = useState("");
+  const [isSearchingCnpj, setIsSearchingCnpj] = useState(false);
 
   useEffect(() => {
     if (compliance) {
@@ -45,6 +47,28 @@ export function WorkspaceConformidadePage() {
       setFiscalNotes(compliance.fiscal_notes || "");
     }
   }, [compliance]);
+
+  const handleLookupCnpj = async () => {
+    const clean = cnpj.replace(/\D/g, "");
+    if (clean.length !== 14) {
+      toast.error("Informe um CNPJ válido com 14 dígitos para consultar.");
+      return;
+    }
+    setIsSearchingCnpj(true);
+    try {
+      const data = await lookupCnpj({ data: { cnpj: clean } });
+      if (data) {
+        if (data.corporateName) setLegalName(data.corporateName);
+        if (data.phone && !sacPhone.trim()) setSacPhone(data.phone);
+        if (data.email && !sacEmail.trim()) setSacEmail(data.email);
+        toast.success(`Dados oficiais carregados da Receita Federal: ${data.corporateName}`);
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Erro ao consultar dados do CNPJ na base pública.");
+    } finally {
+      setIsSearchingCnpj(false);
+    }
+  };
 
   const submitMutation = useMutation({
     mutationFn: submitMarketplaceCompliance,
@@ -115,11 +139,11 @@ export function WorkspaceConformidadePage() {
               <ShieldCheck className="size-5" />
             </span>
             <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
-              Conformidade do Marketplace Oficial
+              Conformidade Fiscal & Operacional
             </h1>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Homologação fiscal e selo de garantia de procedência para lojas oficiais verificadas.
+            Homologação fiscal, razão social e selo de garantia de procedência para a operação da sua empresa.
           </p>
         </div>
 
@@ -128,7 +152,7 @@ export function WorkspaceConformidadePage() {
             {isApproved && (
               <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 gap-2 text-xs font-mono py-1 px-3">
                 <CheckCircle2 className="size-3.5" />
-                Loja Verificada no Marketplace
+                Empresa Verificada & Em Conformidade
               </Badge>
             )}
             {isPending && (
@@ -179,7 +203,7 @@ export function WorkspaceConformidadePage() {
 
           {/* Formulário Cadastral */}
           <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit} className="p-6 rounded-lg border border-border/60 bg-card shadow-2xs space-y-5">
+            <form onSubmit={handleSubmit} className="p-6 rounded-lg border border-border/60 bg-card shadow-2xs space-y-6">
               <div className="space-y-1">
                 <h2 className="text-base font-bold text-foreground">
                   Dados da Empresa Titular
@@ -189,6 +213,18 @@ export function WorkspaceConformidadePage() {
                 </p>
               </div>
 
+              {Boolean(compliance?.legal_name || compliance?.cnpj) && (
+                <div className="p-4 rounded-lg border border-primary/20 bg-primary/5 flex items-start gap-3">
+                  <CheckCircle2 className="size-4 text-primary shrink-0 mt-1" />
+                  <div className="text-xs space-y-1">
+                    <p className="font-semibold text-foreground">Dados pré-carregados da sua empresa</p>
+                    <p className="text-muted-foreground">
+                      As informações foram sincronizadas a partir do cadastro oficial da loja. Não é necessário redigitar; apenas revise e confirme para homologação.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2 space-y-2">
                   <Label htmlFor="legalName" className="text-xs font-semibold">Razão Social *</Label>
@@ -197,19 +233,30 @@ export function WorkspaceConformidadePage() {
                     value={legalName}
                     onChange={(e) => setLegalName(e.target.value)}
                     placeholder="Ex: Comercial de Alimentos Waesy Ltda"
-                    className="h-10 text-xs rounded-lg bg-background"
+                    className="h-11 min-h-11 text-xs rounded-lg bg-background"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="cnpj" className="text-xs font-semibold">CNPJ *</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="cnpj" className="text-xs font-semibold">CNPJ *</Label>
+                    <button
+                      type="button"
+                      onClick={handleLookupCnpj}
+                      disabled={isSearchingCnpj}
+                      className="text-2xs font-semibold text-primary hover:underline flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                    >
+                      {isSearchingCnpj ? <Loader2 className="size-3 animate-spin" /> : <Search className="size-3" />}
+                      <span>Consultar Receita</span>
+                    </button>
+                  </div>
                   <Input
                     id="cnpj"
                     value={cnpj}
                     onChange={handleCnpjChange}
                     placeholder="00.000.000/0000-00"
                     maxLength={18}
-                    className="h-10 text-xs font-mono rounded-lg bg-background"
+                    className="h-11 min-h-11 text-xs font-mono rounded-lg bg-background"
                   />
                 </div>
 
@@ -220,7 +267,7 @@ export function WorkspaceConformidadePage() {
                     value={stateRegistration}
                     onChange={(e) => setStateRegistration(e.target.value)}
                     placeholder="Isento ou número oficial"
-                    className="h-10 text-xs font-mono rounded-lg bg-background"
+                    className="h-11 min-h-11 text-xs font-mono rounded-lg bg-background"
                   />
                 </div>
 
@@ -231,7 +278,7 @@ export function WorkspaceConformidadePage() {
                     value={sacPhone}
                     onChange={(e) => setSacPhone(e.target.value)}
                     placeholder="(49) 99999-9999"
-                    className="h-10 text-xs rounded-lg bg-background"
+                    className="h-11 min-h-11 text-xs rounded-lg bg-background"
                   />
                 </div>
 
@@ -243,7 +290,7 @@ export function WorkspaceConformidadePage() {
                     value={sacEmail}
                     onChange={(e) => setSacEmail(e.target.value)}
                     placeholder="suporte@sualoja.com.br"
-                    className="h-10 text-xs rounded-lg bg-background"
+                    className="h-11 min-h-11 text-xs rounded-lg bg-background"
                   />
                 </div>
 
@@ -254,7 +301,7 @@ export function WorkspaceConformidadePage() {
                     value={returnPolicyUrl}
                     onChange={(e) => setReturnPolicyUrl(e.target.value)}
                     placeholder="https://sualoja.com.br/politica-trocas"
-                    className="h-10 text-xs rounded-lg bg-background"
+                    className="h-11 min-h-11 text-xs rounded-lg bg-background"
                   />
                 </div>
 

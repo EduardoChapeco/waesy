@@ -38,7 +38,7 @@ async function runAudit() {
     if (code.includes('supabase.from(') || code.includes('supabase\n  .from(')) {
       if (!f.includes('service') && !f.includes('test') && !f.includes('.server.')) {
         // Exclude server api routes like api.webhooks
-        if (!f.includes('src\\routes\\api.')) {
+        if (!f.replace(/\\/g, '/').includes('src/routes/api.')) {
           directSupabaseViolations.push(path.relative(root, f));
         }
       }

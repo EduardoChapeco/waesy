@@ -3,6 +3,8 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { extractErrorMessage } from "@/lib/utils";
+import { slugify } from "@/lib/slug-utils";
+export { slugify };
 import { getClientActiveTenant } from "@/lib/context-auth";
 import { createProduct, createCategory, createStoreBrand } from "@/services/admin-catalog.functions";
 import { importProductFromUrl } from "@/services/api-orchestrator.functions";
@@ -15,15 +17,6 @@ import type { TravelPackageData } from "@/types/travel-package";
 import type { FiscalData } from "./product-fiscal-tab";
 import type { NicheAttributesData } from "./product-specs-tab";
 import type { ProductLogisticsMetadata } from "./product-packaging-selector";
-
-export function slugify(text: string) {
-  return text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)+/g, "");
-}
 
 export function useProductEditor(
   initialCategories: any[],

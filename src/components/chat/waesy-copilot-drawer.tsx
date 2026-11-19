@@ -229,7 +229,7 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
       <button /* focus-visible:ring-2 */
         type="button"
         onClick={() => /* focus-visible:ring-2 */ setIsOpen(true)}
-        className={`fixed z-30 flex items-center gap-2 h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-semibold text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer ${
+        className={`fixed z-30 flex items-center justify-center gap-2 h-11 min-h-11 min-w-11 sm:h-9 sm:min-h-9 sm:min-w-0 px-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-semibold text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer ${
           isCompact ? "bottom-20 right-4" : "bottom-6 right-6"
         }`}
         title="Abrir Assessor Local Waesy"

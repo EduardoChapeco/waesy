@@ -410,3 +410,23 @@ export function normalizeOperatorDocument(input: {
 
   return CanonicalOperatorDocumentSchema.parse(normalized);
 }
+
+/**
+ * Cabeçalhos CORS estritos para endpoints de ingestão de operadoras Infotravel (extensão/browser).
+ */
+export function buildIngestCorsHeaders(request: Request): Record<string, string> {
+  const origin = request.headers.get("origin") || "";
+  const isAllowed =
+    origin.startsWith("chrome-extension://") ||
+    origin.includes("localhost") ||
+    origin.includes("127.0.0.1") ||
+    origin.includes("waesy.com.br") ||
+    origin.includes("usewaesy.pages.dev");
+
+  return {
+    "access-control-allow-origin": isAllowed ? origin : "null",
+    "access-control-allow-headers": "authorization, content-type",
+    "access-control-allow-methods": "POST, OPTIONS",
+    vary: "Origin",
+  };
+}

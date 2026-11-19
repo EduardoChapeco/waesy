@@ -3,10 +3,6 @@
 // Fonte: ANAC + Infraero + IATA Global Catalog (SSOT).
 // ─────────────────────────────────────────────────────────────────────────────
 
-import {
-  GLOBAL_AIRPORTS_CATALOG,
-  searchAirportsCatalog,
-} from "@/lib/data/airports-catalog";
 import { GLOBAL_AIRLINES_CATALOG, GLOBAL_CRUISES_CATALOG } from "@/lib/data/airlines-cruises-catalog";
 
 export interface Airport {
@@ -19,74 +15,6 @@ export interface Airport {
   countryCode?: string;
   region: "Norte" | "Nordeste" | "Centro-Oeste" | "Sudeste" | "Sul" | "Internacional";
 }
-
-function deriveRegion(state?: string, countryCode?: string): Airport["region"] {
-  if (countryCode && countryCode !== "BR") return "Internacional";
-  if (!state) return "Sudeste";
-  const st = state.toUpperCase().trim();
-  if (["PR", "SC", "RS"].includes(st)) return "Sul";
-  if (["SP", "RJ", "MG", "ES"].includes(st)) return "Sudeste";
-  if (["MS", "MT", "GO", "DF"].includes(st)) return "Centro-Oeste";
-  if (["BA", "SE", "AL", "PE", "PB", "RN", "CE", "PI", "MA"].includes(st)) return "Nordeste";
-  return "Norte";
-}
-
-export const CANONICAL_AIRPORTS: Airport[] = GLOBAL_AIRPORTS_CATALOG.map((a) => ({
-  iata: a.iata_code,
-  icao: a.icao_code,
-  name: a.name,
-  city: a.city,
-  state: a.state_province || a.country_code,
-  country: a.country,
-  countryCode: a.country_code,
-  region: deriveRegion(a.state_province, a.country_code),
-}));
-
-const CANONICAL_AIRPORT_MAP = new Map<string, Airport>(
-  CANONICAL_AIRPORTS.map((a) => [a.iata, a]),
-);
-
-/** Retorna o airport ou undefined em O(1) */
-export function findAirportByIATA(iata: string): Airport | undefined {
-  if (!iata) return undefined;
-  return CANONICAL_AIRPORT_MAP.get(iata.trim().toUpperCase());
-}
-
-/** Busca ranqueada por IATA, ICAO, cidade, estado, país ou nome */
-export function searchCanonicalAirports(query: string, limit = 60): Airport[] {
-  return searchAirportsCatalog(query, { limit }).map(
-    (a) =>
-      CANONICAL_AIRPORT_MAP.get(a.iata_code) || {
-        iata: a.iata_code,
-        icao: a.icao_code,
-        name: a.name,
-        city: a.city,
-        state: a.state_province || a.country_code,
-        country: a.country,
-        countryCode: a.country_code,
-        region: deriveRegion(a.state_province, a.country_code),
-      },
-  );
-}
-
-/** Label para uso em Select/Combobox: "XAP — Chapecó, SC" ou "MIA — Miami, Estados Unidos" */
-export function airportLabel(airport: Airport): string {
-  const loc =
-    airport.countryCode && airport.countryCode !== "BR" && airport.country
-      ? `${airport.city}, ${airport.country}`
-      : `${airport.city}, ${airport.state}`;
-  return `${airport.iata} — ${loc}`;
-}
-
-/** Agrupa por região para optgroup */
-export const AIRPORTS_BY_REGION = CANONICAL_AIRPORTS.reduce(
-  (acc, airport) => {
-    if (!acc[airport.region]) acc[airport.region] = [];
-    acc[airport.region].push(airport);
-    return acc;
-  },
-  {} as Record<string, Airport[]>,
-);
 
 /** Airlines Canônicas */
 export const CANONICAL_AIRLINES = [

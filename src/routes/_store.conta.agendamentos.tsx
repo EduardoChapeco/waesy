@@ -2,7 +2,8 @@ import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-rout
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Smartphone, AlertCircle } from "lucide-react";
+import { Smartphone } from "lucide-react";
+import { RouteErrorFallback } from "@/components/state/route-error-fallback";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,31 +33,18 @@ export const Route = createFileRoute("/_store/conta/agendamentos")({
       return { initialAppointments: [], session: null };
     }
   },
-  errorComponent: CustomerAgendamentosErrorComponent,
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorFallback
+      error={error}
+      reset={reset}
+      title="Instabilidade ao carregar agendamentos"
+      description="Não foi possível carregar seus agendamentos no momento."
+      secondaryHref="/conta"
+      secondaryLabel="Voltar para Conta"
+    />
+  ),
  component: CustomerAgendaPage,
 });
-
-function CustomerAgendamentosErrorComponent({ error, reset }: { error: any; reset: () => void }) {
-  return (
-    <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
-        <AlertCircle className="size-8" />
-      </div>
-      <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar agendamentos</h2>
-      <p className="text-sm text-muted-foreground max-w-md mx-auto">
-        {error?.message || "Não foi possível carregar seus agendamentos no momento."}
-      </p>
-      <div className="flex items-center justify-center gap-3">
-        <Button onClick={reset} className="rounded-lg font-bold">
-          Tentar Novamente
-        </Button>
-        <Button asChild variant="outline" className="rounded-lg font-bold">
-          <Link to="/conta">Voltar para Conta</Link>
-        </Button>
-      </div>
-    </div>
-  );
-}
 
 function getStatusBadge(status: string) {
   switch (status) {
@@ -307,7 +295,7 @@ function CustomerAgendaPage() {
  size="sm"
  className="rounded-lg text-xs font-semibold h-8 text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0"
  >
- <Link to="/c/$storeSlug" params={{ storeSlug: appt.stores.slug }}>
+ <Link to="/app/$slug" params={{ slug: appt.stores.slug }}>
  Loja ↗
  </Link>
  </Button>

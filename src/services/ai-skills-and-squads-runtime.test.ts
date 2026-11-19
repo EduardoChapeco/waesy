@@ -291,13 +291,14 @@ describe("Plano #31 / PROMPT 23: Runtime de Skills, Agentes e Squads no App", ()
   // FASE D: Agentes e Squads com Grafo de Handoff & Supervisor
   // ============================================================
   describe("Fase D: Agentes e Squads com Grafo de Handoff", () => {
-    it("deve possuir 7 agentes canônicos e 3 squads configurados", () => {
+    it("deve possuir 7 agentes canônicos e 4 squads configurados", () => {
       expect(Object.keys(CANONICAL_AGENTS).length).toBe(7);
-      expect(Object.keys(CANONICAL_SQUADS).length).toBe(3);
+      expect(Object.keys(CANONICAL_SQUADS).length).toBe(4);
 
       expect(CANONICAL_SQUADS.sales_squad).toBeDefined();
       expect(CANONICAL_SQUADS.publishing_squad).toBeDefined();
       expect(CANONICAL_SQUADS.finance_squad).toBeDefined();
+      expect(CANONICAL_SQUADS.deep_research_squad).toBeDefined();
     });
 
     it("deve executar squad de vendas ponta a ponta (SDR -> Closer) registrando handoffs", async () => {

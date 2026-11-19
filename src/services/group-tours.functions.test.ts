@@ -68,6 +68,8 @@ const VALID_UUID = "123e4567-e89b-12d3-a456-426614174000";
 describe("Group Tours Contract & Engine Shield (Microfase 75B)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSingle.mockResolvedValue({ data: null, error: null });
+    mockMaybeSingle.mockResolvedValue({ data: null, error: null });
   });
 
   it("gera mapa padrão de 46 assentos com corredores e numeração correta", () => {

@@ -1,33 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getServerIdentity } from "@/lib/identity.server";
+import { getServerIdentity } from "@/lib/server-access";
 import {
   authenticateIngest,
   INFOTRAVEL_INGEST_FEATURE_KEY,
 } from "@/services/whatsapp-group-ingest.server";
-import { normalizeOperatorCode } from "@/lib/travel-operator-sync";
+import { buildIngestCorsHeaders as cors, normalizeOperatorCode } from "@/lib/travel-operator-sync";
 import {
   TravelQuoteCapturePayloadSchema,
   ingestTravelQuoteCapture,
 } from "@/services/travel-quote-capture.functions";
 
 const MAX_BODY_BYTES = 512 * 1024; // 512KB
-
-function cors(request: Request): Record<string, string> {
-  const origin = request.headers.get("origin") || "";
-  const isAllowed =
-    origin.startsWith("chrome-extension://") ||
-    origin.includes("localhost") ||
-    origin.includes("127.0.0.1") ||
-    origin.includes("waesy.com.br") ||
-    origin.includes("usewaesy.pages.dev");
-
-  return {
-    "access-control-allow-origin": isAllowed ? origin : "null",
-    "access-control-allow-headers": "authorization, content-type",
-    "access-control-allow-methods": "POST, OPTIONS",
-    vary: "Origin",
-  };
-}
 
 export const Route = createFileRoute("/api/v1/ingest/infotravel-quotes")({
   server: {

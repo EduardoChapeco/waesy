@@ -483,5 +483,3 @@ function CustomerTicketsPage() {
     </div>
   );
 }
-
-export default CustomerTicketsPage;

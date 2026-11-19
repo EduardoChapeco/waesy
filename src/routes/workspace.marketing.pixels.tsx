@@ -11,13 +11,16 @@ import {
   saveStorePixelConfig,
   testStorePixelPipeline,
   getStoreAttributionOverview,
+  listMarketingSourcesAndPixels,
   type StorePixelConfigDTO,
 } from "@/services/pixels.functions";
+import { MarketingSourcesMultiPixelPanel } from "@/components/marketing/MarketingSourcesMultiPixelPanel";
 import { getStoreMarketingTierStatus, upgradeStoreToWaesyMax } from "@/services/ads.functions";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Lock } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { sanitizeCustomerEmail } from "@/lib/contact-sanitize";
 
 export const Route = createFileRoute("/workspace/marketing/pixels")({
   head: () => ({
@@ -25,14 +28,15 @@ export const Route = createFileRoute("/workspace/marketing/pixels")({
   }),
   loader: async () => {
     try {
-      const [config, attributionOverview] = await Promise.all([
+      const [config, attributionOverview, marketingSources] = await Promise.all([
         getStorePixelConfig(),
         getStoreAttributionOverview({ data: { days: 30 } }).catch(() => null),
+        listMarketingSourcesAndPixels().catch(() => ({ sources: [], migrationReady: false })),
       ]);
-      return { config, attributionOverview };
+      return { config, attributionOverview, marketingSources };
     } catch (err: any) {
       console.error("[loader:workspace.marketing.pixels] error:", err);
-      return { config: null, attributionOverview: null };
+      return { config: null, attributionOverview: null, marketingSources: { sources: [], migrationReady: false } };
     }
   },
   component: WorkspaceMarketingPixelsPage,
@@ -40,7 +44,7 @@ export const Route = createFileRoute("/workspace/marketing/pixels")({
 
 export default function WorkspaceMarketingPixelsPage() {
   const router = useRouter();
-  const { config, tierStatus: initialTierStatus, attributionOverview } = Route.useLoaderData() as any;
+  const { config, tierStatus: initialTierStatus, attributionOverview, marketingSources } = Route.useLoaderData() as any;
   const [tierStatus, setTierStatus] = useState<any>(initialTierStatus || { planTier: "free", isMaxUnlocked: false });
   const [maxUpsellOpen, setMaxUpsellOpen] = useState(false);
   const [isUpgradingMax, setIsUpgradingMax] = useState(false);
@@ -238,6 +242,12 @@ export default function WorkspaceMarketingPixelsPage() {
           </Button>
         </div>
       </div>
+
+      <MarketingSourcesMultiPixelPanel
+        storeId={config?.store_id}
+        initialSources={marketingSources?.sources || []}
+        onRefresh={() => router.invalidate()}
+      />
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* ── Bloco 1: Meta Ads (Facebook & Instagram) ── */}
@@ -996,7 +1006,7 @@ export default function WorkspaceMarketingPixelsPage() {
                     </span>
                   </div>
                   <div className="min-w-0 font-mono text-foreground truncate">
-                    {tp.phone_e164 || tp.email || (tp.lead_code ? `#${tp.lead_code}` : "-")}
+                    {tp.phone_e164 || sanitizeCustomerEmail(tp.email) || (tp.lead_code ? `#${tp.lead_code}` : "-")}
                   </div>
                   <div className="min-w-0 text-muted-foreground truncate">
                     {tp.entity_title || tp.captured_via}
@@ -1011,6 +1021,44 @@ export default function WorkspaceMarketingPixelsPage() {
             <p className="text-xs text-muted-foreground">
               Nenhum evento de atribuição registrado nos últimos 30 dias.
             </p>
+          )}
+
+          {Array.isArray(attributionOverview.telemetryLogs) && attributionOverview.telemetryLogs.length > 0 && (
+            <div className="space-y-2 pt-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+                Disparos CAPI / GA4 Recentes por Pixel
+              </span>
+              <div className="divide-y divide-border/50 rounded-lg border border-border/60 bg-background">
+                {attributionOverview.telemetryLogs.slice(0, 8).map((log: any) => (
+                  <div key={log.id} className="p-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Badge variant="outline" className="text-2xs font-mono">
+                        {log.event_name}
+                      </Badge>
+                      <span className="font-mono text-muted-foreground">
+                        {log.external_pixel_id ? `Pixel #${log.external_pixel_id}` : log.channel}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "text-2xs font-mono",
+                          log.status === "delivered"
+                            ? "text-emerald-600 border-emerald-500/30"
+                            : "text-destructive border-destructive/30",
+                        )}
+                      >
+                        {log.status}
+                      </Badge>
+                      <span className="font-mono text-2xs text-muted-foreground">
+                        {log.dispatched_at ? new Date(log.dispatched_at).toLocaleDateString("pt-BR") : "-"}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       )}

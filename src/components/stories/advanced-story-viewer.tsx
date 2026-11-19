@@ -15,6 +15,7 @@ interface AdvancedStoryViewerProps {
  initialStoryIndex?: number;
  isOpen: boolean;
  onClose: () => void;
+ onOpenInternalOffer?: (offerIdOrUrl: string, story: StoryMediaItemDTO) => void;
 }
 
 export function AdvancedStoryViewer({
@@ -23,6 +24,7 @@ export function AdvancedStoryViewer({
  initialStoryIndex = 0,
  isOpen,
  onClose,
+ onOpenInternalOffer,
 }: AdvancedStoryViewerProps) {
  const [groupIndex, setGroupIndex] = useState(initialGroupIndex);
  const [storyIndex, setStoryIndex] = useState(initialStoryIndex);
@@ -437,17 +439,37 @@ export function AdvancedStoryViewer({
  </div>
  )}
 
- {/* Botão de Link Externo ou WhatsApp */}
- {currentStory.link_url && (
- <Button
- asChild
- className="w-full h-11 min-h-11 rounded-lg bg-card hover:bg-muted text-foreground border border-border font-bold text-xs flex items-center justify-center gap-2 transition-colors"
- >
- <a href={currentStory.link_url} target="_blank" rel="noopener noreferrer">
- <span>{currentStory.link_cta || "Acessar Oferta"}</span>
- <ArrowRight size={14} weight="bold" />
- </a>
- </Button>
+ {/* Botão de Oferta Interna no App ou Link Externo */}
+ {(currentStory.link_url || currentStory.hot_offer_id) && (
+   onOpenInternalOffer && (currentStory.hot_offer_id || currentStory.link_url?.includes("offer=")) ? (
+     <Button
+       type="button"
+       data-testid="story-open-internal-offer-btn"
+       onClick={() => {
+         const targetOffer =
+           currentStory.hot_offer_id ||
+           new URLSearchParams(currentStory.link_url?.split("?")[1] || "").get("offer") ||
+           currentStory.link_url ||
+           "";
+         onClose();
+         onOpenInternalOffer(targetOffer, currentStory);
+       }}
+       className="w-full h-11 min-h-11 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+     >
+       <span>{currentStory.link_cta || "Ver Descrição da Oferta"}</span>
+       <ArrowRight size={14} weight="bold" />
+     </Button>
+   ) : (
+     <Button
+       asChild
+       className="w-full h-11 min-h-11 rounded-lg bg-card hover:bg-muted text-foreground border border-border font-bold text-xs flex items-center justify-center gap-2 transition-colors"
+     >
+       <a href={currentStory.link_url || "#"} target="_blank" rel="noopener noreferrer">
+         <span>{currentStory.link_cta || "Ver Descrição da Oferta"}</span>
+         <ArrowRight size={14} weight="bold" />
+       </a>
+     </Button>
+   )
  )}
 
  {/* Hashtags e Badge de Co-Publicação */}

@@ -460,15 +460,15 @@ export const listTeamSignatureStatuses = createServerFn({ method: "GET" }).handl
   const { data: members, error: membersErr } = await supabase
     .from("workspace_members")
     .select("id, profile_id, role, is_active")
-    .eq("store_id", identity.store_id)
-    .eq("is_active", true);
+    .eq("store_id", identity.store_id);
 
   if (membersErr) {
     throw new Error("Não foi possível consultar assinaturas da equipe.");
   }
 
+  const activeMembers = (members || []).filter((m) => m.is_active !== false);
   const profileIds = Array.from(
-    new Set((members || []).map((m) => m.profile_id).filter(Boolean)),
+    new Set(activeMembers.map((m) => m.profile_id).filter(Boolean)),
   );
   if (profileIds.length === 0) return [];
 
@@ -479,8 +479,9 @@ export const listTeamSignatureStatuses = createServerFn({ method: "GET" }).handl
 
   const profileMap = new Map((profiles || []).map((p) => [p.id, p]));
 
-  return (members || []).map((m) => {
+  return activeMembers.map((m) => {
     const p = profileMap.get(m.profile_id);
+    const effectiveSignature = p?.saved_signature_url || p?.saved_initials_url || null;
     return {
       memberId: m.id,
       profileId: m.profile_id,
@@ -489,9 +490,9 @@ export const listTeamSignatureStatuses = createServerFn({ method: "GET" }).handl
       avatarUrl: p?.avatar_url || null,
       phone: p?.phone || null,
       cpf: p?.cpf || null,
-      hasSavedSignature: Boolean(p?.saved_signature_url),
+      hasSavedSignature: Boolean(effectiveSignature),
       hasSavedInitials: Boolean(p?.saved_initials_url),
-      savedSignaturePreview: p?.saved_signature_url || null,
+      savedSignaturePreview: effectiveSignature,
     };
   });
 });
@@ -525,7 +526,7 @@ export const getUserSignatureProfile = createServerFn({ method: "GET" }).handler
     email: identity.email || null,
     phone: profile?.phone || null,
     cpf: profile?.cpf || null,
-    savedSignature: profile?.saved_signature_url || null,
+    savedSignature: profile?.saved_signature_url || profile?.saved_initials_url || null,
     savedInitials: profile?.saved_initials_url || null,
   };
 });
@@ -554,14 +555,35 @@ export const saveUserSignatureAndInitials = createServerFn({ method: "POST" })
     const identity = await getIdentity();
     if (!identity?.id) throw new Error("Não autenticado.");
 
+    const { data: existingProfile } = await supabase
+      .from("profiles")
+      .select("saved_signature_url, saved_initials_url")
+      .eq("id", identity.id)
+      .maybeSingle();
+
     const updatePayload: Record<string, string | null> = {
       updated_at: new Date().toISOString(),
     };
     if (input.signatureImageBase64 !== undefined) {
       updatePayload.saved_signature_url = input.signatureImageBase64;
+      if (
+        input.signatureImageBase64 === null &&
+        input.initialsImageBase64 === undefined &&
+        !existingProfile?.saved_signature_url &&
+        existingProfile?.saved_initials_url
+      ) {
+        updatePayload.saved_initials_url = null;
+      }
     }
     if (input.initialsImageBase64 !== undefined) {
       updatePayload.saved_initials_url = input.initialsImageBase64;
+      if (
+        input.initialsImageBase64 &&
+        input.signatureImageBase64 === undefined &&
+        !existingProfile?.saved_signature_url
+      ) {
+        updatePayload.saved_signature_url = input.initialsImageBase64;
+      }
     }
 
     const { data: updated, error } = await supabase
@@ -577,7 +599,8 @@ export const saveUserSignatureAndInitials = createServerFn({ method: "POST" })
 
     return {
       success: true,
-      savedSignature: updated.saved_signature_url,
+      profileId: updated.id,
+      savedSignature: updated.saved_signature_url || updated.saved_initials_url || null,
       savedInitials: updated.saved_initials_url,
     };
   });

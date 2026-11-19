@@ -9,7 +9,8 @@ import { setResponseHeader } from "@tanstack/start-server-core";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
-import { getServerIdentity, requireStaff } from "@/lib/server-access";
+import { getServerIdentity, requireStaff, assertStoreAccess } from "@/lib/server-access";
+import { syncTourismSaleToFinancialSheetServer } from "./travel-commissions-unified.functions";
 import { getNextActiveKey, executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
 import { publishDomainEvent } from "./domain-events.functions";
 import { parseAndValidatePassportMrz, evaluateUsVisaDs160ConsularTies, type VisaDs160EvaluationInput } from "./travel-ecosystem-engines.functions";
@@ -114,12 +115,74 @@ export interface TripAggregateDTO {
  confirmationItems: TripConfirmationItemDTO[];
  contract?: any | null;
  vouchers: TourismVoucherDTO[];
+ officialDocuments?: any[];
+ boletos?: any[];
  store: {
  id: string;
  name: string;
  logo_url?: string | null;
  whatsapp_phone?: string | null;
  };
+}
+
+function parseValidCpf(raw: unknown): string {
+  const digits = String(raw || "").replace(/\D/g, "");
+  return digits.length === 11 && !/^(\d)\1{10}$/.test(digits) ? digits : "";
+}
+
+async function resolveTripAccessForIdentity(
+  supabase: ReturnType<typeof getServerClient>,
+  identity: { id?: string | null; email?: string | null; role?: string | null; store_id?: string | null } | null,
+  trip: { id: string; store_id: string; customer_id?: string | null; client_email?: string | null; client_document?: string | null },
+): Promise<{ authorized: boolean; isStaff: boolean }> {
+  if (!identity?.id) {
+    return { authorized: false, isStaff: false };
+  }
+  const isStaff =
+    identity.role === "platform_admin" ||
+    (identity.role !== "customer" && Boolean(identity.store_id) && identity.store_id === trip.store_id);
+  if (isStaff) {
+    return { authorized: true, isStaff: true };
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("cpf")
+    .eq("id", identity.id)
+    .maybeSingle();
+
+  const userEmail = String(identity.email || "").trim().toLowerCase();
+  const userCpf = parseValidCpf((profile as any)?.cpf);
+  const tripEmail = String(trip.client_email || "").trim().toLowerCase();
+  const tripCpf = parseValidCpf(trip.client_document);
+
+  if (
+    trip.customer_id === identity.id ||
+    (Boolean(userEmail) && tripEmail === userEmail) ||
+    (Boolean(userCpf) && tripCpf === userCpf)
+  ) {
+    return { authorized: true, isStaff: false };
+  }
+
+  if (userEmail || userCpf) {
+    const { data: paxRows } = await supabase
+      .from("trip_passengers")
+      .select("email, document")
+      .eq("trip_id", trip.id)
+      .limit(50);
+    const isPassenger = (paxRows || []).some((p: any) => {
+      const paxCpf = parseValidCpf(p.document);
+      return (
+        (Boolean(userEmail) && String(p.email || "").trim().toLowerCase() === userEmail) ||
+        (Boolean(userCpf) && paxCpf === userCpf)
+      );
+    });
+    if (isPassenger) {
+      return { authorized: true, isStaff: false };
+    }
+  }
+
+  return { authorized: false, isStaff: false };
 }
 
 // ─── 1. Conversão Atômica de Proposta em Viagem/Reserva ─────────────────────────
@@ -223,23 +286,60 @@ export const convertProposalToTrip = createServerFn({ method: "POST" })
 
     const result = rpcResult as any;
 
-    // Garante propagação integral dos campos de paridade (roteiro dia a dia, multimodal, ocupação de quartos, comissões e pagamento)
-    try {
-      const propAny = proposal as any;
-      await supabase
-        .from("tourism_trips")
-        .update({
-          itinerary: Array.isArray(propAny.itinerary) ? propAny.itinerary : [],
-          rooms: Array.isArray(propAny.rooms) ? propAny.rooms : (Array.isArray(propAny.room_occupancies) ? propAny.room_occupancies : []),
-          includes: Array.isArray(propAny.includes) ? propAny.includes : [],
-          excludes: Array.isArray(propAny.excludes) ? propAny.excludes : [],
-          operator_name: propAny.operator_name || null,
-          financial_details: propAny.payment_breakdown || propAny.pricing || {},
-        } as any)
-        .eq("id", result.trip_id)
-        .eq("store_id", effectiveStoreId);
-    } catch {
-      // Silencioso caso a tabela possua restrição específica em ambiente de teste mockado
+    // Garante propagação complementar sem sobrescrever os campos específicos da opção aceita
+    const propAny = proposal as any;
+    const acceptedOptionId = result.selected_option_id ?? propAny.accepted_option_id ?? null;
+    const acceptedOption =
+      acceptedOptionId && Array.isArray(propAny.options)
+        ? propAny.options.find((opt: any) => opt?.id === acceptedOptionId) || null
+        : null;
+
+    const effectiveItinerary =
+      Array.isArray(acceptedOption?.itinerary) && acceptedOption.itinerary.length > 0
+        ? acceptedOption.itinerary
+        : Array.isArray(propAny.itinerary)
+          ? propAny.itinerary
+          : [];
+    const effectiveRooms =
+      Array.isArray(acceptedOption?.rooms) && acceptedOption.rooms.length > 0
+        ? acceptedOption.rooms
+        : Array.isArray(propAny.rooms)
+          ? propAny.rooms
+          : Array.isArray(propAny.room_occupancies)
+            ? propAny.room_occupancies
+            : [];
+    const effectiveIncludes =
+      Array.isArray(acceptedOption?.includes) && acceptedOption.includes.length > 0
+        ? acceptedOption.includes
+        : Array.isArray(propAny.includes)
+          ? propAny.includes
+          : [];
+    const effectiveExcludes =
+      Array.isArray(acceptedOption?.excludes) && acceptedOption.excludes.length > 0
+        ? acceptedOption.excludes
+        : Array.isArray(propAny.excludes)
+          ? propAny.excludes
+          : [];
+    const effectivePricing = acceptedOption?.pricing || propAny.payment_breakdown || propAny.pricing || {};
+
+    const syncPatch: Record<string, any> = {
+      itinerary: effectiveItinerary,
+      rooms: effectiveRooms,
+      includes: effectiveIncludes,
+      excludes: effectiveExcludes,
+      operator_name: propAny.operator_name || null,
+      financial_details: effectivePricing,
+    };
+    if (propAny.lead_id) syncPatch.lead_id = propAny.lead_id;
+    if (propAny.customer_id) syncPatch.customer_id = propAny.customer_id;
+
+    const tripSyncRes = await supabase
+      .from("tourism_trips")
+      .update(syncPatch as any)
+      .eq("id", result.trip_id)
+      .eq("store_id", effectiveStoreId);
+    if (tripSyncRes && (tripSyncRes as any).error) {
+      throw new Error(`Viagem convertida, porém falha ao sincronizar metadados: ${(tripSyncRes as any).error.message}`);
     }
     return {
       success: true,
@@ -262,6 +362,7 @@ export const getTripAggregate = createServerFn({ method: "GET" })
  .validator(z.object({ tripId: z.string().uuid("ID inválido") }))
  .handler(async ({ data }): Promise<TripAggregateDTO> => {
  const supabase = getServerClient();
+ const identity = await requireStaff();
 
  const { data: trip, error: tripErr } = await supabase
  .from("tourism_trips")
@@ -273,17 +374,51 @@ export const getTripAggregate = createServerFn({ method: "GET" })
  throw new Error("Viagem não encontrada: " + (tripErr?.message || ""));
  }
 
- const [paxRes, confRes, vouchersRes, contractRes] = await Promise.all([
+ if (trip.store_id !== identity.store_id) {
+ throw new Error("Acesso negado a viagem de outra loja.");
+ }
+
+ const [paxRes, confRes, vouchersRes, contractRes, docsRes, boletosRes] = await Promise.all([
  supabase.from("trip_passengers").select("*").eq("store_id", trip.store_id).eq("trip_id", data.tripId),
  supabase.from("trip_confirmation_items").select("*").eq("store_id", trip.store_id).eq("trip_id", data.tripId).order("service_date", { ascending: true }),
  supabase.from("tourism_vouchers").select("*").eq("store_id", trip.store_id).eq("trip_id", data.tripId).order("created_at", { ascending: false }),
  trip.proposal_id
    ? supabase.from("travel_contracts").select("*").eq("store_id", trip.store_id).eq("proposal_id", trip.proposal_id).order("created_at", { ascending: false }).limit(1).maybeSingle()
    : supabase.from("travel_contracts").select("*").eq("store_id", trip.store_id).eq("trip_id", data.tripId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+ supabase.from("travel_trip_official_documents").select("*").eq("store_id", trip.store_id).eq("trip_id", data.tripId).order("created_at", { ascending: false }),
+ supabase.from("travel_trip_installment_boletos").select("*").eq("store_id", trip.store_id).eq("trip_id", data.tripId).order("installment_number", { ascending: true }),
  ]);
 
  for (const [label, result] of [["passageiros", paxRes], ["confirmações", confRes], ["vouchers", vouchersRes], ["contrato", contractRes]] as const) {
    if (result.error) throw new Error(`Erro ao carregar ${label}: ${result.error.message}`);
+ }
+
+ let resolvedContract = contractRes.data || null;
+ const proposalLookupId = (trip as any).source_proposal_id || trip.proposal_id || null;
+ if (!resolvedContract && proposalLookupId) {
+   const { data: canonicalContract } = await supabase
+     .from("contracts")
+     .select("id, store_id, title, status, verification_code, metadata, created_at")
+     .eq("category", "tourism")
+     .eq("store_id", trip.store_id)
+     .eq("metadata->>proposal_id", proposalLookupId)
+     .order("created_at", { ascending: false })
+     .limit(1)
+     .maybeSingle();
+
+   if (canonicalContract) {
+     const cMeta = (canonicalContract as any).metadata || {};
+     resolvedContract = {
+       id: canonicalContract.id,
+       public_token: canonicalContract.verification_code || cMeta.public_token || canonicalContract.id,
+       status: canonicalContract.status,
+       contract_title: canonicalContract.title,
+       client_name: cMeta.client_name || trip.client_name || "",
+       client_document: cMeta.client_document || trip.client_document || "",
+       package_summary: cMeta.package_summary || trip.title || "",
+       created_at: canonicalContract.created_at,
+     };
+   }
  }
 
  const storeSettings = (trip.stores as any)?.settings || {};
@@ -300,11 +435,14 @@ export const getTripAggregate = createServerFn({ method: "GET" })
  rooms: trip.rooms || [],
  includes: trip.includes || [],
  excludes: trip.excludes || [],
+ portal_content: (trip as any).portal_content || null,
  },
  passengers: paxRes.data || [],
  confirmationItems: confRes.data || [],
  vouchers: vouchersRes.data || [],
- contract: contractRes.data || null,
+ contract: resolvedContract,
+ officialDocuments: docsRes?.data || [],
+ boletos: boletosRes?.data || [],
  store: {
  id: trip.stores?.id || trip.store_id,
  name: trip.stores?.name || "",
@@ -526,9 +664,11 @@ export const createManualTrip = createServerFn({ method: "POST" })
       throw new Error("A viagem pertence a outra loja; acesso negado.");
     }
 
-    const tripNumber = `TRIP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
-    const voucherCode = `VOUCH-${Math.floor(100000 + Math.random() * 900000)}`;
-    const voucherToken = "vch_" + Math.random().toString(36).substring(2, 12);
+    const randInts = new Uint32Array(2);
+    crypto.getRandomValues(randInts);
+    const tripNumber = `TRIP-${new Date().getFullYear()}-${1000 + (randInts[0] % 9000)}`;
+    const voucherCode = `VOUCH-${100000 + (randInts[1] % 900000)}`;
+    const voucherToken = `vch_${crypto.randomUUID().replace(/-/g, "").slice(0, 12)}`;
 
     const flights = data.airlineName || data.flightLocator ? [{
       airline_name: data.airlineName || "Companhia Aérea",
@@ -767,6 +907,8 @@ export const parseOperatorVoucherAI = createServerFn({ method: "POST" })
     })
   )
   .handler(async ({ data }): Promise<{ success: boolean; parsed: OperatorParsedVoucherDTO }> => {
+    await requireStaff();
+
     // Normalizar lista de arquivos recebidos (lote multi-documentos ou arquivo único)
     const fileList: Array<{
       fileBase64?: string;
@@ -1052,17 +1194,16 @@ export const listCustomerAgencyTrips = createServerFn({ method: "GET" }).handler
     const cleanEmail = String(identity.email || "")
       .trim()
       .toLowerCase();
-    const cleanDoc = String((profile as any)?.cpf || "")
-      .replace(/\D/g, "");
+    const cleanDoc = parseValidCpf((profile as any)?.cpf);
     const cleanPhone = String(profile?.phone || "").replace(/\D/g, "");
-    const phoneSuffix = cleanPhone.length >= 8 ? cleanPhone.slice(-8) : "";
+    const phoneSuffix = cleanPhone.length >= 10 ? cleanPhone.slice(-8) : "";
 
     // 1. Verificar se o usuário consta como passageiro em alguma viagem (trip_passengers)
     const passengerOrClauses: string[] = [];
     if (cleanEmail && cleanEmail.includes("@")) {
       passengerOrClauses.push(`email.ilike.${cleanEmail}`);
     }
-    if (cleanDoc.length >= 9) {
+    if (cleanDoc) {
       passengerOrClauses.push(`document.ilike.%${cleanDoc}%`);
     }
 
@@ -1080,18 +1221,15 @@ export const listCustomerAgencyTrips = createServerFn({ method: "GET" }).handler
       }
     }
 
-    // 2. Construir cláusula unificada multi-agência
-    const tripOrClauses: string[] = [
-      `customer_id.eq.${identity.id}`,
-      `client_id.eq.${identity.id}`,
-    ];
+    // 2. Construir cláusula unificada multi-agência (somente colunas reais em tourism_trips)
+    const tripOrClauses: string[] = [`customer_id.eq.${identity.id}`];
     if (cleanEmail && cleanEmail.includes("@")) {
       tripOrClauses.push(`client_email.ilike.${cleanEmail}`);
     }
-    if (cleanDoc.length >= 9) {
+    if (cleanDoc) {
       tripOrClauses.push(`client_document.ilike.%${cleanDoc}%`);
     }
-    if (phoneSuffix.length >= 8) {
+    if (phoneSuffix) {
       tripOrClauses.push(`client_whatsapp.ilike.%${phoneSuffix}%`);
     }
     if (passengerTripIds.length > 0) {
@@ -1101,10 +1239,10 @@ export const listCustomerAgencyTrips = createServerFn({ method: "GET" }).handler
     const { data, error } = await supabase
       .from("tourism_trips")
       .select(`
-        id, store_id, proposal_id, customer_id, trip_number, title, destination_city,
+        id, store_id, proposal_id, source_proposal_id, lead_id, customer_id, trip_number, title, destination_city,
         travel_start_date, travel_end_date, adults_count, children_count,
         currency, total_cents, status, client_name, client_whatsapp,
-        client_email, client_document, cover_image_url, operator_name,
+        client_email, client_document, cover_image_url, portal_content, operator_name,
         payment_method, installments_count, financial_details,
         flights, hotels, transfers, tours, itinerary, includes, excludes,
         insurance, notes, created_at,
@@ -1117,8 +1255,7 @@ export const listCustomerAgencyTrips = createServerFn({ method: "GET" }).handler
       .limit(50);
 
     if (error) {
-      console.warn("[listCustomerAgencyTrips] Falha ao carregar viagens multi-agência do cliente:", error.message);
-      return [];
+      throw new Error(`Falha ao carregar suas viagens: ${error.message}`);
     }
 
     return (data || []).map((row: any) => {
@@ -1162,10 +1299,9 @@ export const listCustomerTravelDossierFn = createServerFn({ method: "GET" }).han
     const cleanEmail = String(identity.email || "")
       .trim()
       .toLowerCase();
-    const cleanDoc = String((profile as any)?.cpf || "")
-      .replace(/\D/g, "");
+    const cleanDoc = parseValidCpf((profile as any)?.cpf);
     const cleanPhone = String(profile?.phone || "").replace(/\D/g, "");
-    const phoneSuffix = cleanPhone.length >= 8 ? cleanPhone.slice(-8) : "";
+    const phoneSuffix = cleanPhone.length >= 10 ? cleanPhone.slice(-8) : "";
 
     const proposalClauses: string[] = [];
     const quoteClauses: string[] = [];
@@ -1176,16 +1312,16 @@ export const listCustomerTravelDossierFn = createServerFn({ method: "GET" }).han
       quoteClauses.push(`contact_email.ilike.${cleanEmail}`);
       contractClauses.push(`client_email.ilike.${cleanEmail}`);
     }
-    if (phoneSuffix.length >= 8) {
+    if (phoneSuffix) {
       proposalClauses.push(`client_whatsapp.ilike.%${phoneSuffix}%`);
       quoteClauses.push(`contact_whatsapp.ilike.%${phoneSuffix}%`);
       contractClauses.push(`client_phone.ilike.%${phoneSuffix}%`);
     }
-    if (cleanDoc.length >= 9) {
+    if (cleanDoc) {
       contractClauses.push(`client_document.ilike.%${cleanDoc}%`);
     }
 
-    const [proposalsRes, quotesRes, contractsRes] = await Promise.all([
+    const [proposalsRes, quotesRes, legacyContractsRes, canonicalContractsRes] = await Promise.all([
       proposalClauses.length > 0
         ? supabase
             .from("travel_proposals")
@@ -1216,7 +1352,60 @@ export const listCustomerTravelDossierFn = createServerFn({ method: "GET" }).han
             .order("created_at", { ascending: false })
             .limit(30)
         : Promise.resolve({ data: [] as any[], error: null }),
+      supabase
+        .from("contracts")
+        .select("id, store_id, verification_code, title, status, metadata, created_at, stores(name, phone, settings)")
+        .eq("category", "tourism")
+        .or(
+          [
+            `customer_id.eq.${identity.id}`,
+            ...(cleanEmail && cleanEmail.includes("@") ? [`metadata->>client_email.ilike.${cleanEmail}`] : []),
+            ...(cleanDoc ? [`metadata->>client_document.ilike.%${cleanDoc}%`] : []),
+            ...(phoneSuffix ? [`metadata->>client_phone.ilike.%${phoneSuffix}%`] : []),
+          ].join(","),
+        )
+        .order("created_at", { ascending: false })
+        .limit(30),
     ]);
+
+    const mergedContracts: any[] = [];
+    const seenContractIds = new Set<string>();
+    for (const c of canonicalContractsRes.data || []) {
+      if (!c?.id || seenContractIds.has(c.id)) continue;
+      seenContractIds.add(c.id);
+      const s = (c as any).stores || {};
+      const st = s.settings && typeof s.settings === "object" ? s.settings : {};
+      const meta = (c as any).metadata || {};
+      mergedContracts.push({
+        id: c.id,
+        store_id: c.store_id,
+        public_token: c.verification_code || meta.public_token || c.id,
+        proposal_id: meta.proposal_id || null,
+        contract_title: c.title,
+        destination: meta.destination || "",
+        travel_start_date: meta.travel_start_date || null,
+        travel_end_date: meta.travel_end_date || null,
+        total_value_cents: Number(meta.total_value_cents || 0),
+        payment_conditions: meta.payment_conditions || "",
+        status: c.status === "completed" || c.status === "signed" ? "signed" : c.status,
+        signed_at: meta.signed_at || null,
+        pdf_url: meta.pdf_url || null,
+        created_at: c.created_at,
+        agency_name: s.name || meta.agency_name || null,
+        agency_whatsapp: st.whatsapp_phone || s.phone || null,
+      });
+    }
+    for (const c of legacyContractsRes.data || []) {
+      if (!c?.id || seenContractIds.has(c.id)) continue;
+      seenContractIds.add(c.id);
+      const s = c.stores || {};
+      const st = s.settings && typeof s.settings === "object" ? s.settings : {};
+      mergedContracts.push({
+        ...c,
+        agency_name: s.name || null,
+        agency_whatsapp: st.whatsapp_phone || s.phone || null,
+      });
+    }
 
     return {
       proposals: (proposalsRes.data || []).map((p: any) => {
@@ -1231,15 +1420,7 @@ export const listCustomerTravelDossierFn = createServerFn({ method: "GET" }).han
         };
       }),
       quotes: quotesRes.data || [],
-      contracts: (contractsRes.data || []).map((c: any) => {
-        const s = c.stores || {};
-        const st = s.settings && typeof s.settings === "object" ? s.settings : {};
-        return {
-          ...c,
-          agency_name: s.name || null,
-          agency_whatsapp: st.whatsapp_phone || s.phone || null,
-        };
-      }),
+      contracts: mergedContracts,
     };
   }
 );
@@ -1268,7 +1449,20 @@ export const saveTripPassenger = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }): Promise<{ success: boolean; id: string }> => {
     const supabase = getServerClient();
-    const identity = await getServerIdentity().catch(() => null);
+    const identity = await requireStaff();
+
+    const { data: trip, error: tripErr } = await supabase
+      .from("tourism_trips")
+      .select("id, store_id")
+      .eq("id", data.tripId)
+      .maybeSingle();
+
+    if (tripErr || !trip) {
+      throw new Error("Viagem não encontrada.");
+    }
+    if (trip.store_id !== identity.store_id && identity.role !== "platform_admin") {
+      throw new Error("Acesso negado: viagem pertence a outra loja.");
+    }
 
     const payload = {
       trip_id: data.tripId,
@@ -1289,19 +1483,15 @@ export const saveTripPassenger = createServerFn({ method: "POST" })
       const { error } = await supabase
         .from("trip_passengers")
         .update(payload)
-        .eq("id", data.id);
+        .eq("id", data.id)
+        .eq("store_id", trip.store_id);
       if (error) throw new Error("Erro ao atualizar passageiro: " + error.message);
       return { success: true, id: data.id };
     } else {
-      let storeId = identity?.store_id;
-      if (!storeId) {
-        const { data: trip } = await supabase.from("tourism_trips").select("store_id").eq("id", data.tripId).maybeSingle();
-        storeId = trip?.store_id;
-      }
       const { data: created, error } = await supabase
         .from("trip_passengers")
         .insert({
-          store_id: storeId,
+          store_id: trip.store_id,
           ...payload,
         })
         .select("id")
@@ -1318,7 +1508,25 @@ export const deleteTripPassenger = createServerFn({ method: "POST" })
   .validator(z.object({ passengerId: z.string().uuid() }))
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     const supabase = getServerClient();
-    const { error } = await supabase.from("trip_passengers").delete().eq("id", data.passengerId);
+    const identity = await requireStaff();
+
+    const { data: pax, error: findErr } = await supabase
+      .from("trip_passengers")
+      .select("id, store_id")
+      .eq("id", data.passengerId)
+      .maybeSingle();
+    if (findErr || !pax) {
+      throw new Error("Passageiro não encontrado.");
+    }
+    if (pax.store_id !== identity.store_id && identity.role !== "platform_admin") {
+      throw new Error("Acesso negado para remover passageiro de outra loja.");
+    }
+
+    const { error } = await supabase
+      .from("trip_passengers")
+      .delete()
+      .eq("id", data.passengerId)
+      .eq("store_id", pax.store_id);
     if (error) throw new Error("Erro ao excluir passageiro: " + error.message);
     return { success: true };
   });
@@ -1789,17 +1997,26 @@ export const saveTripFinancialDetails = createServerFn({ method: "POST" })
   .validator(SaveTripFinancialInputSchema)
   .handler(async ({ data }) => {
     const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(
+      identity,
+      ["owner", "admin", "manager", "finance", "gerente", "diretor", "financeiro"],
+    );
 
     const { data: trip, error: fetchErr } = await supabase
       .from("tourism_trips")
-      .select("id, store_id, financial_details, total_cents, operator_name, payment_method, installments_count")
+      .select("id, store_id, customer_id, proposal_id, trip_number, title, destination, departure_date, return_date, created_by_profile_id, financial_details, total_cents, operator_name, payment_method, installments_count")
       .eq("id", data.tripId)
       .single();
 
     if (fetchErr || !trip) {
       throw new Error("Viagem não encontrada.");
     }
+    if (trip.store_id !== identity.store_id && identity.role !== "platform_admin") {
+      throw new Error("Acesso negado para alterar o financeiro de outra agência.");
+    }
 
+    const nowIso = new Date().toISOString();
     const currentDetails = (trip.financial_details || {}) as Record<string, any>;
     const updatedDetails = {
       ...currentDetails,
@@ -1813,7 +2030,7 @@ export const saveTripFinancialDetails = createServerFn({ method: "POST" })
       installments_count: data.installmentsCount ?? trip.installments_count ?? currentDetails.installments_count,
       external_finance_url: data.externalFinanceUrl ?? currentDetails.external_finance_url,
       installments: data.installments ?? currentDetails.installments ?? [],
-      updated_at: new Date().toISOString(),
+      updated_at: nowIso,
     };
 
     const updatePayload: Record<string, any> = {
@@ -1822,19 +2039,140 @@ export const saveTripFinancialDetails = createServerFn({ method: "POST" })
       operator_name: data.operatorName ?? trip.operator_name,
       payment_method: data.paymentMethod ?? trip.payment_method,
       installments_count: data.installmentsCount ?? trip.installments_count,
-      updated_at: new Date().toISOString(),
+      updated_at: nowIso,
     };
 
     const { error: updateErr } = await supabase
       .from("tourism_trips")
       .update(updatePayload)
-      .eq("id", data.tripId);
+      .eq("id", data.tripId)
+      .eq("store_id", trip.store_id);
 
     if (updateErr) {
       throw new Error(`Erro ao salvar dados financeiros da viagem: ${updateErr.message}`);
     }
 
-    return { success: true, message: "Dados financeiros e boletos atualizados com sucesso!" };
+    // Sincronizar parcelas reais na tabela travel_trip_installment_boletos (fonte única para o Portal do Cliente)
+    if (Array.isArray(data.installments)) {
+      const normalizedMethod = String(data.paymentMethod ?? trip.payment_method ?? "").toLowerCase();
+      const paymentChannel =
+        normalizedMethod.includes("boleto") || normalizedMethod.includes("carne")
+          ? "boleto_bancario"
+          : normalizedMethod.includes("card") || normalizedMethod.includes("cartao")
+            ? "credit_card"
+            : normalizedMethod.includes("funpay")
+              ? "frt_funpay"
+              : normalizedMethod.includes("orinter")
+                ? "orinter_portal"
+                : normalizedMethod.includes("incomum")
+                  ? "incomum_chat"
+                  : normalizedMethod.includes("santander")
+                    ? "santander_app"
+                    : "agency_pix";
+
+      const operatorSlug = String(data.operatorName ?? trip.operator_name ?? "agency_direct")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "_") || "agency_direct";
+
+      if (data.installments.length === 0) {
+        const { error: delEmptyErr } = await supabase
+          .from("travel_trip_installment_boletos")
+          .delete()
+          .eq("trip_id", trip.id)
+          .eq("store_id", trip.store_id);
+        if (delEmptyErr) {
+          throw new Error(`Erro ao limpar parcelas removidas da viagem: ${delEmptyErr.message}`);
+        }
+      } else {
+        const totalInstCount = data.installments.length;
+        const rows = data.installments.map((inst, idx) => {
+          const instNumber = Number(inst.installment_number || idx + 1);
+          return {
+            store_id: trip.store_id,
+            trip_id: trip.id,
+            client_profile_id: trip.customer_id || null,
+            installment_number: instNumber,
+            total_installments: Number(inst.total_installments || totalInstCount),
+            due_date: /^\d{4}-\d{2}-\d{2}/.test(String(inst.due_date || ""))
+              ? String(inst.due_date).slice(0, 10)
+              : nowIso.slice(0, 10),
+            amount_cents: Math.max(0, Math.round(Number(inst.amount_cents || 0))),
+            currency: "BRL",
+            operator_slug: operatorSlug,
+            payment_channel: paymentChannel,
+            boleto_pdf_url: inst.pdf_url || null,
+            digitable_line: inst.digitable_line || null,
+            external_payment_link: data.externalFinanceUrl || null,
+            status: inst.status === "paid" ? "reconciled" : inst.status === "overdue" ? "overdue" : "pending",
+            reconciled_at: inst.status === "paid" ? (inst.paid_at || nowIso) : null,
+            updated_at: nowIso,
+          };
+        });
+
+        const { error: upsertBolErr } = await supabase
+          .from("travel_trip_installment_boletos")
+          .upsert(rows, { onConflict: "trip_id,installment_number" });
+        if (upsertBolErr) {
+          throw new Error(`Erro ao sincronizar parcelas em boletos do viajante: ${upsertBolErr.message}`);
+        }
+
+        const activeNums = new Set(rows.map((r) => r.installment_number));
+        const { data: existingBol } = await supabase
+          .from("travel_trip_installment_boletos")
+          .select("id, installment_number")
+          .eq("trip_id", trip.id)
+          .eq("store_id", trip.store_id);
+        const obsoleteIds = (existingBol || [])
+          .filter((b: any) => !activeNums.has(Number(b.installment_number)))
+          .map((b: any) => b.id);
+        if (obsoleteIds.length > 0) {
+          const { error: cleanupErr } = await supabase
+            .from("travel_trip_installment_boletos")
+            .delete()
+            .in("id", obsoleteIds)
+            .eq("store_id", trip.store_id);
+          if (cleanupErr) {
+            throw new Error(`Erro ao remover parcelas obsoletas: ${cleanupErr.message}`);
+          }
+        }
+      }
+    }
+
+    // Sincronizar automaticamente com a Ficha Financeira Soberana (SSOT)
+    try {
+      const grossForSheet = Number(updatedDetails.gross_price_cents || trip.total_cents || 0);
+      if (grossForSheet > 0) {
+        const payMethod = String(updatedDetails.payment_method || "").toLowerCase();
+        const overPayMethod =
+          payMethod === "pix" || payMethod.includes("dinheiro") || payMethod.includes("cash")
+            ? "pix_direto_agencia"
+            : "operadora_financiado";
+        await syncTourismSaleToFinancialSheetServer({
+          supabase,
+          storeId: trip.store_id,
+          actorProfileId: identity.id,
+          tripId: trip.id,
+          proposalId: (trip as any).proposal_id || null,
+          sellerProfileId: (trip as any).created_by_profile_id || identity.id,
+          clientName: String((trip as any).title || "Passageiro"),
+          destination: String((trip as any).destination || (trip as any).title || "Pacote Turístico"),
+          primaryOperator: String(updatedDetails.operator_name || trip.operator_name || "Operadora"),
+          locatorCode: String((trip as any).trip_number || trip.id.slice(0, 8)),
+          internalCode: String((trip as any).trip_number || `TR-${trip.id.slice(0, 6)}`),
+          departureDate: (trip as any).departure_date || null,
+          returnDate: (trip as any).return_date || null,
+          grossSaleCents: grossForSheet,
+          operatorTablePriceCents: Number(updatedDetails.operator_net_cents || 0) || undefined,
+          overPaymentMethod: overPayMethod,
+          bookingStatus: "confirmada",
+        });
+      }
+    } catch (syncErr) {
+      console.warn("[saveTripFinancialDetails] Aviso ao sincronizar ficha financeira SSOT:", syncErr);
+    }
+
+    return { success: true, message: "Dados financeiros e boletos atualizados e sincronizados com sucesso!" };
   });
 
 // ---------------------------------------------------------------------------
@@ -1877,29 +2215,109 @@ export const getTravelerTripPortalDossier = createServerFn({ method: "GET" })
   .validator(z.object({ tripIdOrCode: z.string().min(1) }))
   .handler(async ({ data: { tripIdOrCode } }) => {
     const supabase = getServerClient();
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) {
+      throw new Error("AUTH_REQUIRED: Faça login para acessar o Portal da sua Viagem.");
+    }
+
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tripIdOrCode);
 
     let query = supabase.from("tourism_trips").select("*, stores(id, name, logo_url, phone, settings)");
     if (isUuid) {
       query = query.eq("id", tripIdOrCode);
     } else {
-      query = query.or(`trip_number.eq.${tripIdOrCode},id.eq.${tripIdOrCode}`);
+      const sanitizedCode = tripIdOrCode.replace(/[^a-zA-Z0-9\-_]/g, "");
+      if (!sanitizedCode) return null;
+      query = query.eq("trip_number", sanitizedCode);
     }
 
     const { data: trip, error } = await query.maybeSingle();
-    if (error || !trip) {
+    if (error) {
+      throw new Error(`Falha ao carregar viagem: ${error.message}`);
+    }
+    if (!trip) {
       return null;
     }
 
-    const [paxRes, confRes, vouchersRes, boletosRes, docsRes, incidentsRes, changesRes] = await Promise.all([
-      supabase.from("trip_passengers").select("*").eq("trip_id", trip.id).order("created_at"),
-      supabase.from("trip_confirmation_items").select("*").eq("trip_id", trip.id).order("service_date", { ascending: true }),
-      supabase.from("tourism_vouchers").select("*").eq("trip_id", trip.id).order("created_at", { ascending: false }),
-      supabase.from("travel_trip_installment_boletos").select("*").eq("trip_id", trip.id).order("installment_number"),
-      supabase.from("travel_trip_official_documents").select("*").eq("trip_id", trip.id).order("created_at"),
-      supabase.from("tourism_incident_tickets").select("*").eq("trip_id", trip.id).order("created_at", { ascending: false }),
-      supabase.from("travel_flight_change_cases").select("*").eq("trip_id", trip.id).order("created_at", { ascending: false }),
+    const access = await resolveTripAccessForIdentity(supabase, identity, trip as any);
+    if (!access.authorized) {
+      throw new Error("FORBIDDEN: Esta viagem pertence a outro viajante ou agência.");
+    }
+
+    const proposalLookupId = (trip as any).source_proposal_id || trip.proposal_id || null;
+    const [paxRes, confRes, vouchersRes, boletosRes, docsRes, incidentsRes, changesRes, legacyCtrRes, canonicalCtrRes] = await Promise.all([
+      supabase.from("trip_passengers").select("*").eq("trip_id", trip.id).eq("store_id", trip.store_id).order("created_at"),
+      supabase.from("trip_confirmation_items").select("*").eq("trip_id", trip.id).eq("store_id", trip.store_id).order("service_date", { ascending: true }),
+      supabase.from("tourism_vouchers").select("*").eq("trip_id", trip.id).eq("store_id", trip.store_id).order("created_at", { ascending: false }),
+      supabase.from("travel_trip_installment_boletos").select("*").eq("trip_id", trip.id).eq("store_id", trip.store_id).order("installment_number"),
+      supabase.from("travel_trip_official_documents").select("*").eq("trip_id", trip.id).eq("store_id", trip.store_id).order("created_at", { ascending: false }),
+      supabase.from("tourism_incident_tickets").select("*").eq("trip_id", trip.id).eq("store_id", trip.store_id).order("created_at", { ascending: false }),
+      supabase.from("travel_flight_change_cases").select("*").eq("trip_id", trip.id).eq("store_id", trip.store_id).order("created_at", { ascending: false }),
+      proposalLookupId
+        ? supabase.from("travel_contracts").select("*").eq("store_id", trip.store_id).eq("proposal_id", proposalLookupId).order("created_at", { ascending: false }).limit(1).maybeSingle()
+        : supabase.from("travel_contracts").select("*").eq("store_id", trip.store_id).eq("trip_id", trip.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      proposalLookupId
+        ? supabase.from("contracts").select("id, title, status, verification_code, metadata, created_at").eq("category", "tourism").eq("store_id", trip.store_id).or(`metadata->>trip_id.eq.${trip.id},metadata->>proposal_id.eq.${proposalLookupId}`).order("created_at", { ascending: false }).limit(1).maybeSingle()
+        : supabase.from("contracts").select("id, title, status, verification_code, metadata, created_at").eq("category", "tourism").eq("store_id", trip.store_id).eq("metadata->>trip_id", trip.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
     ]);
+
+    let resolvedContract: any = legacyCtrRes.data || null;
+    if (!resolvedContract && canonicalCtrRes.data) {
+      const cc = canonicalCtrRes.data as any;
+      const ccMeta = (cc.metadata as Record<string, any>) || {};
+      resolvedContract = {
+        id: cc.id,
+        contract_title: cc.title,
+        public_token: cc.verification_code || ccMeta.public_token || cc.id,
+        status: cc.status === "completed" || cc.status === "signed" ? "signed" : cc.status,
+        signed_at: ccMeta.signed_at || null,
+        certificate_serial: ccMeta.certificate_serial || null,
+        created_at: cc.created_at,
+      };
+    }
+
+    if (vouchersRes.error) {
+      throw new Error(`Erro ao carregar vouchers da viagem: ${vouchersRes.error.message}`);
+    }
+    if (boletosRes.error) {
+      throw new Error(`Erro ao carregar boletos da viagem: ${boletosRes.error.message}`);
+    }
+    if (docsRes.error) {
+      throw new Error(`Erro ao carregar documentos da viagem: ${docsRes.error.message}`);
+    }
+
+    const visibleDocsRaw = (docsRes.data || []).filter((d: any) => access.isStaff || d.is_visible_to_client !== false);
+    const officialDocuments = await Promise.all(
+      visibleDocsRaw.map(async (doc: any) => {
+        const meta = (doc.ocr_extracted_json as Record<string, any>) || {};
+        let resolvedUrl = doc.original_pdf_url || null;
+        if (
+          meta.storage_bucket &&
+          meta.storage_path &&
+          typeof meta.storage_path === "string" &&
+          meta.storage_path.startsWith(`${trip.store_id}/`) &&
+          !meta.storage_path.includes("..")
+        ) {
+          const { data: signed } = await supabase.storage
+            .from(String(meta.storage_bucket))
+            .createSignedUrl(String(meta.storage_path), 60 * 60 * 6);
+          if (signed?.signedUrl) {
+            resolvedUrl = signed.signedUrl;
+          }
+        }
+        return {
+          id: doc.id,
+          trip_id: doc.trip_id,
+          doc_category: doc.doc_category,
+          operator_name: doc.operator_name,
+          reservation_code: doc.reservation_code,
+          title: doc.title,
+          original_pdf_url: resolvedUrl,
+          is_visible_to_client: doc.is_visible_to_client,
+          created_at: doc.created_at,
+        };
+      }),
+    );
 
     const storeObj = (trip.stores as any) || {};
     const storeSettings = storeObj.settings || {};
@@ -1916,19 +2334,21 @@ export const getTravelerTripPortalDossier = createServerFn({ method: "GET" })
         rooms: trip.rooms || [],
         includes: trip.includes || [],
         excludes: trip.excludes || [],
+        portal_content: (trip as any).portal_content || null,
       },
       passengers: paxRes.data || [],
       confirmationItems: confRes.data || [],
       vouchers: vouchersRes.data || [],
       boletos: boletosRes.data || [],
-      officialDocuments: docsRes.data || [],
+      officialDocuments,
+      contract: resolvedContract,
       incidents: incidentsRes.data || [],
       flightChanges: changesRes.data || [],
       agency: {
         id: trip.store_id,
         name: storeObj.name || trip.operator_name || "Agência de Viagens Waesy",
         logo_url: storeObj.logo_url || null,
-        phone: storeSettings.whatsapp_phone || storeSettings.phone || storeObj.phone || "+55 (49) 99999-1372",
+        phone: storeSettings.whatsapp_phone || storeSettings.phone || storeObj.phone || null,
       },
     };
   });
@@ -1969,7 +2389,7 @@ export const publishTripToPublicStorefront = createServerFn({ method: "POST" })
       .single();
 
     const storeSettings = (store?.settings as Record<string, any>) || {};
-    const contactPhone = storeSettings.whatsapp_phone || store?.phone || trip.client_whatsapp || "";
+    const contactPhone = storeSettings.whatsapp_phone || store?.phone || "";
 
     const priceCents = data.customPriceCents || trip.total_cents || 0;
     const priceDisplay = priceCents > 0
@@ -2434,4 +2854,412 @@ export const evaluateTravelerDs160TiesAction = createServerFn({ method: "POST" }
   )
   .handler(async ({ data: input }) => {
     return evaluateUsVisaDs160ConsularTies(input);
+  });
+
+export const UpdateTripPortalCustomizationSchema = z.object({
+  tripId: z.string().uuid("ID de viagem inválido"),
+  coverImageUrl: z.string().max(1000).optional().nullable(),
+  welcomeNote: z.string().max(2000).optional().nullable(),
+  portalMedia: z
+    .array(
+      z.object({
+        id: z.string().optional(),
+        url: z.string().min(1).max(1000),
+        type: z.enum(["image", "video"]).optional(),
+        caption: z.string().max(300).optional().nullable(),
+        aspectPreset: z.string().max(20).optional().nullable(),
+        objectPosition: z.string().max(60).optional().nullable(),
+        scale: z.number().min(0.5).max(3).optional().nullable(),
+        fit: z.enum(["cover", "contain"]).optional().nullable(),
+      }),
+    )
+    .max(40)
+    .optional()
+    .nullable(),
+  portalTips: z
+    .array(
+      z.object({
+        id: z.string().optional(),
+        category: z.string().max(60).optional().nullable(),
+        title: z.string().min(1).max(160),
+        description: z.string().min(1).max(1000),
+      }),
+    )
+    .max(30)
+    .optional()
+    .nullable(),
+});
+
+export const updateTripPortalCustomization = createServerFn({ method: "POST" })
+  .validator(UpdateTripPortalCustomizationSchema)
+  .handler(async ({ data }): Promise<{ success: boolean; tripId: string }> => {
+    const supabase = getServerClient();
+    const identity = await requireStaff();
+
+    const { tripId, coverImageUrl, welcomeNote, portalMedia, portalTips } = data;
+
+    const { data: existingTrip, error: lookupErr } = await supabase
+      .from("tourism_trips")
+      .select("id, store_id, cover_image_url, portal_content")
+      .eq("id", tripId)
+      .maybeSingle();
+
+    if (lookupErr || !existingTrip) {
+      throw new Error("Viagem não encontrada.");
+    }
+    if (existingTrip.store_id !== identity.store_id) {
+      throw new Error("Acesso negado para editar o portal desta viagem.");
+    }
+
+    const prevPortal = ((existingTrip as any).portal_content && typeof (existingTrip as any).portal_content === "object")
+      ? (existingTrip as any).portal_content
+      : {};
+
+    const nextPortalContent = {
+      ...prevPortal,
+      ...(welcomeNote !== undefined ? { welcome_note: welcomeNote ? welcomeNote.trim() : null } : {}),
+      ...(portalMedia !== undefined
+        ? {
+            portal_media: Array.isArray(portalMedia)
+              ? portalMedia.map((m, idx) => ({
+                  id: m.id || `pm-${idx + 1}`,
+                  url: m.url.trim(),
+                  type: m.type || "image",
+                  caption: m.caption ?? null,
+                  aspectPreset: m.aspectPreset ?? null,
+                  objectPosition: m.objectPosition ?? null,
+                  scale: m.scale ?? 1,
+                  fit: m.fit || "cover",
+                }))
+              : [],
+          }
+        : {}),
+      ...(portalTips !== undefined
+        ? {
+            portal_tips: Array.isArray(portalTips)
+              ? portalTips.map((t, idx) => ({
+                  id: t.id || `pt-${idx + 1}`,
+                  category: t.category || "dica",
+                  title: t.title.trim(),
+                  description: t.description.trim(),
+                }))
+              : [],
+          }
+        : {}),
+      updated_at: new Date().toISOString(),
+    };
+
+    const patch: Record<string, any> = {
+      portal_content: nextPortalContent,
+      updated_at: new Date().toISOString(),
+    };
+    if (coverImageUrl !== undefined) {
+      patch.cover_image_url = coverImageUrl ? coverImageUrl.trim() : null;
+    }
+
+    const { error: updErr } = await supabase
+      .from("tourism_trips")
+      .update(patch)
+      .eq("id", tripId)
+      .eq("store_id", identity.store_id);
+
+    if (updErr) {
+      throw new Error(`Falha ao salvar personalização do Portal do Viajante: ${updErr.message}`);
+    }
+
+    return { success: true, tripId };
+  });
+
+export const AddTripOfficialDocumentSchema = z.object({
+  tripId: z.string().uuid("ID de viagem inválido"),
+  docCategory: z.enum([
+    "operator_confirmation",
+    "signed_contract",
+    "payment_receipt",
+    "hotel_voucher",
+    "flight_eticket",
+    "transfer_voucher",
+    "insurance_policy",
+  ]),
+  title: z.string().min(2).max(200),
+  operatorName: z.string().max(120).optional().nullable(),
+  reservationCode: z.string().max(80).optional().nullable(),
+  fileUrl: z.string().min(1).max(2000),
+  storageBucket: z.string().max(80).optional().nullable(),
+  storagePath: z.string().max(400).optional().nullable(),
+  isVisibleToClient: z.boolean().default(true),
+});
+
+export const addTripOfficialDocument = createServerFn({ method: "POST" })
+  .validator(AddTripOfficialDocumentSchema)
+  .handler(async ({ data }): Promise<{ success: boolean; document: any }> => {
+    const {
+      tripId,
+      docCategory,
+      title,
+      operatorName,
+      reservationCode,
+      fileUrl,
+      storageBucket,
+      storagePath,
+      isVisibleToClient,
+    } = data;
+    const supabase = getServerClient();
+    const identity = await requireStaff();
+
+    const { data: trip, error: tripErr } = await supabase
+      .from("tourism_trips")
+      .select("id, store_id, operator_name")
+      .eq("id", tripId)
+      .maybeSingle();
+
+    if (tripErr || !trip) throw new Error("Viagem não encontrada.");
+    if (trip.store_id !== identity.store_id && identity.role !== "platform_admin") {
+      throw new Error("Acesso negado para anexar documento em viagem de outra agência.");
+    }
+
+    const cleanFileUrl = fileUrl.trim();
+    if (!cleanFileUrl.startsWith("https://") && !cleanFileUrl.startsWith("/")) {
+      throw new Error("URL do documento inválida. Apenas HTTPS ou caminho interno são permitidos.");
+    }
+
+    const ALLOWED_DOC_BUCKETS = new Set(["legal-documents", "payment-proofs", "cms-media", "post-media"]);
+    if (storageBucket && !ALLOWED_DOC_BUCKETS.has(storageBucket)) {
+      throw new Error("Bucket de armazenamento não permitido para documentos de viagem.");
+    }
+    if (storagePath && (!storagePath.startsWith(`${trip.store_id}/`) || storagePath.includes(".."))) {
+      throw new Error("Caminho de arquivo fora do escopo da agência.");
+    }
+
+    const { data: createdDoc, error: insErr } = await supabase
+      .from("travel_trip_official_documents")
+      .insert({
+        store_id: trip.store_id,
+        trip_id: trip.id,
+        doc_category: docCategory,
+        operator_name: operatorName?.trim() || trip.operator_name || "Agência / Operadora",
+        reservation_code: reservationCode?.trim() || null,
+        title: title.trim(),
+        original_pdf_url: cleanFileUrl,
+        ocr_extracted_json: {
+          ...(storageBucket ? { storage_bucket: storageBucket } : {}),
+          ...(storagePath ? { storage_path: storagePath } : {}),
+          uploaded_by_profile_id: identity.id,
+        },
+        is_visible_to_client: isVisibleToClient,
+      })
+      .select("*")
+      .single();
+
+    if (insErr || !createdDoc) {
+      throw new Error(`Falha ao salvar documento oficial: ${insErr?.message || "registro não criado"}`);
+    }
+
+    return { success: true, document: createdDoc };
+  });
+
+export const deleteTripOfficialDocument = createServerFn({ method: "POST" })
+  .validator(z.object({ tripId: z.string().uuid(), documentId: z.string().uuid() }))
+  .handler(async ({ data }): Promise<{ success: boolean }> => {
+    const { tripId, documentId } = data;
+    const supabase = getServerClient();
+    const identity = await requireStaff();
+
+    const { data: doc, error: findErr } = await supabase
+      .from("travel_trip_official_documents")
+      .select("id, store_id, trip_id")
+      .eq("id", documentId)
+      .eq("trip_id", tripId)
+      .maybeSingle();
+
+    if (findErr || !doc) throw new Error("Documento oficial não encontrado.");
+    if (doc.store_id !== identity.store_id && identity.role !== "platform_admin") {
+      throw new Error("Acesso negado para excluir documento de outra loja.");
+    }
+
+    const { error: delErr } = await supabase
+      .from("travel_trip_official_documents")
+      .delete()
+      .eq("id", documentId)
+      .eq("store_id", doc.store_id);
+
+    if (delErr) throw new Error(`Falha ao remover documento oficial: ${delErr.message}`);
+    return { success: true };
+  });
+
+export const UpdateTripOperationalStructureSchema = z.object({
+  tripId: z.string().uuid("ID de viagem inválido"),
+  title: z.string().min(2).max(240).optional(),
+  destinationCity: z.string().min(2).max(160).optional(),
+  travelStartDate: z.string().nullable().optional(),
+  travelEndDate: z.string().nullable().optional(),
+  adultsCount: z.number().int().min(1).max(100).optional(),
+  childrenCount: z.number().int().min(0).max(100).optional(),
+  totalCents: z.number().int().min(0).optional(),
+  status: z.enum(["pending_review", "confirmed", "in_progress", "completed", "cancelled"]).optional(),
+  operatorName: z.string().nullable().optional(),
+  notes: z.string().max(4000).nullable().optional(),
+  flights: z.array(z.any()).optional(),
+  hotels: z.array(z.any()).optional(),
+  transfers: z.array(z.any()).optional(),
+  tours: z.array(z.any()).optional(),
+  itinerary: z.array(z.any()).optional(),
+  includes: z.array(z.string()).optional(),
+  excludes: z.array(z.string()).optional(),
+});
+
+export const updateTripOperationalStructure = createServerFn({ method: "POST" })
+  .validator(UpdateTripOperationalStructureSchema)
+  .handler(async ({ data }): Promise<{ success: boolean; tripId: string }> => {
+    const {
+      tripId,
+      title,
+      destinationCity,
+      travelStartDate,
+      travelEndDate,
+      adultsCount,
+      childrenCount,
+      totalCents,
+      status,
+      operatorName,
+      notes,
+      flights,
+      hotels,
+      transfers,
+      tours,
+      itinerary,
+      includes,
+      excludes,
+    } = data;
+
+    const supabase = getServerClient();
+    const identity = await requireStaff();
+
+    const { data: trip, error: lookupErr } = await supabase
+      .from("tourism_trips")
+      .select("id, store_id, destination_city, flights, hotels, transfers, tours")
+      .eq("id", tripId)
+      .maybeSingle();
+
+    if (lookupErr || !trip) throw new Error("Viagem não encontrada.");
+    if (trip.store_id !== identity.store_id && identity.role !== "platform_admin") {
+      throw new Error("Acesso negado para editar viagem de outra loja.");
+    }
+
+    const nowIso = new Date().toISOString();
+    const patch: Record<string, any> = { updated_at: nowIso };
+    if (title !== undefined) patch.title = title.trim();
+    if (destinationCity !== undefined) patch.destination_city = destinationCity.trim();
+    if (travelStartDate !== undefined) patch.travel_start_date = travelStartDate || null;
+    if (travelEndDate !== undefined) patch.travel_end_date = travelEndDate || null;
+    if (adultsCount !== undefined) patch.adults_count = adultsCount;
+    if (childrenCount !== undefined) patch.children_count = childrenCount;
+    if (totalCents !== undefined) patch.total_cents = totalCents;
+    if (status !== undefined) patch.status = status;
+    if (operatorName !== undefined) patch.operator_name = operatorName || null;
+    if (notes !== undefined) patch.notes = notes || null;
+    if (flights !== undefined) patch.flights = flights;
+    if (hotels !== undefined) patch.hotels = hotels;
+    if (transfers !== undefined) patch.transfers = transfers;
+    if (tours !== undefined) patch.tours = tours;
+    if (itinerary !== undefined) patch.itinerary = itinerary;
+    if (includes !== undefined) patch.includes = includes;
+    if (excludes !== undefined) patch.excludes = excludes;
+
+    const { error: updErr } = await supabase
+      .from("tourism_trips")
+      .update(patch)
+      .eq("id", trip.id)
+      .eq("store_id", trip.store_id);
+
+    if (updErr) {
+      throw new Error(`Erro ao atualizar composição da viagem: ${updErr.message}`);
+    }
+
+    // Sincronizar o espelho operacional nos vouchers emitidos da mesma viagem
+    const voucherPatch: Record<string, any> = { updated_at: nowIso };
+    if (destinationCity !== undefined) voucherPatch.destination = destinationCity.trim();
+    if (flights !== undefined) voucherPatch.flights = flights;
+    if (hotels !== undefined) voucherPatch.hotels = hotels;
+    if (transfers !== undefined) voucherPatch.transfers = transfers;
+    if (tours !== undefined) voucherPatch.tours = tours;
+    if (notes !== undefined) voucherPatch.observations = notes || null;
+
+    if (Object.keys(voucherPatch).length > 1) {
+      const { error: vErr } = await supabase
+        .from("tourism_vouchers")
+        .update(voucherPatch)
+        .eq("trip_id", trip.id)
+        .eq("store_id", trip.store_id);
+      if (vErr) {
+        throw new Error(`Viagem salva, mas falha ao sincronizar vouchers: ${vErr.message}`);
+      }
+    }
+
+    return { success: true, tripId: trip.id };
+  });
+
+export const AddTripGroupMemorySchema = z.object({
+  tripId: z.string().uuid("ID de viagem inválido"),
+  url: z.string().min(1).max(2000),
+  mediaType: z.enum(["image", "video"]).default("image"),
+  caption: z.string().max(240).optional().nullable(),
+});
+
+export const addTripGroupMemoryMedia = createServerFn({ method: "POST" })
+  .validator(AddTripGroupMemorySchema)
+  .handler(async ({ data }): Promise<{ success: boolean; album: any[] }> => {
+    const { tripId, url, mediaType, caption } = data;
+    const supabase = getServerClient();
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) {
+      throw new Error("Faça login para publicar fotos no álbum do grupo.");
+    }
+
+    const { data: trip, error: lookupErr } = await supabase
+      .from("tourism_trips")
+      .select("id, store_id, customer_id, client_email, client_document, portal_content")
+      .eq("id", tripId)
+      .maybeSingle();
+
+    if (lookupErr || !trip) throw new Error("Viagem não encontrada.");
+    const access = await resolveTripAccessForIdentity(supabase, identity, trip as any);
+    if (!access.authorized) {
+      throw new Error("Acesso negado ao álbum coletivo desta viagem.");
+    }
+
+    const prevPortal =
+      (trip as any).portal_content && typeof (trip as any).portal_content === "object"
+        ? (trip as any).portal_content
+        : {};
+    const prevAlbum = Array.isArray(prevPortal.group_album) ? prevPortal.group_album : [];
+    const newItem = {
+      id: `gm-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
+      url: url.trim(),
+      type: mediaType,
+      caption: caption ? caption.trim() : null,
+      author_id: identity.id,
+      author_name: identity.fullName || identity.email || "Viajante",
+      created_at: new Date().toISOString(),
+    };
+    const nextAlbum = [newItem, ...prevAlbum].slice(0, 80);
+
+    const { error: updErr } = await supabase
+      .from("tourism_trips")
+      .update({
+        portal_content: {
+          ...prevPortal,
+          group_album: nextAlbum,
+          updated_at: new Date().toISOString(),
+        },
+        updated_at: new Date().toISOString(),
+      } as any)
+      .eq("id", trip.id)
+      .eq("store_id", trip.store_id);
+
+    if (updErr) {
+      throw new Error(`Falha ao salvar mídia no álbum do grupo: ${updErr.message}`);
+    }
+
+    return { success: true, album: nextAlbum };
   });

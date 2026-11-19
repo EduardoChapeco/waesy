@@ -1,5 +1,5 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { DollarSign, CheckCircle, Users, Percent, Edit2, Search, FileSpreadsheet, TrendingUp, Clock, CheckCircle2, Wallet, ArrowDownLeft, Loader2, ShieldCheck } from "lucide-react";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { DollarSign, CheckCircle, Users, Percent, Edit2, Search, FileSpreadsheet, TrendingUp, Clock, CheckCircle2, Wallet, ArrowDownLeft, Loader2, ShieldCheck, Award } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useMemo } from "react";
 import { PageHeader } from "@/components/commerce/page-header";
@@ -283,6 +283,22 @@ function CommissionsPage() {
 
       {/* ── ABAS CANÔNICAS ── */}
       <Tabs defaultValue="extrato" className="w-full space-y-4">
+        <div className="p-3 rounded-xl border border-border bg-muted/40 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-foreground">
+            <Award className="size-4 text-primary shrink-0" />
+            <span>
+              Para agências de viagens: gestão de Over, borderôs de operadoras e recibos automáticos <strong>por fora da folha CLT</strong>.
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="sm" className="h-11 min-h-11 sm:h-9 focus-visible:ring-2">
+              <Link to="/workspace/turismo/minhas-vendas">Vendas & Recibos Por Fora</Link>
+            </Button>
+            <Button asChild variant="outline" size="sm" className="h-11 min-h-11 sm:h-9 focus-visible:ring-2">
+              <Link to="/workspace/turismo/comissoes">Comissões & Operadoras</Link>
+            </Button>
+          </div>
+        </div>
         <TabsList className="waesy-tab-strip items-center justify-start gap-1 w-full sm:w-auto max-w-full min-w-0 bg-muted/60 p-1 rounded-lg border border-border/60 h-11 min-h-11 sm:h-10 sm:min-h-10">
           <TabsTrigger value="extrato" className="rounded-lg text-xs font-bold gap-2 shrink-0 whitespace-nowrap">
             <DollarSign className="size-4 shrink-0" />

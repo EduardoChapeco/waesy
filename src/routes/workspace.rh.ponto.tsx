@@ -13,6 +13,7 @@ import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-cano
 import { WorkspaceDashboardSheet } from "@/components/workspace/workspace-dashboard-sheet";
 import { MonthlyTimecardSheetModal } from "@/components/hr/monthly-timecard-sheet-modal";
 import { MedicalCertificateModal } from "@/components/hr/medical-certificate-modal";
+import { HrSubmoduleNavigation } from "@/components/hr/HrSubmoduleNavigation";
 
 export const Route = createFileRoute("/workspace/rh/ponto")({
   head: () => ({ meta: [{ title: "Espelho de Ponto Eletrônico | Gestão RH Waesy" }] }),
@@ -85,6 +86,12 @@ function WorkspaceRHPontoPage() {
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-6 max-w-7xl mx-auto">
+      {/* ── Navegação de Submódulos de RH ── */}
+      <HrSubmoduleNavigation
+        activeModule="ponto"
+        totalEmployees={employees.length}
+      />
+
       {/* ── Barra Superior de Ações de Ponto & Banco de Horas ── */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-4 rounded-lg border border-border">
         <div className="flex items-center gap-3">

@@ -52,6 +52,12 @@ export function StudioMapWidget({
   }, []);
 
   useEffect(() => {
+    if (waypoints && waypoints.length > 0) {
+      setLocalWaypoints(waypoints);
+    }
+  }, [waypoints]);
+
+  useEffect(() => {
     if (!mounted || !mapContainer.current || mapRef.current) return;
     let isMounted = true;
     let cleanupResize: (() => void) | undefined;

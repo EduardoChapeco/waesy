@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { builderRegistry } from "@/lib/builder-registry";
+import { builderRegistry } from "@/lib/builder/builder-registry";
 
 describe("Fase 5: Portal de Reputação & SAC Auditado (Reclame Aqui)", () => {
  it("builderRegistry deve registrar reputation_score_header com campos de pontuação", () => {

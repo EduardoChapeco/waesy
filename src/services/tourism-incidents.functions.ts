@@ -229,12 +229,35 @@ export const createTourismIncident = createServerFn({ method: 'POST' })
   .validator(CreateIncidentSchema)
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
-    assertStoreAccess(identity);
-    if (data.store_id !== identity.store_id && !(identity.role === "platform_admin")) {
-      throw new Error('Acesso não autorizado para esta organização.');
+    if (!identity?.id) {
+      throw new Error('Faça login para registrar um incidente.');
     }
 
     const db = getServerClient();
+    const isStaff =
+      identity.role === 'platform_admin' ||
+      (identity.role !== 'customer' && Boolean(identity.store_id) && data.store_id === identity.store_id);
+
+    if (!isStaff) {
+      if (!data.trip_id) {
+        throw new Error('Acesso não autorizado para abrir incidente sem viagem vinculada.');
+      }
+      const { data: tripRow } = await db
+        .from('tourism_trips')
+        .select('id, store_id, customer_id, client_email')
+        .eq('id', data.trip_id)
+        .eq('store_id', data.store_id)
+        .maybeSingle();
+      const userEmail = String(identity.email || '').trim().toLowerCase();
+      const ownsTrip =
+        tripRow !== null &&
+        tripRow !== undefined &&
+        (tripRow.customer_id === identity.id ||
+          (Boolean(userEmail) && String(tripRow.client_email || '').trim().toLowerCase() === userEmail));
+      if (!tripRow || !ownsTrip) {
+        throw new Error('Acesso não autorizado para abrir incidente nesta viagem.');
+      }
+    }
 
     // Calcular direitos ANAC se for incidente de voo
     let anacRights: Record<string, any> = {};

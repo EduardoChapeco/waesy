@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {
@@ -501,6 +501,21 @@ const PICKUP_LOCATIONS = [
   "Aeroporto de Congonhas (CGH)",
 ];
 
+const PT_BR_MONTHS_SHORT = [
+  "jan",
+  "fev",
+  "mar",
+  "abr",
+  "mai",
+  "jun",
+  "jul",
+  "ago",
+  "set",
+  "out",
+  "nov",
+  "dez",
+];
+
 function formatDateRangeLabel(days: number): string {
   const start = new Date();
   start.setDate(start.getDate() + 7);
@@ -508,10 +523,7 @@ function formatDateRangeLabel(days: number): string {
   end.setDate(start.getDate() + Math.max(1, days));
 
   const fmt = (d: Date) =>
-    d.toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "short",
-    });
+    `${String(d.getDate()).padStart(2, "0")} de ${PT_BR_MONTHS_SHORT[d.getMonth()] || ""}`;
   return `${fmt(start)} - ${fmt(end)}`;
 }
 
@@ -593,7 +605,11 @@ export function CarRentalShowcaseRail({
     return mappedLive;
   }, [customOffers, mode, liveSearchData, pickupLocation]);
 
-  const dateRangeLabel = useMemo(() => formatDateRangeLabel(days), [days]);
+  const [dateRangeLabel, setDateRangeLabel] = useState<string>("");
+
+  useEffect(() => {
+    setDateRangeLabel(formatDateRangeLabel(days));
+  }, [days]);
 
   return (
     <section aria-label={title} className={cn("w-full space-y-4", className)}>
@@ -622,7 +638,8 @@ export function CarRentalShowcaseRail({
           <div className="flex items-center gap-2 text-xs font-semibold text-foreground pr-1">
             <CalendarBlank size={16} weight="bold" className="text-primary shrink-0" />
             <span>
-              {days} {days === 1 ? "dia" : "dias"}: {dateRangeLabel}
+              {days} {days === 1 ? "dia" : "dias"}
+              {dateRangeLabel ? `: ${dateRangeLabel}` : ""}
             </span>
             <span className="hidden md:inline text-muted-foreground">
               · {pickupLocation.split("(")[0].trim()}

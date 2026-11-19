@@ -5,7 +5,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
-import { getCurrentIdentity } from "@/services/cart-helpers";
+import { assertStoreAccess, getServerIdentity, STAFF_ROLES } from "@/lib/server-access";
 
 export interface PudoLocationDTO {
  id: string;
@@ -93,16 +93,15 @@ export const listPublicPudoLocations = createServerFn({ method: "GET" })
 export const listStorePudoPackages = createServerFn({ method: "GET" })
  .validator(z.object({ status: z.string().optional() }).optional())
  .handler(async ({ data }) => {
+ const identity = await getServerIdentity();
+ assertStoreAccess(identity, STAFF_ROLES);
  const supabase = getServerClient();
- const identity = await getCurrentIdentity();
-
- if (!identity.customer_id) {
- return [];
- }
+ const storeId = identity.store_id;
 
  let query = supabase
  .from("pudo_packages")
- .select("*, pudo_partner_locations(id, name, address)")
+ .select("*, pudo_partner_locations!inner(id, name, address, store_id)")
+ .eq("pudo_partner_locations.store_id", storeId)
  .order("created_at", { ascending: false });
 
  if (data?.status && data.status !== "all") {
@@ -113,7 +112,7 @@ export const listStorePudoPackages = createServerFn({ method: "GET" })
 
  if (error) {
  console.error("Erro ao listar pacotes PUDO do lojista:", error);
- return [];
+ throw new Error("Erro ao carregar pacotes PUDO da loja.");
  }
 
  return (rows || []).map((row: any) => ({
@@ -150,15 +149,26 @@ export const checkInPudoPackage = createServerFn({ method: "POST" })
  }),
  )
  .handler(async ({ data }) => {
+ const identity = await getServerIdentity();
+ assertStoreAccess(identity, STAFF_ROLES);
  const supabase = getServerClient();
- const identity = await getCurrentIdentity();
+ const storeId = identity.store_id;
 
- if (!identity.customer_id) {
- throw new Error("Não autorizado.");
+ const { data: ownedLoc, error: locErr } = await supabase
+ .from("pudo_partner_locations")
+ .select("id")
+ .eq("id", data.locationId)
+ .eq("store_id", storeId)
+ .maybeSingle();
+
+ if (locErr || !ownedLoc) {
+ throw new Error("Ponto PUDO não encontrado ou pertence a outra loja.");
  }
 
+ const randomBuf = new Uint32Array(1);
+ globalThis.crypto.getRandomValues(randomBuf);
  const pickupCode =
- data.securityPickupCode || Math.floor(1000 + Math.random() * 9000).toString();
+ data.securityPickupCode || String(1000 + (randomBuf[0] % 9000));
 
  const { data: created, error } = await supabase
  .from("pudo_packages")
@@ -197,21 +207,20 @@ export const deliverPudoPackageToCustomer = createServerFn({ method: "POST" })
  }),
  )
  .handler(async ({ data }) => {
+ const identity = await getServerIdentity();
+ assertStoreAccess(identity, STAFF_ROLES);
  const supabase = getServerClient();
- const identity = await getCurrentIdentity();
-
- if (!identity.customer_id) {
- throw new Error("Não autorizado.");
- }
+ const storeId = identity.store_id;
 
  const { data: pkg, error } = await supabase
  .from("pudo_packages")
- .select("id, security_pickup_code, status, recipient_name")
+ .select("id, security_pickup_code, status, recipient_name, pudo_partner_locations!inner(store_id)")
  .eq("id", data.packageId)
- .single();
+ .eq("pudo_partner_locations.store_id", storeId)
+ .maybeSingle();
 
  if (error || !pkg) {
- throw new Error("Pacote não encontrado.");
+ throw new Error("Pacote não encontrado para esta loja.");
  }
 
  if (pkg.security_pickup_code.trim() !== data.pickupCodeEntered.trim()) {
@@ -225,7 +234,7 @@ export const deliverPudoPackageToCustomer = createServerFn({ method: "POST" })
  picked_up_at: new Date().toISOString(),
  updated_at: new Date().toISOString(),
  })
- .eq("id", data.packageId);
+ .eq("id", pkg.id);
 
  if (updateError) {
  throw new Error("Erro ao confirmar entrega.");
@@ -246,11 +255,20 @@ export const reportPackageDamageAndReturn = createServerFn({ method: "POST" })
  }),
  )
  .handler(async ({ data }) => {
+ const identity = await getServerIdentity();
+ assertStoreAccess(identity, STAFF_ROLES);
  const supabase = getServerClient();
- const identity = await getCurrentIdentity();
+ const storeId = identity.store_id;
 
- if (!identity.customer_id) {
- throw new Error("Não autorizado.");
+ const { data: pkg, error: lookupErr } = await supabase
+ .from("pudo_packages")
+ .select("id, pudo_partner_locations!inner(store_id)")
+ .eq("id", data.packageId)
+ .eq("pudo_partner_locations.store_id", storeId)
+ .maybeSingle();
+
+ if (lookupErr || !pkg) {
+ throw new Error("Pacote não encontrado para esta loja.");
  }
 
  const { error } = await supabase
@@ -262,7 +280,7 @@ export const reportPackageDamageAndReturn = createServerFn({ method: "POST" })
  damage_photos: data.damagePhotos || [],
  updated_at: new Date().toISOString(),
  })
- .eq("id", data.packageId);
+ .eq("id", pkg.id);
 
  if (error) {
  throw new Error("Erro ao solicitar logística reversa.");

@@ -11,20 +11,12 @@ import { FormTextarea as Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/badge";
 import { formatDate, formatCurrency } from "@/lib/formatters";
+import { slugify } from "@/lib/slug-utils";
 import { SheetPage } from "@/components/ui/sheet-page";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-function slugify(s: string) {
-  return s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
 
 const STEPS = [
   "Essencial",
@@ -94,6 +86,16 @@ const tourWizardSchema = z
         }),
       )
       .default([]),
+    // Condições Comerciais & Pagamento
+    acceptsPix: z.boolean().default(true),
+    pixDiscountPercent: z.number().min(0).max(50).default(5),
+    acceptsCard: z.boolean().default(true),
+    maxInstallments: z.number().min(1).max(24).default(12),
+    feeFreeInstallments: z.number().min(1).max(24).default(12),
+    acceptsBoleto: z.boolean().default(false),
+    boletoInstallments: z.number().min(1).max(24).default(10),
+    depositPercent: z.number().min(0).max(100).default(0),
+    paymentTermsText: z.string().optional(),
   })
   .refine(
     (data) => {
@@ -214,6 +216,13 @@ export function NewGroupTourWizard({
   const watchYoutubeUrl = watch("youtubeUrl");
   const watchPricingTiers = watch("pricingTiers");
   const watchExtraOptions = watch("extraOptions");
+  const watchMaxInstallments = watch("maxInstallments") || 12;
+  const watchFeeFreeInstallments = watch("feeFreeInstallments") || 12;
+  const watchPixDiscountPercent = watch("pixDiscountPercent") ?? 5;
+  const watchAcceptsBoleto = watch("acceptsBoleto") ?? false;
+  const watchBoletoInstallments = watch("boletoInstallments") || 10;
+  const watchDepositPercent = watch("depositPercent") ?? 0;
+  const watchPaymentTermsText = watch("paymentTermsText");
 
   const busesQ = useQuery({
     queryKey: ["bus-layouts", agencyId],
@@ -307,6 +316,26 @@ export function NewGroupTourWizard({
   async function onSubmit(data: TourWizardFormData) {
     setSubmitting(true);
     try {
+      const payParts: string[] = [];
+      if (data.maxInstallments) {
+        payParts.push(
+          `Até ${data.maxInstallments}x no cartão${(data.feeFreeInstallments || 12) >= data.maxInstallments ? " sem juros" : ""}`,
+        );
+      }
+      if (data.pixDiscountPercent && data.pixDiscountPercent > 0) {
+        payParts.push(`${data.pixDiscountPercent}% de desconto à vista via PIX`);
+      }
+      if (data.acceptsBoleto) {
+        payParts.push(`Boleto bancário em até ${data.boletoInstallments || 10}x`);
+      }
+      if (data.depositPercent && data.depositPercent > 0) {
+        payParts.push(`Entrada mínima de ${data.depositPercent}%`);
+      }
+      if (data.paymentTermsText && data.paymentTermsText.trim()) {
+        payParts.push(data.paymentTermsText.trim());
+      }
+      const paymentConditions = payParts.join(" · ") || undefined;
+
       await createGroupTour({
         data: {
           title: data.title,
@@ -319,6 +348,7 @@ export function NewGroupTourWizard({
           returnTime: "20:00",
           totalSeats: data.seats || 46,
           priceCents: Math.round((data.price || 0) * 100),
+          paymentConditions,
           includedItems: data.includes || [],
           excludedItems: data.excludes || [],
           notes: data.hotelDescription || undefined,
@@ -337,6 +367,27 @@ export function NewGroupTourWizard({
           promoMedia: {
             youtube_url: data.youtubeUrl || "",
           },
+          hotels: data.hotelName
+            ? [
+                {
+                  id: "wizard-hotel-1",
+                  hotel_name: data.hotelName,
+                  stars: Number(data.hotelStars || 3),
+                  checkin_date: data.hotelCheckIn || undefined,
+                  checkout_date: data.hotelCheckOut || undefined,
+                  amenities: data.hotelAmenities || [],
+                  images: data.hotelGallery || [],
+                },
+              ]
+            : [],
+          media: [
+            ...(data.coverUrl
+              ? [{ id: "wizard-cover", url: data.coverUrl, type: "image" as const, order: 0 }]
+              : []),
+            ...(data.youtubeUrl
+              ? [{ id: "wizard-video", url: data.youtubeUrl, type: "video" as const, order: 1 }]
+              : []),
+          ],
           pricingTiers: data.pricingTiers || [],
           extraOptions: data.extraOptions || [],
           itinerary: data.itinerary.map((item) => ({
@@ -900,6 +951,129 @@ export function NewGroupTourWizard({
                   Incluir Voos no Pacote Base
                 </label>
 
+                {/* Condições Comerciais & Pagamento Unificadas */}
+                <div className="p-5 rounded-2xl bg-card border border-border space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-border">
+                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                      <DollarSign className="size-4 text-primary" />
+                      <span>Condições Comerciais & Pagamento</span>
+                    </div>
+                    {(watchPrice || 0) > 0 && (
+                      <span className="text-xs font-mono font-bold text-primary">
+                        Até {watchMaxInstallments}x de R${" "}
+                        {((watchPrice || 0) / watchMaxInstallments).toLocaleString("pt-BR", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <Field label={`Parcelamento no Cartão (${watchMaxInstallments}x)`}>
+                        <input
+                          type="range"
+                          min={1}
+                          max={24}
+                          step={1}
+                          value={watchMaxInstallments}
+                          onChange={(e) =>
+                            setValue("maxInstallments", Number(e.target.value), {
+                              shouldValidate: true,
+                            })
+                          }
+                          className="w-full h-2 rounded-full accent-primary cursor-pointer mt-3"
+                          aria-label="Máximo de parcelas no cartão"
+                        />
+                      </Field>
+                    </div>
+
+                    <div className="space-y-1">
+                      <Field label="Parcelas Sem Juros">
+                        <Input
+                          type="number"
+                          min={1}
+                          max={watchMaxInstallments}
+                          value={watchFeeFreeInstallments}
+                          onChange={(e) =>
+                            setValue("feeFreeInstallments", Number(e.target.value), {
+                              shouldValidate: true,
+                            })
+                          }
+                          className="h-11 text-xs font-mono"
+                        />
+                      </Field>
+                    </div>
+
+                    <div className="space-y-1">
+                      <Field label="Desconto à Vista no PIX (%)">
+                        <Input
+                          type="number"
+                          min={0}
+                          max={50}
+                          value={watchPixDiscountPercent}
+                          onChange={(e) =>
+                            setValue("pixDiscountPercent", Number(e.target.value), {
+                              shouldValidate: true,
+                            })
+                          }
+                          className="h-11 text-xs font-mono"
+                        />
+                      </Field>
+                    </div>
+
+                    <div className="space-y-1">
+                      <Field label="Sinal Mínimo de Entrada (%)">
+                        <Input
+                          type="number"
+                          min={0}
+                          max={100}
+                          value={watchDepositPercent}
+                          onChange={(e) =>
+                            setValue("depositPercent", Number(e.target.value), {
+                              shouldValidate: true,
+                            })
+                          }
+                          className="h-11 text-xs font-mono"
+                        />
+                      </Field>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 pt-2 border-t border-border">
+                    <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={watchAcceptsBoleto}
+                        onChange={(e) =>
+                          setValue("acceptsBoleto", e.target.checked, { shouldValidate: true })
+                        }
+                        className="rounded size-4 text-primary focus:ring-primary"
+                      />
+                      <span>Aceita Boleto Bancário Parcelado</span>
+                    </label>
+                    {watchAcceptsBoleto && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        <Field label="Máximo de Parcelas no Boleto">
+                          <Input
+                            type="number"
+                            min={1}
+                            max={24}
+                            value={watchBoletoInstallments}
+                            onChange={(e) =>
+                              setValue("boletoInstallments", Number(e.target.value), {
+                                shouldValidate: true,
+                              })
+                            }
+                            className="h-11 text-xs font-mono"
+                          />
+                        </Field>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Includes */}
                   <div className="space-y-3">
@@ -1219,6 +1393,13 @@ export function NewGroupTourWizard({
                         <span className="text-muted-foreground">Preço Base:</span>
                         <strong className="text-brand font-mono text-sm">
                           R$ {watchPrice.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                        </strong>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-muted-foreground">Condição Comercial:</span>
+                        <strong className="text-xs">
+                          Até {watchMaxInstallments}x{" "}
+                          {watchPixDiscountPercent > 0 ? `· ${watchPixDiscountPercent}% OFF no PIX` : ""}
                         </strong>
                       </div>
                       <div className="flex flex-col">

@@ -13,7 +13,7 @@ import {
   Info,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { getAirportByIata } from "@/lib/data/airports-catalog";
+import { FlightRouteMap } from "@/components/tourism/shared/FlightRouteMap";
 
 export interface FlightLegItem {
   from_iata: string;
@@ -89,7 +89,7 @@ const KNOWN_AIRPORT_NAMES: Record<string, { city: string; name: string }> = {
 
 function resolveAirportMeta(iata: string, fallbackCity?: string, fallbackName?: string) {
   const code = (iata || "").trim().toUpperCase();
-  const known = KNOWN_AIRPORT_NAMES[code] || getAirportByIata(code);
+  const known = KNOWN_AIRPORT_NAMES[code];
   return {
     code: code || "AER",
     city: fallbackCity || known?.city || code,
@@ -170,6 +170,9 @@ export interface TravelFlightItineraryCardProps {
   destinationCity?: string;
   departureDateText?: string;
   returnDateText?: string;
+  showRouteMap?: boolean;
+  routeMapTone?: "light" | "dark";
+  routeMapAccentColor?: string;
 }
 
 export function TravelFlightItineraryCard({
@@ -178,6 +181,9 @@ export function TravelFlightItineraryCard({
   destinationCity,
   departureDateText,
   returnDateText,
+  showRouteMap = true,
+  routeMapTone = "light",
+  routeMapAccentColor,
 }: TravelFlightItineraryCardProps) {
   const [expandedSegments, setExpandedSegments] = useState<Record<number, boolean>>({
     0: true,
@@ -328,7 +334,18 @@ export function TravelFlightItineraryCard({
         )}
       </div>
 
-      {/* Mapa Visual Geodésico da Rota (Aeroportos e Escalas) */}
+      {/* Mapa Visual Geodésico Interativo da Rota (Aeroportos e Conexões) */}
+      {showRouteMap && segments.length > 0 && (
+        <div className="p-4 border-b border-border/40 bg-muted/10">
+          <FlightRouteMap
+            segments={segments}
+            tone={routeMapTone}
+            accentColor={routeMapAccentColor}
+          />
+        </div>
+      )}
+
+      {/* Trilha Linear Rápida da Rota */}
       {allRouteAirports.length >= 2 && (
         <div className="px-4 py-3 bg-muted/15 border-b border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">

@@ -29,7 +29,13 @@ import { CartItemEditDrawer } from "./cart-item-edit-drawer";
 // Limiar padrão de frete grátis por loja (Mercado Livre parity: R$ 120,00)
 const FREE_SHIPPING_THRESHOLD_CENTS = 12000;
 
-export function CartSheet() {
+export interface CartSheetProps {
+  storeId?: string;
+  appSlug?: string;
+  onNavigateToCatalog?: () => void;
+}
+
+export function CartSheet({ storeId, appSlug, onNavigateToCatalog }: CartSheetProps = {}) {
   const {
     globalCarts,
     isCartOpen,
@@ -80,22 +86,38 @@ export function CartSheet() {
   const handleNavigateToCheckoutHub = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsCartOpen(false);
-    router.navigate({ to: "/checkout" });
+    if (appSlug || storeId) {
+      router.navigate({
+        to: "/checkout",
+        search: { store: storeId, app: appSlug } as any,
+      });
+    } else {
+      router.navigate({ to: "/checkout" });
+    }
   };
 
   const handleNavigateToCatalog = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsCartOpen(false);
-    router.navigate({ to: "/mercado" });
+    if (onNavigateToCatalog) {
+      onNavigateToCatalog();
+    } else if (!appSlug) {
+      router.navigate({ to: "/mercado" });
+    }
   };
 
   const totalItemCount = globalCarts.reduce((acc, c) => acc + c.itemCount, 0);
 
-  // Filtro de lojas ativas
+  // Filtro de lojas ativas (se storeId for fornecido, isola 100% o carrinho da loja)
   const visibleCarts = useMemo(() => {
+    if (storeId) {
+      return globalCarts.filter((c) => c.storeId === storeId);
+    }
     if (selectedStoreId === "all") return globalCarts;
     return globalCarts.filter((c) => c.storeId === selectedStoreId);
-  }, [globalCarts, selectedStoreId]);
+  }, [globalCarts, selectedStoreId, storeId]);
+
+  const isCartEmpty = visibleCarts.length === 0 || visibleCarts.every((c) => c.items.length === 0);
 
   // Cálculo de Subtotal baseado nos itens selecionados
   const selectedTotalCents = useMemo(() => {
@@ -206,8 +228,8 @@ export function CartSheet() {
             </div>
           )}
 
-          {/* ── 2. Régua de Lojas (Mercado Livre Parity) se houver mais de 1 loja ── */}
-          {globalCarts.length > 1 && (
+          {/* ── 2. Régua de Lojas (Mercado Livre Parity) se houver mais de 1 loja (ocultada no modo app exclusivo) ── */}
+          {!storeId && globalCarts.length > 1 && (
             <div className="px-4 py-2 bg-muted/40 border-b border-border/40 flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar shrink-0">
               <span className="text-2xs uppercase tracking-wider text-muted-foreground font-semibold shrink-0">
                 Lojas:
@@ -236,7 +258,7 @@ export function CartSheet() {
                       : "bg-card border border-border/60 text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  <Store className="size-3.5" />
+                  <Store className="size-4" />
                   <span className="truncate max-w-30">{c.storeName}</span>
                 </button>
               ))}
@@ -245,20 +267,22 @@ export function CartSheet() {
 
           {/* Corpo com scroll */}
           <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 bg-background scrollbar-none">
-            {globalCarts.length === 0 ? (
+            {isCartEmpty ? (
               <div className="flex flex-col items-center justify-center h-full text-center py-12 space-y-4">
                 <div className="size-20 rounded-2xl bg-muted/30 flex items-center justify-center text-muted-foreground/60 mb-2">
                   <ShoppingBag className="size-9" />
                 </div>
                 <h3 className="font-bold text-lg text-foreground">Sua sacola está vazia</h3>
                 <p className="font-sans text-xs text-muted-foreground max-w-xs">
-                  Explore o comércio local, aproveite ofertas e finalize seus pedidos com entrega rápida.
+                  {appSlug
+                    ? "Adicione produtos ou serviços deste catálogo para finalizar seu pedido."
+                    : "Explore o comércio local, aproveite ofertas e finalize seus pedidos com entrega rápida."}
                 </p>
                 <Button
                   onClick={handleNavigateToCatalog}
                   className="bg-foreground text-background rounded-xl font-bold text-xs px-6 h-11 min-h-11 cursor-pointer hover:bg-foreground/90 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 >
-                  Explorar Mercado
+                  {appSlug ? "Ver Catálogo" : "Explorar Mercado"}
                 </Button>
               </div>
             ) : (

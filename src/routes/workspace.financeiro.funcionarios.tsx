@@ -60,6 +60,7 @@ import {
   FolderLock,
   Kanban,
   Stethoscope,
+  DollarSign,
 } from "lucide-react";
 import { playCashRegisterSound, playWarningAlert } from "@/lib/audio-chimes";
 
@@ -366,6 +367,7 @@ function HrFinancePage() {
 
   // Dossiê Digital, ASO & Benefícios em Lote
   const [selectedDossierEmployee, setSelectedDossierEmployee] = useState<StoreEmployeeDTO | null>(null);
+  const [dossierInitialTab, setDossierInitialTab] = useState<"aso" | "commercial">("aso");
   const [isBatchBenefitsOpen, setIsBatchBenefitsOpen] = useState(false);
   const [batchDeptForm, setBatchDeptForm] = useState({
     departmentName: "Operações",
@@ -1216,7 +1218,27 @@ function HrFinancePage() {
                           size="sm"
                           onClick={() => {
                             const emp = storeEmployees.find((e) => e.id === row.employeeId);
-                            if (emp) setSelectedDossierEmployee(emp);
+                            if (emp) {
+                              setDossierInitialTab("commercial");
+                              setSelectedDossierEmployee(emp);
+                            }
+                          }}
+                          className="h-11 min-h-11 sm:h-9 rounded-lg text-xs font-bold gap-1 text-primary cursor-pointer focus-visible:ring-2"
+                        >
+                          <DollarSign className="size-3.5 text-primary" />
+                          <span>Vendas & Prêmios</span>
+                        </Button>
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const emp = storeEmployees.find((e) => e.id === row.employeeId);
+                            if (emp) {
+                              setDossierInitialTab("aso");
+                              setSelectedDossierEmployee(emp);
+                            }
                           }}
                           className="h-11 min-h-11 sm:h-9 rounded-lg text-xs font-bold gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
                         >
@@ -2022,6 +2044,7 @@ function HrFinancePage() {
         isOpen={!!selectedDossierEmployee}
         onClose={() => setSelectedDossierEmployee(null)}
         employee={selectedDossierEmployee}
+        initialTab={dossierInitialTab}
         onSaved={() => router.invalidate()}
       />
 

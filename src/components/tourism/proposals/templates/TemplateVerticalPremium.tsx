@@ -11,11 +11,17 @@ import {
   getTourMetaLine,
   getTransferBadgeLabel,
   getTransferMetaLine,
+  getTransferTitle,
   ProposalAdaptiveImage,
   ProposalAgencyLogo,
+  ProposalCruiseBlock,
   ProposalDestinationGallerySection,
+  ProposalFlightMapBlock,
+  ProposalHotelMediaGallery,
+  ProposalItineraryMediaGrid,
   ProposalMultiNicheSpecsBlock,
   ProposalPricingBreakdownBlock,
+  ProposalTransferListBlock,
 } from "./blocks/UI";
 import {
   Check,
@@ -97,7 +103,7 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
                 <div className="p-surface-subtle border p-border-subtle rounded-lg p-3">
                   <div className="text-xs uppercase font-bold p-text-faint">Cliente</div>
-                  <div className="text-xs sm:text-sm font-bold p-text-ink truncate mt-1">
+                  <div className="text-xs sm:text-sm font-bold p-text-ink break-words mt-1">
                     {raw.client_name || vm.client.name || "—"}
                   </div>
                 </div>
@@ -205,6 +211,12 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                 </div>
               ))}
             </div>
+            <ProposalFlightMapBlock
+              flights={p.flights as any}
+              theme={theme}
+              showMap={raw?.web_page?.show_flight_route_map !== false}
+              capturedMapUrl={raw?.captured_map_url || raw?.map_image_url || raw?.custom_fields?.captured_map_url}
+            />
           </section>
         )}
 
@@ -227,24 +239,6 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                     p.hotels!.length === 1 ? "sm:col-span-2" : ""
                   }`}
                 >
-                  {h.images?.[0] && (
-                    <div
-                      className={`grid gap-1 border-b p-border-subtle ${
-                        h.images.length === 1 ? "grid-cols-1 h-48" : "grid-cols-2 h-48"
-                      }`}
-                    >
-                      {h.images.slice(0, 2).map((imgUrl: string, imgIdx: number) => (
-                        <ProposalAdaptiveImage
-                          key={imgIdx}
-                          src={imgUrl}
-                          alt={h.name}
-                          objectPosition={(h as any).object_position}
-                          scale={(h as any).image_scale}
-                          className="w-full h-full"
-                        />
-                      ))}
-                    </div>
-                  )}
                   <div className="p-5 space-y-4">
                     <div className="flex items-start justify-between gap-2">
                       <div>
@@ -277,6 +271,13 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                         </span>
                       </div>
                     </div>
+                    <ProposalHotelMediaGallery
+                      images={h.images}
+                      media={(h as any).media}
+                      title={h.name}
+                      objectPosition={(h as any).object_position}
+                      scale={(h as any).image_scale}
+                    />
                   </div>
                 </div>
               ))}
@@ -370,16 +371,13 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                       </div>
 
                       {layoutVariant !== "none" && dayImages.length > 0 && (
-                        <div className="lg:col-span-5 flex flex-col gap-3">
-                          {dayImages.slice(0, 2).map((imgUrl, imgIdx) => (
-                            <img
-                              key={imgIdx}
-                              src={imgUrl}
-                              alt={day.title || `Dia ${idx + 1}`}
-                              crossOrigin="anonymous"
-                              className="w-full h-44 object-cover rounded-lg border p-border-subtle"
-                            />
-                          ))}
+                        <div className="lg:col-span-5">
+                          <ProposalItineraryMediaGrid
+                            images={dayImages}
+                            title={day.title || `Dia ${idx + 1}`}
+                            objectPosition={(day as any).object_position}
+                            scale={(day as any).image_scale}
+                          />
                         </div>
                       )}
                     </div>
@@ -390,47 +388,37 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
           </section>
         )}
 
-        {/* TRASLADOS & EXPERIÊNCIAS */}
-        {((theme.isSectionVisible("transfers") && vm.hasTransfers) ||
-          (theme.isSectionVisible("tours") && vm.hasTours)) && (
-          <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 break-inside-avoid">
-            {theme.isSectionVisible("transfers") && vm.hasTransfers && (
-              <div className={vm.hasTours ? "lg:col-span-6" : "lg:col-span-12"}>
-                <h2 className="text-2xl font-bold p-text-ink mb-4 p-heading-font">
-                  Traslados & Receptivo
-                </h2>
-                <div className="space-y-3">
-                  {p.transfers!.map((t, idx) => {
-                    const transferMeta = getTransferMetaLine(t as Record<string, any>, formatDate);
-                    return (
-                      <div
-                        key={idx}
-                        className="p-surface-card rounded-xl p-5 border p-border-main space-y-2"
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2 font-bold p-text-ink text-sm">
-                            <Car className="size-4 shrink-0 p-text-brand" />
-                            <span>{t.description || (t as any).route || "Transfer In/Out"}</span>
-                          </div>
-                          <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider p-surface-subtle border p-border-subtle p-text-muted">
-                            {getTransferBadgeLabel(t.type)}
-                          </span>
-                        </div>
-                        {transferMeta && <div className="text-xs p-text-muted">{transferMeta}</div>}
-                        {t.notes && <p className="text-xs p-text-faint">{t.notes}</p>}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+        {/* CRUZEIROS MARÍTIMOS */}
+        {Array.isArray((raw as any).cruises) && (raw as any).cruises.length > 0 && (
+          <section className="break-inside-avoid space-y-4">
+            <h2 className="text-2xl font-bold p-text-ink mb-4 p-heading-font">
+              Cruzeiro Marítimo & Itinerário Náutico
+            </h2>
+            <ProposalCruiseBlock cruises={(raw as any).cruises} theme={theme} />
+          </section>
+        )}
 
-            {theme.isSectionVisible("tours") && vm.hasTours && (
-              <div className={vm.hasTransfers ? "lg:col-span-6" : "lg:col-span-12"}>
-                <h2 className="text-2xl font-bold p-text-ink mb-4 p-heading-font">
-                  Passeios & Experiências
-                </h2>
-                <div className="space-y-3">
+        {/* TRASLADOS (LINHAS COMPLETAS / FULL-WIDTH) */}
+        {theme.isSectionVisible("transfers") && vm.hasTransfers && (
+          <section className="break-inside-avoid space-y-4">
+            <h2 className="text-2xl font-bold p-text-ink mb-4 p-heading-font">
+              Traslados & Receptivo
+            </h2>
+            <ProposalTransferListBlock
+              transfers={p.transfers}
+              formatDateFn={formatDate}
+              theme={theme}
+            />
+          </section>
+        )}
+
+        {/* PASSEIOS & EXPERIÊNCIAS */}
+        {theme.isSectionVisible("tours") && vm.hasTours && (
+          <section className="break-inside-avoid space-y-4">
+            <h2 className="text-2xl font-bold p-text-ink mb-4 p-heading-font">
+              Passeios & Experiências
+            </h2>
+            <div className="space-y-3">
                   {p.tours!.map((tour, idx) => {
                     const tourMeta = getTourMetaLine(tour as Record<string, any>);
                     return (
@@ -452,8 +440,6 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                     );
                   })}
                 </div>
-              </div>
-            )}
           </section>
         )}
 

@@ -1,6 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
+import {
+  assertStoreAccess,
+  getServerIdentity,
+  MANAGER_ROLES,
+  STAFF_ROLES,
+} from "@/lib/server-access";
 
 // ---------------------------------------------------------------------------
 // Schemas Zod Estritos (Rule B.25)
@@ -62,6 +68,13 @@ export const GetEntityMetricsInputSchema = z.object({
 export const listEntityMembers = createServerFn({ method: "GET" })
   .validator(ListEntityMembersInputSchema)
   .handler(async ({ data: { entityStoreId, status } }) => {
+    const requestedStatus = status || "approved";
+    const includePrivateMetadata = requestedStatus !== "approved";
+    if (includePrivateMetadata) {
+      const identity = await getServerIdentity();
+      assertStoreAccess(identity, STAFF_ROLES, entityStoreId);
+    }
+
     const supabase = getServerClient();
 
     let query = supabase
@@ -74,8 +87,7 @@ export const listEntityMembers = createServerFn({ method: "GET" })
         discount_percent,
         entity_default_discount_accepted,
         custom_benefit_description,
-        requested_by,
-        notes,
+        ${includePrivateMetadata ? "requested_by, notes," : ""}
         joined_at,
         created_at,
         stores:member_store_id (
@@ -92,10 +104,8 @@ export const listEntityMembers = createServerFn({ method: "GET" })
       `)
       .eq("entity_store_id", entityStoreId);
 
-    if (status && status !== "all") {
-      query = query.eq("status", status);
-    } else if (!status) {
-      query = query.eq("status", "approved");
+    if (requestedStatus !== "all") {
+      query = query.eq("status", requestedStatus);
     }
 
     const { data, error } = await query.order("created_at", { ascending: false });
@@ -113,8 +123,8 @@ export const listEntityMembers = createServerFn({ method: "GET" })
       discountPercent: Number(row.discount_percent || 0),
       entityDefaultDiscountAccepted: Boolean(row.entity_default_discount_accepted),
       customBenefitDescription: row.custom_benefit_description || "",
-      requestedBy: row.requested_by,
-      notes: row.notes,
+      requestedBy: includePrivateMetadata ? row.requested_by : undefined,
+      notes: includePrivateMetadata ? row.notes : undefined,
       joinedAt: row.joined_at,
       createdAt: row.created_at,
       store: row.stores ? {
@@ -136,6 +146,8 @@ export const listEntityMembers = createServerFn({ method: "GET" })
 export const listStoreAssociations = createServerFn({ method: "GET" })
   .validator(ListStoreAssociationsInputSchema)
   .handler(async ({ data: { storeId } }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, STAFF_ROLES, storeId);
     const supabase = getServerClient();
 
     const { data, error } = await supabase
@@ -194,6 +206,8 @@ export const listStoreAssociations = createServerFn({ method: "GET" })
 export const requestAssociationMembership = createServerFn({ method: "POST" })
   .validator(RequestAssociationMembershipInputSchema)
   .handler(async ({ data: { entityStoreId, memberStoreId, discountPercent, entityDefaultDiscountAccepted, customBenefitDescription, notes } }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, MANAGER_ROLES, memberStoreId);
     const supabase = getServerClient();
 
     const discount = discountPercent != null ? discountPercent : 5.00;
@@ -229,7 +243,20 @@ export const requestAssociationMembership = createServerFn({ method: "POST" })
 export const updateAssociationMembershipStatus = createServerFn({ method: "POST" })
   .validator(UpdateAssociationMembershipStatusInputSchema)
   .handler(async ({ data: { membershipId, status, discountPercent, customBenefitDescription, notes } }) => {
+    const identity = await getServerIdentity();
     const supabase = getServerClient();
+
+    const { data: existing, error: existingErr } = await supabase
+      .from("store_association_memberships")
+      .select("id, entity_store_id")
+      .eq("id", membershipId)
+      .maybeSingle();
+
+    if (existingErr || !existing) {
+      throw new Error("Vínculo associativo não encontrado.");
+    }
+
+    assertStoreAccess(identity, MANAGER_ROLES, existing.entity_store_id);
 
     const updatePayload: Record<string, any> = {
       status,
@@ -253,6 +280,7 @@ export const updateAssociationMembershipStatus = createServerFn({ method: "POST"
       .from("store_association_memberships")
       .update(updatePayload)
       .eq("id", membershipId)
+      .eq("entity_store_id", existing.entity_store_id)
       .select("id, status, discount_percent, joined_at")
       .single();
 
@@ -390,6 +418,13 @@ export const recordAssociationTransaction = createServerFn({ method: "POST" })
     notes,
     transactionDate,
   } }) => {
+    const identity = await getServerIdentity();
+    try {
+      assertStoreAccess(identity, STAFF_ROLES, entityStoreId);
+    } catch {
+      assertStoreAccess(identity, STAFF_ROLES, sellerStoreId);
+    }
+
     const supabase = getServerClient();
 
     const discountPct = discountPercent != null ? discountPercent : 0;
@@ -430,6 +465,8 @@ export const recordAssociationTransaction = createServerFn({ method: "POST" })
 export const getEntityMetrics = createServerFn({ method: "GET" })
   .validator(GetEntityMetricsInputSchema)
   .handler(async ({ data: { entityStoreId, months } }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, STAFF_ROLES, entityStoreId);
     const supabase = getServerClient();
 
     const startDate = new Date();

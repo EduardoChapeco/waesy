@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getSponsorMetricsDashboard, type SponsorMetricsDTO } from "@/services/telemetry.functions";
 import { getMarketingRoiClosedLoopMetrics } from "@/services/ads.functions";
+import { getStoreAttributionOverview } from "@/services/pixels.functions";
+import { calculateStoreLtvAndAdSpend } from "@/services/crm.functions";
 import { getStoreWhatsAppAnalytics, listStoreWhatsAppLeads, updateWhatsAppLeadStatus, type WhatsAppLeadDTO, type WhatsAppAnalyticsDTO } from "@/services/whatsapp-leads.functions";
 
 export const Route = createFileRoute("/workspace/marketing/telemetria")({
@@ -14,7 +16,7 @@ export const Route = createFileRoute("/workspace/marketing/telemetria")({
  }),
  loader: async () => {
    try {
- const [sponsorData, whatsappAnalytics] = await Promise.all([
+ const [sponsorData, whatsappAnalytics, roiMetrics, attributionOverview, ltvMetrics] = await Promise.all([
  getSponsorMetricsDashboard().catch(() => ({
  totalImpressions: 0,
  totalUniqueViews: 0,
@@ -31,8 +33,11 @@ export const Route = createFileRoute("/workspace/marketing/telemetria")({
  top_items: [],
  daily_trend: [],
  } as WhatsAppAnalyticsDTO)),
+ getMarketingRoiClosedLoopMetrics().catch(() => null),
+ getStoreAttributionOverview({ data: { days: 30 } }).catch(() => null),
+ calculateStoreLtvAndAdSpend().catch(() => null),
  ]);
- return { sponsorData, whatsappAnalytics };
+ return { sponsorData, whatsappAnalytics, roiMetrics, attributionOverview, ltvMetrics };
    } catch (err) {
      console.error("[loader:workspace.marketing.telemetria] Unhandled error:", err);
      return {
@@ -52,6 +57,9 @@ export const Route = createFileRoute("/workspace/marketing/telemetria")({
          top_items: [],
          daily_trend: [],
        } as WhatsAppAnalyticsDTO,
+       roiMetrics: null,
+       attributionOverview: null,
+       ltvMetrics: null,
      };
    }
  },
@@ -158,6 +166,9 @@ function WorkspaceTelemetriaPage() {
  };
 
  const wa = whatsappAnalytics;
+ const roi = loaderData.roiMetrics || null;
+ const attr = loaderData.attributionOverview || null;
+ const ltv = loaderData.ltvMetrics || null;
 
  return (
  <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
@@ -216,6 +227,99 @@ function WorkspaceTelemetriaPage() {
  {/* ─── TAB WHATSAPP ─────────────────────────────────────────────────── */}
  {activeTab === "whatsapp" && (
  <div className="space-y-5">
+ {(roi || attr || ltv) && (
+ <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+   <div className="p-4 rounded-lg bg-card space-y-1">
+     <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">Investimento & Receita</span>
+     <p className="text-xl font-bold font-mono text-foreground">
+       R$ {Number(((ltv?.totalAdSpendCents ?? roi?.totalSpendCents) || 0) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+     </p>
+     <span className="text-xs text-muted-foreground block">
+       Receita: R$ {Number(((ltv?.totalRevenueCents ?? roi?.totalAttributedRevenueCents) || 0) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+     </span>
+   </div>
+   <div className="p-4 rounded-lg bg-card space-y-1">
+     <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">ROAS & LTV / CAC</span>
+     <p className="text-xl font-bold font-mono text-emerald-600">
+       {(ltv?.roas != null && ltv.roas > 0)
+         ? `${Number(ltv.roas).toFixed(2)}x`
+         : (roi?.roas != null ? `${Number(roi.roas).toFixed(2)}x` : "—")}
+     </p>
+     <span className="text-xs text-muted-foreground block">
+       LTV: R$ {Number((ltv?.averageLtvCents || 0) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })} · CAC: R$ {Number((ltv?.attributedCacCents ?? ltv?.cacCents ?? 0) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+     </span>
+   </div>
+   <div className="p-4 rounded-lg bg-card space-y-1">
+     <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">Jornada Multi-Touch</span>
+     <p className="text-xl font-bold font-mono text-foreground">{attr?.summary?.totalTouchpoints ?? 0} toques</p>
+     <span className="text-xs text-muted-foreground block">
+       CTWA: {attr?.summary?.ctwaCount ?? 0} · Recompra: {ltv?.repeatPurchaseRate ?? 0}%
+     </span>
+   </div>
+   <div className="p-4 rounded-lg bg-card space-y-1">
+     <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">Entregas CAPI</span>
+     <p className="text-xl font-bold font-mono text-primary">{attr?.summary?.capiSuccessCount ?? 0}</p>
+     <span className="text-xs text-muted-foreground block">
+       Falhas: {attr?.summary?.capiErrorCount ?? 0} · CPC: {ltv?.costPerClickCents ? `R$ ${(ltv.costPerClickCents / 100).toFixed(2)}` : "—"}
+     </span>
+   </div>
+ </div>
+ )}
+ {ltv && (ltv.breakdownByCampaign.length > 0 || ltv.breakdownBySource.length > 0 || ltv.breakdownByPixel.length > 0) && (
+ <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+   <div className="p-4 rounded-lg bg-card space-y-2">
+     <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">ROAS por Campanha</h3>
+     {ltv.breakdownByCampaign.length === 0 ? (
+       <p className="text-xs text-muted-foreground">Sem campanhas atribuídas ainda.</p>
+     ) : (
+       <div className="space-y-2 text-xs">
+         {ltv.breakdownByCampaign.slice(0, 5).map((c: any) => (
+           <div key={c.campaignKey} className="flex items-center justify-between gap-2 py-1">
+             <span className="font-medium text-foreground truncate">{c.title}</span>
+             <span className="font-mono text-muted-foreground shrink-0">
+               {c.leadsCount}L · {c.roas != null ? `${c.roas.toFixed(2)}x` : `R$ ${(c.revenueCents / 100).toFixed(0)}`}
+             </span>
+           </div>
+         ))}
+       </div>
+     )}
+   </div>
+   <div className="p-4 rounded-lg bg-card space-y-2">
+     <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Desempenho por Fonte</h3>
+     {ltv.breakdownBySource.length === 0 ? (
+       <p className="text-xs text-muted-foreground">Sem fontes registradas ainda.</p>
+     ) : (
+       <div className="space-y-2 text-xs">
+         {ltv.breakdownBySource.slice(0, 5).map((s: any) => (
+           <div key={s.source} className="flex items-center justify-between gap-2 py-1">
+             <span className="font-medium text-foreground truncate">{s.source}</span>
+             <span className="font-mono text-muted-foreground shrink-0">
+               {s.touchpointsCount} clq · {s.leadsCount} leads
+             </span>
+           </div>
+         ))}
+       </div>
+     )}
+   </div>
+   <div className="p-4 rounded-lg bg-card space-y-2">
+     <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Conversão por Pixel CAPI</h3>
+     {ltv.breakdownByPixel.length === 0 ? (
+       <p className="text-xs text-muted-foreground">Sem disparos CAPI vinculados ainda.</p>
+     ) : (
+       <div className="space-y-2 text-xs">
+         {ltv.breakdownByPixel.slice(0, 5).map((px: any) => (
+           <div key={px.pixelId} className="flex items-center justify-between gap-2 py-1">
+             <span className="font-medium text-foreground truncate">{px.name}</span>
+             <span className="font-mono text-emerald-600 shrink-0">
+               {px.deliveredEvents} ok / {px.failedEvents} err
+             </span>
+           </div>
+         ))}
+       </div>
+     )}
+   </div>
+ </div>
+ )}
  {/* KPIs */}
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
  {[

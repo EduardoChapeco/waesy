@@ -238,6 +238,13 @@ describe("M3 Auth & Security Hardening Contract", () => {
     expect(authFnContent).not.toContain("data.user?.user_metadata?.is_admin_master");
     expect(authFnContent).not.toContain("data.user?.user_metadata?.is_superadmin");
 
+    const guardContent = fs.readFileSync(
+      path.resolve(process.cwd(), "src/lib/auth-guards.server.ts"),
+      "utf8",
+    );
+    expect(guardContent).not.toContain("MASTER_EMAILS");
+    expect(guardContent).toContain("isBootstrapPlatformAdminEmail");
+
     const bffMasterAuthFiles = [
       "src/services/master.functions.ts",
       "src/services/admin-360-governance.functions.ts",
@@ -249,7 +256,8 @@ describe("M3 Auth & Security Hardening Contract", () => {
     for (const relPath of bffMasterAuthFiles) {
       const content = fs.readFileSync(path.resolve(process.cwd(), relPath), "utf8");
       expect(content).not.toContain("MASTER_EMAILS");
-      expect(content).toContain("isBootstrapPlatformAdminEmail");
+      expect(content).toContain("requirePlatformAdmin");
+      expect(content).toContain("@/lib/server-access");
     }
 
     const orchestratorContent = fs.readFileSync(

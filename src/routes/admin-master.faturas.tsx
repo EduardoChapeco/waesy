@@ -379,27 +379,23 @@ function MasterFaturasPage() {
                 <ImageUpload
                   value={receiptUrl}
                   onChange={(url) => setReceiptUrl(url)}
+                  bucket="receipts"
                   aspectPreset="widescreen"
+                  showExternalUrlOption={false}
                 />
-                <div className="flex items-center gap-2">
-                  <Input
-                    placeholder="Ou informe uma URL direta do arquivo (PDF / Imagem)..."
-                    value={receiptUrl}
-                    onChange={(e) => setReceiptUrl(e.target.value)}
-                    className="h-8 rounded-lg bg-background text-xs flex-1"
-                  />
-                  {receiptUrl && (
+                {receiptUrl && (
+                  <div className="flex justify-end">
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       onClick={() => setReceiptUrl("")}
-                      className="h-8 px-3 text-xs text-muted-foreground hover:text-destructive shrink-0 min-h-11 sm:min-h-0"
+                      className="h-11 sm:h-8 px-3 text-xs text-muted-foreground hover:text-destructive shrink-0"
                     >
-                      Remover
+                      Remover comprovante
                     </Button>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
 

@@ -299,7 +299,7 @@ function AdminMasterImprensaPage() {
                   </div>
 
                   <Button asChild variant="ghost" size="icon" className="size-8 rounded-lg min-h-11 sm:min-h-0 min-w-11 sm:min-w-0">
-                    <Link to="/c/$storeSlug" params={{ storeSlug: st.slug }} target="_blank">
+                    <Link to="/app/$slug" params={{ slug: st.slug }} target="_blank">
                       <ExternalLink className="size-3.5" />
                     </Link>
                   </Button>

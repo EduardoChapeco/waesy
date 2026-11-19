@@ -1,5 +1,7 @@
 import { decryptSecret } from "@/lib/crypto-vault.server";
+import { getEnvVar } from "@/lib/env";
 import { stripDataUriPrefixForGateway } from "@/lib/whatsapp-media-utils";
+import { firstNonEmptyString as stringValue } from "@/lib/utils";
 
 export type OutboundProvider = "meta_cloud_api" | "evolution_api" | "wasender_api" | "render_bridge" | "custom_webhook";
 export type OutboundInstance = {
@@ -29,14 +31,14 @@ function secrets(instance: OutboundInstance): Record<string, unknown> {
   if (!instance.secret_payload_encrypted) return {};
   try { return JSON.parse(decryptSecret(instance.secret_payload_encrypted)) as Record<string, unknown>; } catch { throw new OutboundAdapterError("INVALID_SECRET", "Credencial da instância não pôde ser descriptografada", false); }
 }
-function stringValue(...values: unknown[]): string | null { return values.find((value): value is string => typeof value === "string" && value.trim().length > 0)?.trim() || null; }
 function identifierValue(...values: unknown[]): string | null {
   const value = values.find((candidate) => (typeof candidate === "string" && candidate.trim().length > 0) || typeof candidate === "number");
   return value === undefined ? null : String(value);
 }
 function baseUrl(instance: OutboundInstance, secret: Record<string, unknown>, fallback: string | null): string {
-  let value = stringValue(instance.public_config?.base_url, secret.base_url, fallback, process.env.EVOLUTION_API_URL);
-  if (value && value.includes("147.15.61.45")) value = stringValue(process.env.EVOLUTION_API_URL, fallback);
+  const envEvoUrl = getEnvVar("EVOLUTION_API_URL") || undefined;
+  let value = stringValue(instance.public_config?.base_url, secret.base_url, fallback, envEvoUrl);
+  if (value && value.includes("147.15.61.45")) value = stringValue(envEvoUrl, fallback);
   if (!value) throw new OutboundAdapterError("MISSING_BASE_URL", "Base URL do provider não configurada (defina EVOLUTION_API_URL ou configure o túnel persistente da instância)", false);
   try { const parsed = new URL(value); if (!/^https?:$/.test(parsed.protocol)) throw new Error(); return value.replace(/\/$/, ""); } catch { throw new OutboundAdapterError("INVALID_BASE_URL", "Base URL do provider inválida", false); }
 }
@@ -112,7 +114,7 @@ async function sendMeta(instance: OutboundInstance, message: OutboundMessage): P
 
 async function sendEvolution(instance: OutboundInstance, message: OutboundMessage): Promise<AdapterResult> {
   const secret = secrets(instance);
-  const apiKey = stringValue(secret.api_key, secret.access_token, secret.token, process.env.EVOLUTION_API_KEY);
+  const apiKey = stringValue(secret.api_key, secret.access_token, secret.token, getEnvVar("EVOLUTION_API_KEY"));
   if (!apiKey) throw new OutboundAdapterError("MISSING_CREDENTIALS", "Evolution API exige api_key", false);
   const instanceName = stringValue(instance.external_instance_id, instance.instance_key);
   const root = baseUrl(instance, secret, null);

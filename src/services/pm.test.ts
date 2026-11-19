@@ -8,7 +8,7 @@ import {
   calculateRiceScore,
   detectScopeDrift,
   formatPppReport,
-} from '@/lib/product-manager';
+} from '@/lib/ai/product-manager';
 
 describe('Skill pm & Product Manager Autonomous Governance Engine', () => {
   describe('Output Mode Adaptation by Stakeholder', () => {

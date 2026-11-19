@@ -34,27 +34,7 @@ import { getPublicVerticalLandingFn } from "@/services/vertical-landings.functio
 import { LegalTermsSheet } from "@/components/legal/legal-terms-sheet";
 import { AuthSplitExperienceShell } from "@/components/auth/auth-split-shell";
 import { resolveBrandContextFromHost, getBrandVerticalById, type BrandVerticalId } from "@/lib/multi-brand-engine";
-
-function getClientGeoTelemetry() {
-  if (typeof window === "undefined") return undefined;
-  try {
-    const raw = localStorage.getItem("waesy_master_location");
-    if (!raw) return undefined;
-    const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed.city === "string" && parsed.city !== "Global") {
-      return {
-        city: parsed.city,
-        state: parsed.state,
-        lat: parsed.lat,
-        lng: parsed.lng,
-        source: parsed.source || "gps",
-      };
-    }
-  } catch {
-    // Silently ignore telemetry read errors
-  }
-  return undefined;
-}
+import { getClientGeoTelemetry } from "@/lib/geo-analytics";
 
 export const Route = createFileRoute("/painel")({
   head: () => ({
@@ -72,6 +52,7 @@ export const Route = createFileRoute("/painel")({
     search: Record<string, unknown>,
   ): {
     returnUrl?: string;
+    email?: string;
     aba?: "login" | "cadastro";
     vertical?: string;
     niche?: string;
@@ -80,6 +61,7 @@ export const Route = createFileRoute("/painel")({
   } => {
     return {
       returnUrl: typeof search.returnUrl === "string" ? search.returnUrl : undefined,
+      email: typeof search.email === "string" ? search.email : undefined,
       aba: search.aba === "cadastro" ? "cadastro" : "login",
       vertical: typeof search.vertical === "string" ? search.vertical : undefined,
       niche: typeof search.niche === "string" ? search.niche : undefined,
@@ -100,6 +82,11 @@ export const Route = createFileRoute("/painel")({
           session?.role === "admin" ||
           session?.role === "manager" ||
           session?.role === "seller" ||
+          session?.role === "cashier" ||
+          session?.role === "finance" ||
+          session?.role === "content" ||
+          session?.role === "stock" ||
+          session?.role === "support" ||
           session?.role === "collaborator" ||
           session?.role === "platform_admin";
 
@@ -116,7 +103,7 @@ export const Route = createFileRoute("/painel")({
         if (hasStore) {
           throw redirect({ to: "/workspace" });
         } else {
-          throw redirect({ to: "/criar-negocio" });
+          throw redirect({ to: "/onboarding/empresa" });
         }
       }
     } catch (e: unknown) {
@@ -149,7 +136,7 @@ function PainelAuthPage() {
   const [activeTab, setActiveTab] = useState<TabMode>(search.aba === "cadastro" ? "cadastro" : "login");
 
   // Form states - Login
-  const [loginIdentifier, setLoginIdentifier] = useState("");
+  const [loginIdentifier, setLoginIdentifier] = useState(search.email || "");
   const [loginPassword, setLoginPassword] = useState("");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [isLoginLoading, setIsLoginLoading] = useState(false);
@@ -224,8 +211,20 @@ function PainelAuthPage() {
 
         // Verifica se tem loja para encaminhar adequadamente
         const userSession = await getUserSession().catch(() => null);
+        const resolvedStoreId =
+          (res as any).store_id ||
+          userSession?.store_id ||
+          userSession?.memberships?.[0]?.store_id ||
+          null;
+        if (resolvedStoreId && typeof window !== "undefined") {
+          try {
+            const { setClientContextCookies } = await import("@/lib/context-auth");
+            setClientContextCookies({ context: "store", storeId: resolvedStoreId });
+          } catch {}
+        }
         const hasStore =
           Boolean((res as any).hasStore) ||
+          Boolean(resolvedStoreId) ||
           (userSession?.memberships && userSession.memberships.length > 0) ||
           Boolean(userSession?.store_id) ||
           userSession?.role === "store_owner" ||
@@ -233,11 +232,23 @@ function PainelAuthPage() {
           userSession?.role === "admin" ||
           userSession?.role === "manager" ||
           userSession?.role === "seller" ||
+          userSession?.role === "cashier" ||
+          userSession?.role === "finance" ||
+          userSession?.role === "content" ||
+          userSession?.role === "stock" ||
+          userSession?.role === "support" ||
           userSession?.role === "collaborator" ||
           userSession?.role === "platform_admin";
 
         if (hasStore) {
-          navigate({ to: "/workspace", replace: true });
+          const customReturn =
+            search.returnUrl &&
+            search.returnUrl.startsWith("/") &&
+            !search.returnUrl.startsWith("/painel") &&
+            !search.returnUrl.startsWith("/entrar")
+              ? search.returnUrl
+              : "/workspace";
+          navigate({ to: customReturn as any, replace: true });
         } else if (search.vertical || search.niche || search.sku) {
           if (typeof window !== "undefined") {
             sessionStorage.setItem(
@@ -250,7 +261,7 @@ function PainelAuthPage() {
             );
           }
           navigate({
-            to: "/criar-negocio",
+            to: "/onboarding/empresa",
             search: {
               vertical: search.vertical || verticalLanding?.slug,
               segment: search.niche || verticalLanding?.niche_id,
@@ -259,7 +270,7 @@ function PainelAuthPage() {
             replace: true,
           });
         } else {
-          navigate({ to: "/criar-negocio", replace: true });
+          navigate({ to: "/onboarding/empresa", replace: true });
         }
         return;
       }
@@ -318,7 +329,7 @@ function PainelAuthPage() {
           password: registerPassword,
           fullName: cleanName,
           phone: cleanPhone || undefined,
-          redirectTo: "/criar-negocio",
+          redirectTo: "/onboarding/empresa",
           isConsentLgpd: true,
           clientLocation,
         },
@@ -360,7 +371,7 @@ function PainelAuthPage() {
       await router.invalidate();
       if (search.vertical || search.niche || search.sku) {
         navigate({
-          to: "/criar-negocio",
+          to: "/onboarding/empresa",
           search: {
             vertical: search.vertical || verticalLanding?.slug,
             segment: search.niche || verticalLanding?.niche_id,
@@ -369,7 +380,7 @@ function PainelAuthPage() {
           replace: true,
         });
       } else {
-        navigate({ to: "/criar-negocio", replace: true });
+        navigate({ to: "/onboarding/empresa", replace: true });
       }
     } catch (err: any) {
       const rawMsg = err?.message || err?.error?.message || (typeof err === "string" ? err : "");
@@ -431,7 +442,7 @@ function PainelAuthPage() {
           { title: "Controle de Acessos", detail: "Permissões por função da equipe com auditoria completa." },
         ];
   const resolvedBrandName = isSpecificVertical ? verticalLanding.display_name : `${brandName} Pro`;
-  const resolvedBackHref = isSpecificVertical ? `/sistemas/${verticalLanding.slug}` : "/";
+  const resolvedBackHref = isSpecificVertical ? `/sistemas/${verticalLanding.slug}` : "/painel";
   const resolvedSplitImage =
     verticalLanding?.login_split_image_url ||
     verticalLanding?.hero_image_desktop_url ||
@@ -476,12 +487,6 @@ function PainelAuthPage() {
             >
               Termos de Uso
             </button>
-            <Link
-              to="/entrar"
-              className="min-h-11 px-1 inline-flex items-center hover:text-foreground transition-colors underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
-            >
-              Acesso Cidadão
-            </Link>
           </div>
         }
       >

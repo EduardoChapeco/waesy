@@ -1,21 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { escapeXml } from "@/lib/sanitize";
 
 import type {} from "@tanstack/react-start";
 const BASE_URL = "https://waesy.com.br";
-
-function escapeXml(unsafe: string): string {
-  if (!unsafe) return "";
-  return unsafe.replace(/[<>&'"]/g, (c) => {
-    switch (c) {
-      case "<": return "&lt;";
-      case ">": return "&gt;";
-      case "&": return "&amp;";
-      case "'": return "&apos;";
-      case '"': return "&quot;";
-    }
-    return c;
-  });
-}
 
 export const Route = createFileRoute("/sitemap-news.xml")({
   server: {

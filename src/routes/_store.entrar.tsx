@@ -29,24 +29,7 @@ function formatAuthSearchError(code?: string): string | null {
   return "Não foi possível validar sua sessão. Verifique os dados e tente novamente.";
 }
 
-function getClientGeoTelemetry() {
-  if (typeof window === "undefined") return undefined;
-  try {
-    const raw = localStorage.getItem("waesy_master_location");
-    if (!raw) return undefined;
-    const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed.city === "string" && parsed.city !== "Global") {
-      return {
-        city: parsed.city,
-        state: parsed.state,
-        lat: parsed.lat,
-        lng: parsed.lng,
-        source: parsed.source || "gps",
-      };
-    }
-  } catch {}
-  return undefined;
-}
+import { getClientGeoTelemetry } from "@/lib/geo-analytics";
 
 export const Route = createFileRoute("/_store/entrar")({
  head: () => ({
@@ -83,8 +66,14 @@ export const Route = createFileRoute("/_store/entrar")({
             throw redirect({ to: returnUrl as any });
           }
         }
-        const hasStore = Boolean(session?.memberships && session.memberships.length > 0);
-        throw redirect({ to: hasStore ? "/workspace" : isMaster ? "/admin-master" : "/" });
+        const membershipsCount = Array.isArray(session?.memberships) ? session.memberships.length : 0;
+        if (membershipsCount > 1) {
+          throw redirect({ to: "/auth/portal-selector" });
+        }
+        if (membershipsCount === 1) {
+          throw redirect({ to: "/workspace" });
+        }
+        throw redirect({ to: isMaster ? "/admin-master" : "/" });
       }
     } catch (e: any) {
       if (isRedirect(e)) {
@@ -358,13 +347,13 @@ function StepByStepAuthPage() {
  }
  }
  toast.success("Sessão iniciada.");
- const hasStore = Boolean((res as any).store_id);
+ const hasStore = Boolean((res as any).store_id || (res as any).hasStore);
  const isMaster = Boolean(
    (res as any).isMaster ||
    (res as any).role === "platform_admin" ||
    (res as any).role === "master"
  );
- const fallbackDest = (res as any).destination || (hasStore ? "/workspace" : isMaster ? "/admin-master" : "/");
+ const fallbackDest = hasStore ? "/auth/portal-selector" : isMaster ? "/admin-master" : "/";
  const destination = returnUrl && returnUrl !== "/entrar" && returnUrl !== "/" ? returnUrl : fallbackDest;
  await router.invalidate();
  navigate({ to: destination as any, replace: true });

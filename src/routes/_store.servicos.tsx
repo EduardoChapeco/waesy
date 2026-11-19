@@ -24,7 +24,7 @@ import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
 import { listPublicStorePackages } from "@/services/service-packages.functions";
-import { resolveNicheDepartments } from "@/lib/niche-helpers";
+import { resolveNicheDepartments } from "@/lib/niches/niche-helpers";
 
 const SearchSchema = z.object({
  q: z.string().optional(),

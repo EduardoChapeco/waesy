@@ -2,18 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
-import { getServerIdentity, assertStoreAccess, getSSRClient } from "@/lib/server-access";
-
-async function getAdminIdentity() {
- const { getServerIdentity } = await import("@/lib/server-access");
- const identity = await getServerIdentity();
-
- if (!identity.store_id || !["owner", "admin", "manager"].includes(identity.role)) {
- throw new Error("Acesso negado");
- }
-
- return identity;
-}
+import {
+  getServerIdentity,
+  assertStoreAccess,
+  getSSRClient,
+  requireStoreManagerIdentity as getAdminIdentity,
+} from "@/lib/server-access";
 
 // ---------------------------------------------------------------------------
 // Coupons

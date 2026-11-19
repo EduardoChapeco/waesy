@@ -7,7 +7,7 @@
  * Invariantes: M01, M08, M10 | Checks: C20, C25 | Prompt: P33
  */
 
-import { NicheId } from "@/lib/niche-manifest";
+import { NicheId } from "@/lib/niches/niche-manifest";
 
 export type FormFieldType =
   | "text"

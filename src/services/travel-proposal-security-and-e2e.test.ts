@@ -151,6 +151,13 @@ vi.mock("@/lib/supabase", () => {
           }
           return { data: state.proposalRow, error: null };
         }
+        if (table === "stores") {
+          const storeIdFilter = eqFilters.find(([c]) => c === "id")?.[1];
+          return {
+            data: storeIdFilter ? { id: storeIdFilter, name: "Excelência Tour", settings: {} } : null,
+            error: null,
+          };
+        }
         if (table === "travel_proposal_acceptances") {
           return { data: null, error: null };
         }
@@ -228,7 +235,7 @@ function makeSampleRow(overrides: Record<string, any> = {}) {
     children_count: 1,
     canvas_format: "a4-portrait",
     template_theme: "editorial-flat",
-    flights: [{ airline: "LATAM", origin_iata: "GRU", destination_iata: "CUN" }],
+    flights: [{ airline: "LATAM", origin_iata: "GRU", destination_iata: "CUN", connection_airports: ["PTY"] }],
     hotels: [{ hotel_name: "Grand Oasis Cancun", nights_count: 7 }],
     itinerary: [{ day_number: 1, title: "Chegada", description: "Transfer in" }],
     transfers: [],
@@ -238,6 +245,16 @@ function makeSampleRow(overrides: Record<string, any> = {}) {
     excludes: [],
     pricing: { total_price_cents: 1450000, currency: "BRL" },
     options: [],
+    proposal_web_pages: [
+      {
+        theme_preset: "boutique",
+        hero_layout: "gallery_mosaic_3",
+        show_flight_route_map: true,
+        is_published: true,
+        blocks: [{ id: "blk-hero", type: "hero", title: "Cancun VIP", visible: true, order: 0 }],
+        countdown_config: { enabled: true, mode: "proposal_valid_until" },
+      },
+    ],
     special_notes: "Observação VIP",
     visibility_mode: "public",
     is_hidden: false,
@@ -389,6 +406,9 @@ describe("Travel Proposal BFF Security & E2E Workflows", () => {
     expect(goodAttempt.proposal?.access_locked).toBe(false);
     expect(goodAttempt.proposal?.pricing.total_price_cents).toBe(1450000);
     expect(goodAttempt.proposal?.access_pin).toBeNull();
+    expect(goodAttempt.proposal?.web_page?.theme_preset).toBe("boutique");
+    expect(goodAttempt.proposal?.web_page?.hero_layout).toBe("gallery_mosaic_3");
+    expect(goodAttempt.proposal?.flights[0]?.connection_airports).toEqual(["PTY"]);
     expect(state.rpcCalls.some((c) => c.fn === "increment_travel_proposal_view")).toBe(true);
 
     // 5. Subsequent reload sees cookie and returns unlocked public DTO
@@ -677,7 +697,7 @@ describe("Proposals Workspace & Public Route UI Contract Integrity", () => {
       "utf8",
     );
     expect(sidebarSrc).toContain("updatePrimaryRodoviarioTransfer");
-    expect(sidebarSrc).toContain("existingList.slice(1)");
+    expect(sidebarSrc).toContain("existingList.map((item, i) => (i === idx ? updatedItem : item))");
     expect(sidebarSrc).toContain('type="date"');
 
     const pdfSrc = fs.readFileSync(

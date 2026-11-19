@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { MediaUploader } from "@/components/ui/media-uploader";
-import { ImagePlus } from "lucide-react";
+import { SquircleCard } from "@/components/ui/squircle-card";
+import { ImagePlus, Layers } from "lucide-react";
 import { hasActiveClassifiedMediaUpload } from "@/lib/classifieds/media-state";
 
 export interface ClassifiedMediaSectionProps {
@@ -14,9 +15,7 @@ export interface ClassifiedMediaSectionProps {
 }
 
 /**
- * Upload surfaces for the classified's hero carousel and feed-only gallery.
- * Upload state is aggregated so publishing remains blocked until both surfaces
- * have finished, including concurrent uploads.
+ * Superfície unificada de mídia (Capa 4:3 + Feed 1:1) com guarda de uploads concorrentes.
  */
 export function ClassifiedMediaSection({
   images,
@@ -33,29 +32,38 @@ export function ClassifiedMediaSection({
   }, [isFeedUploading, isHeroUploading, onUploadingStateChange]);
 
   return (
-    <section className="space-y-4">
-      <div className="flex items-center justify-between pb-2 border-b border-border/40">
+    <section className="bg-card rounded-lg p-5 sm:p-6 space-y-6 border border-border">
+      <div className="flex items-center justify-between pb-3 border-b border-border">
         <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
-          <ImagePlus className="size-4 text-primary shrink-0" />
-          <span>1. Mídias do Anúncio</span>
+          <ImagePlus className="size-4 text-primary shrink-0" aria-hidden="true" />
+          <span>Mídias e Identidade Visual</span>
         </div>
+        <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
+          {images.length + feedMedia.length} mídia(s)
+        </Badge>
       </div>
 
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
-            <span>Fotos do Topo (Carrossel Hero)</span>
-            <Badge variant="outline" className="text-xs py-0 px-2 font-mono">
-              Até 10 fotos
+      {/* 1.1 Fotos de Capa e Destaque (Topo do Anúncio) */}
+      <SquircleCard variant="media" className="p-5 sm:p-6 space-y-4 border border-border bg-muted">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+          <div className="space-y-2 min-w-0">
+            <Label className="text-sm font-bold text-foreground flex items-center gap-2">
+              <ImagePlus className="size-4 text-primary shrink-0" aria-hidden="true" />
+              <span>Fotos de Capa e Topo (Visualização Principal)</span>
+            </Label>
+            <p className="text-xs text-muted-foreground leading-relaxed break-words text-wrap">
+              Estas fotos aparecem no cabeçalho do anúncio, no banner principal e nos cards das vitrines de busca da cidade. A 1ª foto será a capa oficial do anúncio.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 flex-wrap">
+            <Badge variant="outline" className="text-xs py-1 px-3 font-mono">
+              4:3 Horizontal
             </Badge>
-          </Label>
-          <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground">
-            {images.length}/10 adicionada(s)
-          </span>
+            <Badge variant="secondary" className="text-xs py-1 px-3 font-mono font-bold">
+              {images.length}/10 adicionada(s)
+            </Badge>
+          </div>
         </div>
-        <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-relaxed">
-          Imagens principais exibidas no carrossel de topo do anúncio (formato 4:3 com recorte).
-        </p>
         <MediaUploader
           value={images}
           onChange={onImagesChange}
@@ -63,27 +71,33 @@ export function ClassifiedMediaSection({
           bucket="post-media"
           folder="classifieds"
           aspect={4 / 3}
-          enableCrop
-          lockAspect
+          enableCrop={true}
+          lockAspect={true}
           maxFiles={10}
         />
-      </div>
+      </SquircleCard>
 
-      <div className="pt-3 border-t border-border/40 space-y-2">
-        <div className="flex items-center justify-between">
-          <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
-            <span>Galeria Exclusiva do Feed</span>
-            <Badge className="bg-primary/10 text-primary border-primary/20 text-xs py-0 px-2 font-bold">
-              Até 12 mídias
+      {/* 1.2 Mídias do Feed da Cidade e Galeria */}
+      <SquircleCard variant="media" className="p-5 sm:p-6 space-y-4 border border-border bg-muted">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+          <div className="space-y-2 min-w-0">
+            <Label className="text-sm font-bold text-foreground flex items-center gap-2">
+              <Layers className="size-4 text-primary shrink-0" aria-hidden="true" />
+              <span>Mídias do Feed da Cidade e Galeria</span>
+            </Label>
+            <p className="text-xs text-muted-foreground leading-relaxed break-words text-wrap">
+              Fotos e vídeos curtos publicados no Feed da Cidade dos membros e na grade visual quadrada do anúncio. Formato quadrado 1:1 nativo.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 flex-wrap">
+            <Badge variant="outline" className="text-xs py-1 px-3 font-mono">
+              1:1 Quadrado
             </Badge>
-          </Label>
-          <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground">
-            {feedMedia.length}/12 adicionada(s)
-          </span>
+            <Badge variant="secondary" className="text-xs py-1 px-3 font-mono font-bold">
+              {feedMedia.length}/12 adicionada(s)
+            </Badge>
+          </div>
         </div>
-        <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-relaxed">
-          Mídias que aparecem exclusivamente no feed e grid do anúncio. Aceita Fotos, GIFs animados e Vídeos curtos (MP4/WebM). <strong>Não duplica as fotos do topo.</strong>
-        </p>
         <MediaUploader
           value={feedMedia}
           onChange={onFeedMediaChange}
@@ -95,7 +109,7 @@ export function ClassifiedMediaSection({
           maxFiles={12}
           accept="all"
         />
-      </div>
+      </SquircleCard>
     </section>
   );
 }

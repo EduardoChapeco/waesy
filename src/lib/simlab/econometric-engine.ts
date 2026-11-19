@@ -13,6 +13,7 @@ import type {
   System1Emotion,
   VerdictStatus,
 } from "../../types/simlab";
+import { clamp } from "@/lib/utils";
 import { wilsonInterval } from "./experiment-statistics";
 
 export interface CognitivePersonaSignal {
@@ -38,11 +39,6 @@ export interface OfferParameters {
   maxInstallments: number;
   isPerPersonLeisure?: boolean;
   category?: string;
-}
-
-function clamp(val: number, min: number, max: number): number {
-  if (!Number.isFinite(val)) return min;
-  return Math.min(max, Math.max(min, val));
 }
 
 function round2(val: number): number {

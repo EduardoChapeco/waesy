@@ -1,15 +1,25 @@
 import { createHash } from "node:crypto";
 import { getServerClient } from "@/lib/supabase";
+import { isSyntheticPlaceholderEmail } from "@/lib/contact-sanitize";
 import { decryptSecret } from "@/lib/crypto-vault.server";
+import { selectMatchedPixelsForContext } from "@/lib/pixel-routing";
+import { resolveContactCaptureSuppression } from "@/lib/whatsapp-contact-suppression.server";
+import {
+  formatReadableCampaignDetail,
+  resolveAndEnrichMetaAdMetadata,
+} from "@/services/meta-ad-enrichment.server";
 
 export type AttributionPayload = {
   platform?: string | null;
   source?: string | null;
   medium?: string | null;
   campaign?: string | null;
+  campaign_name?: string | null;
   campaign_id?: string | null;
   ad_id?: string | null;
+  ad_name?: string | null;
   adset_id?: string | null;
+  adset_name?: string | null;
   creative_id?: string | null;
   form_id?: string | null;
   ad_headline?: string | null;
@@ -38,6 +48,7 @@ export type AttributionPayload = {
   device_id?: string | null;
   captured_via?: string | null;
   detected_at?: string | null;
+  source_pixel_id?: string | null;
 };
 
 type DbClient = ReturnType<typeof getServerClient>;
@@ -434,6 +445,13 @@ export async function recordAttributionTouchpoint(
     leadId?: string | null;
     customerId?: string | null;
     threadId?: string | null;
+    ipAddress?: string | null;
+    geoCity?: string | null;
+    geoState?: string | null;
+    geoCountry?: string | null;
+    gpsLatitude?: number | null;
+    gpsLongitude?: number | null;
+    gpsSource?: string | null;
     metadata?: Record<string, unknown>;
   },
 ): Promise<string | null> {
@@ -514,6 +532,13 @@ export async function recordAttributionTouchpoint(
         ...(input.metadata || {}),
         ...(input.gbraid ? { gbraid: input.gbraid } : {}),
         ...(input.wbraid ? { wbraid: input.wbraid } : {}),
+        ...(input.ipAddress ? { ip_address: input.ipAddress } : {}),
+        ...(input.geoCity ? { geo_city: input.geoCity } : {}),
+        ...(input.geoState ? { geo_state: input.geoState } : {}),
+        ...(input.geoCountry ? { geo_country: input.geoCountry } : {}),
+        ...(typeof input.gpsLatitude === "number" ? { gps_latitude: input.gpsLatitude } : {}),
+        ...(typeof input.gpsLongitude === "number" ? { gps_longitude: input.gpsLongitude } : {}),
+        ...(input.gpsSource ? { gps_source: input.gpsSource } : {}),
       },
     };
 
@@ -521,6 +546,13 @@ export async function recordAttributionTouchpoint(
       ...baseRow,
       ...(input.gbraid ? { gbraid: input.gbraid } : {}),
       ...(input.wbraid ? { wbraid: input.wbraid } : {}),
+      ...(input.ipAddress ? { ip_address: input.ipAddress } : {}),
+      ...(input.geoCity ? { geo_city: input.geoCity } : {}),
+      ...(input.geoState ? { geo_state: input.geoState } : {}),
+      ...(input.geoCountry ? { geo_country: input.geoCountry } : {}),
+      ...(typeof input.gpsLatitude === "number" ? { gps_latitude: input.gpsLatitude } : {}),
+      ...(typeof input.gpsLongitude === "number" ? { gps_longitude: input.gpsLongitude } : {}),
+      ...(input.gpsSource ? { gps_source: input.gpsSource } : {}),
     };
 
     let { data, error } = await (db.from("ad_attribution_touchpoints") as any)
@@ -553,7 +585,15 @@ export async function dispatchServerSidePixelConversion(
   db: DbClient,
   input: {
     storeId: string;
-    eventName: "Lead" | "Contact" | "QualifiedLead" | "Purchase";
+    eventName:
+      | "Lead"
+      | "Contact"
+      | "QualifiedLead"
+      | "Purchase"
+      | "PageView"
+      | "ViewContent"
+      | "InitiateCheckout"
+      | "Search";
     eventId: string;
     eventSource?: string;
     leadId?: string | null;
@@ -571,9 +611,13 @@ export async function dispatchServerSidePixelConversion(
     sourceUrl?: string | null;
     clientIpAddress?: string | null;
     clientUserAgent?: string | null;
+    sourcePixelId?: string | null;
+    campaignId?: string | null;
+    adId?: string | null;
+    formId?: string | null;
     customData?: Record<string, unknown>;
   },
-): Promise<{ sent: boolean; reason?: string }> {
+): Promise<{ sent: boolean; reason?: string; matchedPixelsCount?: number }> {
   try {
     // 1. Idempotência estrita em lead_conversion_telemetry
     const { data: existingLog } = await db
@@ -591,84 +635,154 @@ export async function dispatchServerSidePixelConversion(
       .eq("store_id", input.storeId)
       .maybeSingle();
 
-    if (!pixelConfig) {
-      return { sent: false, reason: "pixel_not_configured" };
-    }
-    if (input.eventName === "Lead" && pixelConfig.track_quotes === false) {
+    if (input.eventName === "Lead" && pixelConfig?.track_quotes === false) {
       return { sent: false, reason: "lead_tracking_disabled" };
     }
-    if (input.eventName === "Contact" && pixelConfig.track_whatsapp_leads === false) {
+    if (input.eventName === "Contact" && pixelConfig?.track_whatsapp_leads === false) {
       return { sent: false, reason: "whatsapp_tracking_disabled" };
     }
 
-    let metaDelivered = false;
-    let metaReason = "pixel_not_configured";
+    // Resolve token legado/padrao do cofre (usado como fallback para multi-pixel ou pixel unico)
+    let fallbackAccessToken = "";
+    let fallbackTestEventCode = String(pixelConfig?.meta_test_event_code || "").trim();
+    const { data: cred } = await db
+      .from("integration_credentials")
+      .select("secret_payload_encrypted, token_payload")
+      .eq("store_id", input.storeId)
+      .eq("provider", "meta_pixel")
+      .eq("is_active", true)
+      .maybeSingle();
 
-    if (pixelConfig.meta_pixel_id) {
-      let accessToken = "";
-      let testEventCode = String(pixelConfig.meta_test_event_code || "").trim();
-      const { data: cred } = await db
-        .from("integration_credentials")
-        .select("secret_payload_encrypted, token_payload")
+    if (cred?.secret_payload_encrypted) {
+      try {
+        const parsed = JSON.parse(decryptSecret(cred.secret_payload_encrypted));
+        if (typeof parsed?.access_token === "string") fallbackAccessToken = parsed.access_token.trim();
+        if (typeof parsed?.test_event_code === "string" && parsed.test_event_code.trim()) {
+          fallbackTestEventCode = parsed.test_event_code.trim();
+        }
+      } catch {}
+    }
+    if (!fallbackAccessToken && typeof pixelConfig?.meta_capi_token === "string") {
+      fallbackAccessToken = pixelConfig.meta_capi_token.trim();
+    }
+
+    // 2. Coletar Multi-Pixels ativos (marketing_source_pixels) e rotear por campanha/anuncio/formulario
+    const metaTargets: Array<{
+      sourcePixelId: string | null;
+      externalPixelId: string;
+      accessToken: string;
+      testEventCode: string;
+    }> = [];
+
+    try {
+      const { data: sourcePixels } = await (db.from("marketing_source_pixels") as any)
+        .select("id, provider, external_pixel_id, secret_payload_encrypted, test_event_code, enabled_events, routing_rules, is_default, is_active")
         .eq("store_id", input.storeId)
         .eq("provider", "meta_pixel")
-        .eq("is_active", true)
-        .maybeSingle();
+        .eq("is_active", true);
 
-      if (cred?.secret_payload_encrypted) {
-        try {
-          const parsed = JSON.parse(decryptSecret(cred.secret_payload_encrypted));
-          if (typeof parsed?.access_token === "string") accessToken = parsed.access_token.trim();
-          if (typeof parsed?.test_event_code === "string" && parsed.test_event_code.trim()) {
-            testEventCode = parsed.test_event_code.trim();
-          }
-        } catch {}
-      }
-      if (!accessToken && typeof pixelConfig.meta_capi_token === "string") {
-        accessToken = pixelConfig.meta_capi_token.trim();
-      }
-      if (accessToken) {
-        const userData: Record<string, any> = {};
-        const phoneDigits = digitsOnly(normalizePhoneE164(input.phone) || input.phone);
-        if (phoneDigits.length >= 8) userData.ph = [sha256(phoneDigits)];
-        if (input.email && !input.email.endsWith("@whatsapp.waesy") && !input.email.endsWith("@sem-email.waesy.local")) {
-          userData.em = [sha256(input.email.trim().toLowerCase())];
-        }
-        if (input.fullName && !/^\+?\d+$/.test(input.fullName.trim())) {
-          const parts = input.fullName.trim().toLowerCase().split(/\s+/);
-          if (parts[0]) userData.fn = [sha256(parts[0])];
-          if (parts.length > 1) userData.ln = [sha256(parts[parts.length - 1])];
-        }
-        if (input.fbp) userData.fbp = input.fbp;
-        if (input.fbc) userData.fbc = input.fbc;
-        if (input.ctwaClid) userData.ctwa_clid = input.ctwaClid;
-        if (input.clientIpAddress) userData.client_ip_address = input.clientIpAddress;
-        if (input.clientUserAgent) userData.client_user_agent = input.clientUserAgent;
-
-        const eventPayload: Record<string, any> = {
-          event_name: input.eventName,
-          event_id: input.eventId,
-          event_time: Math.floor(Date.now() / 1000),
-          action_source: input.ctwaClid ? "business_messaging" : "website",
-          ...(input.ctwaClid ? { messaging_channel: "whatsapp" } : {}),
-          ...(input.sourceUrl ? { event_source_url: input.sourceUrl } : {}),
-          user_data: userData,
-          custom_data: {
-            currency: "BRL",
-            lead_event_source: input.eventSource || "waesy_omnichannel",
-            ...(input.customData || {}),
+      if (Array.isArray(sourcePixels) && sourcePixels.length > 0) {
+        const matched = selectMatchedPixelsForContext(
+          sourcePixels,
+          {
+            sourcePixelId: input.sourcePixelId || null,
+            campaignId: input.campaignId || (input.customData?.campaign_id ? String(input.customData.campaign_id) : null),
+            adId: input.adId || (input.customData?.ad_id ? String(input.customData.ad_id) : null),
+            formId: input.formId || (input.customData?.form_id ? String(input.customData.form_id) : null),
+            landingPath: input.sourceUrl || null,
           },
-        };
+          input.eventName,
+          "meta_pixel",
+        );
 
+        for (const px of matched) {
+          let pxToken = "";
+          let pxTestCode = String(px.test_event_code || fallbackTestEventCode).trim();
+          if (px.secret_payload_encrypted) {
+            try {
+              const dec = JSON.parse(decryptSecret(String(px.secret_payload_encrypted)));
+              if (typeof dec?.access_token === "string") pxToken = dec.access_token.trim();
+              if (typeof dec?.test_event_code === "string" && dec.test_event_code.trim()) {
+                pxTestCode = dec.test_event_code.trim();
+              }
+            } catch {}
+          }
+          const resolvedTok = pxToken || fallbackAccessToken;
+          if (px.external_pixel_id && resolvedTok) {
+            metaTargets.push({
+              sourcePixelId: String(px.id),
+              externalPixelId: String(px.external_pixel_id),
+              accessToken: resolvedTok,
+              testEventCode: pxTestCode,
+            });
+          }
+        }
+      }
+    } catch {
+      // Tolerancia se migration 20270601000000 ainda nao aplicada
+    }
+
+    if (metaTargets.length === 0 && pixelConfig?.meta_pixel_id && fallbackAccessToken) {
+      metaTargets.push({
+        sourcePixelId: null,
+        externalPixelId: String(pixelConfig.meta_pixel_id),
+        accessToken: fallbackAccessToken,
+        testEventCode: fallbackTestEventCode,
+      });
+    }
+
+    if (!pixelConfig && metaTargets.length === 0) {
+      return { sent: false, reason: "pixel_not_configured" };
+    }
+
+    let metaDelivered = false;
+    let metaReason = metaTargets.length > 0 ? "capi_error" : (pixelConfig?.meta_pixel_id ? "capi_token_missing" : "pixel_not_configured");
+
+    if (metaTargets.length > 0) {
+      const userData: Record<string, any> = {};
+      const phoneDigits = digitsOnly(normalizePhoneE164(input.phone) || input.phone);
+      if (phoneDigits.length >= 8) userData.ph = [sha256(phoneDigits)];
+      if (input.email && !isSyntheticPlaceholderEmail(input.email)) {
+        userData.em = [sha256(input.email.trim().toLowerCase())];
+      }
+      if (input.fullName && !/^\+?\d+$/.test(input.fullName.trim())) {
+        const parts = input.fullName.trim().toLowerCase().split(/\s+/);
+        if (parts[0]) userData.fn = [sha256(parts[0])];
+        if (parts.length > 1) userData.ln = [sha256(parts[parts.length - 1])];
+      }
+      if (input.fbp) userData.fbp = input.fbp;
+      if (input.fbc) userData.fbc = input.fbc;
+      if (input.ctwaClid) userData.ctwa_clid = input.ctwaClid;
+      if (input.clientIpAddress) userData.client_ip_address = input.clientIpAddress;
+      if (input.clientUserAgent) userData.client_user_agent = input.clientUserAgent;
+
+      const eventPayload: Record<string, any> = {
+        event_name: input.eventName,
+        event_id: input.eventId,
+        event_time: Math.floor(Date.now() / 1000),
+        action_source: input.ctwaClid ? "business_messaging" : "website",
+        ...(input.ctwaClid ? { messaging_channel: "whatsapp" } : {}),
+        ...(input.sourceUrl ? { event_source_url: input.sourceUrl } : {}),
+        user_data: userData,
+        custom_data: {
+          currency: "BRL",
+          lead_event_source: input.eventSource || "waesy_omnichannel",
+          ...(input.customData || {}),
+        },
+      };
+
+      for (let idx = 0; idx < metaTargets.length; idx++) {
+        const target = metaTargets[idx];
         const bodyPayload: Record<string, any> = {
           data: [eventPayload],
-          ...(testEventCode ? { test_event_code: testEventCode } : {}),
+          ...(target.testEventCode ? { test_event_code: target.testEventCode } : {}),
         };
 
         let responseData: Record<string, any> = {};
+        let targetDelivered = false;
         try {
           const capiRes = await fetch(
-            `https://graph.facebook.com/v19.0/${encodeURIComponent(pixelConfig.meta_pixel_id)}/events?access_token=${encodeURIComponent(accessToken)}`,
+            `https://graph.facebook.com/v19.0/${encodeURIComponent(target.externalPixelId)}/events?access_token=${encodeURIComponent(target.accessToken)}`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -677,38 +791,56 @@ export async function dispatchServerSidePixelConversion(
             },
           );
           responseData = (await capiRes.json().catch(() => ({}))) as Record<string, any>;
-          metaDelivered = capiRes.ok;
-          metaReason = metaDelivered ? "delivered" : "capi_error";
+          targetDelivered = capiRes.ok;
+          if (targetDelivered) {
+            metaDelivered = true;
+            metaReason = "delivered";
+          }
         } catch (err: any) {
           responseData = { error: err?.message || "network_error" };
-          metaReason = "capi_error";
         }
 
+        const logEventId = idx === 0 ? input.eventId : `${input.eventId}_px_${target.externalPixelId}`;
+        const telRow: Record<string, any> = {
+          store_id: input.storeId,
+          lead_id: input.leadId || null,
+          thread_id: input.threadId || null,
+          event_name: input.eventName,
+          event_id: logEventId,
+          event_source: input.eventSource || "waesy_omnichannel",
+          channel: "meta_capi",
+          status: targetDelivered ? "delivered" : "failed",
+          response_data: responseData,
+          ...(target.sourcePixelId ? { source_pixel_id: target.sourcePixelId } : {}),
+          external_pixel_id: target.externalPixelId,
+        };
         await (db.from("lead_conversion_telemetry") as any)
-          .insert({
-            store_id: input.storeId,
-            lead_id: input.leadId || null,
-            thread_id: input.threadId || null,
-            event_name: input.eventName,
-            event_id: input.eventId,
-            event_source: input.eventSource || "waesy_omnichannel",
-            channel: "meta_capi",
-            status: metaDelivered ? "delivered" : "failed",
-            response_data: responseData,
-          })
-          .then(() => null, () => null);
-      } else {
-        metaReason = "capi_token_missing";
+          .insert(telRow)
+          .then(async (res: any) => {
+            if (res?.error && /source_pixel_id|external_pixel_id|column/i.test(res.error.message || "")) {
+              delete telRow.source_pixel_id;
+              delete telRow.external_pixel_id;
+              await (db.from("lead_conversion_telemetry") as any).insert(telRow).then(() => null, () => null);
+            }
+          }, () => null);
+
+        if (targetDelivered && target.sourcePixelId) {
+          await (db.from("marketing_source_pixels") as any)
+            .update({ last_fired_at: new Date().toISOString() })
+            .eq("id", target.sourcePixelId)
+            .eq("store_id", input.storeId)
+            .then(() => null, () => null);
+        }
       }
     }
 
     // 3. Disparo paralelo para GA4 Measurement Protocol / Google Ads offline quando configurado
     let gaDelivered = false;
-    const gaMeasurementId = String(pixelConfig.ga4_measurement_id || "").trim();
+    const gaMeasurementId = String(pixelConfig?.ga4_measurement_id || "").trim();
     if (gaMeasurementId) {
       let gaApiSecret = "";
       try {
-        const parsedLegacy = JSON.parse(String(pixelConfig.google_ads_id || "{}"));
+        const parsedLegacy = JSON.parse(String(pixelConfig?.google_ads_id || "{}"));
         if (typeof parsedLegacy?.api_secret === "string") gaApiSecret = parsedLegacy.api_secret.trim();
       } catch {}
       if (!gaApiSecret) {
@@ -807,6 +939,8 @@ export async function correlateAndPersistInboundWhatsAppAttribution(
   leadId: string | null;
   customerId: string | null;
   capiDispatched: boolean;
+  suppressed?: boolean;
+  suppressionReason?: string | null;
 }> {
   const phoneLookup = buildPhoneLookupCandidates(input.phone);
   const directSignal = extractWhatsAppReferralAndTokens(input.payload, input.text);
@@ -814,6 +948,41 @@ export async function correlateAndPersistInboundWhatsAppAttribution(
     input.existingThreadAttribution || (input.existingThreadMeta?.attribution as any),
     directSignal || undefined,
   );
+
+  // Gate Zero-Trust de contatos internos / stakeholders / equipe / contatos silenciados:
+  // mantem mensagens no inbox interno e bloqueia leads_crm, whatsapp_lead_conversions e Meta CAPI.
+  const suppression = await resolveContactCaptureSuppression(db, {
+    storeId: input.storeId,
+    identityId: input.identityId,
+    phone: phoneLookup.e164 || input.phone,
+    threadMeta: input.existingThreadMeta,
+  });
+
+  if (suppression.suppressed) {
+    const suppressedMeta = {
+      ...(input.existingThreadMeta || {}),
+      contact_scope: suppression.contactScope,
+      suppress_lead_capture: true,
+      ...(suppression.internalRoleLabel ? { internal_role_label: suppression.internalRoleLabel } : {}),
+    };
+    await (db.from("chat_threads") as any)
+      .update({
+        ...(phoneLookup.e164 ? { primary_phone_e164: phoneLookup.e164 } : {}),
+        metadata: suppressedMeta,
+      })
+      .eq("id", input.threadId)
+      .eq("store_id", input.storeId)
+      .then(() => null, () => null);
+
+    return {
+      attribution: resolvedAttr,
+      leadId: null,
+      customerId: null,
+      capiDispatched: false,
+      suppressed: true,
+      suppressionReason: suppression.reason,
+    };
+  }
 
   // 1. Caso haja Ref: #Waesy-W... na mensagem -> buscar whatsapp_lead_conversions
   if (directSignal?.lead_code) {
@@ -874,7 +1043,7 @@ export async function correlateAndPersistInboundWhatsAppAttribution(
           .gte("created_at", thirtyDaysAgo)
           .or(orFilters.join(","))
           .order("created_at", { ascending: false })
-          .limit(3);
+          .limit(25);
 
         const tp = Array.isArray(touchpoints) ? touchpoints[0] : null;
         if (tp) {
@@ -950,23 +1119,30 @@ export async function correlateAndPersistInboundWhatsAppAttribution(
     } catch {}
   }
 
-  // 4. Resolver nome amigável da campanha se houver campaign_id ou ad_id em store_ad_campaigns
+  // 4. Resolver nome amigável da campanha · conjunto · anúncio (local + Meta Graph API fallback)
   if (resolvedAttr.ad_id || resolvedAttr.campaign_id) {
-    try {
-      const campaignFilter = [resolvedAttr.campaign_id, resolvedAttr.ad_id].filter(Boolean) as string[];
-      if (campaignFilter.length > 0) {
-        const { data: camp } = await db
-          .from("store_ad_campaigns")
-          .select("id, title, external_campaign_id")
-          .eq("store_id", input.storeId)
-          .or(campaignFilter.map((c) => `external_campaign_id.eq.${c}`).join(","))
-          .limit(1)
-          .maybeSingle();
-        if (camp?.title && !resolvedAttr.campaign) {
-          resolvedAttr.campaign = camp.title;
-        }
+    const enrichedMeta = await resolveAndEnrichMetaAdMetadata(db, {
+      storeId: input.storeId,
+      adId: resolvedAttr.ad_id,
+      campaignId: resolvedAttr.campaign_id,
+      adsetId: resolvedAttr.adset_id,
+    }).catch(() => null);
+
+    if (enrichedMeta) {
+      if (enrichedMeta.campaignName) {
+        resolvedAttr.campaign = enrichedMeta.campaignName;
+        resolvedAttr.campaign_name = enrichedMeta.campaignName;
+        if (!resolvedAttr.utm_campaign) resolvedAttr.utm_campaign = enrichedMeta.campaignName;
       }
-    } catch {}
+      if (enrichedMeta.campaignId && !resolvedAttr.campaign_id) resolvedAttr.campaign_id = enrichedMeta.campaignId;
+      if (enrichedMeta.adsetId && !resolvedAttr.adset_id) resolvedAttr.adset_id = enrichedMeta.adsetId;
+      if (enrichedMeta.adsetName && !resolvedAttr.adset_name) resolvedAttr.adset_name = enrichedMeta.adsetName;
+      if (enrichedMeta.adName && !resolvedAttr.ad_name) resolvedAttr.ad_name = enrichedMeta.adName;
+      if (enrichedMeta.adHeadline && !resolvedAttr.ad_headline) resolvedAttr.ad_headline = enrichedMeta.adHeadline;
+      if (enrichedMeta.adBody && !resolvedAttr.ad_body) resolvedAttr.ad_body = enrichedMeta.adBody;
+      if (enrichedMeta.creativeThumbnailUrl && !resolvedAttr.ad_media_url) resolvedAttr.ad_media_url = enrichedMeta.creativeThumbnailUrl;
+      if (enrichedMeta.sourcePixelId && !resolvedAttr.source_pixel_id) resolvedAttr.source_pixel_id = enrichedMeta.sourcePixelId;
+    }
   }
 
   // Fallback semântico de origem caso seja WhatsApp orgânico sem campanha identificada
@@ -991,22 +1167,25 @@ export async function correlateAndPersistInboundWhatsAppAttribution(
             ? "lead_form"
             : "whatsapp";
 
-    const sourceDetailParts = [
-      resolvedAttr.campaign || resolvedAttr.utm_campaign,
-      resolvedAttr.ad_headline || (resolvedAttr.ad_id ? `Anúncio #${resolvedAttr.ad_id}` : null),
-      resolvedAttr.listing_title,
-    ].filter(Boolean);
+    const readableSourceDetail = formatReadableCampaignDetail({
+      campaignName: resolvedAttr.campaign || resolvedAttr.campaign_name || resolvedAttr.utm_campaign,
+      adsetName: resolvedAttr.adset_name,
+      adName: resolvedAttr.ad_name,
+      adHeadline: resolvedAttr.ad_headline,
+      listingTitle: resolvedAttr.listing_title,
+      adId: resolvedAttr.ad_id,
+    });
 
     const ingested = await ingestOmnichannelLead(db, {
       storeId: input.storeId,
       source: leadSource,
-      sourceDetail: sourceDetailParts.join(" · ") || "WhatsApp Atendimento",
+      sourceDetail: readableSourceDetail || "WhatsApp Atendimento",
       fullName: input.pushName || phoneLookup.e164 || input.phone,
       phone: phoneLookup.e164 || input.phone,
       message: input.text?.slice(0, 600) || null,
       sourceListingId: resolvedAttr.listing_id || null,
       sourceListingOrigin: (resolvedAttr.listing_origin as "product" | "classified" | "experience" | "builder" | "form" | null) || null,
-      sourceListingTitle: resolvedAttr.listing_title || resolvedAttr.ad_headline || null,
+      sourceListingTitle: resolvedAttr.listing_title || resolvedAttr.ad_headline || resolvedAttr.ad_name || null,
       sourceFormId: resolvedAttr.form_id || null,
       customFields: {
         ...resolvedAttr,
@@ -1103,6 +1282,10 @@ export async function correlateAndPersistInboundWhatsAppAttribution(
     fbc: resolvedAttr.fbc || null,
     ctwaClid: resolvedAttr.ctwa_clid || null,
     sourceUrl: resolvedAttr.source_url || resolvedAttr.landing_url || null,
+    sourcePixelId: resolvedAttr.source_pixel_id || null,
+    campaignId: resolvedAttr.campaign_id || null,
+    adId: resolvedAttr.ad_id || null,
+    formId: resolvedAttr.form_id || null,
     customData: {
       ad_id: resolvedAttr.ad_id || undefined,
       campaign_id: resolvedAttr.campaign_id || undefined,

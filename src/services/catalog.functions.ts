@@ -921,6 +921,8 @@ export interface PublicStoreProfileDTO {
  category?: string | null;
  pixKey?: string | null;
  paymentInstructions?: string | null;
+ waesy_marketplace_enabled?: boolean;
+ publish_to_marketplace?: boolean;
 }
 
 export type PublicStoreProfileResult = CatalogResult<PublicStoreProfileDTO>;
@@ -941,7 +943,7 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
 
  let query = db
  .from("stores")
- .select("id, name, slug, description, phone, email, address, city, state, logo_url, avatar_url, banner_url, settings");
+ .select("id, name, slug, description, phone, email, address, city, state, logo_url, banner_url, waesy_marketplace_enabled, publish_to_marketplace, settings");
 
  if (isUuid) {
  query = query.eq("id", storeIdToUse);
@@ -1136,6 +1138,8 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
  pixKey: typeof settings.pixKey === "string" ? settings.pixKey : null,
  paymentInstructions:
  typeof settings.paymentInstructions === "string" ? settings.paymentInstructions : null,
+ waesy_marketplace_enabled: store.waesy_marketplace_enabled !== false,
+ publish_to_marketplace: store.publish_to_marketplace !== false,
  };
 
  return profile;
@@ -1223,12 +1227,13 @@ export const getStorePublicCatalog = createServerFn({ method: "GET" })
  storeId = st.id;
  }
 
- const [productsRes, categoriesRes] = await Promise.all([
+ const [productsRes, categoriesRes, collectionsRes] = await Promise.all([
  db
  .from("products")
  .select(`
- id, title, slug, description, price_cents, compare_at_cents, status,
+ id, title, slug, description, price_cents, compare_at_cents, status, category_id, is_featured,
  product_media(url, alt, sort_order),
+ product_collections(collection_id),
  product_option_groups(
  sort_order,
  option_groups(
@@ -1242,13 +1247,19 @@ export const getStorePublicCatalog = createServerFn({ method: "GET" })
  )
  `)
  .eq("store_id", storeId)
- .eq("status", "published")
+ .in("status", ["published", "active"])
  .order("created_at", { ascending: false })
- .limit(60),
+ .limit(120),
  db
  .from("categories")
  .select("id, name, slug")
  .eq("store_id", storeId)
+ .order("name", { ascending: true }),
+ db
+ .from("collections")
+ .select("id, name, slug, description, cover_url")
+ .eq("store_id", storeId)
+ .eq("status", "active")
  .order("name", { ascending: true }),
  ]);
 
@@ -1262,11 +1273,17 @@ export const getStorePublicCatalog = createServerFn({ method: "GET" })
  const modifierGroups = (p.product_modifier_groups || [])
  .filter(Boolean)
  .sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0));
+ const collectionIds = (p.product_collections || [])
+ .map((pc: any) => pc.collection_id)
+ .filter(Boolean);
  return {
  id: p.id,
  title: p.title,
  slug: p.slug,
  description: p.description,
+ category_id: p.category_id || null,
+ is_featured: Boolean(p.is_featured),
+ collectionIds,
  priceCents: p.price_cents,
  compareAtCents: p.compare_at_cents,
  coverUrl: media[0]?.url || null,
@@ -1279,6 +1296,7 @@ export const getStorePublicCatalog = createServerFn({ method: "GET" })
  return {
  products,
  categories: categoriesRes.data || [],
+ collections: collectionsRes.data || [],
  };
  } catch (e) {
  console.error("[catalog.functions] getStorePublicCatalog error:", e);

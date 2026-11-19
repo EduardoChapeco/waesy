@@ -3,7 +3,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { SidebarSimple, SquaresFour } from "@phosphor-icons/react";
 import { StatefulNavIcon } from "@/components/ui/stateful-nav-icon";
 import { WorkspaceQuickChatDock } from "./workspace-quick-chat-dock";
-import { Package, Tags, Tag, Store, LayoutDashboard, Settings, Calendar, Users, ShoppingBag, UserCircle, Truck, Boxes, Banknote, FileText, LayoutTemplate, Layers, Link2, Image as ImageIcon, ChevronDown, ChevronRight, ClipboardList, ShieldAlert, Megaphone, Flame, Newspaper, Plus, Sliders, BarChart3, DollarSign, Ticket, ArrowRightLeft, ArrowUpRight, User, LogOut, Bell, Check, ChevronsUpDown, Building2, ShieldCheck, UtensilsCrossed, Compass, ExternalLink, Coins, Zap, Scale, Wrench, MapPin, Navigation, Briefcase, Plane, ShoppingCart, Eye, Receipt, AlertTriangle, ArrowDownUp, Search, HelpCircle, LayoutGrid } from "lucide-react";
+import { Package, Tags, Tag, Store, LayoutDashboard, Settings, Calendar, Users, ShoppingBag, UserCircle, Truck, Boxes, Banknote, FileText, LayoutTemplate, Layers, Link2, Image as ImageIcon, ChevronDown, ChevronRight, ClipboardList, ShieldAlert, Megaphone, Flame, Newspaper, Plus, Sliders, BarChart3, DollarSign, Ticket, ArrowUpRight, User, LogOut, Bell, ChevronsUpDown, Building2, ShieldCheck, UtensilsCrossed, Compass, ExternalLink, Coins, Zap, Scale, Wrench, MapPin, Navigation, Briefcase, Plane, ShoppingCart, Eye, Receipt, AlertTriangle, ArrowDownUp, Search, HelpCircle, LayoutGrid } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { signOut } from "@/services/auth.functions";
@@ -15,20 +15,18 @@ import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 
 import { resolveWorkspaceNavigation, getSidebarConfig, getMasterSidebarPillars, type NavGroup, type NavItem, type MasterPillar } from "@/lib/workspace-navigation";
-import { getNicheSemantics } from "@/lib/niche-semantics";
-import { getNicheTranslation } from "@/lib/niche-dictionary";
+import { getNicheSemantics } from "@/lib/niches/niche-semantics";
+import { getNicheTranslation } from "@/lib/niches/niche-dictionary";
 import { WorkspaceAccountSwitcher } from "./workspace-account-switcher";
 import { NotificationBell } from "./notification-bell";
 import { WorkspaceAllToolsDialog } from "./workspace-all-tools-dialog";
 import { WorkspaceSidebarFlyout } from "./workspace-sidebar-flyout";
 import { WorkspaceAccessDenied } from "./workspace-access-denied";
-import { WaesyHubLauncher } from "@/components/shell/waesy-hub-launcher";
 import {
   getBrandVerticalById,
   resolveBrandContextFromHost,
@@ -155,11 +153,7 @@ export function WorkspaceShell({
   const [isAllToolsOpen, setIsAllToolsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
- // Estado do Modal de Confirmação de Alternância de Contexto
- const [showPersonalSwitchModal, setShowPersonalSwitchModal] = useState(false);
- const [targetPersonalPath, setTargetPersonalPath] = useState<string>("/conta");
-
- const [isSwitching, setIsSwitching] = useState(false);
+  const [isSwitching, setIsSwitching] = useState(false);
   const isPlatformAdmin = Boolean(
     session?.user?.role === "platform_admin" ||
     session?.role === "platform_admin" ||
@@ -284,12 +278,14 @@ export function WorkspaceShell({
       return false;
     }
 
-    // 3. Rotas restritas de Gestão de Equipe, Cargos e Folha (bloqueadas para vendedores, caixas, expedição)
+    // 3. Rotas restritas de Gestão de Equipe, Cargos, Sessões e Folha (bloqueadas para vendedores, caixas, expedição)
     const TEAM_MANAGEMENT_ROUTES = [
       "/workspace/configuracoes/equipe",
+      "/workspace/configuracoes/sessoes",
       "/workspace/rh/ponto",
       "/workspace/rh/folha",
       "/workspace/rh/rescisao",
+      "/workspace/rh/compliance",
       "/workspace/empregos/candidatos",
       "/workspace/financeiro/funcionarios",
     ];
@@ -300,8 +296,11 @@ export function WorkspaceShell({
       }
     }
 
-    // 4. Rotas restritas Financeiras e de Repasse (bloqueadas para vendedores, atendentes e operadores gerais)
+    // 4. Rotas restritas Financeiras, Globais de Comissão e IA Estratégica
+    // Nota: `/workspace/relatorios/metas` é liberado em modo somente-leitura pessoal para vendedores,
+    // e `/workspace/turismo/minhas-vendas` é a superfície dedicada ao consultor vs visão global gerencial.
     const FINANCE_RESTRICTED_ROUTES = [
+      "/workspace/turismo/comissoes",
       "/workspace/financeiro/caixa/turnos",
       "/workspace/financeiro/contas-pagar",
       "/workspace/financeiro/comissoes",
@@ -314,10 +313,15 @@ export function WorkspaceShell({
       "/workspace/financeiro/caixa/lancamentos",
       "/workspace/financeiro/pagamentos",
       "/workspace/relatorios",
-      "/workspace/relatorios/metas",
       "/workspace/relatorios/gastronomia",
+      "/workspace/viabilidade",
+      "/workspace/squads",
+      "/workspace/tokens",
     ];
-    if (FINANCE_RESTRICTED_ROUTES.some((r) => currentPath === r || currentPath.startsWith(r + "/"))) {
+    if (
+      currentPath !== "/workspace/relatorios/metas" &&
+      FINANCE_RESTRICTED_ROUTES.some((r) => currentPath === r || currentPath.startsWith(r + "/"))
+    ) {
       const allowedFinanceRoles = ["owner", "admin", "proprietario", "manager", "gerente", "finance"];
       if (!allowedFinanceRoles.includes(effectiveUserRole)) {
         return false;
@@ -383,38 +387,10 @@ export function WorkspaceShell({
     let cancelled = false;
     (async () => {
       try {
-        const { getBrowserClient } = await import("@/lib/supabase");
-        const supabase = getBrowserClient();
-        const userId = session?.id || session?.userId || session?.user?.id;
-        let resolvedAvatar: string | null = null;
-        let resolvedName: string | null = null;
-
-        if (userId) {
-          const { data: profileRow } = await supabase
-            .from("profiles")
-            .select("avatar_url, full_name")
-            .eq("id", userId)
-            .maybeSingle();
-          if (profileRow?.avatar_url) resolvedAvatar = profileRow.avatar_url;
-          if (profileRow?.full_name) resolvedName = profileRow.full_name;
-        }
-
-        if (!resolvedAvatar) {
-          const { data: authData } = await supabase.auth.getUser();
-          const u = authData?.user;
-          if (u) {
-            const idData = u.identities?.[0]?.identity_data as Record<string, any> | undefined;
-            resolvedAvatar =
-              u.user_metadata?.avatar_url ||
-              u.user_metadata?.picture ||
-              idData?.avatar_url ||
-              idData?.picture ||
-              null;
-            if (!resolvedName) {
-              resolvedName = u.user_metadata?.full_name || null;
-            }
-          }
-        }
+        const { getProfile } = await import("@/services/auth.functions");
+        const profileRow = await getProfile();
+        const resolvedAvatar = profileRow?.avatarUrl || null;
+        const resolvedName = profileRow?.fullName || null;
 
         if (!cancelled && (resolvedAvatar || resolvedName)) {
           setSyncedProfile({ avatarUrl: resolvedAvatar, fullName: resolvedName });
@@ -506,14 +482,38 @@ export function WorkspaceShell({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  // Sincronização dinâmica do Manifest PWA Exclusivo do Workspace / Empresa
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const targetManifest = `/api/pwa/manifest.json?mode=workspace${activeStoreId ? `&storeId=${encodeURIComponent(activeStoreId)}` : ""}`;
+      let link = document.querySelector('link[rel="manifest"]') as HTMLLinkElement | null;
+      if (!link) {
+        link = document.createElement("link");
+        link.rel = "manifest";
+        document.head.appendChild(link);
+      }
+      if (link.getAttribute("href") !== targetManifest) {
+        link.setAttribute("href", targetManifest);
+      }
+      const isStandalone =
+        window.matchMedia?.("(display-mode: standalone)")?.matches ||
+        Boolean((window.navigator as any)?.standalone) ||
+        window.location.search.includes("pwa=workspace");
+      if (isStandalone) {
+        document.cookie = "waesy_pwa_mode=workspace; path=/; max-age=31536000; SameSite=Lax";
+      }
+    } catch {}
+  }, [activeStoreId]);
+
   const handleLogout = async () => {
     try {
       if (typeof window !== "undefined") {
         await getBrowserClient().auth.signOut().catch(() => {});
-        setClientContextCookies({ context: "civil" });
+        setClientContextCookies({ context: "store", storeId: null });
       }
       await signOut();
-      window.location.href = "/";
+      window.location.href = "/painel";
     } catch (e) {
       console.error(e);
     }
@@ -532,19 +532,6 @@ export function WorkspaceShell({
       toast.error("Erro ao alternar loja.");
       setIsSwitching(false);
     }
-  };
-
-  const confirmSwitchToPersonal = async () => {
-    setShowPersonalSwitchModal(false);
-    setClientContextCookies({ context: "civil" });
-    await setTenantContext({ data: { store_id: null } }).catch(() => null);
-    toast.success(`Alternando para o perfil de ${userDisplayName}...`);
-    window.location.href = targetPersonalPath || "/conta";
-  };
-
-  const requestSwitchToPersonal = (destination = "/conta") => {
-    setTargetPersonalPath(destination);
-    setShowPersonalSwitchModal(true);
   };
 
   const NavLinks = ({ isMobile = false }: { isMobile?: boolean }) => (
@@ -741,10 +728,9 @@ export function WorkspaceShell({
 
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    onClick={() => requestSwitchToPersonal("/conta")}
-                    aria-label={userDisplayName}
+                  <Link
+                    to="/workspace/configuracoes/sessoes"
+                    aria-label={`Sessões e Acessos: ${userDisplayName}`}
                     className="size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center hover:bg-rail-hover transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {rawAvatarUrl && !railAvatarFailed ? (
@@ -759,10 +745,10 @@ export function WorkspaceShell({
                         {userInitial}
                       </span>
                     )}
-                  </button>
+                  </Link>
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={8}>
-                  {userDisplayName}
+                  {userDisplayName} (Operador)
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -784,7 +770,6 @@ export function WorkspaceShell({
                   userAvatarUrl={rawAvatarUrl}
                   isSwitching={isSwitching}
                   onSwitchStore={handleSwitchStore}
-                  onSwitchToPersonal={confirmSwitchToPersonal}
                 />
               </div>
             </div>
@@ -881,15 +866,15 @@ export function WorkspaceShell({
                   <span>Ajuda</span>
                 </Link>
 
-                <button
-                  type="button"
-                  onClick={() => requestSwitchToPersonal("/")}
+                <Link
+                  to="/workspace/configuracoes/pwa"
+                  search={{ tab: undefined }}
                   className="flex items-center gap-1 text-muted-foreground hover:text-foreground px-3 min-h-11 rounded-xl hover:bg-rail-hover font-medium cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  title="Ir para vitrine pública"
+                  title="Configurar App PWA Isolado da Empresa"
                 >
-                  <span>Vitrine</span>
+                  <span>App PWA</span>
                   <ArrowUpRight className="size-3" />
-                </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -924,7 +909,6 @@ export function WorkspaceShell({
                         userAvatarUrl={rawAvatarUrl}
                         isSwitching={isSwitching}
                         onSwitchStore={handleSwitchStore}
-                        onSwitchToPersonal={confirmSwitchToPersonal}
                       />
                     </div>
                     <ScrollArea className="flex-1 pr-2">
@@ -950,12 +934,9 @@ export function WorkspaceShell({
                         </span>
                         <span className="text-xs text-muted-foreground font-mono">Ctrl+K</span>
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsMobileMenuOpen(false);
-                          requestSwitchToPersonal("/conta");
-                        }}
+                      <Link
+                        to="/workspace/configuracoes/sessoes"
+                        onClick={() => setIsMobileMenuOpen(false)}
                         className="w-full min-h-11 px-3 py-2 rounded-xl bg-sidebar-active hover:bg-rail-hover text-foreground flex items-center gap-3 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <div className="size-8 rounded-full bg-foreground text-background flex items-center justify-center font-bold text-xs overflow-hidden shrink-0">
@@ -972,10 +953,9 @@ export function WorkspaceShell({
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-xs font-bold text-foreground truncate">{userDisplayName}</p>
-                          <p className="text-xs text-muted-foreground truncate">Conta Pessoal</p>
+                          <p className="text-xs text-muted-foreground truncate">Sessões e Acessos</p>
                         </div>
-                        <ArrowUpRight className="size-3.5 text-muted-foreground shrink-0" />
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </SheetContent>
@@ -995,7 +975,6 @@ export function WorkspaceShell({
                     userAvatarUrl={rawAvatarUrl}
                     isSwitching={isSwitching}
                     onSwitchStore={handleSwitchStore}
-                    onSwitchToPersonal={confirmSwitchToPersonal}
                   />
                 </div>
               </div>
@@ -1021,17 +1000,21 @@ export function WorkspaceShell({
             >
               <Search className="size-4 shrink-0" />
             </button>
-            <WaesyHubLauncher compact={true} />
             <div className="shrink-0">
               <NotificationBell />
             </div>
 
-            {/* Botão Contextual da Loja Pública */}
+            {/* Atalho Isolado para App Oficial da Empresa */}
             {(() => {
               const storeData = activeStore?.store || activeStore;
-              const storeSlug = storeData?.slug || storeData?.store_slug || activeStoreId;
+              const storeSlug = storeData?.slug || storeData?.store_slug;
+              const isAppEnabled = storeData?.is_app_enabled !== false;
               const contextualAction = getStoreContextualAction(storeData);
               const ActionIcon = contextualAction.icon;
+
+              if (!storeSlug || !isAppEnabled) {
+                return null;
+              }
 
               return (
                 <Button
@@ -1041,13 +1024,13 @@ export function WorkspaceShell({
                   className="h-11 min-h-11 rounded-xl text-xs font-semibold gap-2 hidden waesy-expanded-flex text-muted-foreground hover:text-foreground hover:bg-rail-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <Link
-                    to="/perfil-da-loja"
-                    search={{ slug: storeSlug, aba: contextualAction.aba }}
+                    to="/app/$slug"
+                    params={{ slug: String(storeSlug) }}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     <ActionIcon className="size-3.5 text-muted-foreground" />
-                    <span>{contextualAction.label}</span>
+                    <span>App Oficial</span>
                     <ExternalLink className="size-3 text-muted-foreground ml-1" />
                   </Link>
                 </Button>
@@ -1135,11 +1118,20 @@ export function WorkspaceShell({
                 </DropdownMenuItem>
 
                 <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs min-h-11">
-                  <Link to="/workspace/lojas">
-                    <Building2 className="size-3.5 mr-2 text-muted-foreground" />
-                    <span>Trocar Loja</span>
+                  <Link to="/workspace/configuracoes/sessoes">
+                    <ShieldCheck className="size-3.5 mr-2 text-muted-foreground" />
+                    <span>Sessões e Dispositivos</span>
                   </Link>
                 </DropdownMenuItem>
+
+                {memberships.length > 1 && (
+                  <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs min-h-11">
+                    <Link to="/auth/portal-selector">
+                      <Building2 className="size-3.5 mr-2 text-muted-foreground" />
+                      <span>Trocar Empresa</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
 
                 {isPlatformAdmin && (
                   <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold text-primary min-h-11">
@@ -1149,19 +1141,6 @@ export function WorkspaceShell({
                     </Link>
                   </DropdownMenuItem>
                 )}
-
-                <DropdownMenuSeparator className="bg-border/50" />
-
-                <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
-                  onClick={() => requestSwitchToPersonal("/conta")}
-                  className="rounded-xl cursor-pointer text-xs font-semibold text-foreground flex items-center justify-between min-h-11"
-                >
-                  <div className="flex items-center gap-2">
-                    <UserCircle className="size-3.5 text-muted-foreground" />
-                    <span>Conta Pessoal</span>
-                  </div>
-                  <ArrowUpRight className="size-3 text-muted-foreground" />
-                </DropdownMenuItem>
 
                 <DropdownMenuSeparator className="bg-border/50" />
 
@@ -1284,57 +1263,7 @@ export function WorkspaceShell({
         <WorkspaceQuickChatDock activeStoreId={activeStoreId} />
       </div>
 
-  {/* ── 3. MODAL DE CONFIRMAÇÃO DE ALTERNÂNCIA DE CONTEXTO ── */}
- <Dialog open={showPersonalSwitchModal} onOpenChange={setShowPersonalSwitchModal}>
- <DialogContent className="sm:max-w-md p-0 overflow-hidden sm:rounded-2xl bg-background border border-border/40">
- <DialogHeader className="p-6 pb-4 bg-card border-b border-border/40">
- <div className="size-10 rounded-xl bg-muted text-foreground flex items-center justify-center mb-2">
- <ArrowRightLeft className="size-5" />
- </div>
- <DialogTitle className="text-lg font-black tracking-tight text-foreground">
- Alternar para conta pessoal?
- </DialogTitle>
- <DialogDescription className="text-xs text-muted-foreground">
- O painel da loja ficará fechado.
- </DialogDescription>
- </DialogHeader>
-
- <div className="p-6 space-y-4 text-xs">
- <div className="rounded-2xl bg-card p-4 space-y-2">
- <div className="flex items-center justify-between text-xs">
- <span className="text-muted-foreground">Atual:</span>
- <span className="font-bold text-foreground">{activeStore?.name || "Loja"}</span>
- </div>
- <div className="h-px bg-border/40" />
- <div className="flex items-center justify-between text-xs">
- <span className="text-muted-foreground">Destino:</span>
- <span className="font-bold text-foreground">{userDisplayName}</span>
- </div>
- </div>
- </div>
-
- <DialogFooter className="p-4 bg-card border-t border-border/40 flex flex-col sm:flex-row gap-2">
- <Button
- type="button"
- variant="outline"
- onClick={() => setShowPersonalSwitchModal(false)}
- className="w-full sm:w-auto h-11 min-h-11 rounded-lg text-xs font-bold"
- >
- Cancelar
- </Button>
- <Button
- type="button"
- onClick={confirmSwitchToPersonal}
- className="w-full sm:w-auto h-11 min-h-11 rounded-lg text-xs font-bold gap-2"
- >
- <Check className="size-3.5" />
- <span>Alternar</span>
- </Button>
- </DialogFooter>
- </DialogContent>
- </Dialog>
-
- {/* ── 4. HUB GLOBAL "TODAS AS FERRAMENTAS" (PADRÃO META STUDIO - IMAGEM 1) ── */}
+ {/* ── HUB GLOBAL "TODAS AS FERRAMENTAS" ── */}
  <WorkspaceAllToolsDialog
  open={isAllToolsOpen}
  onOpenChange={setIsAllToolsOpen}

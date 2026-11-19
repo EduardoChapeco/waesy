@@ -15,6 +15,7 @@ export interface EventHorizontalCardProps {
   priceCents?: number | null;
   isFree?: boolean;
   className?: string;
+  onSelect?: () => void;
 }
 
 export function EventHorizontalCard({
@@ -28,6 +29,7 @@ export function EventHorizontalCard({
   priceCents,
   isFree,
   className,
+  onSelect,
 }: EventHorizontalCardProps) {
   const [imageError, setImageError] = React.useState(false);
 
@@ -54,18 +56,15 @@ export function EventHorizontalCard({
     }
   }, [eventDate, endDate]);
 
-  return (
-    <Link
-      to="/evento/$id"
-      params={{ id }}
-      className={cn(
-        "w-72 sm:w-80 h-24 rounded-2xl border border-border/60 bg-card p-2 flex items-center gap-3 shrink-0 snap-start select-none",
-        "hover:border-foreground/30 hover:bg-muted/20 transition-colors duration-200 shadow-2xs group cursor-pointer",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-        className,
-      )}
-      aria-label={title}
-    >
+  const cardClasses = cn(
+    "w-72 sm:w-80 h-24 rounded-2xl border border-border/60 bg-card p-2 flex items-center gap-3 shrink-0 snap-start select-none text-left",
+    "hover:border-foreground/30 hover:bg-muted/20 transition-colors duration-200 shadow-2xs group cursor-pointer",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+    className,
+  );
+
+  const innerContent = (
+    <>
       {/* ── Imagem Thumbnail Esquerda (Proporção 4:3) ── */}
       <div className="w-24 sm:w-28 h-full rounded-xl overflow-hidden bg-muted relative shrink-0 flex items-center justify-center">
         {hasCover ? (
@@ -99,6 +98,20 @@ export function EventHorizontalCard({
           </div>
         </div>
       </div>
+    </>
+  );
+
+  if (onSelect) {
+    return (
+      <button type="button" onClick={onSelect} className={`${cardClasses} focus-visible:ring-2`} aria-label={title}>
+        {innerContent}
+      </button>
+    );
+  }
+
+  return (
+    <Link to="/evento/$id" params={{ id }} className={cardClasses} aria-label={title}>
+      {innerContent}
     </Link>
   );
 }

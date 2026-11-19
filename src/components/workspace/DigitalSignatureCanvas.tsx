@@ -1,17 +1,21 @@
 import { useRef, useState, useEffect } from "react";
 import { Eraser, Check, PenTool } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getDocumentThemeCanvasStyle } from "@/lib/builder/block-data-resolver";
+import { TOKEN_HEX } from "@/lib/design-tokens";
 
 export interface DigitalSignatureCanvasProps {
   onSave: (signatureDataUrl: string) => void;
   initialSignatureUrl?: string | null;
   placeholderText?: string;
+  saveLabel?: string;
 }
 
 export function DigitalSignatureCanvas({
   onSave,
   initialSignatureUrl,
   placeholderText = "Assine aqui com o dedo, caneta ou mouse",
+  saveLabel = "Salvar Assinatura",
 }: DigitalSignatureCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -25,13 +29,13 @@ export function DigitalSignatureCanvas({
 
     // Ajusta resolução interna para evitar serrilhado
     const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * 2;
-    canvas.height = rect.height * 2;
+    canvas.width = Math.max(240, rect.width * 2);
+    canvas.height = Math.max(120, rect.height * 2);
     ctx.scale(2, 2);
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.lineWidth = 2.5;
-    ctx.strokeStyle = "currentColor";
+    ctx.strokeStyle = TOKEN_HEX.neutral900;
 
     if (initialSignatureUrl) {
       const img = new Image();
@@ -53,6 +57,10 @@ export function DigitalSignatureCanvas({
     const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
     const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
 
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = TOKEN_HEX.neutral900;
     ctx.beginPath();
     ctx.moveTo(clientX - rect.left, clientY - rect.top);
     setIsDrawing(true);
@@ -98,7 +106,11 @@ export function DigitalSignatureCanvas({
 
   return (
     <div className="space-y-3">
-      <div className="relative rounded-2xl border-2 border-dashed border-border bg-card overflow-hidden text-foreground">
+      <div
+        data-builder-canvas-isolated="light"
+        style={getDocumentThemeCanvasStyle({ backgroundColor: TOKEN_HEX.white }, { forceIsolate: true })}
+        className="relative rounded-2xl border-2 border-dashed border-border overflow-hidden text-foreground"
+      >
         <canvas
           ref={canvasRef}
           onMouseDown={startDrawing}
@@ -139,7 +151,7 @@ export function DigitalSignatureCanvas({
           className="h-11 px-5 text-xs font-semibold"
         >
           <Check className="mr-2 h-4 w-4" />
-          Salvar Assinatura
+          {saveLabel}
         </Button>
       </div>
     </div>

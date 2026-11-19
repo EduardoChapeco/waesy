@@ -796,16 +796,6 @@ function AdminMasterHomeEditorPage() {
                   className="h-9 text-xs font-mono"
                 />
                 <Input
-                  value={navItem.image_url || ""}
-                  onChange={(e) => {
-                    const next = [...(activeMenuObj.items || [])];
-                    next[nIdx] = { ...next[nIdx], image_url: e.target.value };
-                    updateActiveMenuItems(next);
-                  }}
-                  placeholder="URL Ícone Upload (opcional)"
-                  className="h-9 text-xs font-mono"
-                />
-                <Input
                   value={navItem.badge_text || ""}
                   onChange={(e) => {
                     const next = [...(activeMenuObj.items || [])];
@@ -1365,7 +1355,7 @@ function AdminMasterHomeEditorPage() {
                               <Input
                                 value={item.icon_name || ""}
                                 onChange={(e) => updateLocalItem({ icon_name: e.target.value })}
-                                placeholder="Ícone ou URL"
+                                placeholder="Ícone Lucide (ex: Compass, Store)"
                                 className="h-9 text-2xs font-mono"
                               />
                               <MediaUploader

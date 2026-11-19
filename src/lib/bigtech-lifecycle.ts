@@ -10,25 +10,25 @@
 import {
   type InsightOpportunity,
   type ResearchTheme,
-} from './ux-research';
+} from './ai/ux-research';
 import {
   validateEarsSyntax,
   formatEarsStatement,
   type EarsSpecInput,
   type EarsValidationResult,
-} from './ears-validator';
+} from './ai/ears-validator';
 import {
   calculateRiceScore,
   validateDecisionContext,
   type DecisionContext,
   type RiceScoreInput,
-} from './product-manager';
+} from './ai/product-manager';
 import {
   calculateDagLayers,
   calculateCriticalPath,
   type NormalizedPrd,
   type TaskSpec,
-} from './prd-decomposer';
+} from './ai/prd-decomposer';
 import {
   validatePathSafety,
   type PathSafetyResult,

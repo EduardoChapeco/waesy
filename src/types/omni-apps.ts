@@ -12,6 +12,7 @@ import { z } from "zod";
 export type OmniAppId =
   | "supermarket"
   | "delivery"
+  | "tourism"
   | "events"
   | "appointments"
   | "ecommerce"
@@ -74,6 +75,7 @@ export interface InstalledOmniAppDTO {
 export const OmniAppIdSchema = z.enum([
   "supermarket",
   "delivery",
+  "tourism",
   "events",
   "appointments",
   "ecommerce",

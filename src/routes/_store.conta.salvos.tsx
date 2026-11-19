@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
+import { RouteErrorFallback } from "@/components/state/route-error-fallback";
 
 export const Route = createFileRoute("/_store/conta/salvos")({
   head: () => ({ meta: [{ title: "Salvos | Waesy" }] }),
@@ -26,31 +27,19 @@ export const Route = createFileRoute("/_store/conta/salvos")({
       return { initialFavorites: [] };
     }
   },
-  errorComponent: SavedItemsErrorComponent,
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorFallback
+      error={error}
+      reset={reset}
+      icon={Bookmark}
+      title="Instabilidade ao carregar itens salvos"
+      description="Não foi possível carregar sua lista de itens salvos no momento."
+      secondaryHref="/conta"
+      secondaryLabel="Voltar para Conta"
+    />
+  ),
   component: SavedItemsPage,
 });
-
-function SavedItemsErrorComponent({ error, reset }: { error: any; reset: () => void }) {
-  return (
-    <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
-        <Bookmark className="size-8" />
-      </div>
-      <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar itens salvos</h2>
-      <p className="text-sm text-muted-foreground max-w-md mx-auto">
-        {error?.message || "Não foi possível carregar sua lista de itens salvos no momento."}
-      </p>
-      <div className="flex items-center justify-center gap-3">
-        <Button onClick={reset} className="rounded-lg font-bold">
-          Tentar Novamente
-        </Button>
-        <Button asChild variant="outline" className="rounded-lg font-bold">
-          <Link to="/conta">Voltar para Conta</Link>
-        </Button>
-      </div>
-    </div>
-  );
-}
 
 const TYPE_TABS = [
   { id: "all", label: "Todos", icon: Layers },

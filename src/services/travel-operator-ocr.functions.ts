@@ -8,6 +8,11 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 import { extractDocumentMechanically } from "./mechanical-document-extractor.server";
+import {
+  extractOperatorQuoteDeterministically,
+  normalizeExtractedQuoteResult,
+  parseMoneyToCents,
+} from "@/lib/tourism/quote-ocr-normalizer";
 
 // ─── CONTRATOS DE DADOS DE COTAÇÃO DE OPERADORA B2B ─────────────────────────
 
@@ -27,6 +32,9 @@ export const OperatorFlightItemSchema = z.object({
   baggage_included: z.string().optional(),
   connections_count: z.number().int().optional(),
   stops_count: z.number().int().optional(),
+  cabin_class: z.string().optional(),
+  duration: z.string().optional(),
+  connection_wait: z.string().optional(),
 });
 
 export const OperatorHotelItemSchema = z.object({
@@ -42,6 +50,35 @@ export const OperatorHotelItemSchema = z.object({
   price_cents: z.coerce.number().optional().nullable(),
 });
 
+export const OperatorTransferItemSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().optional(),
+  title: z.string().optional(),
+  kind: z.string().optional(),
+  type: z.string().optional(),
+  route_name: z.string().optional(),
+  route: z.string().optional(),
+  vehicle: z.string().optional(),
+  vehicle_type: z.string().optional(),
+  is_private: z.boolean().optional(),
+  date: z.string().optional(),
+  included: z.boolean().optional(),
+  price_cents: z.coerce.number().optional().default(0),
+  notes: z.string().optional(),
+});
+
+export const OperatorTourItemSchema = z.object({
+  id: z.string().optional(),
+  title: z.string(),
+  description: z.string().optional().default(""),
+  date: z.string().optional(),
+  duration: z.string().optional(),
+  included: z.boolean().optional().default(true),
+  is_included: z.boolean().optional().default(true),
+  price_cents: z.coerce.number().optional().default(0),
+  notes: z.string().optional(),
+});
+
 export const OperatorQuoteExtractionResultSchema = z.object({
   client_name: z.string().optional().nullable(),
   client_phone: z.string().optional().nullable(),
@@ -55,13 +92,16 @@ export const OperatorQuoteExtractionResultSchema = z.object({
   travel_end: z.string().optional().nullable(),
   adults_count: z.coerce.number().int().optional().nullable(),
   children_count: z.coerce.number().int().optional().nullable(),
+  infants_count: z.coerce.number().int().optional().nullable(),
   children_ages: z.array(z.coerce.number().int()).optional().nullable(),
   flights: z.array(OperatorFlightItemSchema).optional().nullable(),
   hotels: z.array(OperatorHotelItemSchema).optional().nullable(),
-  transfers: z.array(z.string()).optional().nullable(),
-  tours: z.array(z.string()).optional().nullable(),
+  transfers: z.array(z.union([z.string(), OperatorTransferItemSchema])).optional().nullable(),
+  tours: z.array(z.union([z.string(), OperatorTourItemSchema])).optional().nullable(),
   inclusions: z.array(z.string()).optional().nullable(),
   exclusions: z.array(z.string()).optional().nullable(),
+  taxes_cents: z.coerce.number().int().optional().nullable(),
+  products_subtotal_cents: z.coerce.number().int().optional().nullable(),
   gross_price_cents: z.coerce.number().int().optional().nullable(),
   operator_net_cents: z.coerce.number().int().optional().nullable(),
   suggested_commission_cents: z.coerce.number().int().optional().nullable(),
@@ -77,6 +117,9 @@ export const OperatorQuoteExtractionResultSchema = z.object({
   currency: z.string().optional().nullable(),
   cancellation_rules: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
+  raw_itinerary_lines: z.array(z.string()).optional().nullable(),
+  confidence_by_field: z.record(z.string(), z.number()).optional().nullable(),
+  review_flags: z.array(z.string()).optional().nullable(),
 });
 
 export type OperatorQuoteExtractionResult = z.infer<typeof OperatorQuoteExtractionResultSchema>;
@@ -114,37 +157,33 @@ DIRETRIZES FUNDAMENTAIS (ZERO ALUCINAÇÃO):
    - Número do voo, origem (IATA e cidade), destino (IATA e cidade)
    - Datas e horários de partida/chegada
    - Bagagem inclusa (se mala despachada 23kg ou apenas mão 10kg)
-8. Extraia os hotéis/resorts:
-   - Nome do hotel
-   - Categoria do quarto (Standard, Luxo, Suíte Vista Mar)
-   - Regime de alimentação (Café da Manhã, Meia Pensão, All Inclusive)
-   - Datas de check-in e check-out
-9. Extraia traslados e passeios inclusos.
-10. Extraia a composição financeira e condições comerciais:
-   - Preço bruto total da venda (gross_price_cents, em centavos)
-   - Preço líquido do operador (operator_net_cents, valor pago à operadora)
-   - A comissão estimada da agência (suggested_commission_cents)
-   - has_downpayment: boolean indicando se exige entrada (true) ou se é sem entrada (false)
-   - downpayment_pct: percentual de entrada se informado (ex: 20)
-   - downpayment_cents: valor fixo de entrada em centavos se informado
-   - first_installment_due: texto ou prazo de vencimento do primeiro boleto (ex: '30 dias da emissão', 'Sem entrada')
-   - max_installments: quantidade máxima de parcelas
-   - card_installments: quantidade máxima de parcelas no cartão sem juros
-   - boleto_installments: quantidade de parcelas no boleto
-   - pix_discount_pct: percentual de desconto no Pix se informado (ex: 5)
-   - Se os valores estiverem em reais com vírgula (ex: R$ 5.480,00), multiplique por 100 para centavos (548000).
+8. Extraia TODOS os hotéis/resorts listados (mesmo que haja 2 ou 3 hospedagens na mesma viagem, cada uma com suas datas de check-in/check-out, cidade, categoria do quarto, regime e price_cents individual).
+9. Extraia TODOS os traslados/serviços terrestres como objetos individuais (NUNCA descarte nenhum trecho ou serviço adicional como Cadeirinha para Crianças, Transfer 4x4 ou Intermunicipal):
+   - "name": nome completo descritivo do traslado/serviço (ex: "Transfer Aeroporto Fortaleza / Hotel", "Transfer Fortaleza / Jericoacoara 4x4", "Serviço Cadeirinha para Crianças").
+   - "kind": "arrival" | "departure" | "round_trip" | "intercity" | "service" | "bus".
+   - "vehicle_type": tipo real do veículo ("Veículo 4x4", "Van Executiva", "Transfer Regular", "Ônibus Leito DD", etc.).
+   - "is_private": boolean.
+   - "date": YYYY-MM-DD se houver data.
+   - "price_cents": valor individual em centavos (ex: BRL 243,06 -> 24306). Se um traslado tiver "+ Passeio City Tour ...", separe o passeio também no array "tours"!
+10. Extraia TODOS os passeios, ingressos e experiências listados em "tours" como objetos estruturados (title, date em YYYY-MM-DD se informada, duration se houver, included: true, price_cents em centavos).
+11. Se o documento contiver roteiro dia a dia descrito ("Dia 1...", "Dia 2..."), capture cada linha em "raw_itinerary_lines".
+12. Extraia a composição financeira completa (todos valores em centavos inteiros: R$ 243,06 -> 24306; R$ 10.491,33 -> 1049133):
+   - products_subtotal_cents (Tarifa/Produtos), taxes_cents (Impostos e taxas), gross_price_cents (Total com taxas),
+   - operator_net_cents (valor líquido operadora se houver), suggested_commission_cents,
+   - has_downpayment, downpayment_pct, downpayment_cents, first_installment_due, max_installments, card_installments, boleto_installments, pix_discount_pct.
 
 Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionResult:
 {
   "client_name": "Simone Costa",
   "client_phone": "499988456758",
-  "operator_name": "Orinter",
-  "quote_reference_number": "OR-98412",
+  "operator_name": "FRT",
+  "quote_reference_number": "642225",
   "destination": "Maceió - AL",
   "travel_start": "2027-01-09",
   "travel_end": "2027-01-14",
   "adults_count": 2,
   "children_count": 0,
+  "infants_count": 0,
   "flights": [
     {
       "airline": "LATAM",
@@ -156,7 +195,7 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
       "departure_time": "09:40",
       "arrival_time": "16:20",
       "date": "2027-01-09",
-      "baggage": "1 mala de 23kg inclusa",
+      "baggage": "1x Mala de mão 10kg + 1x Despachada 23kg",
       "connections_count": 1
     }
   ],
@@ -169,13 +208,31 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
       "checkin_date": "2027-01-09",
       "checkout_date": "2027-01-14",
       "nights_count": 5,
-      "stars": 5
+      "stars": 5,
+      "price_cents": 450000
     }
   ],
-  "transfers": ["Traslado Aeroporto de Maceió / Hotel / Aeroporto Regular"],
-  "tours": ["City tour em Maceió com Praia do Francês"],
-  "inclusions": ["Passagem aérea ida e volta", "5 noites de hospedagem com Meia Pensão", "Traslados in/out", "Seguro viagem GTA"],
-  "exclusions": ["Despesas pessoais", "Bebidas nas refeições", "Passeios opcionais"],
+  "transfers": [
+    {
+      "name": "Traslado Aeroporto / Hotel / Aeroporto Regular",
+      "kind": "round_trip",
+      "vehicle_type": "Transfer Regular",
+      "is_private": false,
+      "price_cents": 24306
+    }
+  ],
+  "tours": [
+    {
+      "title": "City Tour em Maceió",
+      "date": "2027-01-10",
+      "included": true,
+      "price_cents": 15000
+    }
+  ],
+  "inclusions": ["Passagem aérea ida e volta", "5 noites de hospedagem com Meia Pensão", "Traslados in/out"],
+  "exclusions": ["Despesas pessoais", "Passeios opcionais não listados"],
+  "products_subtotal_cents": 840000,
+  "taxes_cents": 50000,
   "gross_price_cents": 890000,
   "operator_net_cents": 780000,
   "suggested_commission_cents": 110000,
@@ -184,24 +241,38 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
   "currency": "BRL"
 }`;
 
+    const cleanB64 = data.fileBase64
+      ? (data.fileBase64.includes(",") ? data.fileBase64.split(",")[1].trim() : data.fileBase64.trim())
+      : undefined;
+
     let extractedMechanicalText = "";
-    if (data.fileBase64) {
+    let effectiveBase64 = cleanB64;
+    let effectiveMime = data.fileMime || "application/pdf";
+
+    if (cleanB64) {
       try {
         const mech = await extractDocumentMechanically({
-          base64: data.fileBase64,
-          mimeType: data.fileMime || "application/pdf",
+          base64: cleanB64,
+          mimeType: effectiveMime,
           name: data.fileName,
         });
         if (mech && mech.text && mech.text.trim().length >= 40) {
           extractedMechanicalText = mech.text.trim();
+        }
+        if (mech && mech.imageBase64) {
+          effectiveBase64 = mech.imageBase64;
+          effectiveMime = mech.imageMime || "image/jpeg";
         }
       } catch (mechErr) {
         console.warn("[travel-operator-ocr] Extração mecânica indisponível:", mechErr);
       }
     }
 
-    const hasRawTextOnly = Boolean(data.rawText?.trim() && !data.fileBase64);
-    const hasFile = Boolean(data.fileBase64);
+    const effectiveText = (data.rawText?.trim() || "") || extractedMechanicalText;
+    const deterministicBase = effectiveText.length >= 20 ? extractOperatorQuoteDeterministically(effectiveText) : {};
+
+    const hasRawTextOnly = Boolean(data.rawText?.trim() && !cleanB64);
+    const hasFile = Boolean(effectiveBase64);
 
     let userPrompt = "";
     if (hasRawTextOnly) {
@@ -212,60 +283,91 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
       }`;
     }
 
-    const aiResponse = await executeUnifiedAiCall({
-      preferredProvider: hasRawTextOnly ? "groq" : "gemini",
-      feature: "ocr_operator_quote",
-      systemPrompt,
-      userPrompt,
-      fileBase64: hasFile ? data.fileBase64 : undefined,
-      fileMime: hasFile ? (data.fileMime || "application/pdf") : undefined,
-      responseFormat: "json_object",
-      temperature: 0.1,
-    });
+    let rawJson: any = null;
 
-    let rawJson: any;
-    try {
-      rawJson = JSON.parse(aiResponse.text);
-    } catch {
-      const match = aiResponse.text.match(/\{[\s\S]*\}/);
-      if (match) {
-        rawJson = JSON.parse(match[0]);
+    // Estratégia Otimizada: Se já possuímos texto mecânico decodificado do PDF (>= 80 caracteres) ou texto puro,
+    // priorizamos Groq em modo texto (sub-segundo). Se for imagem/scan ou falhar, recorremos a Gemini/Anthropic multimodal.
+    const hasRichExtractedText = (hasRawTextOnly || (extractedMechanicalText && extractedMechanicalText.length >= 80));
+
+    if (hasRichExtractedText) {
+      try {
+        const textPayloadPrompt = `Analise o seguinte texto estruturado da cotação/orçamento da operadora (${data.fileName || "cotação"}) e extraia todos os dados no formato JSON:\n\n${(data.rawText?.trim() || extractedMechanicalText).slice(0, 30000)}`;
+        const textAiResponse = await executeUnifiedAiCall({
+          preferredProvider: "groq",
+          feature: "ocr_operator_quote_fast_text",
+          storeId: data.storeId || undefined,
+          systemPrompt,
+          userPrompt: textPayloadPrompt,
+          responseFormat: "json_object",
+          temperature: 0.1,
+        });
+
+        try {
+          rawJson = JSON.parse(textAiResponse.text);
+        } catch {
+          const match = textAiResponse.text.match(/\{[\s\S]*\}/);
+          if (match) {
+            rawJson = JSON.parse(match[0]);
+          }
+        }
+      } catch (fastTextErr) {
+        console.warn("[travel-operator-ocr] Extração rápida via texto Groq falhou, tentando multimodal:", fastTextErr);
+      }
+    }
+
+    // Tentativa Multimodal: se ainda não obteve resultado e há arquivo presente
+    if (!rawJson && hasFile) {
+      try {
+        const aiResponse = await executeUnifiedAiCall({
+          preferredProvider: "gemini",
+          feature: "ocr_operator_quote_multimodal",
+          storeId: data.storeId || undefined,
+          systemPrompt,
+          userPrompt,
+          fileBase64: effectiveBase64,
+          fileMime: effectiveMime,
+          responseFormat: "json_object",
+          temperature: 0.1,
+        });
+
+        try {
+          rawJson = JSON.parse(aiResponse.text);
+        } catch {
+          const match = aiResponse.text.match(/\{[\s\S]*\}/);
+          if (match) {
+            rawJson = JSON.parse(match[0]);
+          }
+        }
+      } catch (aiErr) {
+        console.warn("[travel-operator-ocr] Chamada IA multimodal falhou:", aiErr);
+      }
+    }
+
+    // Tentativa 3: Se ambas as IAs falharam (offline/chaves indisponíveis), recorre ao extrator determinístico nativo
+    if (!rawJson) {
+      if (effectiveText && effectiveText.length >= 20) {
+        rawJson = { ...deterministicBase };
       } else {
-        throw new Error("Não foi possível decodificar os dados retornados pela IA.");
+        throw new Error("Não foi possível decodificar os dados do documento. Tente outro arquivo ou use o modo Colar Texto.");
+      }
+    } else if (deterministicBase && typeof deterministicBase === "object") {
+      // Mesclagem defensiva: preenche campos omitidos pela IA com a extração determinística
+      for (const [k, v] of Object.entries(deterministicBase)) {
+        if (v !== undefined && v !== null && (rawJson[k] === undefined || rawJson[k] === null || rawJson[k] === "")) {
+          rawJson[k] = v;
+        }
       }
     }
 
     // Normalização defensiva pré-validação (Blindagem contra formatações mistas de IA)
     if (rawJson && typeof rawJson === "object") {
-      const parseCents = (val: any): number | undefined => {
-        if (val === null || val === undefined) return undefined;
-        if (typeof val === "number") {
-          if (!Number.isFinite(val)) return undefined;
-          if (val === 0) return 0;
-          if (!Number.isInteger(val)) return Math.round(val * 100);
-          return val > 50000 ? Math.round(val) : Math.round(val * 100);
-        }
-        if (typeof val === "string") {
-          const cleaned = val.replace(/[^\d.,]/g, "").trim();
-          if (!cleaned) return undefined;
-          if (cleaned.includes(",")) {
-            const num = parseFloat(cleaned.replace(/\./g, "").replace(",", "."));
-            return isNaN(num) ? undefined : Math.round(num * 100);
-          }
-          if (cleaned.includes(".") && cleaned.split(".")[1]?.length === 2) {
-            const num = parseFloat(cleaned);
-            return isNaN(num) ? undefined : Math.round(num * 100);
-          }
-          const num = parseInt(cleaned, 10);
-          return isNaN(num) ? undefined : (num > 50000 ? num : num * 100);
-        }
-        return undefined;
-      };
+      const parseCents = (val: any, keyIsCents = false): number | undefined =>
+        parseMoneyToCents(val, { keyIsCents });
 
       const extractPriceField = (keys: string[]): number | undefined => {
         for (const k of keys) {
           if (rawJson[k] !== undefined && rawJson[k] !== null) {
-            const parsed = parseCents(rawJson[k]);
+            const parsed = parseCents(rawJson[k], k.endsWith("_cents"));
             if (parsed !== undefined) return parsed;
           }
         }
@@ -274,7 +376,7 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
           if (c && typeof c === "object") {
             for (const k of keys) {
               if (c[k] !== undefined && c[k] !== null) {
-                const parsed = parseCents(c[k]);
+                const parsed = parseCents(c[k], k.endsWith("_cents"));
                 if (parsed !== undefined) return parsed;
               }
             }
@@ -373,7 +475,9 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
           nights_count: h.nights_count ? Number(h.nights_count) : undefined,
           stars: h.stars ? Number(h.stars) : undefined,
           address: h.address || h.endereco,
-          price_cents: parseCents(h.price_cents || h.price || h.valor || h.preco || h.total),
+          price_cents:
+            parseCents(h.price_cents, true) ??
+            parseCents(h.price || h.valor || h.preco || h.total, false),
         }));
       } else if (rawJson.hotel && typeof rawJson.hotel === "object") {
         rawJson.hotels = [{
@@ -383,7 +487,9 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
           meal_plan: rawJson.hotel.meal_plan,
           checkin_date: rawJson.hotel.checkin_date,
           checkout_date: rawJson.hotel.checkout_date,
-          price_cents: parseCents(rawJson.hotel.price_cents || rawJson.hotel.price || rawJson.hotel.valor),
+          price_cents:
+            parseCents(rawJson.hotel.price_cents, true) ??
+            parseCents(rawJson.hotel.price || rawJson.hotel.valor, false),
         }];
       }
 
@@ -422,6 +528,12 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
       if (!rawJson.destination || rawJson.destination === "Destino a definir") {
         rawJson.destination = rawJson.hotels?.[0]?.city || rawJson.flights?.[0]?.destination_city || rawJson.destino || "Destino a definir";
       }
+
+      rawJson.taxes_cents = extractPriceField(["taxes_cents", "impostos_taxas", "taxas", "taxes"]);
+      rawJson.products_subtotal_cents = extractPriceField(["products_subtotal_cents", "produtos", "tarifa", "subtotal_cents"]);
+      rawJson.infants_count = rawJson.infants_count ?? rawJson.infants ?? rawJson.bebes;
+
+      rawJson = normalizeExtractedQuoteResult(rawJson);
     }
 
     const validated = OperatorQuoteExtractionResultSchema.parse(rawJson);

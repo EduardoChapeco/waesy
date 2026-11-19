@@ -23,6 +23,7 @@ export type BaseViewModel = {
   hasHotels: boolean;
   hasTransfers: boolean;
   hasTours: boolean;
+  hasCruises: boolean;
   hasItinerary: boolean;
   hasIncludes: boolean;
   hasExcludes: boolean;
@@ -58,6 +59,7 @@ export function buildBaseViewModel(p: Proposal, agencyData: any): BaseViewModel 
     hasHotels: (p.hotels?.length || 0) > 0,
     hasTransfers: (p.transfers?.length || 0) > 0,
     hasTours: (p.tours?.length || 0) > 0,
+    hasCruises: (Array.isArray((p as any).cruises) ? (p as any).cruises.length : 0) > 0,
     hasItinerary: (p.itinerary?.length || 0) > 0,
     hasIncludes: (p.includes?.length || 0) > 0,
     hasExcludes: (p.excludes?.length || 0) > 0,

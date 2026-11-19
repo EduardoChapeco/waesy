@@ -2,6 +2,7 @@ import * as React from "react";
 import { useState, useRef } from "react";
 import { ChevronLeft, ChevronRight, Play, Maximize2 } from "lucide-react";
 import { MediaLightboxModal } from "@/components/community/media-lightbox-modal";
+import { isVideoUrl } from "@/lib/media-utils";
 import type { MuralFeedItem } from "@/services/social.functions";
 
 interface MediaCarouselProps {
@@ -10,19 +11,6 @@ interface MediaCarouselProps {
   aspectRatio?: "4/5" | "square" | "16/9";
   className?: string;
   onMediaClick?: (index: number) => void;
-}
-
-function isVideoUrl(url?: string | null): boolean {
-  if (!url) return false;
-  const clean = url.split("?")[0].toLowerCase();
-  return (
-    clean.endsWith(".mp4") ||
-    clean.endsWith(".webm") ||
-    clean.endsWith(".mov") ||
-    clean.endsWith(".quicktime") ||
-    clean.endsWith(".m4v") ||
-    clean.includes("video")
-  );
 }
 
 export function MediaCarousel({

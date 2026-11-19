@@ -120,8 +120,8 @@ export const OrderMessageCard: React.FC<OrderMessageCardProps> = ({
  size="sm"
  className="h-8 text-xs font-bold rounded-lg min-h-11 sm:min-h-0"
  >
- <Link to={`/conta/pedidos/${order.id}` as any}>
- Ver Detalhes
+ <Link to={(isStaff ? "/workspace/pedidos" : `/conta/pedidos/${order.id}`) as any}>
+ {isStaff ? "Gerenciar Pedido" : "Ver Detalhes"}
  <ArrowUpRight className="size-3 ml-1" />
  </Link>
  </Button>

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { PermissionAction, PermissionResource } from "./permission-registry";
-import { getNicheManifest, NicheId } from "@/lib/niche-manifest";
+import { getNicheManifest, NicheId } from "@/lib/niches/niche-manifest";
 import { canTransition, getAllowedTransitions, getStatusMeta, StateMachineEntity } from "@/lib/state-machines";
 import { publishDomainEvent, DomainEventName } from "@/services/domain-events.functions";
 import { calculateBasePriceQuote, CouponRule } from "@/lib/ad-engine/pricing-engine";
@@ -2498,21 +2498,41 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
       required: ["storeId"],
     },
     handler: async (ctx, args) => {
-      const { data: config, error } = await ctx.supabase
-        .from("store_pixel_configs")
-        .select("meta_pixel_id, meta_capi_token, google_ads_id, ga4_measurement_id, track_whatsapp_leads, track_catalog_views, track_quotes, track_purchases, updated_at")
-        .eq("store_id", args.storeId)
-        .maybeSingle();
+      const [{ data: config, error }, { data: multiPixels }, { data: metaCred }] = await Promise.all([
+        ctx.supabase
+          .from("store_pixel_configs")
+          .select("meta_pixel_id, meta_capi_token, google_ads_id, ga4_measurement_id, track_whatsapp_leads, track_catalog_views, track_quotes, track_purchases, updated_at")
+          .eq("store_id", args.storeId)
+          .maybeSingle(),
+        (ctx.supabase.from("marketing_source_pixels") as any)
+          .select("id, name, provider, external_pixel_id, capi_token_configured, is_default, is_active, last_fired_at")
+          .eq("store_id", args.storeId)
+          .eq("is_active", true)
+          .then((r: any) => r, () => ({ data: [] })),
+        ctx.supabase
+          .from("integration_credentials")
+          .select("id, is_active")
+          .eq("store_id", args.storeId)
+          .eq("provider", "meta_pixel")
+          .eq("is_active", true)
+          .maybeSingle()
+          .then((r: any) => r, () => ({ data: null })),
+      ]);
 
       if (error) throw new Error(`Falha ao obter telemetria: ${error.message}`);
 
-      const hasPixel = Boolean(config?.meta_pixel_id);
-      const hasCapi = Boolean(config?.meta_capi_token);
+      const activeSourcePixels = Array.isArray(multiPixels) ? multiPixels : [];
+      const hasMultiMetaPixel = activeSourcePixels.some((p: any) => p.provider === "meta_pixel");
+      const hasMultiMetaCapi = activeSourcePixels.some((p: any) => p.provider === "meta_pixel" && p.capi_token_configured);
+      const hasPixel = Boolean(config?.meta_pixel_id || hasMultiMetaPixel);
+      const hasCapi = Boolean(config?.meta_capi_token || metaCred?.is_active || hasMultiMetaCapi);
 
       return {
         storeId: args.storeId,
         pixelConfigured: hasPixel,
         capiConfigured: hasCapi,
+        multiPixelCount: activeSourcePixels.length,
+        sourcePixels: activeSourcePixels,
         trackingHealth: hasPixel && hasCapi ? "optimal" : (hasPixel ? "browser_only" : "disabled"),
         enabledEvents: {
           lead: Boolean(config?.track_whatsapp_leads || config?.track_quotes),
@@ -2521,8 +2541,55 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
           checkout: Boolean(config?.track_initiate_checkout),
         },
         recommendations: !hasCapi
-          ? ["Configure o token da Conversions API (CAPI) para garantir 100% de precisão server-side contra bloqueadores de anúncios e iOS 14+."]
-          : ["Telemetria CAPI ativa. Estágios de CRM disparam eventos de qualificação diretamente no Dataset."],
+          ? ["Configure o token da Conversions API (CAPI) no cofre seguro (por Pixel ou padrão da loja) para garantir 100% de precisão server-side."]
+          : ["Telemetria Multi-Pixel / CAPI ativa. Estágios de CRM e WhatsApp roteiam eventos de qualificação diretamente para os Pixels configurados."],
+      };
+    },
+  },
+
+  meta_ads_enrich_ad_metadata: {
+    name: "meta_ads_enrich_ad_metadata",
+    module: "marketing",
+    description: "Resolve e enriquece metadados completos de Campanha, Conjunto e Anúncio (CTWA / Leadgen) via tabelas locais ou Meta Graph API.",
+    tier: "store_staff",
+    requiredScope: "marketing:read",
+    permission: { action: "read", resource: "marketing" },
+    idempotent: true,
+    rateLimitBucket: "webmcp_tool_call_authenticated",
+    inputZodSchema: z.object({
+      storeId: z.string().uuid("Store ID válido é obrigatório"),
+      adId: z.string().min(2).max(120).optional(),
+      campaignId: z.string().min(2).max(120).optional(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        storeId: { type: "string", description: "UUID da loja" },
+        adId: { type: "string", description: "ID externo do anúncio Meta" },
+        campaignId: { type: "string", description: "ID externo da campanha Meta" },
+      },
+      required: ["storeId"],
+    },
+    handler: async (ctx, args) => {
+      const { resolveAndEnrichMetaAdMetadata, formatReadableCampaignDetail } = await import(
+        "@/services/meta-ad-enrichment.server"
+      );
+      const enriched = await resolveAndEnrichMetaAdMetadata(ctx.supabase, {
+        storeId: args.storeId,
+        adId: args.adId || null,
+        campaignId: args.campaignId || null,
+      });
+      return {
+        enriched,
+        readableDetail: enriched
+          ? formatReadableCampaignDetail({
+              campaignName: enriched.campaignName,
+              adsetName: enriched.adsetName,
+              adName: enriched.adName,
+              adHeadline: enriched.adHeadline,
+              adId: enriched.adId,
+            })
+          : null,
       };
     },
   },
@@ -2585,6 +2652,10 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
           fbc: cf.fbc || cf.attribution?.fbc || null,
           clientUserAgent: cf.userAgent || cf.attribution?.userAgent || null,
           sourceUrl: cf.sourceUrl || cf.attribution?.sourceUrl || null,
+          adId: cf.meta_ad_id || cf.ad_id || cf.attribution?.ad_id || null,
+          campaignId: cf.meta_campaign_id || cf.campaign_id || cf.attribution?.campaign_id || null,
+          formId: cf.meta_form_id || cf.form_id || cf.attribution?.form_id || null,
+          sourcePixelId: cf.source_pixel_id || cf.attribution?.source_pixel_id || null,
         },
       });
 
@@ -2599,6 +2670,99 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
         targetStage: args.stage,
         conversionValue,
         telemetry: result,
+      };
+    },
+  },
+
+  meta_ads_discover_accounts_and_pixels: {
+    name: "meta_ads_discover_accounts_and_pixels",
+    module: "marketing",
+    description: "Descobre todas as contas de anúncio, Pixels e Páginas Meta acessíveis pelo token OAuth sem limite de accounts[0].",
+    tier: "store_staff",
+    requiredScope: "marketing:read",
+    permission: { action: "read", resource: "marketing" },
+    idempotent: true,
+    rateLimitBucket: "webmcp_tool_call_authenticated",
+    inputZodSchema: z.object({
+      storeId: z.string().uuid("Store ID válido é obrigatório"),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        storeId: { type: "string", description: "UUID da loja" },
+      },
+      required: ["storeId"],
+    },
+    handler: async (ctx, args) => {
+      if (!ctx.storeId || ctx.storeId !== args.storeId) {
+        throw new Error("Tenant do contexto não corresponde à loja solicitada.");
+      }
+      const { executeDiscoverAccessibleAdAccounts } = await import("@/services/ads.functions");
+      return executeDiscoverAccessibleAdAccounts(ctx.supabase, args.storeId, "meta_ads");
+    },
+  },
+
+  meta_ads_get_closed_loop_roas: {
+    name: "meta_ads_get_closed_loop_roas",
+    module: "marketing",
+    description: "Retorna métricas fechadas de ROAS, CPL, CPA, entregas CAPI por Pixel/Fonte e campanhas ativas Meta Ads.",
+    tier: "store_staff",
+    requiredScope: "marketing:read",
+    permission: { action: "read", resource: "marketing" },
+    idempotent: true,
+    rateLimitBucket: "webmcp_tool_call_authenticated",
+    inputZodSchema: z.object({
+      storeId: z.string().uuid("Store ID válido é obrigatório"),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        storeId: { type: "string", description: "UUID da loja" },
+      },
+      required: ["storeId"],
+    },
+    handler: async (ctx, args) => {
+      if (!ctx.storeId || ctx.storeId !== args.storeId) {
+        throw new Error("Tenant do contexto não corresponde à loja solicitada.");
+      }
+      const [{ data: campaigns }, { data: leads }, { data: telemetry }, { data: pixels }] = await Promise.all([
+        (ctx.supabase.from("store_ad_campaigns") as any)
+          .select("id, title, external_campaign_id, spend_cents, status")
+          .eq("store_id", args.storeId),
+        ctx.supabase
+          .from("leads_crm")
+          .select("id, status, source, estimated_value_cents")
+          .eq("store_id", args.storeId),
+        (ctx.supabase.from("lead_conversion_telemetry") as any)
+          .select("id, event_name, status, source_pixel_id, external_pixel_id")
+          .eq("store_id", args.storeId)
+          .order("created_at", { ascending: false })
+          .limit(200),
+        (ctx.supabase.from("marketing_source_pixels") as any)
+          .select("id, name, external_pixel_id, is_default, is_active")
+          .eq("store_id", args.storeId)
+          .then((r: any) => r, () => ({ data: [] })),
+      ]);
+
+      const totalSpendCents = ((campaigns as any[]) || []).reduce((acc, c) => acc + Number(c.spend_cents || 0), 0);
+      const totalLeads = (leads || []).length;
+      const wonStatuses = new Set(["won", "converted", "closed", "ganho", "fechado"]);
+      const wonLeads = (leads || []).filter((l: any) => wonStatuses.has(String(l.status || "").toLowerCase()));
+      const wonRevenueCents = wonLeads.reduce((acc: number, l: any) => acc + Number(l.estimated_value_cents || 0), 0);
+      const deliveredCapi = ((telemetry as any[]) || []).filter((t) => t.status === "delivered").length;
+
+      return {
+        storeId: args.storeId,
+        campaignsCount: (campaigns || []).length,
+        activePixelsCount: (pixels || []).length,
+        totalLeads,
+        wonDealsCount: wonLeads.length,
+        totalSpendBrl: Number((totalSpendCents / 100).toFixed(2)),
+        wonRevenueBrl: Number((wonRevenueCents / 100).toFixed(2)),
+        roas: totalSpendCents > 0 ? Number((wonRevenueCents / totalSpendCents).toFixed(2)) : null,
+        cplBrl: totalLeads > 0 && totalSpendCents > 0 ? Number(((totalSpendCents / totalLeads) / 100).toFixed(2)) : null,
+        capiDeliveredCount: deliveredCapi,
+        telemetryTotal: (telemetry || []).length,
       };
     },
   },

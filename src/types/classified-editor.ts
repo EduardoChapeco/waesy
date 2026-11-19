@@ -15,7 +15,9 @@ export type ClassifiedNicheType =
   | "gastronomia"
   | "farmacia"
   | "mercado"
-  | "negocio";
+  | "negocio"
+  | "evento"
+  | "agro";
 
 export interface NicheDefinition {
   id: ClassifiedNicheType;
@@ -29,7 +31,8 @@ export interface NicheDefinition {
     | "equipment"
     | "donation"
     | "business"
-    | "food";
+    | "food"
+    | "event";
   title: string;
   subtitle: string;
   description: string;

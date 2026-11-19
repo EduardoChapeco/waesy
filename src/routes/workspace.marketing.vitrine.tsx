@@ -381,7 +381,27 @@ function WorkspaceSitesHubPage() {
  }
  />
 
- {/* ── Abas Principais: Minhas Páginas vs Modelos Prontos ── */}
+      {/* ── Atalho para App Oficial Padronizado vs Omni Builder Avançado ── */}
+      <div className="rounded-xl border border-border bg-card p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="space-y-1">
+          <p className="text-xs font-bold text-foreground">
+            App Oficial Padronizado vs Construtor Avançado (Omni)
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Para um app rápido com layout pronto do seu nicho conectado ao catálogo, configure no App Oficial. Use esta área para páginas sob medida no Construtor Avançado.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => navigate({ to: "/workspace/configuracoes/pwa", search: { tab: undefined } })}
+          className="h-11 min-h-11 px-4 rounded-xl text-xs font-bold gap-2 cursor-pointer shrink-0"
+        >
+          <Smartphone className="size-4" />
+          <span>Configurar App Oficial</span>
+        </Button>
+      </div>
+
+      {/* ── Abas Principais: Minhas Páginas vs Modelos Prontos ── */}
  <div className="flex items-center justify-between border-b border-border/60 pb-3 gap-4">
  <div className="flex items-center gap-2">
  <Button

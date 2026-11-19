@@ -37,17 +37,17 @@ describe("Painel Corporativo & Encadeamento de Onboarding (SPEC-PAINEL-EMPRESAS-
       expect(painelContent).toContain('throw redirect({ to: "/workspace" })');
     });
 
-    it("deve redirecionar usuário autenticado sem loja para /criar-negocio", () => {
+    it("deve redirecionar usuário autenticado sem loja para /onboarding/empresa", () => {
       const painelContent = fs.readFileSync(painelRoutePath, "utf8");
-      expect(painelContent).toContain('throw redirect({ to: "/criar-negocio" })');
+      expect(painelContent).toContain('throw redirect({ to: "/onboarding/empresa" })');
     });
   });
 
   describe("EARS-04: Encadeamento de Cadastro Imediato", () => {
-    it("deve cadastrar usuário com redirectTo fixado para /criar-negocio", () => {
+    it("deve cadastrar usuário com redirectTo fixado para /onboarding/empresa", () => {
       const painelContent = fs.readFileSync(painelRoutePath, "utf8");
-      expect(painelContent).toContain('redirectTo: "/criar-negocio"');
-      expect(painelContent).toContain('navigate({ to: "/criar-negocio", replace: true })');
+      expect(painelContent).toContain('redirectTo: "/onboarding/empresa"');
+      expect(painelContent).toContain('navigate({ to: "/onboarding/empresa", replace: true })');
     });
 
     it("deve possuir alternador de abas entre login e cadastro empresarial", () => {

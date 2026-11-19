@@ -5,13 +5,17 @@
  * para evitar que múltiplas requisições paralelas atinjam o Supabase REST repetidamente.
  */
 
+import {
+  clearNodeFallbackInflightMap,
+  getRequestScopedInflightMap,
+} from "@/lib/request-inflight";
+
 interface CacheEntry<T> {
   value: T;
   expiresAt: number;
 }
 
 const memoryStore = new Map<string, CacheEntry<unknown>>();
-const pendingPromises = new Map<string, Promise<unknown>>();
 
 /**
  * Retorna o valor em cache se ainda for válido.
@@ -88,8 +92,9 @@ export async function getOrSetMicroCache<T>(
     return cached;
   }
 
-  // 2. Proteção contra Stampede (Single-Flight)
-  let pending = pendingPromises.get(key) as Promise<T> | undefined;
+  // 2. Proteção contra Stampede (Single-Flight intra-requisição)
+  const pendingMap = getRequestScopedInflightMap<unknown>("micro-cache");
+  let pending = pendingMap?.get(key) as Promise<T> | undefined;
   if (!pending) {
     pending = (async () => {
       try {
@@ -97,10 +102,10 @@ export async function getOrSetMicroCache<T>(
         setMicroCache(key, result, ttlMs);
         return result;
       } finally {
-        pendingPromises.delete(key);
+        pendingMap?.delete(key);
       }
     })();
-    pendingPromises.set(key, pending);
+    pendingMap?.set(key, pending);
   }
 
   return pending;
@@ -111,7 +116,8 @@ export async function getOrSetMicroCache<T>(
  */
 export function clearAllMicroCache(): void {
   memoryStore.clear();
-  pendingPromises.clear();
+  clearNodeFallbackInflightMap("micro-cache");
+  getRequestScopedInflightMap<unknown>("micro-cache")?.clear();
 }
 
 /**

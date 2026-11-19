@@ -97,3 +97,52 @@ export function generatePixBrCode(options: GeneratePixOptions): string {
 
   return `${payload}${checksum}`;
 }
+
+export interface EmvPixCopyPasteParams {
+  pixKey: string;
+  merchantName: string;
+  merchantCity: string;
+  amountCents: number;
+  txid: string;
+}
+
+/**
+ * Gera payload EMV Pix Copia e Cola para checkout de eventos/ingressos com sanitização estrita ASCII.
+ */
+export function buildEmvPixCopyPaste(params: EmvPixCopyPasteParams): string {
+  const cleanName =
+    params.merchantName
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9 ]/g, "")
+      .slice(0, 25)
+      .toUpperCase() || "WAESY EVENTOS";
+  const cleanCity =
+    params.merchantCity
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9 ]/g, "")
+      .slice(0, 15)
+      .toUpperCase() || "CHAPECO";
+  const cleanTxid = params.txid.replace(/[^a-zA-Z0-9]/g, "").slice(0, 25) || "WAESYTKT";
+  const amountStr = (Math.max(0, params.amountCents) / 100).toFixed(2);
+
+  const gui = formatField("00", "br.gov.bcb.pix");
+  const key = formatField("01", params.pixKey.trim());
+  const merchantAccount = formatField("26", `${gui}${key}`);
+
+  const payloadWithoutCrc = [
+    formatField("00", "01"),
+    merchantAccount,
+    formatField("52", "0000"),
+    formatField("53", "986"),
+    ...(params.amountCents > 0 ? [formatField("54", amountStr)] : []),
+    formatField("58", "BR"),
+    formatField("59", cleanName),
+    formatField("60", cleanCity),
+    formatField("62", formatField("05", cleanTxid)),
+    "6304",
+  ].join("");
+
+  return `${payloadWithoutCrc}${crc16Ccitt(payloadWithoutCrc)}`;
+}

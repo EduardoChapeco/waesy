@@ -7,7 +7,7 @@ import {
   filterHighImpactOpportunities,
   formatResearchSynthesisReport,
   type ResearchSynthesisReport,
-} from '@/lib/ux-research';
+} from '@/lib/ai/ux-research';
 
 describe('Skill ux-research-synthesis & Empirical Research Engine', () => {
   describe('Observation vs. Interpretation Scientific Validation', () => {

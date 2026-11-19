@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
-import { getNicheSemantics } from "@/lib/niche-semantics";
+import { getNicheSemantics } from "@/lib/niches/niche-semantics";
 
 interface WorkspaceAllToolsDialogProps {
  open: boolean;
@@ -112,7 +112,7 @@ function getFrequentToolsForNiche(semantics: any) {
       },
       {
         title: "Gestor de Pedidos",
-        path: "/workspace/pedidos/gestor",
+        path: "/workspace/pedidos",
         icon: ClipboardList,
         badge: "Cozinha",
       },
@@ -212,15 +212,13 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
       { title: "Coleções", path: "/workspace/catalogo/colecoes", icon: Sliders },
       { title: "Tabelas", path: "/workspace/catalogo/tabelas", icon: Sliders },
       { title: "Pacotes", path: "/workspace/pacotes", icon: Boxes },
-      { title: "Pedidos", path: "/workspace/pedidos/gestor", icon: ClipboardList },
-      { title: "Vendas", path: "/workspace/pedidos", icon: ShoppingBag },
+      { title: "Vendas e Pedidos", path: "/workspace/pedidos", icon: ShoppingBag },
       { title: "Separação e Envio", path: "/workspace/pedidos/expedicao", icon: Truck },
       { title: "Entregadores", path: "/workspace/pedidos/entregadores", icon: Truck },
       { title: "PDV", path: "/workspace/pdv", icon: Store },
-      { title: "Comandas", path: "/workspace/pdv/comandas", icon: UtensilsCrossed },
+      { title: "Comandas e Reservas", path: "/workspace/pdv/comandas", icon: UtensilsCrossed },
       { title: "Cozinha", path: "/workspace/pdv/cozinha", icon: ChefHat },
       { title: "Tempo de Preparo", path: "/workspace/pedidos/tempo-preparo", icon: Clock },
-      { title: "Reservas", path: "/workspace/reservas", icon: Armchair },
       { title: "Estoque", path: "/workspace/estoque", icon: Boxes },
       { title: "Movimentos", path: "/workspace/estoque/movimentos", icon: Boxes },
       { title: "Reposição", path: "/workspace/estoque/alertas", icon: Flame },
@@ -317,6 +315,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
       { title: "Novo Post", path: "/workspace/mural/novo", icon: Megaphone },
       { title: "Notícias", path: "/workspace/noticias", icon: Newspaper },
       { title: "Novo Artigo", path: "/workspace/noticias/novo", icon: Newspaper },
+      { title: "MatchTime", path: "/workspace/match-time", icon: Flame },
       { title: "Eventos", path: "/workspace/eventos", icon: Ticket },
     ],
   },
@@ -326,6 +325,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
     description: "Cotações, propostas, roteiros, embarques e frota",
     tools: [
       { title: "Painel", path: "/workspace/turismo", icon: Plane },
+      { title: "Minhas Vendas", path: "/workspace/turismo/minhas-vendas", icon: BarChart3 },
       { title: "Cotações", path: "/workspace/turismo/cotacoes", icon: Plane },
       { title: "Oportunidades", path: "/workspace/turismo/oportunidades", icon: Target },
       { title: "Propostas", path: "/workspace/turismo/propostas", icon: FileSpreadsheet },
@@ -354,8 +354,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
     description: "Faturamento, caixa, turnos, conciliação e fiscal",
     tools: [
       { title: "Resumo", path: "/workspace", icon: BarChart3 },
-      { title: "Painel", path: "/workspace/financeiro", icon: DollarSign },
-      { title: "Caixa", path: "/workspace/financeiro/caixa", icon: DollarSign },
+      { title: "Caixa e Painel", path: "/workspace/financeiro/caixa", icon: DollarSign },
       { title: "Lançamentos", path: "/workspace/financeiro/caixa/lancamentos", icon: DollarSign },
       { title: "Turnos", path: "/workspace/financeiro/caixa/turnos", icon: Receipt },
       { title: "Comprovantes", path: "/workspace/financeiro/comprovantes", icon: ShieldCheck },
@@ -387,7 +386,6 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
       { title: "Sessões", path: "/workspace/configuracoes/sessoes", icon: ShieldCheck },
       { title: "Vagas", path: "/workspace/empregos", icon: Briefcase },
       { title: "Candidatos", path: "/workspace/empregos/candidatos", icon: Briefcase, badge: "RH" },
-      { title: "Currículos", path: "/workspace/curriculo/editor", icon: Briefcase },
     ],
   },
   {
@@ -413,8 +411,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
     title: "Configurações",
     description: "Dados da loja, planos, chaves IA e integrações",
     tools: [
-      { title: "Preferências", path: "/workspace/configuracoes", icon: Settings },
-      { title: "Empresa", path: "/workspace/configuracoes/loja", icon: Building2 },
+      { title: "Preferências e Empresa", path: "/workspace/configuracoes", icon: Settings },
       { title: "Planos", path: "/workspace/configuracoes/planos", icon: Layers },
       { title: "Ativação", path: "/workspace/onboarding", icon: Layers },
       { title: "Revisão", path: "/workspace/onboarding/revisao", icon: Layers },
@@ -427,7 +424,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
       { title: "Conformidade", path: "/workspace/configuracoes/conformidade", icon: ShieldCheck },
       { title: "Qualidade", path: "/workspace/qualidade", icon: ShieldCheck },
       { title: "Fretes", path: "/workspace/configuracoes/fretes/cotacoes", icon: Truck },
-      { title: "Unidades", path: "/workspace/lojas", icon: Building2 },
+      { title: "Trocar Empresa", path: "/auth/portal-selector", icon: Building2 },
       { title: "Suporte", path: "/workspace/suporte", icon: HelpCircle },
     ],
   },

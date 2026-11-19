@@ -19,6 +19,7 @@ import { compileContractDocument, type ContractCompilerSectionConfig } from "@/l
 import { getNicheContractBlueprint } from "@/lib/niches/unified-field-bridge";
 import { ADVANCED_CONTRACT_TEMPLATES } from "@/lib/data/advanced-contract-templates";
 import { formatMoney } from "@/lib/money";
+import { sanitizeCustomerEmail } from "@/lib/contact-sanitize";
 
 // Modelos de pagamento vem das configuracoes da agencia (nenhum embutido)
 const PAYMENT_PRESETS: string[] = [];
@@ -322,7 +323,7 @@ export function NewTravelContractSheet({
  setSelectedCustomer(c);
  setClientName(c.fullName || c.name || c.full_name || "");
  setClientPhone(c.phone || "");
- setClientEmail(c.email || "");
+ setClientEmail(sanitizeCustomerEmail(c.email) || "");
  setClientDocument(c.document || c.taxId || "");
  if (c.city || c.addressLine) {
  setClientAddress([c.addressLine, c.city, c.state].filter(Boolean).join(" - "));
@@ -697,8 +698,8 @@ export function NewTravelContractSheet({
  <p className="font-bold text-foreground truncate">{c.fullName || c.name}</p>
  <p className="text-xs text-muted-foreground truncate">
  {c.document && `CPF: ${c.document} • `}
- {c.phone && `Whats: ${c.phone} • `}
- {c.email}
+ {c.phone && `Whats: ${c.phone}${sanitizeCustomerEmail(c.email) ? " • " : ""}`}
+ {sanitizeCustomerEmail(c.email)}
  </p>
  </div>
  <Button

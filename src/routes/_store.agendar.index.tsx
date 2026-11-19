@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Scissors, Clock, CalendarDots, CheckCircle, CircleNotch, Star, ShieldCheck, Phone, User, CaretRight, Ticket, Heartbeat, PawPrint, Barbell, Storefront, WarningCircle } from "@phosphor-icons/react";
+import { Scissors, Clock, CalendarDots, CheckCircle, CircleNotch, Star, ShieldCheck, Phone, User, CaretRight, Ticket, Heartbeat, PawPrint, Barbell, Storefront } from "@phosphor-icons/react";
+import { RouteErrorFallback } from "@/components/state/route-error-fallback";
 import { Tag } from "lucide-react";
 import { listBookingServices, createAppointment, listMyPassesForService, getAvailableSlots } from "@/services/booking.functions";
 import { listActiveBanners } from "@/services/banner.functions";
@@ -44,26 +45,16 @@ export const Route = createFileRoute("/_store/agendar/")({
       return { banners: [], hotpages: [] };
     }
   },
-  errorComponent: BookingIndexErrorComponent,
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorFallback
+      error={error}
+      reset={reset}
+      title="Instabilidade ao carregar agendamentos"
+      description="Não foi possível carregar os serviços e agendamentos no momento."
+    />
+  ),
   component: BookingIndexPage,
 });
-
-function BookingIndexErrorComponent({ error, reset }: { error: any; reset: () => void }) {
-  return (
-    <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
-        <WarningCircle size={32} />
-      </div>
-      <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar agendamentos</h2>
-      <p className="text-sm text-muted-foreground max-w-md mx-auto">
-        {error?.message || "Não foi possível carregar os serviços e agendamentos no momento."}
-      </p>
-      <Button onClick={reset} className="rounded-lg font-bold">
-        Tentar Novamente
-      </Button>
-    </div>
-  );
-}
 
 const BOOKING_CATEGORIES: FilterChipOption[] = [
   { id: "todos", label: "Tudo", icon: Tag },

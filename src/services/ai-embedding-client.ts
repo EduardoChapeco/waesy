@@ -52,7 +52,7 @@ async function safeLoadEmbeddingKeys(
   return [];
 }
 
-function safeRecordEmbeddingKeyUsage(keyId: string): void {
+export function safeRecordKeyUsage(keyId: string): void {
   try {
     const fn = apiOrchestrator.recordKeyUsage;
     if (typeof fn === "function") {
@@ -63,7 +63,7 @@ function safeRecordEmbeddingKeyUsage(keyId: string): void {
   }
 }
 
-function safeMarkEmbeddingKeyError(
+export function safeMarkKeyError(
   keyId: string,
   errMessage: string,
   status?: number,
@@ -188,7 +188,7 @@ export async function generateRealEmbedding(
           taskType: options?.taskType || "SEMANTIC_SIMILARITY",
         });
         if (Array.isArray(res.embedding) && res.embedding.length === EMBEDDING_DIMENSIONS) {
-          safeRecordEmbeddingKeyUsage(k.id);
+          safeRecordKeyUsage(k.id);
           return {
             embedding: res.embedding,
             provider: candidate.provider,
@@ -198,7 +198,7 @@ export async function generateRealEmbedding(
       } catch (err: any) {
         const msg = String(err?.message || "");
         const statusMatch = msg.match(/\b(401|403|429|500|502|503)\b/);
-        safeMarkEmbeddingKeyError(k.id, msg, statusMatch ? Number(statusMatch[1]) : undefined);
+        safeMarkKeyError(k.id, msg, statusMatch ? Number(statusMatch[1]) : undefined);
       }
     }
   }
@@ -261,7 +261,7 @@ export async function generateBatchEmbeddings(params: {
           }
         }
       }
-      safeRecordEmbeddingKeyUsage(geminiKeys[0].id);
+      safeRecordKeyUsage(geminiKeys[0].id);
       return { embeddings: out, provider: "gemini", model };
     } catch (err) {
       console.warn("[AI-EMBEDDING-CLIENT] batchEmbedContents falhou; tentando fallback por item:", err);

@@ -1527,6 +1527,7 @@ export const getEventWithLots = createServerFn({ method: "GET" })
 // ---------------------------------------------------------------------------
 
 async function _getPublicEvents(opts: {
+  storeId?: string;
   limit?: number;
   cursor?: string;
   category?: string;
@@ -1554,6 +1555,10 @@ async function _getPublicEvents(opts: {
       .gte("event_date", new Date().toISOString()) // só eventos futuros
       .order("event_date", { ascending: true })
       .limit(limit);
+
+    if (opts.storeId) {
+      query = query.eq("store_id", opts.storeId);
+    }
 
     if (opts.cursor) {
       query = query.gt("event_date", opts.cursor);
@@ -1595,6 +1600,10 @@ async function _getPublicEvents(opts: {
       .eq("visibility", "public")
       .order("created_at", { ascending: false })
       .limit(limit);
+
+    if (opts.storeId) {
+      classifiedsQuery = classifiedsQuery.eq("store_id", opts.storeId);
+    }
 
     if (opts.searchQuery) {
       const q = opts.searchQuery;
@@ -1714,7 +1723,7 @@ async function _getPublicEvents(opts: {
   };
 
   if (!isSearch && !isCursor) {
-    const cacheKey = `events:public:${opts.city || "all"}:${opts.category || "all"}:${opts.dateFrom || "all"}:${opts.dateTo || "all"}:${opts.state || "all"}:${limit}`;
+    const cacheKey = `events:public:${opts.storeId || "all"}:${opts.city || "all"}:${opts.category || "all"}:${opts.dateFrom || "all"}:${opts.dateTo || "all"}:${opts.state || "all"}:${limit}`;
     return microCache.getOrSet(cacheKey, 60_000, fetchEvents);
   }
   return fetchEvents();
@@ -1724,6 +1733,7 @@ export const getPublicEvents = createServerFn({ method: "GET" })
   .validator(
     z
       .object({
+        storeId: z.string().uuid().optional(),
         limit: z.number().int().min(1).max(100).optional(),
         cursor: z.string().optional(),
         category: z.string().optional(),

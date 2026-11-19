@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import fs from "node:fs";
-import { sectionTemplates } from "@/lib/section-templates";
+import { sectionTemplates } from "@/lib/builder/section-templates";
 
 describe("Builder Architecture & Studio Canvas (Microfase 76A)", () => {
  it("carrega templates de seção com estrutura canônica de nós", () => {
@@ -134,7 +134,7 @@ describe("Builder Rich Templates, Resilient Renderer & Inspector (Microfase 78A)
  });
 
  it("garante que o builderRegistry contém os blocos essenciais e aliases suportados", async () => {
- const { builderRegistry } = await import("@/lib/builder-registry");
+ const { builderRegistry } = await import("@/lib/builder/builder-registry");
 
  expect(builderRegistry["hero_banner"]).toBeDefined();
  expect(builderRegistry["tourism_quote_hero"]).toBeDefined();

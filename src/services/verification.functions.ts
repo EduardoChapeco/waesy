@@ -1,31 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity } from "@/lib/server-access";
+import { requirePlatformAdmin } from "@/lib/server-access";
 import { z } from "zod";
-
-async function requirePlatformAdmin() {
-  const identity = await getServerIdentity();
-  if (!identity.id) {
-    throw new Error("Não autenticado. Por favor, faça login.");
-  }
-
-  if (identity.role === "platform_admin" || identity.role === "master") {
-    return identity;
-  }
-
-  const db = getServerClient();
-  const { data: p } = await db
-    .from("profiles")
-    .select("role")
-    .eq("id", identity.id)
-    .maybeSingle();
-
-  if (p?.role === "platform_admin" || p?.role === "master") {
-    return { ...identity, role: "platform_admin" };
-  }
-
-  throw new Error("Acesso restrito. Somente o Admin Master tem autoridade para verificar entidades ou alterar selos.");
-}
 
 const ToggleUserVerificationSchema = z.object({
   userId: z.string().uuid("ID de usuário inválido"),

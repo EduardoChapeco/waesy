@@ -10,9 +10,14 @@ import { z } from "zod";
 import crypto from "crypto";
 
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity, assertStoreAccess, getSSRClient } from "@/lib/server-access";
+import {
+  getServerIdentity,
+  assertStoreAccess,
+  getSSRClient,
+  requireAdmin,
+  requireStoreManagerIdentity as getAdminIdentity,
+} from "@/lib/server-access";
 import { createGatewayPayment } from "./payment-gateway.server";
-import { requireAdmin } from "@/lib/server-access";
 import { withDataPayload } from "./cart-helpers";
 import { recordLedgerEntryCore } from "@/services/immutable-ledger.functions";
 import { enforceRateLimit } from "@/lib/rate-limiter";
@@ -561,17 +566,6 @@ export const uploadPaymentReceipt = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 // Manual Payment Methods Configuration (Microfase 3E)
 // ---------------------------------------------------------------------------
-
-async function getAdminIdentity() {
- const { getServerIdentity } = await import("@/lib/server-access");
- const identity = await getServerIdentity();
-
- if (!identity.store_id || !["owner", "admin", "manager"].includes(identity.role)) {
- throw new Error("Acesso negado");
- }
-
- return identity;
-}
 
 const SaveManualPaymentMethodSchema = z.object({
  id: z.string().uuid().optional(),

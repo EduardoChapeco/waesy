@@ -1,4 +1,6 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useEffect, useId } from "react";
+import { sanitizeCustomerEmail } from "@/lib/contact-sanitize";
+import { computeCustomerTouchpointJourney } from "@/lib/attribution-journey";
 import { Link, useRouter } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -36,7 +38,14 @@ import {
   Printer,
   Download,
   Save,
+  Radio,
   FileCheck,
+  FileCheck2,
+  RefreshCw,
+  Sparkles,
+  Briefcase,
+  FileSearch,
+  Loader2,
   FileCode,
   Zap,
   ScanLine,
@@ -54,8 +63,10 @@ import {
   DollarSign,
   HeartPulse,
   BookOpen,
+  Image as ImageIcon,
 } from "lucide-react";
 import { sanitizeLeadCustomFieldsForProposal } from "@/lib/tourism/proposal-custom-fields";
+import { buildStructuredCustomFieldsSummaryRows } from "@/lib/niches/unified-field-bridge";
 import {
   type TravelerDossier,
   type ServiceTemplateType,
@@ -95,7 +106,16 @@ import {
 } from "@/lib/documents/document-studio-catalog";
 import { UniversalDocumentStudio } from "@/components/documents/UniversalDocumentStudio";
 import { AgencyClausesEditorModal } from "@/components/tourism/contract/agency-clauses-editor-modal";
-import { issueLeadContract, createCustomerDocument } from "@/services/crm.functions";
+import { LeadActivityTimeline } from "./lead-activity-timeline";
+import {
+  issueLeadContract,
+  createCustomerDocument,
+  transferLead,
+  updateLeadStaleness,
+  linkContractToLead,
+  listLinkableStoreContracts,
+  getCustomer360Profile,
+} from "@/services/crm.functions";
 import { uploadStoreMedia } from "@/services/storage.functions";
 import { parseDateOnlyParts } from "@/lib/datetime";
 import {
@@ -136,9 +156,41 @@ import {
 } from "@/components/ui/dialog";
 import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Customer360PrintableDossier } from "@/components/dossier/customer-360-printable-dossier";
+import { Customer360EditableCard } from "@/components/dossier/customer-360-editable-card";
+import { QuickCustomerProfileModal } from "@/components/crm/QuickCustomerProfileModal";
+import { AdvancedLeadTagsPicker } from "@/components/tourism/crm/advanced-lead-tags-picker";
+import { LeadRemindersManager, type LeadReminderItem } from "@/components/tourism/crm/lead-reminders-manager";
+import { DestinationRegulatoryAlertWidget } from "@/components/tourism/crm/DestinationRegulatoryAlertWidget";
+import { AnamneseDocEditor, type AnamneseStructuredData, type AnamneseVersionRecord } from "@/components/tourism/crm/anamnese-doc-editor";
+import {
+  LeadInspirationMoodboard,
+  type InspirationPhotoItem,
+  type InspirationFolderDef,
+} from "@/components/crm/LeadInspirationMoodboard";
+import { resolveUnifiedNicheId } from "@/lib/niches/niche-ssot";
+import { getNicheKanbanTerminology } from "@/lib/niches/kanban-niche-taxonomy";
+import { updateCustomer } from "@/services/crm.functions";
+import { DestinationTagsPicker } from "@/components/tourism/shared/destination-tags-picker";
+import { TravelPeriodTagsPicker } from "@/components/tourism/shared/travel-period-tags-picker";
+import { RoomOccupancyBuilder } from "@/components/tourism/shared/room-occupancy-builder";
+import { TravelIntentAiImporter } from "@/components/tourism/shared/travel-intent-ai-importer";
+import { autoFillLeadDossierFromChatAi } from "@/services/chat.functions";
+import {
+  normalizeDestinationTagList,
+  normalizeOpportunityText,
+  normalizePeriodSpec,
+  normalizeRoomsFromLeadOrLegacy,
+  type StructuredDestinationTag,
+  type StructuredPeriodSpec,
+  type StructuredRoomOccupancy,
+} from "@/lib/travel/opportunity-matching-engine";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import {
+  processOperatorQuoteOcr,
+  type OperatorQuoteExtractionResult,
+} from "@/services/travel-operator-ocr.functions";
 
 export interface TourismStageConfig {
   id: string;
@@ -167,7 +219,7 @@ export interface TourismPipeCardDossierProps {
   onClose: () => void;
   onMoveStage: (leadId: string, newStage: string) => void;
   onSaveLead: (updatedData: any) => Promise<void>;
-  onPromoteToCustomer: (leadId: string) => void;
+  onPromoteToCustomer: (leadId: string) => Promise<any> | void;
   onGenerateProposal: (leadData: any) => void;
   onScheduleMeeting: (meetingData: {
     leadId: string;
@@ -186,6 +238,7 @@ export interface TourismPipeCardDossierProps {
     paymentConditions: string;
   }) => Promise<any>;
   onCopyContractLink?: (publicToken: string) => void;
+  onOpenInternalWhatsAppChat?: (leadId: string) => Promise<void> | void;
   customer360Data?: any;
   activeOnboardingForm?: any;
 }
@@ -223,6 +276,8 @@ export function TourismPipeCardDossier({
   onScheduleMeeting,
   onToggleChecklist,
   onIssueContract,
+  onCopyContractLink,
+  onOpenInternalWhatsAppChat,
   customer360Data,
   activeOnboardingForm,
 }: TourismPipeCardDossierProps) {
@@ -232,6 +287,43 @@ export function TourismPipeCardDossier({
   const [proposalStatusOverrides, setProposalStatusOverrides] = useState<Record<string, string>>({});
   const [addedProposals, setAddedProposals] = useState<any[]>([]);
   const [busyProposalId, setBusyProposalId] = useState<string | null>(null);
+  const [isAutoFillingLead, setIsAutoFillingLead] = useState(false);
+  const [isQuickProfileOpen, setIsQuickProfileOpen] = useState(false);
+  const [isPromoting, setIsPromoting] = useState(false);
+
+  // Refs de controle de scroll independente multi-colunas
+  const mainColRef = useRef<HTMLDivElement>(null);
+  const sidecarColRef = useRef<HTMLDivElement>(null);
+  const formCol1Ref = useRef<HTMLDivElement>(null);
+  const formCol2Ref = useRef<HTMLDivElement>(null);
+
+  const [localCustomer, setLocalCustomer] = useState<any>(null);
+  const crmCustomer = localCustomer || customer360Data?.customer || null;
+  const isLinkedToCustomer = Boolean(lead?.customer_id || crmCustomer?.id || localCustomer?.id);
+
+  const handlePromoteLead = async () => {
+    if (isPromoting) return;
+    setIsPromoting(true);
+    try {
+      const res: any = await onPromoteToCustomer(lead.id);
+      if (res?.customer) {
+        setLocalCustomer(res.customer);
+      } else if (res?.customerId) {
+        setLocalCustomer({
+          id: res.customerId,
+          full_name: formData.name || lead.full_name || lead.title || "Cliente",
+          phone: formData.phone || lead.phone || null,
+          email: formData.email || lead.email || null,
+          document: lead.document || null,
+        });
+      }
+      setIsQuickProfileOpen(true);
+    } catch {
+      // erro já notificado pelo handler
+    } finally {
+      setIsPromoting(false);
+    }
+  };
 
   const syncProposalCaches = async () => {
     await Promise.all([
@@ -246,9 +338,13 @@ export function TourismPipeCardDossier({
   const handlePublishProposal = async (proposalId: string) => {
     try {
       setBusyProposalId(proposalId);
-      await updateTravelProposal({ data: { id: proposalId, patch: { status: "sent" } } });
+      const res = await updateTravelProposal({ data: { id: proposalId, patch: { status: "sent" } } });
       setProposalStatusOverrides((prev) => ({ ...prev, [proposalId]: "sent" }));
       toast.success("Proposta publicada! O cliente já pode visualizar e aceitar online.");
+      if ((res?.matchedLeadsCount || 0) > 0) {
+        toast.info(`Radar encontrou ${res.matchedLeadsCount} outro(s) lead(s) compatível(is) com esta proposta!`);
+        queryClient.invalidateQueries({ queryKey: ["unified-radar-opportunities"] });
+      }
       await syncProposalCaches();
     } catch (err: any) {
       toast.error(err?.message || "Erro ao publicar proposta.");
@@ -389,7 +485,16 @@ export function TourismPipeCardDossier({
     return Math.max(0, Math.floor((Date.now() - ms) / (1000 * 60 * 60 * 24)));
   }, [lead.last_contact_at, lead.updated_at, lead.created_at]);
 
-  // Contratos Digitais State
+  // Contratos Digitais State & Sincronização Reativa (DocuSign / ClickSign Tier)
+  const [localContracts, setLocalContracts] = useState<any[]>([]);
+  const [isRefreshingContracts, setIsRefreshingContracts] = useState(false);
+  const [isLinkingContractModalOpen, setIsLinkingContractModalOpen] = useState(false);
+  const [isFetchingLinkableContracts, setIsFetchingLinkableContracts] = useState(false);
+  const [linkableContracts, setLinkableContracts] = useState<any[]>([]);
+  const [selectedContractToLink, setSelectedContractToLink] = useState<string | null>(null);
+  const [isLinkingContract, setIsLinkingContract] = useState(false);
+  const [contractTemplatePreset, setContractTemplatePreset] = useState<string>("turismo_completo");
+
   const [contractFormTitle, setContractFormTitle] = useState(
     `Contrato de Intermediação Turística - ${lead.full_name || "Cliente"}`
   );
@@ -404,39 +509,251 @@ export function TourismPipeCardDossier({
   );
   const [isIssuingContract, setIsIssuingContract] = useState(false);
 
-  // Pagamento & Decomposição Tarifária State
+  // Unificação canônica de contratos vinculados (Customer 360 + Cache Reativo Local)
+  const allContracts = useMemo(() => {
+    const c360 = Array.isArray(customer360Data?.contracts) ? customer360Data.contracts : [];
+    const map = new Map<string, any>();
+    for (const c of c360) {
+      if (c?.id) map.set(c.id, c);
+    }
+    for (const c of localContracts) {
+      if (c?.id) {
+        const prev = map.get(c.id) || {};
+        map.set(c.id, { ...prev, ...c });
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => {
+      const ta = new Date(a.created_at || 0).getTime();
+      const tb = new Date(b.created_at || 0).getTime();
+      return tb - ta;
+    });
+  }, [customer360Data?.contracts, localContracts]);
+
+  // OCR de Cotações & Orçamentos de Operadoras (B2B)
+  const [isQuoteOcrModalOpen, setIsQuoteOcrModalOpen] = useState(false);
+  const [isScanningQuoteOcr, setIsScanningQuoteOcr] = useState(false);
+  const [extractedOcrQuote, setExtractedOcrQuote] = useState<OperatorQuoteExtractionResult | null>(null);
+  const [quoteOcrRawText, setQuoteOcrRawText] = useState("");
+  const [quoteOcrFile, setQuoteOcrFile] = useState<File | null>(null);
+  const [quoteOcrBase64, setQuoteOcrBase64] = useState("");
+  const [quoteOcrFileName, setQuoteOcrFileName] = useState("");
+  const [quoteOcrFileMime, setQuoteOcrFileMime] = useState("");
+  const [ocrApplyOptions, setOcrApplyOptions] = useState({
+    applyDestinationAndDates: true,
+    applyPax: true,
+    applyBudget: true,
+    applyPaymentBreakdown: true,
+    applyTraveler: true,
+    attachFileToCard: true,
+  });
+
+  // Pagamento & Decomposição Tarifária / Comercial State
+  const [paymentPlanNiche, setPaymentPlanNiche] = useState<"turismo" | "comercial">(() => {
+    if (lead.custom_fields?.payment_plan?.niche_mode) {
+      return lead.custom_fields.payment_plan.niche_mode;
+    }
+    const n = String(lead.niche || lead.service_type || lead.custom_fields?.niche || "").toLowerCase();
+    if (n.includes("servico") || n.includes("b2b") || n.includes("comercial") || n.includes("imobil")) {
+      return "comercial";
+    }
+    return "turismo";
+  });
+
   const [paymentPlan, setPaymentPlan] = useState({
+    linked_proposal_id: (lead.custom_fields?.payment_plan?.linked_proposal_id as string) || null,
+    linked_option_id: (lead.custom_fields?.payment_plan?.linked_option_id as string) || null,
+    // Turismo fields
     flight_cents: Number(lead.custom_fields?.payment_plan?.flight_cents) || 0,
     hotel_cents: Number(lead.custom_fields?.payment_plan?.hotel_cents) || 0,
     insurance_cents: Number(lead.custom_fields?.payment_plan?.insurance_cents) || 0,
     boarding_tax_cents: Number(lead.custom_fields?.payment_plan?.boarding_tax_cents) || 0,
     commission_cents: Number(lead.custom_fields?.payment_plan?.commission_cents) || 0,
+    // Comercial / Serviços / B2B fields
+    services_cents: Number(lead.custom_fields?.payment_plan?.services_cents) || 0,
+    products_cents: Number(lead.custom_fields?.payment_plan?.products_cents) || 0,
+    taxes_cents: Number(lead.custom_fields?.payment_plan?.taxes_cents) || 0,
+    discount_cents: Number(lead.custom_fields?.payment_plan?.discount_cents) || 0,
+    margin_cents: Number(lead.custom_fields?.payment_plan?.margin_cents) || 0,
+    down_payment_cents: Number(lead.custom_fields?.payment_plan?.down_payment_cents) || 0,
+    installments_count: Number(lead.custom_fields?.payment_plan?.installments_count) || 1,
     method: (lead.custom_fields?.payment_plan?.method as string) || "credit_card",
     notes: (lead.custom_fields?.payment_plan?.notes as string) || "",
+    is_synced: Boolean(lead.custom_fields?.payment_plan?.is_synced),
   });
 
+  const acceptedProposal = useMemo(() => {
+    return effectiveProposals.find(
+      (p: any) =>
+        p.status === "approved" ||
+        p.status === "accepted" ||
+        p.status === "won" ||
+        p.acceptance_status === "accepted"
+    );
+  }, [effectiveProposals]);
+
+  const linkedProposal = useMemo(() => {
+    if (!paymentPlan.linked_proposal_id) return null;
+    return effectiveProposals.find((p: any) => p.id === paymentPlan.linked_proposal_id) || null;
+  }, [effectiveProposals, paymentPlan.linked_proposal_id]);
+
+
+  const applyProposalToPaymentPlan = (prop: any, optId?: string) => {
+    if (!prop) return;
+    const targetOpt = Array.isArray(prop.options)
+      ? prop.options.find((o: any) => o.id === (optId || prop.accepted_option_id)) || prop.options[0]
+      : null;
+
+    const pricing = targetOpt?.pricing || prop.pricing || prop.pricing_data || {};
+    const totalCents = Number(
+      pricing.total_price_cents ??
+      pricing.total_cents ??
+      prop.total_value_cents ??
+      0
+    );
+    const boardingTaxCents = Number(pricing.boarding_tax_cents || 0);
+    const otherTaxesCents = Number(pricing.other_taxes_cents || 0);
+    const discountCents = Number(pricing.discount_cents || 0);
+
+    let detectedMethod = paymentPlan.method || "credit_card";
+    const prefRaw = String(
+      prop.acceptance_preference ||
+      pricing.payment_preference ||
+      pricing.payment_terms ||
+      ""
+    ).toLowerCase();
+
+    if (prefRaw.includes("pix")) {
+      detectedMethod = "pix_cash";
+    } else if (prefRaw.includes("cartao") || prefRaw.includes("cartão") || prefRaw.includes("credit")) {
+      detectedMethod = "credit_card";
+    } else if (prefRaw.includes("boleto") || prefRaw.includes("faturado")) {
+      detectedMethod = paymentPlanNiche === "turismo" ? "operator_boleto" : "bank_slip";
+    } else if (prefRaw.includes("entrada") || prefRaw.includes("sinal")) {
+      detectedMethod = paymentPlanNiche === "turismo" ? "split_deposit" : "entry_plus_installments";
+    }
+
+    const terms =
+      pricing.payment_terms ||
+      (Array.isArray(pricing.installments_options) && pricing.installments_options.length > 0
+        ? pricing.installments_options.join(" | ")
+        : prop.conditions?.payment_terms || "");
+
+    const baseNotes = terms || `Condições vinculadas à proposta: ${prop.title || "Proposta"}`;
+
+    if (paymentPlanNiche === "turismo") {
+      const flightEst = Math.round(totalCents * 0.45);
+      const hotelEst = Math.round(totalCents * 0.40);
+      const commissionEst = Math.max(0, totalCents - flightEst - hotelEst - boardingTaxCents);
+      setPaymentPlan((prev) => ({
+        ...prev,
+        linked_proposal_id: prop.id,
+        linked_option_id: targetOpt?.id || optId || null,
+        flight_cents: flightEst,
+        hotel_cents: hotelEst,
+        boarding_tax_cents: boardingTaxCents,
+        insurance_cents: otherTaxesCents,
+        commission_cents: commissionEst,
+        method: detectedMethod,
+        notes: baseNotes,
+        is_synced: true,
+      }));
+    } else {
+      const servicesEst = Math.max(0, totalCents - otherTaxesCents);
+      setPaymentPlan((prev) => ({
+        ...prev,
+        linked_proposal_id: prop.id,
+        linked_option_id: targetOpt?.id || optId || null,
+        services_cents: servicesEst,
+        products_cents: 0,
+        taxes_cents: otherTaxesCents,
+        discount_cents: discountCents,
+        margin_cents: Math.round(servicesEst * 0.25),
+        method: detectedMethod,
+        notes: baseNotes,
+        is_synced: true,
+      }));
+    }
+
+    toast.success(`Plano financeiro sincronizado com a proposta "${prop.title || "Proposta"}"!`);
+  };
+
   const computedTariffTotalCents = useMemo(() => {
-    const sum =
-      paymentPlan.flight_cents +
-      paymentPlan.hotel_cents +
-      paymentPlan.insurance_cents +
-      paymentPlan.boarding_tax_cents +
-      paymentPlan.commission_cents;
-    return sum > 0 ? sum : lead.estimated_value_cents || 0;
-  }, [paymentPlan, lead.estimated_value_cents]);
+    if (paymentPlanNiche === "comercial") {
+      const sum =
+        paymentPlan.services_cents +
+        paymentPlan.products_cents +
+        paymentPlan.taxes_cents +
+        paymentPlan.margin_cents -
+        paymentPlan.discount_cents;
+      if (sum > 0) return sum;
+    } else {
+      const sum =
+        paymentPlan.flight_cents +
+        paymentPlan.hotel_cents +
+        paymentPlan.insurance_cents +
+        paymentPlan.boarding_tax_cents +
+        paymentPlan.commission_cents;
+      if (sum > 0) return sum;
+    }
+    if (paymentPlan.linked_proposal_id) {
+      const linked = effectiveProposals.find((p: any) => p.id === paymentPlan.linked_proposal_id);
+      if (linked) {
+        const opt = Array.isArray(linked.options) && paymentPlan.linked_option_id
+          ? linked.options.find((o: any) => o.id === paymentPlan.linked_option_id)
+          : null;
+        const val = opt?.pricing?.total_price_cents || linked.pricing?.total_price_cents || linked.total_value_cents;
+        if (Number(val) > 0) return Number(val);
+      }
+    }
+    return lead.estimated_value_cents || 0;
+  }, [paymentPlan, paymentPlanNiche, effectiveProposals, lead.estimated_value_cents]);
+
+  const [destinationTags, setDestinationTags] = useState<StructuredDestinationTag[]>(() =>
+    normalizeDestinationTagList(lead.destination_tags || lead.custom_fields?.destination_tags, lead.destination)
+  );
+  const [periodSpec, setPeriodSpec] = useState<StructuredPeriodSpec>(() =>
+    normalizePeriodSpec({
+      startDate: lead.travel_start,
+      endDate: lead.travel_end,
+      targetMonths: lead.target_months || lead.custom_fields?.target_months || [],
+      seasonTags: lead.period_tags || lead.custom_fields?.period_tags || [],
+      flexibilityDays: lead.flexibility_days ?? 3,
+      dateFlexibilityMode: lead.date_flexibility_mode,
+      interestPeriodText: lead.interest_period,
+    })
+  );
+  const [roomOccupancies, setRoomOccupancies] = useState<StructuredRoomOccupancy[]>(() =>
+    normalizeRoomsFromLeadOrLegacy({
+      rooms: lead.room_occupancies || lead.custom_fields?.room_occupancies,
+      adultsCount: lead.pax_adults || 2,
+      childrenCount: lead.pax_children || 0,
+      childrenAges: lead.children_ages || lead.pax_ages,
+      roomsCount: lead.rooms_count || 1,
+    }).rooms
+  );
+  const [rawIntentMarkdown, setRawIntentMarkdown] = useState<string>(
+    lead.raw_intent_markdown || lead.custom_fields?.raw_intent_markdown || ""
+  );
 
   // Form State
   const [formData, setFormData] = useState({
     name: lead.full_name || "",
     phone: lead.phone || "",
-    email: lead.email || "",
+    email: sanitizeCustomerEmail(lead.email) || "",
     destination: lead.destination || "",
     interest_type: lead.interest_type || "package_flight",
+    interest_period: lead.interest_period || "",
     travel_start: lead.travel_start || "",
     travel_end: lead.travel_end || "",
     pax_adults: lead.pax_adults || 2,
     pax_children: lead.pax_children || 0,
     pax_infants: lead.pax_infants || lead.custom_fields?.pax_infants || 0,
+    pax_ages: normalizeRoomsFromLeadOrLegacy({
+      rooms: lead.room_occupancies || lead.custom_fields?.room_occupancies,
+      adultsCount: lead.pax_adults || 2,
+      childrenCount: lead.pax_children || 0,
+      childrenAges: lead.children_ages || lead.pax_ages,
+    }).childrenAges,
     source: (lead.source as any) || "balcao",
     lead_source_detail: (lead as any).lead_source_detail || lead.custom_fields?.lead_source_detail || "",
     estimated_value_cents: lead.estimated_value_cents || 0,
@@ -451,8 +768,132 @@ export function TourismPipeCardDossier({
     tags: Array.isArray(lead.tags) ? lead.tags : [],
   });
 
+  const dossierFieldId = useId();
   const [isSaving, setIsSaving] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("form");
+
+  const [reminders, setReminders] = useState<LeadReminderItem[]>(() => {
+    return Array.isArray(lead.custom_fields?.reminders) ? lead.custom_fields.reminders : [];
+  });
+  const [followUpAt, setFollowUpAt] = useState<string | null>(lead.follow_up_at || null);
+
+  const [anamneseHistory, setAnamneseHistory] = useState<AnamneseVersionRecord[]>(() => {
+    return Array.isArray(lead.custom_fields?.anamnese_history) ? lead.custom_fields.anamnese_history : [];
+  });
+  const [anamneseData, setAnamneseData] = useState<AnamneseStructuredData>(() => {
+    const raw = lead.custom_fields?.anamnese_data;
+    if (raw && typeof raw === "object") {
+      return {
+        travelStyles: Array.isArray(raw.travelStyles) ? raw.travelStyles : [],
+        lodgingPreferences: Array.isArray(raw.lodgingPreferences) ? raw.lodgingPreferences : [],
+        flightPreferences: Array.isArray(raw.flightPreferences) ? raw.flightPreferences : [],
+        dietaryRestrictions: Array.isArray(raw.dietaryRestrictions) ? raw.dietaryRestrictions : [],
+        healthAndAccessibility: Array.isArray(raw.healthAndAccessibility) ? raw.healthAndAccessibility : [],
+        desiredExperiences: Array.isArray(raw.desiredExperiences) ? raw.desiredExperiences : [],
+        consultantNotes: raw.consultantNotes || lead.notes || "",
+        docHtmlContent: raw.docHtmlContent || "",
+      };
+    }
+    return {
+      travelStyles: [],
+      lodgingPreferences: [],
+      flightPreferences: [],
+      dietaryRestrictions: [],
+      healthAndAccessibility: [],
+      desiredExperiences: [],
+      consultantNotes: lead.notes || "",
+      docHtmlContent: "",
+    };
+  });
+
+  const [inspirationPhotos, setInspirationPhotos] = useState<InspirationPhotoItem[]>(() => {
+    return Array.isArray(lead.custom_fields?.inspiration_photos)
+      ? lead.custom_fields.inspiration_photos
+      : [];
+  });
+  const [inspirationFolders, setInspirationFolders] = useState<InspirationFolderDef[]>(() => {
+    return Array.isArray(lead.custom_fields?.inspiration_folders)
+      ? lead.custom_fields.inspiration_folders
+      : [];
+  });
+
+  const handleSaveInspirationPhotos = async (
+    updatedPhotos: InspirationPhotoItem[],
+    updatedFolders?: InspirationFolderDef[]
+  ) => {
+    setInspirationPhotos(updatedPhotos);
+    if (updatedFolders) {
+      setInspirationFolders(updatedFolders);
+    }
+    const currentCustom =
+      lead.custom_fields && typeof lead.custom_fields === "object" ? { ...lead.custom_fields } : {};
+    const nextCustom = {
+      ...currentCustom,
+      inspiration_photos: updatedPhotos,
+      ...(updatedFolders ? { inspiration_folders: updatedFolders } : {}),
+    };
+    await onSaveLead({
+      custom_fields: nextCustom,
+    });
+  };
+
+  useEffect(() => {
+    const nextDestTags = normalizeDestinationTagList(
+      lead.destination_tags || lead.custom_fields?.destination_tags,
+      lead.destination
+    );
+    const nextPeriod = normalizePeriodSpec({
+      startDate: lead.travel_start,
+      endDate: lead.travel_end,
+      targetMonths: lead.target_months || lead.custom_fields?.target_months || [],
+      seasonTags: lead.period_tags || lead.custom_fields?.period_tags || [],
+      flexibilityDays: lead.flexibility_days ?? 3,
+      dateFlexibilityMode: lead.date_flexibility_mode,
+      interestPeriodText: lead.interest_period,
+    });
+    const nextRoomsData = normalizeRoomsFromLeadOrLegacy({
+      rooms: lead.room_occupancies || lead.custom_fields?.room_occupancies,
+      adultsCount: lead.pax_adults || 2,
+      childrenCount: lead.pax_children || 0,
+      childrenAges: lead.children_ages || lead.pax_ages,
+      roomsCount: lead.rooms_count || 1,
+    });
+    setDestinationTags(nextDestTags);
+    setPeriodSpec(nextPeriod);
+    setRoomOccupancies(nextRoomsData.rooms);
+    setRawIntentMarkdown(lead.raw_intent_markdown || lead.custom_fields?.raw_intent_markdown || "");
+    setFormData((prev) => ({
+      ...prev,
+      name: lead.full_name || "",
+      phone: lead.phone || "",
+      email: sanitizeCustomerEmail(lead.email) || "",
+      destination: lead.destination || "",
+      interest_type: lead.interest_type || "package_flight",
+      interest_period: lead.interest_period || "",
+      travel_start: lead.travel_start || "",
+      travel_end: lead.travel_end || "",
+      pax_adults: nextRoomsData.adultsCount,
+      pax_children: nextRoomsData.childrenCount,
+      pax_infants: nextRoomsData.childrenAges.filter((a) => a <= 1).length,
+      pax_ages: nextRoomsData.childrenAges,
+      source: (lead.source as any) || "balcao",
+      lead_source_detail: (lead as any).lead_source_detail || lead.custom_fields?.lead_source_detail || "",
+      estimated_value_cents: lead.estimated_value_cents || 0,
+      status: lead.status || "new",
+      assigned_to: lead.assigned_to || "",
+      notes: lead.notes || "",
+    }));
+    if (Array.isArray(lead.custom_fields?.inspiration_photos)) {
+      setInspirationPhotos(lead.custom_fields.inspiration_photos);
+    } else {
+      setInspirationPhotos([]);
+    }
+    if (Array.isArray(lead.custom_fields?.inspiration_folders)) {
+      setInspirationFolders(lead.custom_fields.inspiration_folders);
+    } else {
+      setInspirationFolders([]);
+    }
+  }, [lead.id]);
 
   const buildProposalLeadPayload = (overrides: Record<string, any> = {}) => {
     const customFields =
@@ -466,7 +907,7 @@ export function TourismPipeCardDossier({
       customer_id: resolvedCustomerId,
       fullName: formData.name || lead.full_name || crmCustomer?.full_name || crmCustomer?.legal_name || "",
       phone: formData.phone || lead.phone || crmCustomer?.phone || crmCustomer?.whatsapp || "",
-      email: formData.email || lead.email || crmCustomer?.email || "",
+      email: formData.email || sanitizeCustomerEmail(lead.email) || sanitizeCustomerEmail(crmCustomer?.email) || "",
       clientDocument: String(
         lead.document ||
           lead.cpf_cnpj ||
@@ -483,8 +924,19 @@ export function TourismPipeCardDossier({
       returnDate: formData.travel_end,
       adultsCount: formData.pax_adults || 2,
       childrenCount: formData.pax_children || 0,
+      childrenAges: formData.pax_ages || [],
+      rooms: roomOccupancies,
       notes: formData.notes || "",
-      customFields: safeProposalCustomFields,
+      customFields: {
+        ...safeProposalCustomFields,
+        quote_flights: customFields.quote_flights || customFields.ocr_extracted_quote?.flights || [],
+        quote_hotels: customFields.quote_hotels || customFields.ocr_extracted_quote?.hotels || [],
+        quote_transfers: customFields.quote_transfers || customFields.ocr_extracted_quote?.transfers || [],
+        quote_tours: customFields.quote_tours || customFields.ocr_extracted_quote?.tours || [],
+        quote_inclusions: customFields.quote_inclusions || customFields.ocr_extracted_quote?.inclusions || [],
+        quote_exclusions: customFields.quote_exclusions || customFields.ocr_extracted_quote?.exclusions || [],
+        ocr_extracted_quote: customFields.ocr_extracted_quote || null,
+      },
       sourceListingId: lead.source_listing_id || customFields.source_listing_id || "",
       sourceListingOrigin: lead.source_listing_origin || customFields.source_listing_origin || "",
       paxList: Array.isArray(lead.pax_list) ? lead.pax_list : undefined,
@@ -537,6 +989,25 @@ export function TourismPipeCardDossier({
     [agency, brandKit, companyProfile, storeSettingsData],
   );
 
+  const companyName =
+    tenantIdentity?.tradingName || tenantIdentity?.companyName || agency?.name || "Empresa";
+
+  const unifiedNiche = useMemo(() => {
+    return resolveUnifiedNicheId(
+      (lead as any).niche ||
+      (lead as any).service_type ||
+      lead.custom_fields?.niche ||
+      storeSettingsData?.niche ||
+      (agency as any)?.niche ||
+      (agency as any)?.segment ||
+      "tourism"
+    );
+  }, [lead, storeSettingsData?.niche, agency]);
+
+  const nicheTerminology = useMemo(() => {
+    return getNicheKanbanTerminology(unifiedNiche);
+  }, [unifiedNiche]);
+
   // Unified Document & Builder Studio State
   const [docStudioOpen, setDocStudioOpen] = useState(false);
   const [docStudioArchetype, setDocStudioArchetype] =
@@ -552,7 +1023,6 @@ export function TourismPipeCardDossier({
   const [isSchedulingMeeting, setIsSchedulingMeeting] = useState(false);
 
   // Internal Comment State
-  const [newComment, setNewComment] = useState("");
   const [internalComments, setInternalComments] = useState<Array<{ id: string; author: string; text: string; date: string }>>(() => {
     return Array.isArray(lead.custom_fields?.comments) ? lead.custom_fields.comments : [];
   });
@@ -657,31 +1127,44 @@ export function TourismPipeCardDossier({
     };
   }, [lead.id]);
 
-  // Cotações e Oportunidades Similares (InfoTravel, Radar & Outros Clientes)
+  // Cotações e Oportunidades Similares VERIFICADAS (Zero Fallback Aleatorio - F-OPP-01)
   const similarProposals = useMemo(() => {
-    const pool = [
-      ...(Array.isArray(proposals) ? proposals : []),
-      ...(Array.isArray(customer360Data?.similarAgencyProposals) ? customer360Data.similarAgencyProposals : []),
-    ];
-    if (pool.length === 0) return [];
+    const verifiedAgency = Array.isArray(customer360Data?.similarAgencyProposals)
+      ? customer360Data.similarAgencyProposals
+      : [];
+    if (verifiedAgency.length > 0) {
+      const seenIds = new Set<string>();
+      return verifiedAgency
+        .filter((p: any) => {
+          if (!p?.id || seenIds.has(p.id) || p.lead_id === lead.id) return false;
+          seenIds.add(p.id);
+          return true;
+        })
+        .slice(0, 8);
+    }
+
+    const pool = Array.isArray(proposals) ? proposals : [];
+    const destTokens = destinationTags
+      .map((d) => normalizeOpportunityText(d.city || d.label))
+      .filter((tok) => tok.length >= 3);
+    const fallbackDest = normalizeOpportunityText(formData.destination);
+    if (fallbackDest.length >= 3 && !destTokens.includes(fallbackDest)) destTokens.push(fallbackDest);
+
+    if (pool.length === 0 || destTokens.length === 0) return [];
+
     const seenIds = new Set<string>();
-    const otherProposals = pool.filter((p: any) => {
-      if (!p?.id || seenIds.has(p.id)) return false;
-      if (p.lead_id === lead.id || p.quote_id === lead.id) return false;
-      seenIds.add(p.id);
-      return true;
-    });
-
-    const leadDest = (formData.destination || "").trim().toLowerCase();
-    if (!leadDest) return otherProposals.slice(0, 6);
-
-    const destMatches = otherProposals.filter((p: any) => {
-      const pDest = (p.destination_city || p.title || "").toLowerCase();
-      return pDest.includes(leadDest) || leadDest.includes(pDest);
-    });
-
-    return destMatches.length > 0 ? destMatches.slice(0, 6) : otherProposals.slice(0, 6);
-  }, [proposals, customer360Data?.similarAgencyProposals, formData.destination, lead.id]);
+    return pool
+      .filter((p: any) => {
+        if (!p?.id || seenIds.has(p.id) || p.lead_id === lead.id || p.quote_id === lead.id) return false;
+        const pDest = normalizeOpportunityText(p.destination_city || p.title || "");
+        if (!pDest) return false;
+        const matched = destTokens.some((dt) => pDest.includes(dt) || dt.includes(pDest));
+        if (!matched) return false;
+        seenIds.add(p.id);
+        return true;
+      })
+      .slice(0, 8);
+  }, [proposals, customer360Data?.similarAgencyProposals, destinationTags, formData.destination, lead.id]);
 
   const infotravelCaptures = useMemo(() => {
     return Array.isArray(customer360Data?.infotravelCaptures) ? customer360Data.infotravelCaptures : [];
@@ -850,7 +1333,7 @@ export function TourismPipeCardDossier({
         passport_issue_date: "",
         passport_expiry_date: "",
         phone: lead.phone || "",
-        email: lead.email || "",
+        email: sanitizeCustomerEmail(lead.email) || "",
         address: {
           zip_code: "",
           street: "",
@@ -1212,6 +1695,7 @@ export function TourismPipeCardDossier({
     try {
       const mergedCustomFields = {
         ...(lead.custom_fields || {}),
+        tags: formData.tags,
         pcd: formData.pcd,
         reduced_mobility: formData.reduced_mobility,
         autism_spectrum: formData.autism_spectrum,
@@ -1226,12 +1710,38 @@ export function TourismPipeCardDossier({
         attachments: cardAttachments,
         service_template: serviceTemplate,
         traveler_dossiers: travelerDossiers,
+        reminders,
+        next_followup_at: followUpAt,
+        anamnese_data: anamneseData,
+        anamnese_history: anamneseHistory,
       };
 
       await onSaveLead({
         ...formData,
+        tags: formData.tags,
+        follow_up_at: followUpAt,
+        destination_tags: destinationTags,
+        period_tags: periodSpec.seasonTags,
+        target_months: periodSpec.targetMonths,
+        flexibility_days: periodSpec.flexibilityDays,
+        date_flexibility_mode: periodSpec.mode,
+        interest_period: periodSpec.displayLabel || formData.interest_period,
+        room_occupancies: roomOccupancies,
+        raw_intent_markdown: rawIntentMarkdown || null,
         attachments: cardAttachments,
-        custom_fields: mergedCustomFields,
+        custom_fields: {
+          ...mergedCustomFields,
+          tags: formData.tags,
+          destination_tags: destinationTags,
+          target_months: periodSpec.targetMonths,
+          period_tags: periodSpec.seasonTags,
+          room_occupancies: roomOccupancies,
+          reminders,
+          next_followup_at: followUpAt,
+          anamnese_data: anamneseData,
+          anamnese_history: anamneseHistory,
+          ...(rawIntentMarkdown ? { raw_intent_markdown: rawIntentMarkdown } : {}),
+        },
         checklist: checklistGroups[0]?.items || [],
       });
 
@@ -1253,15 +1763,189 @@ export function TourismPipeCardDossier({
     }
   };
 
-  const handleIssueContractClick = async () => {
+  const handleRefreshContracts = async () => {
+    try {
+      setIsRefreshingContracts(true);
+      const updated360 = await getCustomer360Profile({ data: { leadId: lead.id } });
+      if (updated360?.contracts) {
+        setLocalContracts(updated360.contracts);
+      }
+      toast.success("Contratos atualizados com sucesso!");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao atualizar contratos.");
+    } finally {
+      setIsRefreshingContracts(false);
+    }
+  };
+
+  const handleApplyProposalToContract = (prop: any) => {
+    if (!prop) return;
+    const dest = prop.destination || formData.destination || lead.destination || "o destino contratado";
+    const pricing = prop.pricing || prop.pricing_data || {};
+    const totalCents = Number(
+      pricing.total_price_cents ??
+      pricing.total_cents ??
+      prop.total_value_cents ??
+      formData.estimated_value_cents ??
+      0
+    );
+    const terms =
+      pricing.payment_terms ||
+      (Array.isArray(pricing.installments_options) && pricing.installments_options.length > 0
+        ? pricing.installments_options.join(" | ")
+        : prop.conditions?.payment_terms || paymentPlan.notes || "20% de entrada via PIX + 10x no cartão");
+
+    setContractFormTitle(`Contrato de Intermediação Turística - ${prop.title || dest} - ${formData.name || "Cliente"}`);
+    setContractFormSummary(
+      `Intermediação e assessoria operacional de serviços turísticos para ${dest}, abrangendo aéreo, hospedagem e serviços inclusos na proposta "${prop.title || "Proposta de Viagem"}".`
+    );
+    if (totalCents > 0) {
+      setContractFormTotalCents(totalCents);
+    }
+    setContractFormPaymentConditions(terms);
+    toast.success("Dados da proposta aceita aplicados à minuta do contrato!");
+  };
+
+  // Auto-sincronização de Proposta Aprovada / Aceita ao Pagamento e ao Contrato
+  useEffect(() => {
+    if (acceptedProposal?.id) {
+      if (!paymentPlan.linked_proposal_id || !paymentPlan.is_synced) {
+        applyProposalToPaymentPlan(acceptedProposal);
+      }
+      if (contractFormTotalCents === 0) {
+        handleApplyProposalToContract(acceptedProposal);
+      }
+    }
+  }, [acceptedProposal]);
+
+  const handleApplyContractTemplatePreset = (presetKey: string) => {
+    setContractTemplatePreset(presetKey);
+    const clientName = formData.name || lead.full_name || "Cliente";
+    const dest = formData.destination || lead.destination || "Item / Serviço Contratado";
+    switch (presetKey) {
+      case "turismo_completo":
+        setContractFormTitle(`Contrato de Intermediação de Pacote Turístico - ${clientName}`);
+        setContractFormSummary(`Intermediação e consultoria para emissão de bilhetes aéreos, vouchers de hotelaria e assessoria de viagem com destino a ${dest}.`);
+        break;
+      case "aereo_hospedagem":
+        setContractFormTitle(`Contrato de Emissão Aérea e Hospedagem - ${clientName}`);
+        setContractFormSummary(`Assessoria de reservas hoteleiras e emissão de bilhetes de transporte aéreo para ${dest}.`);
+        break;
+      case "corporativo_b2b":
+        setContractFormTitle(`Contrato de Prestação de Serviços Corporativos B2B - ${clientName}`);
+        setContractFormSummary(`Agenciamento e gestão de serviços corporativos, faturamento mensal e suporte executivo.`);
+        break;
+      case "imovel_compra_venda":
+        setContractFormTitle(`Contrato de Promessa de Compra e Venda de Imóvel - ${clientName}`);
+        setContractFormSummary(`Compromisso irrevogável de compra e venda de imóvel (${dest}), com fixação de preço, arras e condições de financiamento.`);
+        break;
+      case "imovel_locacao":
+        setContractFormTitle(`Contrato de Locação Residencial / Comercial - ${clientName}`);
+        setContractFormSummary(`Locação de imóvel (${dest}) com vistoria de entrada, garantia locatícia e obrigações contratuais.`);
+        break;
+      case "imovel_intermediacao":
+        setContractFormTitle(`Contrato de Intermediação e Corretagem Imobiliária - ${clientName}`);
+        setContractFormSummary(`Intermediação de negociação imobiliária com exclusividade de corretagem e taxa de comissionamento.`);
+        break;
+      case "veiculo_compra_venda":
+        setContractFormTitle(`Contrato de Compra e Venda de Veículo Automotor - ${clientName}`);
+        setContractFormSummary(`Transmissão de domínio de veículo automotor (${dest}) com declaração de quitação, garantia legal e laudo cautelar.`);
+        break;
+      case "veiculo_garantia":
+        setContractFormTitle(`Ordem de Serviço & Certificado de Garantia Mecânica - ${clientName}`);
+        setContractFormSummary(`Prestação de serviços mecânicos e revisão automotiva (${dest}) com cobertura de garantia.`);
+        break;
+      case "eventos_buffet":
+        setContractFormTitle(`Contrato de Prestação de Serviços de Buffet e Espaço - ${clientName}`);
+        setContractFormSummary(`Locação de espaço, buffet gastronômico, infraestrutura e equipe para realização de evento (${dest}).`);
+        break;
+      case "eventos_cerimonial":
+        setContractFormTitle(`Contrato de Assessoria e Cerimonial de Evento - ${clientName}`);
+        setContractFormSummary(`Assessoria completa, planejamento de cronograma e cerimonial executivo para o evento (${dest}).`);
+        break;
+      case "saude_consentimento":
+        setContractFormTitle(`Termo de Consentimento Livre e Esclarecido (TCLE) - ${clientName}`);
+        setContractFormSummary(`Consentimento para execução de plano de procedimento estético/clínico (${dest}) conforme normas do conselho de classe.`);
+        break;
+      case "saude_plano":
+        setContractFormTitle(`Contrato de Prestação de Serviços Clínicos / Estéticos - ${clientName}`);
+        setContractFormSummary(`Prestação de serviços em saúde e estética (${dest}) com cronograma de sessões e orientações pós-procedimento.`);
+        break;
+      case "b2b_servicos":
+        setContractFormTitle(`Contrato de Prestação de Serviços Especializados B2B - ${clientName}`);
+        setContractFormSummary(`Execução de serviços profissionais (${dest}) com cronograma de entregáveis, SLA e faturamento.`);
+        break;
+      case "servicos_geral":
+      default:
+        setContractFormTitle(`Contrato de Prestação de Serviços e Consultoria - ${clientName}`);
+        setContractFormSummary(`Prestação de serviços especializados, suporte de concierge e consultoria personalizada para ${dest}.`);
+        break;
+    }
+    toast.success("Modelo de contrato aplicado!");
+  };
+
+  const handleOpenVaultLinker = async () => {
+    setIsLinkingContractModalOpen(true);
+    setIsFetchingLinkableContracts(true);
+    try {
+      const res = await listLinkableStoreContracts({
+        data: {
+          storeId: lead.store_id || undefined,
+          leadId: lead.id,
+        },
+      });
+      setLinkableContracts(Array.isArray(res) ? res : []);
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao buscar contratos no cofre.");
+    } finally {
+      setIsFetchingLinkableContracts(false);
+    }
+  };
+
+  const handleConfirmLinkContract = async () => {
+    if (!selectedContractToLink) {
+      toast.error("Selecione um contrato para vincular.");
+      return;
+    }
+    setIsLinkingContract(true);
+    try {
+      const res = await linkContractToLead({
+        data: {
+          leadId: lead.id,
+          contractId: selectedContractToLink,
+        },
+      });
+      if (res?.success && res.contract) {
+        setLocalContracts((prev) => {
+          const map = new Map<string, any>();
+          map.set(res.contract.id, res.contract);
+          for (const item of prev) {
+            if (item?.id) map.set(item.id, item);
+          }
+          return Array.from(map.values());
+        });
+        toast.success("Contrato vinculado com sucesso ao atendimento!");
+        setIsLinkingContractModalOpen(false);
+        setSelectedContractToLink(null);
+        handleRefreshContracts();
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao vincular contrato ao lead.");
+    } finally {
+      setIsLinkingContract(false);
+    }
+  };
+
+  const handleIssueContractClick = async (openInEditor = false) => {
     if (!contractFormTitle.trim()) {
       toast.error("Informe o título do contrato.");
       return;
     }
     setIsIssuingContract(true);
     try {
+      let createdResult: any = null;
       if (onIssueContract) {
-        await onIssueContract({
+        createdResult = await onIssueContract({
           leadId: lead.id,
           contractTitle: contractFormTitle.trim(),
           packageSummary: contractFormSummary.trim(),
@@ -1269,7 +1953,7 @@ export function TourismPipeCardDossier({
           paymentConditions: contractFormPaymentConditions.trim(),
         });
       } else {
-        const res = await issueLeadContract({
+        createdResult = await issueLeadContract({
           data: {
             leadId: lead.id,
             contractTitle: contractFormTitle.trim(),
@@ -1278,7 +1962,42 @@ export function TourismPipeCardDossier({
             paymentConditions: contractFormPaymentConditions.trim(),
           },
         });
-        toast.success(`Contrato emitido! Token: ${res.publicToken}`);
+        toast.success(`Contrato emitido! Token: ${createdResult.publicToken}`);
+      }
+
+      const targetContractId = createdResult?.contract?.id || createdResult?.contractId || createdResult?.id || `ctr-${Date.now()}`;
+      const resolvedContract = createdResult?.contract || {
+        id: targetContractId,
+        contract_title: contractFormTitle.trim(),
+        title: contractFormTitle.trim(),
+        category: unifiedNiche === "tourism" ? "tourism" : "services",
+        public_token: createdResult?.publicToken || `CTR-${Date.now()}`,
+        verification_code: createdResult?.publicToken || `CTR-${Date.now()}`,
+        signing_token: createdResult?.signingToken || createdResult?.publicToken,
+        status: "signing",
+        total_value_cents: contractFormTotalCents || lead.estimated_value_cents || 0,
+        destination: lead.destination || "",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        envelopes: [
+          {
+            id: `env-${Date.now()}`,
+            signer_name: formData.name || lead.full_name || "Contratante Titular",
+            signer_role: "party",
+            signer_phone: formData.phone || lead.phone,
+            signer_email: formData.email || lead.email,
+            status: "pending",
+            signing_token: createdResult?.signingToken || createdResult?.publicToken,
+            dispatch_channel: formData.phone || lead.phone ? "whatsapp" : "email",
+          },
+        ],
+      };
+      setLocalContracts((prev) => [resolvedContract, ...prev.filter((c) => c.id !== resolvedContract.id)]);
+      handleRefreshContracts();
+      syncProposalCaches();
+
+      if (openInEditor && targetContractId) {
+        window.open(`/workspace/contratos/${targetContractId}/editor`, "_blank");
       }
     } catch (err: any) {
       toast.error(err?.message || "Erro ao emitir contrato digital.");
@@ -1306,16 +2025,42 @@ export function TourismPipeCardDossier({
     window.open(`https://wa.me/55${cleanPhone}?text=${msg}`, "_blank");
   };
 
+  const handleSendSignerWhatsApp = (
+    signingToken: string,
+    contractTitle: string,
+    signerName?: string,
+    signerPhone?: string
+  ) => {
+    const targetPhone = (signerPhone || cleanPhone || "").replace(/\D/g, "");
+    if (!targetPhone) {
+      toast.error("Telefone não informado para envio via WhatsApp.");
+      return;
+    }
+    const url = `${window.location.origin}/assinar/${signingToken}`;
+    const targetName = signerName || formData.name || "Cliente";
+    const firstName = targetName.split(" ")[0];
+    const msg = encodeURIComponent(
+      `Olá, ${firstName}! Segue o link seguro para conferência e assinatura eletrônica do seu contrato (${contractTitle}) emitido por ${tenantIdentity.companyName}:\n\n${url}\n\nDocumento selado com validade jurídica e registro probatório.`
+    );
+    window.open(`https://wa.me/55${targetPhone}?text=${msg}`, "_blank");
+  };
+
   const handleSavePaymentPlan = async () => {
     try {
+      const finalTotalCents = computedTariffTotalCents > 0 ? computedTariffTotalCents : (formData.estimated_value_cents || 0);
       await onSaveLead({
         ...formData,
+        estimated_value_cents: finalTotalCents,
         custom_fields: {
           ...(lead.custom_fields || {}),
-          payment_plan: paymentPlan,
+          payment_plan: {
+            ...paymentPlan,
+            niche_mode: paymentPlanNiche,
+            total_cents: finalTotalCents,
+          },
         },
       });
-      toast.success("Plano financeiro e decomposição tarifária salvos!");
+      toast.success("Plano financeiro e vínculo de proposta salvos!");
     } catch (err: any) {
       toast.error(err?.message || "Erro ao salvar plano financeiro.");
     }
@@ -1536,6 +2281,281 @@ export function TourismPipeCardDossier({
     window.open(`https://wa.me/55${cleanPhone}?text=${msg}`, "_blank");
   };
 
+  const handleQuoteOcrFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setQuoteOcrFile(file);
+    setQuoteOcrFileName(file.name);
+    setQuoteOcrFileMime(file.type || "application/pdf");
+    const reader = new FileReader();
+    reader.onload = () => {
+      const raw = String(reader.result || "");
+      const b64 = raw.includes(",") ? raw.split(",")[1] : raw;
+      setQuoteOcrBase64(b64);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRunQuoteOcr = async () => {
+    if (!quoteOcrBase64 && !quoteOcrRawText.trim()) {
+      toast.error("Selecione um arquivo de cotação (PDF ou imagem) ou cole o texto do orçamento.");
+      return;
+    }
+    setIsScanningQuoteOcr(true);
+    const toastId = toast.loading("Extraindo cotação da operadora via OCR inteligente...");
+    try {
+      const res = await processOperatorQuoteOcr({
+        data: {
+          fileBase64: quoteOcrBase64 || undefined,
+          fileMime: quoteOcrFileMime || "application/pdf",
+          fileName: quoteOcrFileName || "cotacao.pdf",
+          rawText: quoteOcrRawText.trim() || undefined,
+          storeId: (lead as any)?.store_id || undefined,
+        },
+      });
+      if (res?.data) {
+        setExtractedOcrQuote(res.data);
+        const highlights = [
+          res.data.operator_name ? `Operadora: ${res.data.operator_name}` : null,
+          res.data.destination && res.data.destination !== "Destino a definir" ? `Destino: ${res.data.destination}` : null,
+          res.data.gross_price_cents ? `Total: ${formatMoney(res.data.gross_price_cents)}` : null,
+        ].filter(Boolean);
+        toast.success(`Cotação lida com sucesso! (${highlights.join(" · ")})`, { id: toastId });
+      } else {
+        toast.error("Não foi possível decodificar os dados da cotação.", { id: toastId });
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro no processamento do OCR da cotação.", { id: toastId });
+    } finally {
+      setIsScanningQuoteOcr(false);
+    }
+  };
+
+  const handleApplyQuoteOcrToDossier = async (andOpenProposal = false) => {
+    if (!extractedOcrQuote) return;
+    const q = extractedOcrQuote;
+    const toastId = toast.loading("Aplicando dados do OCR ao card do CRM...");
+
+    try {
+      // 1. Atualiza Destino, Datas e Passageiros no formData
+      const detectedDest = (q.destination && q.destination !== "Destino a definir")
+        ? q.destination
+        : (q.hotels?.[0]?.city || q.flights?.[0]?.destination_city || formData.destination);
+
+      let nextFormData = { ...formData };
+      let nextDestTags = [...destinationTags];
+      let nextPeriodSpec = { ...periodSpec };
+
+      if (ocrApplyOptions.applyDestinationAndDates) {
+        if (detectedDest) {
+          nextFormData.destination = detectedDest;
+          nextDestTags = normalizeDestinationTagList(nextDestTags, detectedDest);
+          setDestinationTags(nextDestTags);
+        }
+        if (q.travel_start) {
+          nextFormData.travel_start = q.travel_start;
+          nextPeriodSpec.startDate = q.travel_start;
+        }
+        if (q.travel_end) {
+          nextFormData.travel_end = q.travel_end;
+          nextPeriodSpec.endDate = q.travel_end;
+        }
+        setPeriodSpec(nextPeriodSpec);
+      }
+
+      if (ocrApplyOptions.applyPax) {
+        if (typeof q.adults_count === "number" && q.adults_count > 0) {
+          nextFormData.pax_adults = q.adults_count;
+        }
+        if (typeof q.children_count === "number") {
+          nextFormData.pax_children = q.children_count;
+        }
+        if (Array.isArray(q.children_ages)) {
+          nextFormData.pax_ages = q.children_ages;
+        }
+      }
+
+      if (ocrApplyOptions.applyBudget && q.gross_price_cents) {
+        nextFormData.estimated_value_cents = q.gross_price_cents;
+      }
+
+      // Notas e Observações Operacionais
+      const quoteNotes: string[] = [];
+      if (q.operator_name) quoteNotes.push(`Operadora: ${q.operator_name}`);
+      if (q.quote_reference_number) quoteNotes.push(`Ref Cotação: #${q.quote_reference_number}`);
+      if (q.hotels?.[0]?.hotel_name) {
+        quoteNotes.push(`Hotel: ${q.hotels[0].hotel_name}${q.hotels[0].meal_plan ? ` (${q.hotels[0].meal_plan})` : ""}`);
+      }
+      if (Array.isArray(q.flights) && q.flights.length > 0) {
+        const flSummary = q.flights.map((f) => `${f.airline || ""} ${f.flight_number || ""} (${f.origin_iata || ""} > ${f.destination_iata || ""})`).filter(Boolean).join(", ");
+        if (flSummary) quoteNotes.push(`Voos: ${flSummary}`);
+      }
+      if (quoteNotes.length > 0) {
+        const combinedNotes = nextFormData.notes ? `${nextFormData.notes}\n\n[OCR Cotação]: ${quoteNotes.join(" · ")}` : `[OCR Cotação]: ${quoteNotes.join(" · ")}`;
+        nextFormData.notes = combinedNotes;
+      }
+
+      // 2. Atualiza Passageiro Titular em Acompanhantes e no Lead
+      let nextTravelers = [...travelerDossiers];
+      if (ocrApplyOptions.applyTraveler && q.client_name) {
+        if (!nextFormData.name || nextFormData.name === "Destino a definir" || nextFormData.name === "Novo Lead" || nextFormData.name.length <= 2) {
+          nextFormData.name = q.client_name;
+        }
+        if (q.client_phone && !nextFormData.phone) {
+          nextFormData.phone = q.client_phone;
+        }
+        if (q.client_email && !nextFormData.email) {
+          nextFormData.email = q.client_email;
+        }
+
+        const primaryPax = nextTravelers[0] || {
+          id: `pax-${Date.now()}`,
+          is_primary: true,
+          full_name: q.client_name,
+        };
+        nextTravelers[0] = {
+          ...primaryPax,
+          full_name: q.client_name,
+          phone: q.client_phone || primaryPax.phone || nextFormData.phone,
+          email: q.client_email || primaryPax.email || nextFormData.email,
+          document_cpf: q.client_document || primaryPax.document_cpf,
+        };
+        setTravelerDossiers(nextTravelers);
+      }
+      setFormData(nextFormData);
+
+      // 3. Atualiza Decomposição Tarifária na Aba Pagamento
+      let nextPaymentPlan = { ...paymentPlan };
+      if (ocrApplyOptions.applyPaymentBreakdown) {
+        let hotelSum = 0;
+        if (Array.isArray(q.hotels)) {
+          hotelSum = q.hotels.reduce((acc, h) => acc + (h.price_cents || 0), 0);
+        }
+        nextPaymentPlan = {
+          ...nextPaymentPlan,
+          flight_cents: (q.gross_price_cents && hotelSum > 0 && q.gross_price_cents > hotelSum)
+            ? (q.gross_price_cents - hotelSum - (q.taxes_cents || 0))
+            : (nextPaymentPlan.flight_cents || 0),
+          hotel_cents: hotelSum > 0 ? hotelSum : nextPaymentPlan.hotel_cents,
+          boarding_tax_cents: q.taxes_cents || nextPaymentPlan.boarding_tax_cents || 0,
+          commission_cents: q.suggested_commission_cents || nextPaymentPlan.commission_cents || 0,
+          installments_count: q.max_installments || nextPaymentPlan.installments_count || 10,
+          notes: q.max_installments ? `Até ${q.max_installments}x de ${formatMoney(q.installment_cents || Math.round((q.gross_price_cents || 0) / q.max_installments))}` : nextPaymentPlan.notes,
+        };
+        setPaymentPlan(nextPaymentPlan);
+      }
+
+      // 4. Anexa o documento original ao card
+      let updatedAttachments = [...cardAttachments];
+      if (ocrApplyOptions.attachFileToCard && quoteOcrBase64 && quoteOcrFileName) {
+        try {
+          const uploaded = await uploadStoreMedia({
+            data: {
+              fileName: quoteOcrFileName,
+              fileType: quoteOcrFileMime || "application/pdf",
+              base64Data: quoteOcrBase64,
+              bucket: "identity-vault",
+            },
+          });
+          updatedAttachments.unshift({
+            id: `att-ocr-${Date.now()}`,
+            name: quoteOcrFileName,
+            size: "OCR Processado",
+            type: quoteOcrFileMime || "application/pdf",
+            url: uploaded.url,
+            storage_bucket: "identity-vault",
+            storage_path: uploaded.path,
+            createdAt: new Date().toISOString(),
+            tag: "Cotação Operadora (OCR)",
+          });
+          setCardAttachments(updatedAttachments);
+        } catch (attErr) {
+          console.warn("[handleApplyQuoteOcrToDossier] Falha secundária ao salvar anexo:", attErr);
+        }
+      }
+
+      // 5. Salva no banco de dados via onSaveLead
+      const mergedCustomFields = {
+        ...(lead.custom_fields || {}),
+        tags: nextFormData.tags,
+        destination_tags: nextDestTags,
+        period_tags: nextPeriodSpec.seasonTags,
+        target_months: nextPeriodSpec.targetMonths,
+        room_occupancies: roomOccupancies,
+        traveler_dossiers: nextTravelers,
+        reminders,
+        next_followup_at: followUpAt,
+        anamnese_data: anamneseData,
+        anamnese_history: anamneseHistory,
+        payment_plan: {
+          ...nextPaymentPlan,
+          niche_mode: paymentPlanNiche,
+          total_cents: nextFormData.estimated_value_cents,
+        },
+        ocr_last_quote: {
+          operator_name: q.operator_name,
+          reference: q.quote_reference_number,
+          destination: detectedDest,
+          gross_price_cents: q.gross_price_cents,
+          applied_at: new Date().toISOString(),
+        },
+        quote_flights: q.flights || [],
+        quote_hotels: q.hotels || [],
+        quote_transfers: q.transfers || [],
+        quote_tours: q.tours || [],
+        quote_inclusions: q.inclusions || [],
+        quote_exclusions: q.exclusions || [],
+        ocr_extracted_quote: q,
+        ...(q.client_document ? { document: q.client_document } : {}),
+      };
+
+      await onSaveLead({
+        ...nextFormData,
+        tags: nextFormData.tags,
+        follow_up_at: followUpAt,
+        destination_tags: nextDestTags,
+        period_tags: nextPeriodSpec.seasonTags,
+        target_months: nextPeriodSpec.targetMonths,
+        flexibility_days: nextPeriodSpec.flexibilityDays,
+        date_flexibility_mode: nextPeriodSpec.mode,
+        interest_period: nextPeriodSpec.displayLabel || nextFormData.interest_period,
+        room_occupancies: roomOccupancies,
+        raw_intent_markdown: rawIntentMarkdown || null,
+        attachments: updatedAttachments,
+        custom_fields: mergedCustomFields,
+      });
+
+      if (nextTravelers.length > 0) {
+        await saveLeadTravelerDossiers({
+          data: {
+            leadId: lead.id,
+            travelers: nextTravelers,
+            serviceTemplate,
+          },
+        }).catch(() => null);
+      }
+
+      toast.success(
+        `Card do CRM preenchido com sucesso a partir do orçamento da ${q.operator_name || "operadora"}!`,
+        { id: toastId },
+      );
+      setIsQuoteOcrModalOpen(false);
+      setExtractedOcrQuote(null);
+      setQuoteOcrRawText("");
+      setQuoteOcrBase64("");
+      setQuoteOcrFileName("");
+
+      if (andOpenProposal) {
+        onGenerateProposal(buildProposalLeadPayload({
+          ...nextFormData,
+          customFields: mergedCustomFields,
+        }));
+      }
+    } catch (saveErr: any) {
+      toast.error(saveErr?.message || "Erro ao salvar dados do OCR no card.", { id: toastId });
+    }
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -1719,19 +2739,6 @@ export function TourismPipeCardDossier({
     }
   };
 
-  // Add Comment
-  const handleAddComment = () => {
-    if (!newComment.trim()) return;
-    const commentItem = {
-      id: `comm-${Date.now()}`,
-      author: "Consultor Comercial",
-      text: newComment.trim(),
-      date: new Date().toLocaleString("pt-BR"),
-    };
-    setInternalComments((prev) => [commentItem, ...prev]);
-    setNewComment("");
-  };
-
   const handleSendFormWhatsApp = () => {
     if (!cleanPhone) {
       toast.error("O lead não possui telefone cadastrado.");
@@ -1758,9 +2765,25 @@ export function TourismPipeCardDossier({
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           {/* Identificação Principal & Título Editável */}
           <div className="flex items-center gap-3 min-w-0">
-            <div className="size-11 sm:size-9 rounded-xl bg-muted border border-border flex items-center justify-center shrink-0 font-semibold text-foreground text-xs uppercase select-none">
-              {(formData.name || "LE").slice(0, 2)}
-            </div>
+            <button
+              type="button"
+              onClick={() => setIsQuickProfileOpen(true)}
+              className="relative size-11 min-h-11 min-w-11 rounded-xl bg-muted border border-border flex items-center justify-center shrink-0 overflow-hidden font-semibold text-foreground text-xs uppercase select-none hover:ring-2 hover:ring-primary/50 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+              title={crmCustomer ? "Perfil do Cliente (Clique para editar/foto)" : "Editar Perfil do Cliente"}
+            >
+              {crmCustomer?.avatar_url ? (
+                <img
+                  src={crmCustomer.avatar_url}
+                  alt={formData.name || "Cliente"}
+                  className="size-full object-cover"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLElement).style.display = "none";
+                  }}
+                />
+              ) : (
+                <span>{(formData.name || "LE").slice(0, 2)}</span>
+              )}
+            </button>
             <div className="min-w-0 space-y-1">
               <SheetTitle className="text-base font-semibold tracking-tight text-foreground line-clamp-1 text-anti-truncate">
                 {formData.name || "Oportunidade Comercial"}
@@ -1844,7 +2867,7 @@ export function TourismPipeCardDossier({
                 <Button
                   type="button"
                   variant="outline"
-                  disabled={!cleanPhone}
+                  disabled={!cleanPhone && !onOpenInternalWhatsAppChat}
                   className="min-h-11 sm:min-h-8 sm:h-8 px-3 rounded-lg text-xs font-medium gap-1 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <MessageSquare className="size-3.5 text-emerald-600" />
@@ -1852,22 +2875,35 @@ export function TourismPipeCardDossier({
                   <ChevronDown className="size-3 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 text-xs">
-                <DropdownMenuItem
-                  onClick={() => window.open(whatsappUrl, "_blank")}
-                  className="cursor-pointer gap-2"
-                >
-                  <MessageSquare className="size-4 text-emerald-600" />
-                  <span>Abrir no WhatsApp</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleSendFormWhatsApp}
-                  className="cursor-pointer gap-2"
-                >
-                  <Share2 className="size-4 text-primary" />
-                  <span>Enviar Ficha por WA</span>
-                </DropdownMenuItem>
+              <DropdownMenuContent align="end" className="w-60 text-xs">
+                {onOpenInternalWhatsAppChat && (
+                  <DropdownMenuItem
+                    onClick={() => void onOpenInternalWhatsAppChat(lead.id)}
+                    className="cursor-pointer gap-2 font-semibold text-primary"
+                  >
+                    <MessageSquare className="size-4 text-primary" />
+                    <span>Atender no Chat Waesy (Ao Vivo)</span>
+                  </DropdownMenuItem>
+                )}
+                {cleanPhone && (
+                  <>
+                    <DropdownMenuItem
+                      onClick={() => window.open(whatsappUrl, "_blank")}
+                      className="cursor-pointer gap-2"
+                    >
+                      <MessageSquare className="size-4 text-emerald-600" />
+                      <span>Abrir no WhatsApp Web</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleSendFormWhatsApp}
+                      className="cursor-pointer gap-2"
+                    >
+                      <Share2 className="size-4 text-primary" />
+                      <span>Enviar Ficha por WA</span>
+                    </DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuItem
                   onClick={handleCopyFormLink}
                   className="cursor-pointer gap-2"
@@ -1878,16 +2914,45 @@ export function TourismPipeCardDossier({
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Converter em Cliente */}
+            {/* Converter em Cliente / Perfil do Cliente */}
+            {isLinkedToCustomer ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsQuickProfileOpen(true)}
+                className="min-h-11 sm:min-h-8 sm:h-8 px-3 rounded-lg text-xs font-semibold gap-2 border-primary/40 bg-primary/5 text-primary hover:bg-primary/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                title="Ver e Editar Perfil Rápido do Cliente"
+              >
+                <UserCheck className="size-3.5 text-primary" />
+                <span>Perfil do Cliente</span>
+                <Badge variant="secondary" className="px-2 py-0 text-3xs font-mono bg-primary/20 text-primary">
+                  Vinculado
+                </Badge>
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isPromoting}
+                onClick={handlePromoteLead}
+                className="min-h-11 sm:min-h-8 sm:h-8 px-3 rounded-lg text-xs font-medium gap-1 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                title="Promover a Cliente da Carteira"
+              >
+                <UserCheck className="size-3.5 text-primary" />
+                <span>{isPromoting ? "Convertendo..." : "Converter em Cliente"}</span>
+              </Button>
+            )}
+
+            {/* CTA OCR de Cotações & Orçamentos */}
             <Button
               type="button"
               variant="outline"
-              onClick={() => onPromoteToCustomer(lead.id)}
-              className="min-h-11 sm:min-h-8 sm:h-8 px-3 rounded-lg text-xs font-medium gap-1 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-              title="Promover a Cliente"
+              onClick={() => setIsQuoteOcrModalOpen(true)}
+              className="min-h-11 sm:min-h-8 sm:h-8 px-3 rounded-lg text-xs font-semibold gap-2 border-primary/30 text-primary hover:bg-primary/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+              title="Importar Cotação ou Orçamento da Operadora via OCR (PDF ou Imagem)"
             >
-              <UserCheck className="size-3.5 text-primary" />
-              <span>Converter em Cliente</span>
+              <FileSearch className="size-3.5" />
+              <span>Importar OCR</span>
             </Button>
 
             {/* CTA Primário Soberano: Nova Cotação */}
@@ -1919,12 +2984,45 @@ export function TourismPipeCardDossier({
               label: `Anexos (${Array.isArray(cardAttachments) ? cardAttachments.length : 0})`,
               icon: Paperclip,
             },
-            { id: "travelers", label: `Acompanhantes (${travelerDossiers.length})`, icon: Users },
+            {
+              id: "inspiration",
+              label: `Inspirações (${inspirationPhotos.length})`,
+              icon: Sparkles,
+            },
+            {
+              id: "travelers",
+              label:
+                unifiedNiche === "real_estate"
+                  ? `Cônjuge & Dependentes (${travelerDossiers.length})`
+                  : unifiedNiche === "automotive"
+                  ? `Condutores (${travelerDossiers.length})`
+                  : unifiedNiche === "events"
+                  ? `Padrinhos & Família (${travelerDossiers.length})`
+                  : ["beauty_salon", "healthcare", "dental", "aesthetics_clinic"].includes(unifiedNiche)
+                  ? `Acompanhantes / Resp. (${travelerDossiers.length})`
+                  : `Acompanhantes (${travelerDossiers.length})`,
+              icon: Users,
+            },
             { id: "opportunities", label: `Oportunidades (${(infotravelOpp ? 1 : 0) + similarProposals.length + infotravelCaptures.length + radarMatches.length})`, icon: Zap },
             { id: "proposals", label: `Cotações (${effectiveProposals.length})`, icon: CreditCard },
-            { id: "contracts", label: `Contratos (${customer360Data?.contracts?.length || 0})`, icon: FileSignature },
+            { id: "contracts", label: `Contratos (${allContracts.length})`, icon: FileSignature },
             { id: "payment", label: "Pagamento", icon: DollarSign },
-            { id: "anamnese", label: "Anamnese", icon: HeartPulse },
+            {
+              id: "anamnese",
+              label:
+                unifiedNiche === "real_estate"
+                  ? "Briefing de Compra"
+                  : unifiedNiche === "automotive"
+                  ? "Check-in & Vistoria"
+                  : unifiedNiche === "events"
+                  ? "Briefing de Cerimonial"
+                  : ["beauty_salon", "healthcare", "dental", "aesthetics_clinic"].includes(unifiedNiche)
+                  ? "Ficha de Anamnese"
+                  : ["services", "law_firm", "accounting"].includes(unifiedNiche)
+                  ? "Briefing de Escopo"
+                  : "Anamnese & Perfil",
+              icon: HeartPulse,
+            },
             {
               id: "customer360",
               label: customer360Data?.customer ? "Perfil do Cliente (Ativo)" : "Info. do Cliente",
@@ -1942,15 +3040,20 @@ export function TourismPipeCardDossier({
               <button
                 key={item.id}
                 type="button"
-                onClick={() => {
+                onClick={(e) => {
+                  e.currentTarget.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
                   setActiveSection(item.id);
                   if (item.id === "presentation") {
                     handleGeneratePresentation();
-                  } else {
+                  } else if (item.id === "all") {
                     const el = document.getElementById(`section-${item.id}`);
                     if (el) {
                       el.scrollIntoView({ behavior: "smooth", block: "start" });
                     }
+                  } else {
+                    mainColRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+                    formCol1Ref.current?.scrollTo({ top: 0, behavior: "smooth" });
+                    formCol2Ref.current?.scrollTo({ top: 0, behavior: "smooth" });
                   }
                 }}
                 className={cn(
@@ -1968,14 +3071,22 @@ export function TourismPipeCardDossier({
         </div>
       </SheetHeader>
 
-      {/* ── WORKSPACE CONTÍNUO EM 2 COLUNAS (PIPEFY LIVE CANVAS) ── */}
-      <div className="flex-1 min-h-0 overflow-y-auto p-6 bg-background [scrollbar-width:thin]">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* ══════════ COLUNA ESQUERDA (DADOS DO CARD & FLUXO - 65%) ══════════ */}
-          <div className="lg:col-span-8 space-y-6">
+      {/* ── WORKSPACE COM SCROLL INDEPENDENTE POR COLUNA (PIPEFY MULTI-PANE LIVE CANVAS) ── */}
+      <div className="flex-1 min-h-0 overflow-y-auto lg:overflow-hidden p-4 sm:p-6 bg-background">
+        <div className="grid grid-cols-1 lg:grid-cols-12 lg:grid-rows-1 gap-6 h-full min-h-0 items-stretch">
+          {/* ══════════ COLUNA PRINCIPAL (DADOS DO CARD & FLUXO - 65%) ══════════ */}
+          <div
+            ref={mainColRef}
+            className={cn(
+              "lg:col-span-8 min-h-0",
+              activeSection === "form"
+                ? "h-auto lg:h-full flex flex-col lg:overflow-hidden"
+                : "h-auto lg:h-full lg:overflow-y-auto overscroll-contain pr-0 lg:pr-2 scrollbar-waesy space-y-6 pb-16 lg:pb-24"
+            )}
+          >
             {/* ALERTA INTELIGENTE DE INATIVIDADE (STALENESS QUIZ) */}
             {diffDays >= 3 && lead?.status !== "won" && lead?.status !== "lost" && (
-              <div className="p-4 rounded-xl border border-warning/40 bg-warning/10 space-y-3">
+              <div className="p-4 rounded-xl border border-warning/40 bg-warning/10 space-y-3 shrink-0 mb-4">
                 <div className="flex items-center gap-2 text-warning font-bold text-xs">
                   <AlertCircle className="size-4 shrink-0" />
                   <span>Oportunidade sem interação há {diffDays} dias! O que aconteceu?</span>
@@ -1996,25 +3107,31 @@ export function TourismPipeCardDossier({
                       variant="outline"
                       size="sm"
                       onClick={async () => {
-                        const newComment = {
-                          id: `comment-${Date.now()}`,
-                          author: "Consultor de Atendimento",
-                          text: `[Parecer de Inatividade - ${diffDays}d]: ${opt.reason}`,
-                          date: new Date().toISOString(),
-                        };
-                        const nextComments = [newComment, ...internalComments];
-                        setInternalComments(nextComments);
                         try {
-                          await onSaveLead({
-                            ...formData,
-                            custom_fields: {
-                              ...(lead.custom_fields || {}),
-                              comments: nextComments,
+                          await updateLeadStaleness({
+                            data: {
+                              leadId: lead.id,
+                              stalenessStatus: opt.v as
+                                | "disappeared"
+                                | "gave_up"
+                                | "no_credit"
+                                | "postponed",
+                              reasonLabel: opt.label,
                             },
                           });
+                          queryClient.invalidateQueries({
+                            queryKey: ["lead-activities", lead.id],
+                          });
+                          queryClient.invalidateQueries({
+                            queryKey: ["crm-leads"],
+                          });
                           toast.success(`Parecer registrado: ${opt.label}`);
-                        } catch {
-                          toast.error("Parecer adicionado localmente, mas falhou ao sincronizar.");
+                        } catch (err: unknown) {
+                          toast.error(
+                            err instanceof Error
+                              ? err.message
+                              : "Falha ao registrar parecer de inatividade."
+                          );
                         }
                       }}
                       className="min-h-11 sm:min-h-8 sm:h-8 px-3 rounded-lg text-xs font-medium border-warning/40 hover:bg-warning/20 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
@@ -2028,72 +3145,189 @@ export function TourismPipeCardDossier({
 
             {/* 1. FORMULÁRIO INICIAL (START FORM) */}
             {(activeSection === "all" || activeSection === "form") && (
-              <div id="section-form" className="space-y-6">
-                <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <div
+                id="section-form"
+                className={cn(
+                  activeSection === "form"
+                    ? "flex-1 min-h-0 flex flex-col lg:overflow-hidden"
+                    : "space-y-6"
+                )}
+              >
+                <div className="flex items-center justify-between pb-2 border-b border-border/40 shrink-0 mb-3">
                   <div className="flex items-center gap-2">
                     <FileText className="size-4 text-primary" />
                     <h3 className="font-bold text-xs uppercase tracking-wide text-foreground">
                       Dados Gerais da Viagem
                     </h3>
                   </div>
-                  <span className="text-2xs text-muted-foreground font-mono">
+                  <span className="text-xs text-muted-foreground font-mono">
                     Sincronizado com CRM
                   </span>
                 </div>
 
-                {/* Grid 2-Colunas: VIAGEM & DESTINO + ACESSIBILIDADE & SAÚDE */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* BANNER RÁPIDO: IMPORTAR COTAÇÃO POR OCR */}
+                <div className="flex items-center justify-between p-3 rounded-xl border border-primary/25 bg-primary/5 gap-3 shrink-0 mb-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
+                      <Sparkles className="size-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-foreground truncate">
+                        Tem um orçamento em PDF ou print da operadora?
+                      </p>
+                      <p className="text-2xs text-muted-foreground truncate">
+                        O OCR inteligente extrai destino, datas, voos, hotéis, passageiros e valores e preenche este card automaticamente.
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={() => setIsQuoteOcrModalOpen(true)}
+                    className="min-h-11 sm:min-h-8 sm:h-8 px-3 text-xs font-semibold shrink-0 bg-primary text-primary-foreground rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Upload className="size-3.5 mr-2" />
+                    <span>Escanear OCR</span>
+                  </Button>
+                </div>
+
+                {/* Grid 2-Colunas com scroll interno independente em cada uma */}
+                <div
+                  className={cn(
+                    "grid grid-cols-1 lg:grid-cols-2 gap-6",
+                    activeSection === "form"
+                      ? "flex-1 min-h-0 lg:grid-rows-1 lg:overflow-hidden items-stretch"
+                      : ""
+                  )}
+                >
                   {/* Coluna 1: Viagem & Destino */}
-                  <div className="space-y-4 p-5 rounded-xl border border-border/40 bg-muted/10">
+                  <div
+                    ref={formCol1Ref}
+                    className={cn(
+                      "space-y-4",
+                      activeSection === "form"
+                        ? "h-auto lg:h-full min-h-0 lg:overflow-y-auto overscroll-contain pr-1 sm:pr-2 scrollbar-waesy pb-16 lg:pb-24"
+                        : ""
+                    )}
+                  >
                     <h4 className="font-bold text-xs uppercase tracking-wide text-foreground flex items-center gap-2">
                       <MapPin className="size-4 text-primary" />
                       <span>Viagem & Interesse</span>
                     </h4>
 
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <Label className="text-2xs text-muted-foreground font-semibold">Nome Completo</Label>
-                          <Input
-                            value={formData.name}
-                            onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                            placeholder="Nome do cliente..."
-                            className="h-10 text-xs rounded-lg"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-2xs text-muted-foreground font-semibold">Destino Principal</Label>
-                          <Input
-                            value={formData.destination}
-                            onChange={(e) => setFormData((prev) => ({ ...prev, destination: e.target.value }))}
-                            placeholder="Ex: Orlando, Maceió, Paris"
-                            className="h-10 text-xs rounded-lg"
-                          />
-                        </div>
+                    <div className="space-y-4">
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={isAutoFillingLead}
+                          onClick={async () => {
+                            if (!lead?.id) return;
+                            setIsAutoFillingLead(true);
+                            try {
+                              const res = await autoFillLeadDossierFromChatAi({
+                                data: {
+                                  leadId: lead.id,
+                                  apply: false,
+                                },
+                              });
+                              const p = res?.preview;
+                              if (p) {
+                                if (p.destination) {
+                                  setDestinationTags(normalizeDestinationTagList(undefined, p.destination));
+                                }
+                                if (p.travelStart || p.travelEnd) {
+                                  setPeriodSpec(
+                                    normalizePeriodSpec({
+                                      startDate: p.travelStart || formData.travel_start || undefined,
+                                      endDate: p.travelEnd || formData.travel_end || undefined,
+                                    }),
+                                  );
+                                }
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  name: p.fullName || prev.name,
+                                  phone: p.phone || prev.phone,
+                                  email: p.email || prev.email,
+                                  destination: p.destination || prev.destination,
+                                  travel_start: p.travelStart || prev.travel_start,
+                                  travel_end: p.travelEnd || prev.travel_end,
+                                  pax_adults: p.paxAdults || prev.pax_adults,
+                                  pax_children: typeof p.paxChildren === "number" ? p.paxChildren : prev.pax_children,
+                                  estimated_value_cents: p.estimatedValueCents || prev.estimated_value_cents,
+                                  notes:
+                                    p.notesSummary && !String(prev.notes || "").includes(p.notesSummary.slice(0, 40))
+                                      ? (prev.notes ? `${prev.notes}\n${p.notesSummary}` : p.notesSummary)
+                                      : prev.notes,
+                                }));
+                                toast.success(
+                                  p.source === "llm"
+                                    ? "Ficha preenchida via IA com histórico do WhatsApp, áudios e prints!"
+                                    : "Campos extraídos do histórico do WhatsApp! Revise e salve a ficha.",
+                                );
+                              }
+                            } catch (err: any) {
+                              toast.error(err?.message || "Não foi possível consolidar o histórico do WhatsApp.");
+                            } finally {
+                              setIsAutoFillingLead(false);
+                            }
+                          }}
+                          className="h-11 min-h-11 w-full justify-center gap-2 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                          <Zap className="size-4 shrink-0" />
+                          <span>{isAutoFillingLead ? "Lendo chat, áudios e prints..." : "Auto-preencher Ficha do WhatsApp com IA"}</span>
+                        </Button>
                       </div>
+
+                      <TravelIntentAiImporter
+                        mode="lead_intent"
+                        onApply={(parsed) => {
+                          if (parsed.destinations.length > 0) {
+                            setDestinationTags(parsed.destinations);
+                          }
+                          if (parsed.period.mode !== "unspecified") {
+                            setPeriodSpec(parsed.period);
+                          }
+                          if (parsed.rooms.length > 0) {
+                            setRoomOccupancies(parsed.rooms);
+                          }
+                          setRawIntentMarkdown(parsed.rawMarkdownPreserved);
+                          setFormData((prev) => ({
+                            ...prev,
+                            name: parsed.contact.fullName || prev.name,
+                            phone: parsed.contact.whatsapp || prev.phone,
+                            email: parsed.contact.email || prev.email,
+                            destination:
+                              parsed.destinations.length > 0
+                                ? parsed.destinations.map((d) => d.label).join(", ")
+                                : prev.destination,
+                            interest_period: parsed.period.displayLabel || prev.interest_period,
+                            travel_start: parsed.period.startDate || prev.travel_start,
+                            travel_end: parsed.period.endDate || prev.travel_end,
+                            pax_adults: parsed.adultsCount,
+                            pax_children: parsed.childrenAges.length,
+                            pax_infants: parsed.childrenAges.filter((a) => a <= 1).length,
+                            pax_ages: parsed.childrenAges,
+                            estimated_value_cents: parsed.budget.maxTotalBudgetCents || prev.estimated_value_cents,
+                          }));
+                          toast.success("Campos estruturados preenchidos a partir do texto!");
+                        }}
+                      />
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <Label className="text-2xs text-muted-foreground font-semibold">Tipo de Interesse</Label>
-                          <Select
-                            value={formData.interest_type}
-                            onValueChange={(val) => setFormData((prev) => ({ ...prev, interest_type: val }))}
-                          >
-                            <SelectTrigger className="h-10 text-xs rounded-lg">
-                              <SelectValue placeholder="Tipo de interesse..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {INTEREST_TYPES.map((t) => (
-                                <SelectItem key={t.value} value={t.value}>
-                                  {t.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <Label htmlFor={`${dossierFieldId}-full-name`} className="text-xs text-muted-foreground font-semibold">Nome Completo</Label>
+                          <Input
+                            id={`${dossierFieldId}-full-name`}
+                            value={formData.name}
+                            onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                            placeholder="Nome do cliente..."
+                            className="h-11 min-h-11 text-base sm:text-xs rounded-lg"
+                          />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-2xs text-muted-foreground font-semibold">Orçamento Estimado (R$)</Label>
+                          <Label htmlFor={`${dossierFieldId}-budget`} className="text-xs text-muted-foreground font-semibold">Orçamento Estimado (R$)</Label>
                           <Input
+                            id={`${dossierFieldId}-budget`}
                             type="number"
                             value={formData.estimated_value_cents ? formData.estimated_value_cents / 100 : ""}
                             onChange={(e) =>
@@ -2103,154 +3337,96 @@ export function TourismPipeCardDossier({
                               }))
                             }
                             placeholder="R$ 0,00"
-                            className="h-10 text-xs rounded-lg font-mono"
+                            className="h-11 min-h-11 text-base sm:text-xs rounded-lg font-mono"
                           />
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <Label className="text-2xs text-muted-foreground font-semibold">Data Prevista Ida</Label>
-                          <Input
-                            type="date"
-                            value={formData.travel_start}
-                            onChange={(e) => setFormData((prev) => ({ ...prev, travel_start: e.target.value }))}
-                            className="h-10 text-xs rounded-lg font-mono"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-2xs text-muted-foreground font-semibold">Data Prevista Volta</Label>
-                          <Input
-                            type="date"
-                            value={formData.travel_end}
-                            onChange={(e) => setFormData((prev) => ({ ...prev, travel_end: e.target.value }))}
-                            className="h-10 text-xs rounded-lg font-mono"
-                          />
-                        </div>
-                      </div>
+                      <DestinationTagsPicker
+                        value={destinationTags}
+                        legacyText={formData.destination}
+                        label={nicheTerminology.contextFieldLabel || "Destinos de interesse"}
+                        placeholder={nicheTerminology.contextPlaceholder || "Buscar cidade, destino turístico ou IATA (ex: Maceió, POA, Cancún)..."}
+                        onChange={(tags) => {
+                          setDestinationTags(tags);
+                          setFormData((prev) => ({
+                            ...prev,
+                            destination: tags.map((t) => t.label).join(", "),
+                          }));
+                        }}
+                      />
 
-                      {/* Composição de Passageiros: Adultos, Crianças, Bebês */}
                       <div className="space-y-1">
-                        <Label className="text-2xs text-muted-foreground font-semibold">Composição de Passageiros</Label>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                          <div>
-                            <span className="text-2xs text-muted-foreground block text-center">Adultos</span>
-                            <Input
-                              type="number"
-                              min={1}
-                              value={formData.pax_adults}
-                              onChange={(e) => setFormData((prev) => ({ ...prev, pax_adults: Number(e.target.value) || 1 }))}
-                              className="h-9 text-xs rounded-lg font-mono text-center"
-                            />
-                          </div>
-                          <div>
-                            <span className="text-2xs text-muted-foreground block text-center">Crianças</span>
-                            <Input
-                              type="number"
-                              min={0}
-                              value={formData.pax_children}
-                              onChange={(e) => setFormData((prev) => ({ ...prev, pax_children: Number(e.target.value) || 0 }))}
-                              className="h-9 text-xs rounded-lg font-mono text-center"
-                            />
-                          </div>
-                          <div>
-                            <span className="text-2xs text-muted-foreground block text-center">Bebês</span>
-                            <Input
-                              type="number"
-                              min={0}
-                              value={formData.pax_infants}
-                              onChange={(e) => setFormData((prev) => ({ ...prev, pax_infants: Number(e.target.value) || 0 }))}
-                              className="h-9 text-xs rounded-lg font-mono text-center"
-                            />
-                          </div>
-                        </div>
+                        <Label htmlFor={`${dossierFieldId}-interest-type`} className="text-xs text-muted-foreground font-semibold">
+                          {nicheTerminology.interestFieldLabel || "Tipo de Interesse"}
+                        </Label>
+                        <Select
+                          value={formData.interest_type}
+                          onValueChange={(val) => setFormData((prev) => ({ ...prev, interest_type: val }))}
+                        >
+                          <SelectTrigger id={`${dossierFieldId}-interest-type`} className="h-11 min-h-11 text-base sm:text-xs rounded-lg">
+                            <SelectValue placeholder="Tipo de interesse..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {INTEREST_TYPES.map((t) => (
+                              <SelectItem key={t.value} value={t.value}>
+                                {t.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
 
-                      {/* Canal de Origem & Detalhe */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <Label className="text-2xs text-muted-foreground font-semibold">Canal / Origem</Label>
-                          <Select
-                            value={formData.source || "balcao"}
-                            onValueChange={(val) => setFormData((prev) => ({ ...prev, source: val as any }))}
-                          >
-                            <SelectTrigger className="h-10 text-xs rounded-lg">
-                              <SelectValue placeholder="Canal..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {LEAD_SOURCES.map((s) => (
-                                <SelectItem key={s.value} value={s.value}>
-                                  {s.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-2xs text-muted-foreground font-semibold">Detalhe do Canal</Label>
-                          <Input
-                            value={formData.lead_source_detail}
-                            onChange={(e) => setFormData((prev) => ({ ...prev, lead_source_detail: e.target.value }))}
-                            placeholder="Ex: Orgânico, Instagram"
-                            className="h-10 text-xs rounded-lg"
-                          />
-                        </div>
-                      </div>
+                      <TravelPeriodTagsPicker
+                        value={periodSpec}
+                        onChange={(nextPeriod) => {
+                          setPeriodSpec(nextPeriod);
+                          setFormData((prev) => ({
+                            ...prev,
+                            travel_start: nextPeriod.startDate || "",
+                            travel_end: nextPeriod.endDate || "",
+                            interest_period: nextPeriod.displayLabel || "",
+                          }));
+                        }}
+                      />
 
-                      {(() => {
-                        const cf = (lead?.custom_fields || {}) as Record<string, any>;
-                        const hasAttr = Boolean(
-                          cf.utm_source ||
-                            cf.utm_campaign ||
-                            cf.campaign ||
-                            cf.meta_ad_id ||
-                            cf.ad_id ||
-                            cf.meta_form_id ||
-                            cf.ctwa_clid ||
-                            cf.fbclid ||
-                            cf.gclid ||
-                            cf.fbp ||
-                            cf.lead_code,
-                        );
-                        if (!hasAttr) return null;
-                        return (
-                          <div className="p-3 rounded-lg border border-border/50 bg-background/60 space-y-1 text-2xs">
-                            <span className="font-bold uppercase tracking-wider text-primary block">
-                              Atribuição de Anúncio e Pixel
-                            </span>
-                            <div className="flex flex-wrap gap-2 text-muted-foreground">
-                              {(cf.utm_source || cf.platform) && (
-                                <span>
-                                  Fonte: <strong className="text-foreground">{cf.utm_source || cf.platform}</strong>
-                                </span>
-                              )}
-                              {(cf.utm_campaign || cf.campaign) && (
-                                <span>
-                                  Campanha: <strong className="text-foreground">{cf.utm_campaign || cf.campaign}</strong>
-                                </span>
-                              )}
-                              {(cf.meta_ad_id || cf.ad_id) && (
-                                <span className="font-mono">
-                                  Anúncio: <strong className="text-foreground">#{cf.meta_ad_id || cf.ad_id}</strong>
-                                </span>
-                              )}
-                              {cf.ad_headline && (
-                                <span>
-                                  Criativo: <strong className="text-foreground">{cf.ad_headline}</strong>
-                                </span>
-                              )}
-                              {cf.lead_code && (
-                                <span className="font-mono">
-                                  Ref: <strong className="text-foreground">#{cf.lead_code}</strong>
-                                </span>
-                              )}
-                              {cf.ctwa_clid && <span className="font-mono text-emerald-600">CTWA</span>}
-                              {(cf.fbclid || cf.fbc || cf.fbp) && <span className="font-mono text-primary">Meta Pixel</span>}
-                              {cf.gclid && <span className="font-mono text-sky-600">Google Ads</span>}
-                            </div>
-                          </div>
-                        );
-                      })()}
+                      {(unifiedNiche === "tourism" || roomOccupancies.some((r) => r.childrenCount > 0 || r.adultsCount > 1)) && (
+                        <RoomOccupancyBuilder
+                          value={roomOccupancies}
+                          onChange={(nextRooms) => {
+                            setRoomOccupancies(nextRooms);
+                            const nextAdults = nextRooms.reduce((sum, r) => sum + (r.adultsCount || 1), 0);
+                            const nextAges = nextRooms.flatMap((r) => r.childrenAges || []);
+                            setFormData((prev) => ({
+                              ...prev,
+                              pax_adults: nextAdults,
+                              pax_children: nextAges.length,
+                              pax_infants: nextAges.filter((a) => a <= 1).length,
+                              pax_ages: nextAges,
+                            }));
+                          }}
+                        />
+                      )}
+
+                      {/* Alerta de Taxas Regulatórias & Requisitos de Destino (Turismo) */}
+                      {unifiedNiche === "tourism" && (
+                        <DestinationRegulatoryAlertWidget
+                          destination={formData.destination || destinationTags}
+                          paxCount={(formData.pax_adults || 2) + (formData.pax_children || 0)}
+                          stayDays={
+                            formData.travel_start && formData.travel_end
+                              ? Math.max(1, Math.round((new Date(formData.travel_end).getTime() - new Date(formData.travel_start).getTime()) / (1000 * 60 * 60 * 24)))
+                              : 7
+                          }
+                          onIncludeFeesInProposal={(estimatedCents) => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              estimated_value_cents: (prev.estimated_value_cents || 0) + estimatedCents,
+                            }));
+                            toast.success("Taxas estimadas adicionadas ao orçamento da viagem!");
+                          }}
+                        />
+                      )}
 
                       {/* Anotações da Abordagem */}
                       <div className="space-y-1">
@@ -2263,12 +3439,237 @@ export function TourismPipeCardDossier({
                           className="text-xs rounded-lg"
                         />
                       </div>
+
+                      {/* Botão de Salvar Alterações na Coluna 1 */}
+                      <div className="flex justify-end pt-2">
+                        <Button
+                          type="button"
+                          disabled={isSaving}
+                          onClick={handleSaveForm}
+                          className="h-11 min-h-11 px-6 text-xs font-bold rounded-lg bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          {isSaving ? "Salvando..." : "Salvar Dados da Viagem"}
+                        </Button>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Coluna 2: Acessibilidade & Saúde Especial */}
-                  <div className="space-y-4 p-5 rounded-xl border border-border/40 bg-muted/10 flex flex-col justify-between">
+                  {/* Coluna 2: Atendimento, Procedência & Saúde Especial */}
+                  <div
+                    ref={formCol2Ref}
+                    className={cn(
+                      activeSection === "form"
+                        ? "h-auto lg:h-full min-h-0 lg:overflow-y-auto overscroll-contain pr-1 sm:pr-2 scrollbar-waesy pb-16 lg:pb-24"
+                        : ""
+                    )}
+                  >
+                    <div className="space-y-5 p-5 rounded-xl border border-border/40 bg-card/60 flex flex-col">
                     <div className="space-y-4">
+                      <h4 className="font-bold text-xs uppercase tracking-wide text-foreground flex items-center gap-2">
+                        <Radio className="size-4 text-primary" />
+                        <span>Atendimento & Procedência</span>
+                      </h4>
+
+                      {/* Canal de Origem & Detalhe */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label htmlFor={`${dossierFieldId}-source`} className="text-xs text-muted-foreground font-semibold">Canal / Origem</Label>
+                          <Select
+                            value={formData.source || "balcao"}
+                            onValueChange={(val) => setFormData((prev) => ({ ...prev, source: val as any }))}
+                          >
+                            <SelectTrigger id={`${dossierFieldId}-source`} className="h-11 min-h-11 text-base sm:text-xs rounded-lg">
+                              <SelectValue placeholder="Canal..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {LEAD_SOURCES.map((s) => (
+                                <SelectItem key={s.value} value={s.value}>
+                                  {s.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor={`${dossierFieldId}-source-detail`} className="text-xs text-muted-foreground font-semibold">Detalhe do Canal</Label>
+                          <Input
+                            id={`${dossierFieldId}-source-detail`}
+                            value={formData.lead_source_detail}
+                            onChange={(e) => setFormData((prev) => ({ ...prev, lead_source_detail: e.target.value }))}
+                            placeholder="Ex: Orgânico, Instagram"
+                            className="h-11 min-h-11 text-base sm:text-xs rounded-lg"
+                          />
+                        </div>
+                      </div>
+
+                      {(() => {
+                        const cf = (lead?.custom_fields || {}) as Record<string, any>;
+                        const attrObj = (cf.attribution && typeof cf.attribution === "object" ? cf.attribution : {}) as Record<string, any>;
+                        const campaignName =
+                          attrObj.campaign_name ||
+                          attrObj.campaign ||
+                          attrObj.utm_campaign ||
+                          cf.campaign_name ||
+                          cf.utm_campaign ||
+                          cf.campaign ||
+                          null;
+                        const adsetName = attrObj.adset_name || cf.adset_name || null;
+                        const adName = attrObj.ad_name || cf.ad_name || null;
+                        const adId = attrObj.ad_id || cf.ad_id || null;
+                        const touchpoints = Array.isArray(cf.touchpoints) ? cf.touchpoints : [];
+                        const customEvents = Array.isArray(cf.custom_events) ? cf.custom_events : [];
+                        const interests = Array.isArray(cf.interests) ? cf.interests : [];
+                        const formAnswers = (Array.isArray(cf.form_answers) ? cf.form_answers : []).map(
+                          (ans: any, idx: number) => ({
+                            key: `ans-${idx}`,
+                            label: ans?.question || ans?.label || `Pergunta ${idx + 1}`,
+                            value: Array.isArray(ans?.values)
+                              ? ans.values.join(", ")
+                              : String(ans?.value ?? ""),
+                          })
+                        );
+
+                        const dossierJourney = computeCustomerTouchpointJourney(
+                          touchpoints,
+                          attrObj
+                        );
+
+                        return (
+                          <div className="space-y-2">
+                            <div className="p-3 rounded-lg border border-border/40 bg-muted/20 space-y-2">
+                              <span className="text-3xs uppercase tracking-wider font-semibold text-primary block">
+                                Atribuição de Anúncio e Pixel
+                              </span>
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-2xs">
+                                {(attrObj.utm_source || cf.utm_source || attrObj.platform || cf.platform) && (
+                                  <span>
+                                    Fonte:{" "}
+                                    <strong className="text-foreground">
+                                      {attrObj.utm_source || cf.utm_source || attrObj.platform || cf.platform}
+                                    </strong>
+                                  </span>
+                                )}
+                                {campaignName && (
+                                  <span>
+                                    Campanha: <strong className="text-foreground">{campaignName}</strong>
+                                  </span>
+                                )}
+                                {adsetName && (
+                                  <span>
+                                    Conjunto: <strong className="text-foreground">{adsetName}</strong>
+                                  </span>
+                                )}
+                                {adName && (
+                                  <span>
+                                    Anúncio: <strong className="text-foreground">{adName}</strong>
+                                  </span>
+                                )}
+                                {adId && (
+                                  <span className="font-mono text-muted-foreground">
+                                    ID #{adId}
+                                  </span>
+                                )}
+                                {(attrObj.lead_code || cf.lead_code) && (
+                                  <span className="font-mono">
+                                    Ref: <strong className="text-foreground">#{attrObj.lead_code || cf.lead_code}</strong>
+                                  </span>
+                                )}
+                                {(attrObj.ctwa_clid || cf.ctwa_clid) && <span className="font-mono text-emerald-600">CTWA</span>}
+                                {(attrObj.fbclid || attrObj.fbc || attrObj.fbp || cf.fbclid || cf.fbc || cf.fbp) && (
+                                  <span className="font-mono text-primary">Meta Pixel</span>
+                                )}
+                                {(attrObj.gclid || cf.gclid) && <span className="font-mono text-sky-600">Google Ads</span>}
+                              </div>
+                              {dossierJourney.totalTouchpointsCount > 0 && (
+                                <div className="pt-2 border-t border-border/40 space-y-1">
+                                  <div className="flex flex-wrap items-center gap-2 text-2xs">
+                                    <span className="px-2 py-1 rounded bg-primary/10 text-primary font-semibold">
+                                      {dossierJourney.totalClicksCount} {dossierJourney.totalClicksCount === 1 ? "toque" : "toques"}
+                                    </span>
+                                    {dossierJourney.uniqueCampaignsCount > 0 && (
+                                      <span className="px-2 py-1 rounded bg-muted text-foreground font-medium">
+                                        {dossierJourney.uniqueCampaignsCount} {dossierJourney.uniqueCampaignsCount === 1 ? "campanha" : "campanhas"}
+                                      </span>
+                                    )}
+                                    {dossierJourney.uniqueAdsCount > 0 && (
+                                      <span className="px-2 py-1 rounded bg-muted text-foreground font-medium">
+                                        {dossierJourney.uniqueAdsCount} {dossierJourney.uniqueAdsCount === 1 ? "anúncio" : "anúncios"}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {dossierJourney.totalTouchpointsCount > 1 && dossierJourney.firstTouch && dossierJourney.lastTouch && (
+                                    <div className="text-2xs text-muted-foreground space-y-1">
+                                      <p>
+                                        <strong className="text-foreground">1º Toque:</strong>{" "}
+                                        {dossierJourney.firstTouch.campaignName || dossierJourney.firstTouch.adName || dossierJourney.firstTouch.channel}
+                                      </p>
+                                      <p>
+                                        <strong className="text-foreground">Último Toque:</strong>{" "}
+                                        {dossierJourney.lastTouch.campaignName || dossierJourney.lastTouch.adName || dossierJourney.lastTouch.channel}
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+
+                            {interests.length > 0 && (
+                              <div className="p-3 rounded-lg border border-border/40 bg-muted/10 space-y-2">
+                                <span className="text-3xs uppercase tracking-wider font-semibold text-muted-foreground block">
+                                  Interesses & Anúncios Vinculados ({interests.length})
+                                </span>
+                                <div className="flex flex-wrap gap-2">
+                                  {interests.map((it: any, idx: number) => (
+                                    <Badge key={idx} variant="secondary" className="text-2xs font-medium max-w-full">
+                                      <span className="truncate">
+                                        {it?.listing_title || it?.source_detail || (it?.ad_id ? `Anúncio #${it.ad_id}` : "Interesse")}
+                                      </span>
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {formAnswers.length > 0 && (
+                              <div className="space-y-2">
+                                <span className="font-semibold text-2xs uppercase tracking-wider text-muted-foreground block">
+                                  Respostas Estruturadas do Formulário
+                                </span>
+                                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                  {formAnswers.map((row) => (
+                                    <div key={row.key} className="bg-background/60 rounded-lg px-3 py-2">
+                                      <dt className="text-2xs text-muted-foreground font-medium">{row.label}</dt>
+                                      <dd className="text-xs font-medium text-foreground break-words">{row.value}</dd>
+                                    </div>
+                                  ))}
+                                </dl>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+
+                      {/* Tags Avançadas & Etiquetas do Atendimento */}
+                      <div className="p-4 rounded-xl border border-border/80 bg-card space-y-3">
+                        <AdvancedLeadTagsPicker
+                          tags={formData.tags}
+                          onChange={(nextTags) => setFormData((prev) => ({ ...prev, tags: nextTags }))}
+                        />
+                      </div>
+
+                      {/* Lembretes, Alarmes & Vencimentos de Follow-up */}
+                      <div className="p-4 rounded-xl border border-border/80 bg-card space-y-3">
+                        <LeadRemindersManager
+                          reminders={reminders}
+                          onChange={(nextReminders, nextFollowUp) => {
+                            setReminders(nextReminders);
+                            setFollowUpAt(nextFollowUp || null);
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-border/40 space-y-4">
                       <h4 className="font-bold text-xs uppercase tracking-wide text-foreground flex items-center gap-2">
                         <ShieldCheck className="size-4 text-primary" />
                         <span>Acessibilidade & Saúde</span>
@@ -2338,20 +3739,50 @@ export function TourismPipeCardDossier({
                         />
                       </div>
                     </div>
+
+                    {/* Botão de Salvar Alterações na Coluna 2 */}
+                    <div className="flex justify-end pt-4 border-t border-border/40">
+                      <Button
+                        type="button"
+                        disabled={isSaving}
+                        onClick={handleSaveForm}
+                        className="h-11 min-h-11 px-6 text-xs font-bold rounded-lg bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        {isSaving ? "Salvando..." : "Salvar Dados da Viagem"}
+                      </Button>
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Botão de Salvar Alterações */}
-                <div className="flex justify-end pt-2">
-                  <Button
-                    type="button"
-                    disabled={isSaving}
-                    onClick={handleSaveForm}
-                    className="h-11 min-h-11 px-6 text-xs font-bold rounded-lg bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    {isSaving ? "Salvando..." : "Salvar Dados da Viagem"}
-                  </Button>
-                </div>
+                {/* Botão de Salvar Alterações para exibição no modo 'all' */}
+                {activeSection === "all" && (
+                  <div className="flex justify-end pt-2">
+                    <Button
+                      type="button"
+                      disabled={isSaving}
+                      onClick={handleSaveForm}
+                      className="h-11 min-h-11 px-6 text-xs font-bold rounded-lg bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      {isSaving ? "Salvando..." : "Salvar Dados da Viagem"}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 1.1 PASTAS DE INSPIRAÇÃO & MOODBOARD VISUAL MULTI-NICHO */}
+            {(activeSection === "all" || activeSection === "inspiration") && (
+              <div id="section-inspiration" className="space-y-4 p-5 rounded-xl border border-border/40 bg-card/60">
+                <LeadInspirationMoodboard
+                  niche={unifiedNiche}
+                  photos={inspirationPhotos}
+                  folders={inspirationFolders}
+                  leadPhone={lead.phone}
+                  leadName={lead.full_name}
+                  companyName={companyName}
+                  onSavePhotos={handleSaveInspirationPhotos}
+                />
               </div>
             )}
 
@@ -2363,11 +3794,27 @@ export function TourismPipeCardDossier({
                     <div className="flex items-center gap-2">
                       <Users className="size-4 text-primary" />
                       <h3 className="font-bold text-xs uppercase tracking-wide text-foreground">
-                        Pastas de Viajantes & Acompanhantes ({travelerDossiers.length})
+                        {unifiedNiche === "real_estate"
+                          ? `Cônjuge & Dependentes (${travelerDossiers.length})`
+                          : unifiedNiche === "automotive"
+                          ? `Condutores Autorizados (${travelerDossiers.length})`
+                          : unifiedNiche === "events"
+                          ? `Padrinhos & Família (${travelerDossiers.length})`
+                          : ["beauty_salon", "healthcare", "dental", "aesthetics_clinic"].includes(unifiedNiche)
+                          ? `Acompanhantes / Responsáveis (${travelerDossiers.length})`
+                          : `Pastas de Viajantes & Acompanhantes (${travelerDossiers.length})`}
                       </h3>
                     </div>
                     <p className="text-2xs text-muted-foreground">
-                      Documentação de embarque, conferência de passaportes, vínculos consulares DS-160 e promoção a cliente.
+                      {unifiedNiche === "real_estate"
+                        ? "Documentação de co-proprietários, cônjuge para escritura e qualificação civil."
+                        : unifiedNiche === "automotive"
+                        ? "Registro de CNH, condutores adicionais para seguro e vistoria."
+                        : unifiedNiche === "events"
+                        ? "Lista de padrinhos, homenageados e cerimonial."
+                        : ["beauty_salon", "healthcare", "dental", "aesthetics_clinic"].includes(unifiedNiche)
+                        ? "Contatos de emergência, acompanhantes ou responsáveis legais do paciente."
+                        : "Documentação de embarque, conferência de passaportes, vínculos consulares DS-160 e promoção a cliente."}
                     </p>
                   </div>
                   <Button
@@ -2735,7 +4182,7 @@ export function TourismPipeCardDossier({
 
             {/* 3. RADAR DE OPORTUNIDADES & TARIFAS INFOTRAVEL */}
             {(activeSection === "all" || activeSection === "opportunities") && (
-              <div id="section-opportunities" className="p-5 rounded-xl border border-border/60 bg-card space-y-4">
+              <section id="section-opportunities" className="space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-border/40 gap-3">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="size-4 text-primary" />
@@ -2743,15 +4190,37 @@ export function TourismPipeCardDossier({
                       <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">
                         Radar de Oportunidades & Tarifas
                       </h4>
-                      <p className="text-2xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Histórico de cotações e tarifas para {formData.destination || "este destino"}
                       </p>
                     </div>
                   </div>
-                  <Badge variant="outline" className="text-2xs font-mono border-primary/30 text-primary bg-primary/10 self-start sm:self-auto">
+                  <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary bg-primary/10 self-start sm:self-auto">
                     {similarProposals.length + infotravelCaptures.length + radarMatches.length + (infotravelOpp ? 1 : 0)} oportunidade(s) mapeada(s)
                   </Badge>
                 </div>
+
+                {customer360Data?.historicalBenchmark && (
+                  <div className="p-3 rounded-lg bg-muted/40 flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <div className="space-y-1 min-w-0">
+                      <span className="font-semibold text-foreground block">
+                        Termômetro Histórico do Destino
+                      </span>
+                      <span className="text-muted-foreground block">
+                        {customer360Data.historicalBenchmark.verdictLabelPt}
+                      </span>
+                    </div>
+                    <Badge
+                      variant={customer360Data.historicalBenchmark.verdict === "great_deal" ? "success" : "secondary"}
+                      className="text-xs shrink-0"
+                    >
+                      {customer360Data.historicalBenchmark.sampleCount >= 2 &&
+                      customer360Data.historicalBenchmark.historicalSavingsPct != null
+                        ? `${customer360Data.historicalBenchmark.historicalSavingsPct > 0 ? "-" : "+"}${Math.abs(Math.round(customer360Data.historicalBenchmark.historicalSavingsPct))}% histórico`
+                        : `${customer360Data.historicalBenchmark.sampleCount} amostras`}
+                    </Badge>
+                  </div>
+                )}
 
                 {infotravelOpp && (
                   <div className="p-4 rounded-xl border border-primary/30 bg-primary/5 space-y-3">
@@ -2764,7 +4233,7 @@ export function TourismPipeCardDossier({
                       </strong>
                     </div>
                     {infotravelOpp.whatsapp_pitch_draft && (
-                      <p className="text-2xs text-muted-foreground italic">"{infotravelOpp.whatsapp_pitch_draft}"</p>
+                      <p className="text-xs text-muted-foreground italic">"{infotravelOpp.whatsapp_pitch_draft}"</p>
                     )}
                   </div>
                 )}
@@ -2772,7 +4241,7 @@ export function TourismPipeCardDossier({
                 {/* Capturas em Tempo Real (InfoTravel / Operadoras) */}
                 {infotravelCaptures.length > 0 && (
                   <div className="space-y-2">
-                    <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
                       Capturas de Tarifas em Operadoras (InfoTravel)
                     </span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -2786,14 +4255,14 @@ export function TourismPipeCardDossier({
                               <span className="font-bold text-foreground line-clamp-2 text-anti-truncate">
                                 {cap.hotel_name || cap.destination || "Tarifa Operadora"}
                               </span>
-                              <Badge variant="outline" className="text-2xs uppercase shrink-0">
+                              <Badge variant="outline" className="text-xs uppercase shrink-0">
                                 {cap.source_provider || "InfoTravel"}
                               </Badge>
                             </div>
-                            <p className="text-2xs text-muted-foreground">
+                            <p className="text-xs text-muted-foreground">
                               {cap.destination} {cap.checkin_date ? `· ${cap.checkin_date}` : ""}
                             </p>
-                            <div className="flex items-center gap-2 text-2xs font-mono text-muted-foreground pt-1">
+                            <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground pt-1">
                               <span>Tarifa Capturada:</span>
                               <strong className="text-primary font-mono">{formatMoney(cap.total_amount_cents || 0)}</strong>
                             </div>
@@ -2817,7 +4286,7 @@ export function TourismPipeCardDossier({
                             className="h-11 min-h-11 text-xs font-semibold gap-2 border-border hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <Zap className="size-3.5 text-primary" />
-                            <span>Converter Captura em Proposta</span>
+                            <span>Converter em Proposta</span>
                           </Button>
                         </div>
                       ))}
@@ -2828,7 +4297,7 @@ export function TourismPipeCardDossier({
                 {/* Radar de Oportunidades & Promoções da Agência */}
                 {radarMatches.length > 0 && (
                   <div className="space-y-2">
-                    <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
                       Radar de Tarifas & Bloqueios da Agência
                     </span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -2841,11 +4310,11 @@ export function TourismPipeCardDossier({
                             <span className="font-bold text-foreground line-clamp-2 text-anti-truncate block">
                               {opp.title || opp.destination || "Oportunidade do Radar"}
                             </span>
-                            <div className="flex items-center gap-2 text-2xs font-mono text-muted-foreground pt-1">
+                            <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground pt-1">
                               <span>Tarifa Radar:</span>
-                              <strong className="text-emerald-700 dark:text-emerald-400 font-mono">{formatMoney(opp.price_cents || 0)}</strong>
+                              <strong className="text-success font-mono">{formatMoney(opp.price_cents || 0)}</strong>
                               {opp.discount_pct ? (
-                                <Badge variant="secondary" className="text-2xs">-{opp.discount_pct}%</Badge>
+                                <Badge variant="secondary" className="text-xs">-{opp.discount_pct}%</Badge>
                               ) : null}
                             </div>
                           </div>
@@ -2867,7 +4336,7 @@ export function TourismPipeCardDossier({
                             className="h-11 min-h-11 text-xs font-semibold gap-2 border-border hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <Plane className="size-3.5 text-primary" />
-                            <span>Ofertar Pacote do Radar</span>
+                            <span>Ofertar Pacote</span>
                           </Button>
                         </div>
                       ))}
@@ -2878,30 +4347,60 @@ export function TourismPipeCardDossier({
                 {/* Pacotes e Propostas Enviadas para Outros Clientes */}
                 {similarProposals.length > 0 ? (
                   <div className="space-y-2">
-                    <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
                       Pacotes e Cotações Enviados para Outros Clientes
                     </span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {similarProposals.map((prop: any) => {
-                        const totalCents = prop.pricing?.total_price_cents || prop.pricing?.total_cents || 0;
+                        const totalCents = prop.effective_total_cents || prop.pricing?.total_price_cents || prop.pricing?.total_cents || 0;
                         return (
                           <div
                             key={`sim-${prop.id}`}
-                            className="p-3 rounded-lg border border-border bg-muted flex flex-col justify-between gap-3 text-xs"
+                            className="p-3 rounded-lg border border-border bg-muted/30 flex flex-col justify-between gap-3 text-xs"
                           >
-                            <div className="space-y-1">
-                              <span className="font-bold text-foreground line-clamp-2 text-anti-truncate block">
-                                {prop.title || prop.destination_city || "Pacote Turístico"}
-                              </span>
+                            <div className="space-y-2">
+                              <div className="flex items-start justify-between gap-2">
+                                <span className="font-bold text-foreground line-clamp-2">
+                                  {prop.title || prop.destination_city || "Pacote Turístico"}
+                                </span>
+                                {prop.match_score ? (
+                                  <Badge variant="success" className="text-xs shrink-0 tabular-nums">
+                                    {Math.round(Number(prop.match_score))}%
+                                  </Badge>
+                                ) : null}
+                              </div>
                               {prop.client_name && (
-                                <span className="text-2xs text-muted-foreground block line-clamp-2 text-anti-truncate">
-                                  Ref. Cliente: {prop.client_name} · Destino: {prop.destination_city || "Geral"}
+                                <span className="text-xs text-muted-foreground block">
+                                  Ref.: {prop.client_name} · {prop.destination_city || "Destino"}
                                 </span>
                               )}
-                              <div className="flex items-center gap-2 text-2xs font-mono text-muted-foreground pt-1">
-                                <span>Total Cotado:</span>
+                              <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-muted-foreground pt-1">
+                                <span>{prop.requires_child_requote ? "Simulado c/ crianças:" : "Total Cotado:"}</span>
                                 <strong className="text-foreground font-mono">{formatMoney(totalCents)}</strong>
+                                {prop.requires_child_requote && (
+                                  <Badge variant="warning" className="text-xs">Simulação CHD</Badge>
+                                )}
+                                {prop.historical_savings_pct != null && Number(prop.historical_savings_pct) >= 8 && (
+                                  <Badge variant="success" className="text-xs">
+                                    -{Math.round(Number(prop.historical_savings_pct))}% vs histórico
+                                  </Badge>
+                                )}
+                                {prop.already_proposed_recently && (
+                                  <Badge variant="outline" className="text-xs text-warning-strong border-warning/40">
+                                    Proposta recente
+                                  </Badge>
+                                )}
                               </div>
+                              {Array.isArray(prop.match_reasons) && prop.match_reasons.length > 0 && (
+                                <div className="text-xs text-muted-foreground line-clamp-2">
+                                  {prop.match_reasons.slice(0, 2).join(" · ")}
+                                </div>
+                              )}
+                              {Array.isArray(prop.warnings) && prop.warnings.length > 0 && (
+                                <div className="text-2xs text-warning-strong">
+                                  {prop.warnings[0]}
+                                </div>
+                              )}
                             </div>
 
                             <Button
@@ -2920,7 +4419,7 @@ export function TourismPipeCardDossier({
                               className="h-11 min-h-11 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                             >
                               <FileText className="size-3.5 text-primary" />
-                              <span>Aproveitar Estrutura em Nova Proposta</span>
+                              <span>Usar como Base</span>
                             </Button>
                           </div>
                         );
@@ -2928,11 +4427,11 @@ export function TourismPipeCardDossier({
                     </div>
                   </div>
                 ) : infotravelCaptures.length === 0 && radarMatches.length === 0 && !infotravelOpp ? (
-                  <p className="text-2xs text-muted-foreground py-2 text-center">
+                  <p className="text-xs text-muted-foreground py-2 text-center">
                     Nenhuma cotação de referência ou captura do InfoTravel encontrada para este destino.
                   </p>
                 ) : null}
-              </div>
+              </section>
             )}
 
             {/* 4. COTAÇÕES & PROPOSTAS COMERCIAIS */}
@@ -2945,18 +4444,46 @@ export function TourismPipeCardDossier({
                       Cotações & Propostas ({effectiveProposals.length})
                     </h3>
                   </div>
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      onClose();
-                      onGenerateProposal(buildProposalLeadPayload());
-                    }}
-                    className="h-11 min-h-11 px-4 text-xs font-bold gap-2 bg-primary text-primary-foreground rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <Plus className="size-4" />
-                    <span>Nova Cotação</span>
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsQuoteOcrModalOpen(true)}
+                      className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 border-primary/30 text-primary hover:bg-primary/5 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <Upload className="size-3.5" />
+                      <span>Importar Cotação (OCR)</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        onGenerateProposal(buildProposalLeadPayload());
+                      }}
+                      className="h-11 min-h-11 px-4 text-xs font-bold gap-2 bg-primary text-primary-foreground rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <Plus className="size-4" />
+                      <span>Nova Cotação</span>
+                    </Button>
+                  </div>
                 </div>
+
+                <DestinationRegulatoryAlertWidget
+                  destination={formData.destination || destinationTags}
+                  paxCount={(formData.pax_adults || 2) + (formData.pax_children || 0)}
+                  stayDays={
+                    formData.travel_start && formData.travel_end
+                      ? Math.max(1, Math.round((new Date(formData.travel_end).getTime() - new Date(formData.travel_start).getTime()) / (1000 * 60 * 60 * 24)))
+                      : 7
+                  }
+                  onIncludeFeesInProposal={(estimatedCents) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      estimated_value_cents: (prev.estimated_value_cents || 0) + estimatedCents,
+                    }));
+                    toast.success("Taxas estimadas adicionadas ao orçamento da viagem!");
+                  }}
+                />
 
                 {effectiveProposals.length > 0 ? (
                   <div className="space-y-3">
@@ -3097,20 +4624,199 @@ export function TourismPipeCardDossier({
             {/* 5. CONTRATOS DIGITAIS & MINUTAS */}
             {(activeSection === "all" || activeSection === "contracts") && (
               <div id="section-contracts" className="space-y-6">
-                <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
                   <div className="flex items-center gap-2">
                     <FileSignature className="size-4 text-primary" />
                     <h3 className="font-bold text-xs uppercase tracking-wide text-foreground">
                       Contratos Digitais & Minutas
                     </h3>
+                    <Badge variant="secondary" className="text-2xs font-mono font-bold">
+                      {allContracts.length}
+                    </Badge>
                   </div>
-                  <span className="text-2xs text-muted-foreground font-mono">
-                    Tokenizado com Validação Forense
-                  </span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={isRefreshingContracts}
+                      onClick={handleRefreshContracts}
+                      className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                      title="Sincronizar status dos contratos em tempo real"
+                    >
+                      <RefreshCw className={cn("size-3.5", isRefreshingContracts && "animate-spin")} />
+                      <span>Atualizar</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleOpenVaultLinker}
+                      className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                      title="Vincular contrato pré-existente do cofre da agência"
+                    >
+                      <Link2 className="size-3.5 text-primary" />
+                      <span>Vincular do Cofre</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        window.open(`/workspace/contratos/novo?leadId=${lead.id}`, "_blank");
+                      }}
+                      className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                      title="Criar minuta livre no Editor Visual A4"
+                    >
+                      <ExternalLink className="size-3.5 text-muted-foreground" />
+                      <span>Editor A4</span>
+                    </Button>
+                  </div>
                 </div>
 
+                {/* Banner de Auto-Preenchimento a partir de Proposta Aceita */}
+                {acceptedProposal && (
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-primary/30 bg-primary/5">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="size-4 text-primary" />
+                        <span className="text-xs font-bold text-foreground">
+                          Proposta Aceita Detectada
+                        </span>
+                        <Badge variant="outline" className="text-2xs bg-background text-primary font-semibold border-primary/40">
+                          {acceptedProposal.title || "Proposta Aprovada"}
+                        </Badge>
+                      </div>
+                      <p className="text-2xs text-muted-foreground">
+                        Sincronize automaticamente os serviços contratados, valores econômicos e condições de parcelamento desta proposta.
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={() => handleApplyProposalToContract(acceptedProposal)}
+                      className="h-11 min-h-11 px-4 text-xs font-bold bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring cursor-pointer shrink-0 gap-2"
+                    >
+                      <Sparkles className="size-3.5" />
+                      <span>Preencher com Proposta</span>
+                    </Button>
+                  </div>
+                )}
+
+                {/* Presets Rápidos de Modelos de Contrato */}
+                <div className="space-y-2">
+                  <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wide block">
+                    Modelos Rápidos de Contrato
+                  </span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {(
+                      unifiedNiche === "real_estate"
+                        ? [
+                            { key: "imovel_compra_venda", label: "Compra e Venda de Imóvel" },
+                            { key: "imovel_locacao", label: "Locação Residencial" },
+                            { key: "imovel_intermediacao", label: "Intermediação Imobiliária" },
+                          ]
+                        : unifiedNiche === "automotive"
+                        ? [
+                            { key: "veiculo_compra_venda", label: "Compra e Venda de Veículo" },
+                            { key: "veiculo_garantia", label: "Ordem de Serviço & Garantia" },
+                          ]
+                        : unifiedNiche === "events"
+                        ? [
+                            { key: "eventos_buffet", label: "Buffet & Espaço para Eventos" },
+                            { key: "eventos_cerimonial", label: "Cerimonial & Produção" },
+                          ]
+                        : ["beauty_salon", "healthcare", "dental", "aesthetics_clinic"].includes(unifiedNiche)
+                        ? [
+                            { key: "saude_consentimento", label: "Termo de Consentimento Clínico" },
+                            { key: "saude_plano", label: "Plano de Tratamento" },
+                          ]
+                        : ["services", "law_firm", "accounting"].includes(unifiedNiche)
+                        ? [
+                            { key: "b2b_servicos", label: "Prestação de Serviços B2B" },
+                            { key: "servicos_geral", label: "Serviços / Consultoria" },
+                          ]
+                        : [
+                            { key: "turismo_completo", label: "Pacote Turístico Completo" },
+                            { key: "aereo_hospedagem", label: "Aéreo + Hospedagem" },
+                            { key: "corporativo_b2b", label: "Corporativo B2B" },
+                            { key: "servicos_geral", label: "Serviços / Consultoria" },
+                          ]
+                    ).map((preset) => (
+                      <button
+                        key={preset.key}
+                        type="button"
+                        onClick={() => handleApplyContractTemplatePreset(preset.key)}
+                        className={cn(
+                          "h-11 min-h-11 px-3 text-xs font-semibold rounded-lg border transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring",
+                          contractTemplatePreset === preset.key
+                            ? "bg-primary/10 border-primary text-primary"
+                            : "bg-card border-border/70 text-foreground hover:bg-muted"
+                        )}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Pré-preenchimento Inteligente a partir de Propostas */}
+                {effectiveProposals.length > 0 && (
+                  <div className="p-4 rounded-xl border border-primary/25 bg-primary/5 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <FileText className="size-4 text-primary shrink-0" />
+                        <span className="text-2xs font-bold uppercase tracking-wider text-foreground">
+                          {effectiveProposals.length === 1
+                            ? "Proposta Disponível para Vincular ao Contrato"
+                            : `${effectiveProposals.length} Propostas Disponíveis para Vincular`}
+                        </span>
+                      </div>
+                      <Badge variant="outline" className="text-3xs font-mono font-bold">
+                        1 Clique
+                      </Badge>
+                    </div>
+                    <p className="text-2xs text-muted-foreground leading-relaxed">
+                      Selecione uma proposta para preencher automaticamente título, destino, valor total contratado e condições de pagamento:
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      {effectiveProposals.map((prop: any) => {
+                        const price =
+                          prop.pricing?.total_price_cents ||
+                          prop.pricing?.total_cents ||
+                          prop.total_value_cents ||
+                          0;
+                        const isPropAccepted =
+                          prop.status === "approved" ||
+                          prop.status === "accepted" ||
+                          prop.acceptance_status === "accepted";
+                        return (
+                          <Button
+                            key={prop.id}
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleApplyProposalToContract(prop)}
+                            className={cn(
+                              "h-11 min-h-11 px-3 text-xs font-bold gap-2 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring",
+                              isPropAccepted
+                                ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20"
+                                : "border-primary/40 bg-background hover:bg-primary/10 text-primary"
+                            )}
+                          >
+                            <FileCheck2 className="size-3.5 shrink-0" />
+                            <span>
+                              {prop.title || prop.destination_city || "Proposta"} ({formatMoney(price)})
+                              {isPropAccepted ? " [ACEITA]" : ""}
+                            </span>
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {/* Formulário de Emissão de Novo Contrato */}
-                <div className="p-5 rounded-xl border border-border/40 bg-muted/10 space-y-4">
+                <div className="p-5 rounded-xl border border-border/60 bg-muted/10 space-y-4">
                   <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">
                     Emitir Novo Contrato Digital
                   </h4>
@@ -3122,7 +4828,7 @@ export function TourismPipeCardDossier({
                         value={contractFormTitle}
                         onChange={(e) => setContractFormTitle(e.target.value)}
                         placeholder="Ex: Contrato de Prestação de Serviços Turísticos..."
-                        className="h-10 text-xs rounded-lg"
+                        className="h-11 text-xs rounded-lg"
                       />
                     </div>
 
@@ -3133,7 +4839,7 @@ export function TourismPipeCardDossier({
                         value={contractFormSummary}
                         onChange={(e) => setContractFormSummary(e.target.value)}
                         placeholder="Intermediação de bilhetes aéreos, reserva de hotel..."
-                        className="text-xs rounded-lg"
+                        className="text-xs rounded-lg min-h-11"
                       />
                     </div>
 
@@ -3145,7 +4851,7 @@ export function TourismPipeCardDossier({
                           value={contractFormTotalCents ? contractFormTotalCents / 100 : ""}
                           onChange={(e) => setContractFormTotalCents(Math.round(Number(e.target.value || 0) * 100))}
                           placeholder="R$ 0,00"
-                          className="h-10 text-xs rounded-lg font-mono"
+                          className="h-11 text-xs rounded-lg font-mono"
                         />
                       </div>
                       <div className="space-y-1">
@@ -3154,48 +4860,127 @@ export function TourismPipeCardDossier({
                           value={contractFormPaymentConditions}
                           onChange={(e) => setContractFormPaymentConditions(e.target.value)}
                           placeholder="Ex: Entrada 20% PIX + 10x no cartão"
-                          className="h-10 text-xs rounded-lg"
+                          className="h-11 text-xs rounded-lg"
                         />
                       </div>
                     </div>
 
-                    <Button
-                      type="button"
-                      disabled={isIssuingContract}
-                      onClick={handleIssueContractClick}
-                      className="w-full h-11 min-h-11 text-xs font-bold bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring cursor-pointer rounded-lg"
-                    >
-                      {isIssuingContract ? "Gerando Minuta..." : "Gerar e Emitir Contrato Digital"}
-                    </Button>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                      <Button
+                        type="button"
+                        disabled={isIssuingContract}
+                        onClick={() => handleIssueContractClick(false)}
+                        className="h-11 min-h-11 px-3 text-xs font-bold bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring cursor-pointer rounded-lg gap-2"
+                      >
+                        <CheckCircle2 className="size-4 shrink-0" />
+                        <span>{isIssuingContract ? "Emitindo..." : "Gerar e Emitir Contrato"}</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        disabled={isIssuingContract}
+                        variant="outline"
+                        onClick={() => handleIssueContractClick(true)}
+                        className="h-11 min-h-11 px-3 text-xs font-bold border-border/80 hover:bg-muted text-foreground focus-visible:ring-2 focus-visible:ring-ring cursor-pointer rounded-lg gap-2"
+                        title="Gera a minuta com os dados do atendimento e abre imediatamente no Editor Visual A4 de Contratos"
+                      >
+                        <FileText className="size-4 text-primary shrink-0" />
+                        <span>Gerar & Abrir no Editor A4</span>
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
-                {/* Lista de Contratos Emitidos */}
-                {customer360Data?.contracts && customer360Data.contracts.length > 0 ? (
-                  <div className="space-y-3">
+                {/* Lista de Contratos Emitidos (Tier DocuSign / ClickSign) */}
+                {allContracts.length > 0 ? (
+                  <div className="space-y-4">
                     <span className="font-bold text-xs uppercase tracking-wide text-foreground block">
-                      Contratos Emitidos ({customer360Data.contracts.length})
+                      Contratos Vinculados & Emitidos ({allContracts.length})
                     </span>
-                    {customer360Data.contracts.map((c: any) => {
+
+                    {allContracts.map((c: any) => {
                       const isSigned = c.status === "signed" || Boolean(c.signed_at);
-                      const isViewed = isSigned || c.status === "viewed";
-                      const isOpened = isViewed || c.status === "opened" || c.status === "sent";
+                      const isViewed = isSigned || c.status === "viewed" || Boolean(c.viewed_at);
+                      const isDispatched = isViewed || c.status === "sent" || c.status === "signing" || Boolean(c.signing_token);
+                      const isDraft = c.status === "draft";
+                      const isCancelled = c.status === "cancelled";
                       const publicToken = c.public_token || c.id;
+                      const signingToken = c.signing_token || c.envelopes?.[0]?.signing_token || publicToken;
+                      const verificationCode = c.verification_code || `CTR-${(c.id || "").slice(0, 8).toUpperCase()}`;
+                      const envelopesList = Array.isArray(c.envelopes) && c.envelopes.length > 0
+                        ? c.envelopes
+                        : [
+                            {
+                              id: `env-${c.id}`,
+                              signer_name: formData.name || lead.full_name || "Contratante Titular",
+                              signer_role: "client",
+                              signer_phone: formData.phone || lead.phone,
+                              signer_email: formData.email || lead.email,
+                              status: isSigned ? "signed" : isViewed ? "viewed" : "pending",
+                              signing_token: signingToken,
+                            },
+                          ];
+
+                      // Cálculo da etapa DocuSign (1 a 5)
+                      const currentStep = isSigned ? 5 : isViewed ? 4 : isDispatched ? 3 : isDraft ? 1 : 2;
 
                       return (
                         <div
                           key={c.id}
-                          className="p-4 rounded-xl border border-border/60 bg-card space-y-3 text-xs"
+                          className="p-5 rounded-2xl border border-border/60 bg-card space-y-4 text-xs"
                         >
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                            <div>
-                              <span className="font-bold text-foreground text-sm block">
-                                {c.contract_title || c.title || "Contrato Digital de Viagem"}
-                              </span>
-                              <span className="text-2xs text-muted-foreground font-mono">
-                                {formatMoney(c.total_value_cents || c.total_amount_cents || 0)} · {isSigned ? "Assinado Digitalmente" : c.status}
-                              </span>
+                          {/* Header do Contrato */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-bold text-foreground text-sm">
+                                  {c.contract_title || c.title || "Contrato Digital de Viagem"}
+                                </span>
+                                <Badge
+                                  variant="outline"
+                                  className={cn(
+                                    "text-2xs font-bold uppercase tracking-wider",
+                                    isSigned
+                                      ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
+                                      : isCancelled
+                                      ? "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30"
+                                      : isViewed
+                                      ? "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/30"
+                                      : "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30"
+                                  )}
+                                >
+                                  {isSigned
+                                    ? "Assinado & Selado"
+                                    : isCancelled
+                                    ? "Cancelado"
+                                    : isViewed
+                                    ? "Visualizado"
+                                    : isDispatched
+                                    ? "Em Coleta"
+                                    : "Minuta Rascunho"}
+                                </Badge>
+                                <span className="text-2xs text-muted-foreground font-mono bg-muted/40 px-2 py-1 rounded">
+                                  {verificationCode}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-3 text-2xs text-muted-foreground font-mono flex-wrap">
+                                <span className="font-bold text-foreground">
+                                  {formatMoney(c.total_value_cents || c.total_amount_cents || 0)}
+                                </span>
+                                <span>·</span>
+                                <span>Criado em: {new Date(c.created_at || Date.now()).toLocaleDateString("pt-BR")}</span>
+                                {c.signed_at && (
+                                  <>
+                                    <span>·</span>
+                                    <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                                      <ShieldCheck className="size-3" />
+                                      Selado: {new Date(c.signed_at).toLocaleString("pt-BR")}
+                                    </span>
+                                  </>
+                                )}
+                              </div>
                             </div>
+
+                            {/* Ações Rápidas de Topo */}
                             <div className="flex items-center gap-2 flex-wrap">
                               <Button
                                 type="button"
@@ -3204,10 +4989,10 @@ export function TourismPipeCardDossier({
                                   window.open(`/workspace/contratos/${c.id}/editor`, "_blank");
                                 }}
                                 className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                                title="Abrir no Editor Visual de Contratos e Assinaturas"
+                                title="Abrir no Editor Visual A4 de Contratos"
                               >
                                 <FileText className="size-3.5 text-primary" />
-                                <span>Editor</span>
+                                <span>Editor A4</span>
                               </Button>
                               <Button
                                 type="button"
@@ -3216,16 +5001,17 @@ export function TourismPipeCardDossier({
                                   window.open(`/contrato/${publicToken}`, "_blank");
                                 }}
                                 className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                                title="Visualizar Minuta Pública"
+                                title="Visualizar Minuta Pública em tela cheia"
                               >
                                 <Eye className="size-3.5 text-muted-foreground" />
-                                <span>Ver Minuta</span>
+                                <span>Minuta</span>
                               </Button>
                               <Button
                                 type="button"
                                 variant="outline"
-                                onClick={() => handleSendContractWhatsApp(publicToken, c.contract_title || "Contrato")}
+                                onClick={() => handleSendContractWhatsApp(signingToken, c.contract_title || c.title || "Contrato")}
                                 className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                                title="Enviar link de assinatura via WhatsApp"
                               >
                                 <MessageSquare className="size-3.5 text-emerald-600" />
                                 <span>WhatsApp</span>
@@ -3233,8 +5019,9 @@ export function TourismPipeCardDossier({
                               <Button
                                 type="button"
                                 variant="outline"
-                                onClick={() => handleCopyContractLink(publicToken)}
+                                onClick={() => handleCopyContractLink(signingToken)}
                                 className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                                title="Copiar link seguro de assinatura"
                               >
                                 <Copy className="size-3.5" />
                                 <span>Copiar Link</span>
@@ -3242,30 +5029,234 @@ export function TourismPipeCardDossier({
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2 text-2xs text-muted-foreground pt-1 border-t border-border/30">
-                            <span className="font-semibold text-foreground">
-                              {isSigned ? "Assinado" : isViewed ? "Visualizado" : isOpened ? "Aberto" : "Enviado"}
+                          {/* Stepper Visual DocuSign (5 Etapas Canônicas) */}
+                          <div className="p-4 rounded-xl border border-border/40 bg-muted/10 space-y-3">
+                            <div className="flex items-center justify-between text-2xs font-semibold text-muted-foreground">
+                              <span className="uppercase tracking-wider">Trilha Probatória de Assinatura</span>
+                              <span className="font-mono">Etapa {currentStep} de 5</span>
+                            </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-2xs">
+                              {[
+                                { step: 1, label: "Minuta Gerada" },
+                                { step: 2, label: "Disparado" },
+                                { step: 3, label: "Visualizado" },
+                                { step: 4, label: "Validação KYC" },
+                                { step: 5, label: "Selado SHA-256" },
+                              ].map((st) => {
+                                const isDone = currentStep >= st.step;
+                                const isCurrent = currentStep === st.step;
+                                return (
+                                  <div key={st.step} className="space-y-1 flex flex-col items-center">
+                                    <div
+                                      className={cn(
+                                        "size-7 rounded-full flex items-center justify-center font-bold text-2xs transition-colors",
+                                        isDone
+                                          ? "bg-emerald-600 text-primary-foreground"
+                                          : isCurrent
+                                          ? "bg-primary text-primary-foreground animate-pulse motion-reduce:animate-none"
+                                          : "bg-muted text-muted-foreground border border-border"
+                                      )}
+                                    >
+                                      {isDone ? <Check className="size-3.5 stroke-2" /> : st.step}
+                                    </div>
+                                    <span
+                                      className={cn(
+                                        "font-medium leading-tight truncate w-full",
+                                        isDone ? "text-foreground font-semibold" : "text-muted-foreground"
+                                      )}
+                                    >
+                                      {st.label}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          {/* Lista de Envelopes & Signatários */}
+                          <div className="space-y-2">
+                            <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
+                              Signatários & Envelopes ({envelopesList.length})
                             </span>
-                            <span>·</span>
-                            <span>Etapa {isSigned ? 5 : isViewed ? 4 : isOpened ? 3 : 2} de 5</span>
-                            {c.signed_at && (
-                              <>
-                                <span>·</span>
-                                <span>{new Date(c.signed_at).toLocaleString("pt-BR")}</span>
-                              </>
-                            )}
+                            <div className="space-y-2">
+                              {envelopesList.map((env: any, idx: number) => {
+                                const envSigned = env.status === "signed" || Boolean(env.signed_at);
+                                const envViewed = envSigned || env.status === "viewed" || Boolean(env.viewed_at);
+                                const envToken = env.signing_token || signingToken;
+
+                                return (
+                                  <div
+                                    key={env.id || idx}
+                                    className="p-3 rounded-lg border border-border/40 bg-card/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                                  >
+                                    <div className="space-y-1">
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-bold text-foreground">
+                                          {env.signer_name || "Signatário"}
+                                        </span>
+                                        <Badge variant="outline" className="text-2xs font-normal">
+                                          {env.signer_role === "client"
+                                            ? "Contratante / Titular"
+                                            : env.signer_role === "agency"
+                                            ? "Contratada / Agência"
+                                            : env.signer_role === "witness"
+                                            ? "Testemunha"
+                                            : "Signatário"}
+                                        </Badge>
+                                        <Badge
+                                          variant="secondary"
+                                          className={cn(
+                                            "text-2xs font-semibold",
+                                            envSigned
+                                              ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                                              : envViewed
+                                              ? "bg-purple-500/10 text-purple-700 dark:text-purple-400"
+                                              : "bg-muted text-muted-foreground"
+                                          )}
+                                        >
+                                          {envSigned ? "Assinado" : envViewed ? "Visualizado" : "Pendente"}
+                                        </Badge>
+                                      </div>
+                                      <div className="text-2xs text-muted-foreground flex items-center gap-2">
+                                        {env.signer_phone && <span>Tel: {env.signer_phone}</span>}
+                                        {env.signer_email && <span>· {env.signer_email}</span>}
+                                      </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                          handleSendSignerWhatsApp(
+                                            envToken,
+                                            c.contract_title || c.title || "Contrato",
+                                            env.signer_name,
+                                            env.signer_phone
+                                          )
+                                        }
+                                        className="h-11 min-h-11 px-3 text-2xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                                        title="Enviar link individual deste signatário via WhatsApp"
+                                      >
+                                        <MessageSquare className="size-3 text-emerald-600" />
+                                        <span>WhatsApp Individual</span>
+                                      </Button>
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleCopyContractLink(envToken)}
+                                        className="h-11 min-h-11 px-3 text-2xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                                        title="Copiar link individual deste envelope"
+                                      >
+                                        <Copy className="size-3" />
+                                        <span>Copiar</span>
+                                      </Button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
                         </div>
                       );
                     })}
                   </div>
                 ) : (
-                  <p className="text-2xs text-center text-muted-foreground py-2">
-                    Nenhum contrato emitido para este atendimento ainda.
-                  </p>
+                  <div className="p-8 rounded-xl border border-dashed border-border/80 text-center space-y-2 bg-muted/5">
+                    <FileSignature className="size-8 text-muted-foreground/50 mx-auto" />
+                    <p className="text-xs font-semibold text-foreground">
+                      Nenhum contrato emitido ou vinculado a este atendimento ainda.
+                    </p>
+                    <p className="text-2xs text-muted-foreground max-w-sm mx-auto">
+                      Gere um novo contrato preenchendo o formulário acima, utilize a proposta aceita ou vincule uma minuta existente do cofre da empresa.
+                    </p>
+                  </div>
                 )}
               </div>
             )}
+
+            {/* Modal de Vinculação de Contratos Pré-existentes do Cofre */}
+            <Dialog open={isLinkingContractModalOpen} onOpenChange={setIsLinkingContractModalOpen}>
+              <DialogContent className="max-w-xl max-h-128 flex flex-col p-6 overflow-hidden">
+                <DialogHeader>
+                  <DialogTitle className="text-sm font-bold flex items-center gap-2">
+                    <Link2 className="size-4 text-primary" />
+                    <span>Vincular Contrato Existente do Cofre</span>
+                  </DialogTitle>
+                  <DialogDescription className="text-xs text-muted-foreground">
+                    Selecione um contrato registrado na empresa para associá-lo a este lead e unificar o histórico de assinaturas.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="flex-1 overflow-y-auto space-y-3 py-3 pr-1">
+                  {isFetchingLinkableContracts ? (
+                    <div className="space-y-3">
+                      <Skeleton className="h-16 w-full rounded-xl" />
+                      <Skeleton className="h-16 w-full rounded-xl" />
+                      <Skeleton className="h-16 w-full rounded-xl" />
+                    </div>
+                  ) : linkableContracts.length === 0 ? (
+                    <p className="text-xs text-center text-muted-foreground py-8">
+                      Nenhum outro contrato disponível no cofre para vinculação.
+                    </p>
+                  ) : (
+                    linkableContracts.map((lc: any) => {
+                      const isSelected = selectedContractToLink === lc.id;
+                      return (
+                        <button
+                          key={lc.id}
+                          type="button"
+                          onClick={() => setSelectedContractToLink(lc.id)}
+                          className={cn(
+                            "w-full text-left p-3 rounded-xl border transition-colors cursor-pointer space-y-1 focus-visible:ring-2 focus-visible:ring-ring",
+                            isSelected
+                              ? "bg-primary/10 border-primary ring-1 ring-primary"
+                              : "bg-card border-border/70 hover:bg-muted/40"
+                          )}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-bold text-xs text-foreground truncate">
+                              {lc.title || "Contrato da Agência"}
+                            </span>
+                            <Badge variant="outline" className="text-2xs uppercase font-mono">
+                              {lc.status || "draft"}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center justify-between text-2xs text-muted-foreground">
+                            <span>Valor: {formatMoney(lc.total_amount_cents || 0)}</span>
+                            <span>Criado: {new Date(lc.created_at || Date.now()).toLocaleDateString("pt-BR")}</span>
+                          </div>
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+
+                <DialogFooter className="pt-3 border-t border-border/40 gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsLinkingContractModalOpen(false);
+                      setSelectedContractToLink(null);
+                    }}
+                    className="h-11 min-h-11 px-4 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="button"
+                    disabled={!selectedContractToLink || isLinkingContract}
+                    onClick={handleConfirmLinkContract}
+                    className="h-11 min-h-11 px-4 text-xs font-bold bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                  >
+                    {isLinkingContract ? "Vinculando..." : "Vincular a este Atendimento"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
             {/* 6. PLANEJAMENTO DE PAGAMENTO & DECOMPOSIÇÃO TARIFÁRIA */}
             {(activeSection === "all" || activeSection === "payment") && (
@@ -3282,84 +5273,335 @@ export function TourismPipeCardDossier({
                   </span>
                 </div>
 
-                <div className="p-5 rounded-xl border border-border/40 bg-muted/10 space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Aéreo / Passagens (R$)</Label>
-                      <Input
-                        type="number"
-                        value={paymentPlan.flight_cents ? paymentPlan.flight_cents / 100 : ""}
-                        onChange={(e) =>
-                          setPaymentPlan((prev) => ({
-                            ...prev,
-                            flight_cents: Math.round(Number(e.target.value || 0) * 100),
-                          }))
-                        }
-                        placeholder="R$ 0,00"
-                        className="h-10 text-xs rounded-lg font-mono"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Hotelaria / Resort (R$)</Label>
-                      <Input
-                        type="number"
-                        value={paymentPlan.hotel_cents ? paymentPlan.hotel_cents / 100 : ""}
-                        onChange={(e) =>
-                          setPaymentPlan((prev) => ({
-                            ...prev,
-                            hotel_cents: Math.round(Number(e.target.value || 0) * 100),
-                          }))
-                        }
-                        placeholder="R$ 0,00"
-                        className="h-10 text-xs rounded-lg font-mono"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Seguro Viagem & Assistência (R$)</Label>
-                      <Input
-                        type="number"
-                        value={paymentPlan.insurance_cents ? paymentPlan.insurance_cents / 100 : ""}
-                        onChange={(e) =>
-                          setPaymentPlan((prev) => ({
-                            ...prev,
-                            insurance_cents: Math.round(Number(e.target.value || 0) * 100),
-                          }))
-                        }
-                        placeholder="R$ 0,00"
-                        className="h-10 text-xs rounded-lg font-mono"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Taxas de Embarque (R$)</Label>
-                      <Input
-                        type="number"
-                        value={paymentPlan.boarding_tax_cents ? paymentPlan.boarding_tax_cents / 100 : ""}
-                        onChange={(e) =>
-                          setPaymentPlan((prev) => ({
-                            ...prev,
-                            boarding_tax_cents: Math.round(Number(e.target.value || 0) * 100),
-                          }))
-                        }
-                        placeholder="R$ 0,00"
-                        className="h-10 text-xs rounded-lg font-mono"
-                      />
-                    </div>
-                    <div className="space-y-1 sm:col-span-2">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Comissão / Markup da Agência (R$)</Label>
-                      <Input
-                        type="number"
-                        value={paymentPlan.commission_cents ? paymentPlan.commission_cents / 100 : ""}
-                        onChange={(e) =>
-                          setPaymentPlan((prev) => ({
-                            ...prev,
-                            commission_cents: Math.round(Number(e.target.value || 0) * 100),
-                          }))
-                        }
-                        placeholder="R$ 0,00"
-                        className="h-10 text-xs rounded-lg font-mono"
-                      />
-                    </div>
+                {/* Seletor de Modo de Nicho (Turismo vs Comercial/B2B) */}
+                <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border border-border/60 bg-muted/20">
+                  <div className="space-y-1">
+                    <span className="text-xs font-semibold text-foreground flex items-center gap-2">
+                      <Briefcase className="size-3.5 text-primary" />
+                      <span>Modelo de Decomposição Financeira</span>
+                    </span>
+                    <p className="text-2xs text-muted-foreground">
+                      Adapta os campos tarifários e opções de faturamento conforme o nicho do atendimento.
+                    </p>
                   </div>
+                  <div className="flex items-center gap-2 p-1 bg-background rounded-lg border border-border/80">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentPlanNiche("turismo")}
+                      className={cn(
+                        "h-11 min-h-11 px-3 rounded-md text-xs font-semibold transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary",
+                        paymentPlanNiche === "turismo"
+                          ? "bg-primary text-primary-foreground font-bold shadow-2xs"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                      )}
+                    >
+                      Turismo & Viagens
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentPlanNiche("comercial")}
+                      className={cn(
+                        "h-11 min-h-11 px-3 rounded-md text-xs font-semibold transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary",
+                        paymentPlanNiche === "comercial"
+                          ? "bg-primary text-primary-foreground font-bold shadow-2xs"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                      )}
+                    >
+                      Serviços & B2B
+                    </button>
+                  </div>
+                </div>
+
+                {/* Card de Vínculo de Proposta / Orçamento */}
+                <div className="p-4 rounded-xl border border-border bg-card space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-border/40">
+                    <div className="flex items-center gap-2">
+                      <FileCheck2 className="size-4 text-primary" />
+                      <span className="text-xs font-bold text-foreground">
+                        Proposta / Orçamento Vinculado
+                      </span>
+                    </div>
+                    {acceptedProposal ? (
+                      <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 gap-2 text-3xs font-bold">
+                        <CheckCircle2 className="size-3" />
+                        Proposta Aprovada pelo Cliente
+                      </Badge>
+                    ) : linkedProposal ? (
+                      <Badge variant="outline" className="text-3xs font-semibold">
+                        {linkedProposal.status === "approved" || linkedProposal.status === "accepted"
+                          ? "Aprovada"
+                          : linkedProposal.status === "sent"
+                            ? "Publicada"
+                            : "Rascunho"}
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-3xs text-muted-foreground">
+                        Plano Avulso Manual
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-2xs text-muted-foreground font-semibold">
+                        Selecionar Proposta do Atendimento
+                      </Label>
+                      <Select
+                        value={paymentPlan.linked_proposal_id || "none"}
+                        onValueChange={(val) => {
+                          if (val === "none") {
+                            setPaymentPlan((prev) => ({
+                              ...prev,
+                              linked_proposal_id: null,
+                              linked_option_id: null,
+                              is_synced: false,
+                            }));
+                          } else {
+                            const found = effectiveProposals.find((p: any) => p.id === val);
+                            if (found) {
+                              applyProposalToPaymentPlan(found);
+                            }
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="h-11 min-h-11 text-xs rounded-lg">
+                          <SelectValue placeholder="Selecione uma proposta..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">
+                            Nenhuma proposta (Plano Avulso Manual)
+                          </SelectItem>
+                          {effectiveProposals.map((p: any) => {
+                            const pTotal =
+                              p.pricing?.total_price_cents ||
+                              p.pricing?.total_cents ||
+                              p.total_value_cents ||
+                              0;
+                            const isAcc =
+                              p.status === "approved" ||
+                              p.status === "accepted" ||
+                              p.acceptance_status === "accepted";
+                            return (
+                              <SelectItem key={p.id} value={p.id}>
+                                {isAcc ? "[Aprovada] " : ""}
+                                {p.title || p.destination_city || "Proposta"} — {formatMoney(pTotal)}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {linkedProposal && Array.isArray(linkedProposal.options) && linkedProposal.options.length > 1 && (
+                      <div className="space-y-1">
+                        <Label className="text-2xs text-muted-foreground font-semibold">
+                          Opção Escolhida / Aprovada
+                        </Label>
+                        <Select
+                          value={paymentPlan.linked_option_id || linkedProposal.options[0]?.id}
+                          onValueChange={(optId) => {
+                            applyProposalToPaymentPlan(linkedProposal, optId);
+                          }}
+                        >
+                          <SelectTrigger className="h-11 min-h-11 text-xs rounded-lg">
+                            <SelectValue placeholder="Selecione a opção..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {linkedProposal.options.map((opt: any) => (
+                              <SelectItem key={opt.id} value={opt.id}>
+                                {opt.id === linkedProposal.accepted_option_id ? "[Aceita] " : ""}
+                                {opt.name || "Opção"} — {formatMoney(opt.pricing?.total_price_cents || 0)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </div>
+
+                  {linkedProposal && (
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/40">
+                      <div className="flex items-center gap-2 text-2xs text-muted-foreground font-mono">
+                        <Sparkles className="size-3.5 text-primary" />
+                        <span>
+                          Proposta vinculada: <strong className="text-foreground">{linkedProposal.title || "Proposta"}</strong>
+                          {" · "}
+                          Valor: <strong className="text-foreground">{formatMoney(linkedProposal.pricing?.total_price_cents || linkedProposal.total_value_cents || 0)}</strong>
+                        </span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => applyProposalToPaymentPlan(linkedProposal, paymentPlan.linked_option_id || undefined)}
+                        className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <RefreshCw className="size-3.5" />
+                        <span>Sincronizar Dados da Proposta</span>
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Decomposição Tarifária Adaptada ao Nicho */}
+                <div className="p-5 rounded-xl border border-border/40 bg-muted/10 space-y-4">
+                  {paymentPlanNiche === "turismo" ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      <div className="space-y-1">
+                        <Label className="text-2xs text-muted-foreground font-semibold">Aéreo / Passagens (R$)</Label>
+                        <Input
+                          type="number"
+                          value={paymentPlan.flight_cents ? paymentPlan.flight_cents / 100 : ""}
+                          onChange={(e) =>
+                            setPaymentPlan((prev) => ({
+                              ...prev,
+                              flight_cents: Math.round(Number(e.target.value || 0) * 100),
+                            }))
+                          }
+                          placeholder="R$ 0,00"
+                          className="h-11 min-h-11 text-xs rounded-lg font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-2xs text-muted-foreground font-semibold">Hotelaria / Resort (R$)</Label>
+                        <Input
+                          type="number"
+                          value={paymentPlan.hotel_cents ? paymentPlan.hotel_cents / 100 : ""}
+                          onChange={(e) =>
+                            setPaymentPlan((prev) => ({
+                              ...prev,
+                              hotel_cents: Math.round(Number(e.target.value || 0) * 100),
+                            }))
+                          }
+                          placeholder="R$ 0,00"
+                          className="h-11 min-h-11 text-xs rounded-lg font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-2xs text-muted-foreground font-semibold">Seguro Viagem & Assistência (R$)</Label>
+                        <Input
+                          type="number"
+                          value={paymentPlan.insurance_cents ? paymentPlan.insurance_cents / 100 : ""}
+                          onChange={(e) =>
+                            setPaymentPlan((prev) => ({
+                              ...prev,
+                              insurance_cents: Math.round(Number(e.target.value || 0) * 100),
+                            }))
+                          }
+                          placeholder="R$ 0,00"
+                          className="h-11 min-h-11 text-xs rounded-lg font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-2xs text-muted-foreground font-semibold">Taxas de Embarque & Portuárias (R$)</Label>
+                        <Input
+                          type="number"
+                          value={paymentPlan.boarding_tax_cents ? paymentPlan.boarding_tax_cents / 100 : ""}
+                          onChange={(e) =>
+                            setPaymentPlan((prev) => ({
+                              ...prev,
+                              boarding_tax_cents: Math.round(Number(e.target.value || 0) * 100),
+                            }))
+                          }
+                          placeholder="R$ 0,00"
+                          className="h-11 min-h-11 text-xs rounded-lg font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1 sm:col-span-2">
+                        <Label className="text-2xs text-muted-foreground font-semibold">Comissão / Markup da Agência (R$)</Label>
+                        <Input
+                          type="number"
+                          value={paymentPlan.commission_cents ? paymentPlan.commission_cents / 100 : ""}
+                          onChange={(e) =>
+                            setPaymentPlan((prev) => ({
+                              ...prev,
+                              commission_cents: Math.round(Number(e.target.value || 0) * 100),
+                            }))
+                          }
+                          placeholder="R$ 0,00"
+                          className="h-11 min-h-11 text-xs rounded-lg font-mono"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      <div className="space-y-1">
+                        <Label className="text-2xs text-muted-foreground font-semibold">Serviços / Mão de Obra / Honorários (R$)</Label>
+                        <Input
+                          type="number"
+                          value={paymentPlan.services_cents ? paymentPlan.services_cents / 100 : ""}
+                          onChange={(e) =>
+                            setPaymentPlan((prev) => ({
+                              ...prev,
+                              services_cents: Math.round(Number(e.target.value || 0) * 100),
+                            }))
+                          }
+                          placeholder="R$ 0,00"
+                          className="h-11 min-h-11 text-xs rounded-lg font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-2xs text-muted-foreground font-semibold">Produtos / Peças / Materiais (R$)</Label>
+                        <Input
+                          type="number"
+                          value={paymentPlan.products_cents ? paymentPlan.products_cents / 100 : ""}
+                          onChange={(e) =>
+                            setPaymentPlan((prev) => ({
+                              ...prev,
+                              products_cents: Math.round(Number(e.target.value || 0) * 100),
+                            }))
+                          }
+                          placeholder="R$ 0,00"
+                          className="h-11 min-h-11 text-xs rounded-lg font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-2xs text-muted-foreground font-semibold">Taxas / Impostos / Despesas (R$)</Label>
+                        <Input
+                          type="number"
+                          value={paymentPlan.taxes_cents ? paymentPlan.taxes_cents / 100 : ""}
+                          onChange={(e) =>
+                            setPaymentPlan((prev) => ({
+                              ...prev,
+                              taxes_cents: Math.round(Number(e.target.value || 0) * 100),
+                            }))
+                          }
+                          placeholder="R$ 0,00"
+                          className="h-11 min-h-11 text-xs rounded-lg font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-2xs text-muted-foreground font-semibold">Desconto Comercial (R$)</Label>
+                        <Input
+                          type="number"
+                          value={paymentPlan.discount_cents ? paymentPlan.discount_cents / 100 : ""}
+                          onChange={(e) =>
+                            setPaymentPlan((prev) => ({
+                              ...prev,
+                              discount_cents: Math.round(Number(e.target.value || 0) * 100),
+                            }))
+                          }
+                          placeholder="R$ 0,00"
+                          className="h-11 min-h-11 text-xs rounded-lg font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1 sm:col-span-2">
+                        <Label className="text-2xs text-muted-foreground font-semibold">Margem / Markup Comercial (R$)</Label>
+                        <Input
+                          type="number"
+                          value={paymentPlan.margin_cents ? paymentPlan.margin_cents / 100 : ""}
+                          onChange={(e) =>
+                            setPaymentPlan((prev) => ({
+                              ...prev,
+                              margin_cents: Math.round(Number(e.target.value || 0) * 100),
+                            }))
+                          }
+                          placeholder="R$ 0,00"
+                          className="h-11 min-h-11 text-xs rounded-lg font-mono"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Modalidade de Pagamento Planejada */}
@@ -3367,12 +5609,21 @@ export function TourismPipeCardDossier({
                   <span className="font-bold text-xs uppercase tracking-wide text-foreground block">
                     Modalidade de Pagamento Planejada
                   </span>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {[
-                      { id: "pix_cash", label: "PIX à Vista (com desconto)" },
-                      { id: "credit_card", label: "Cartão em até 10x" },
-                      { id: "operator_boleto", label: "Boleto Faturado Operadora" },
-                    ].map((m) => {
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+                    {(paymentPlanNiche === "turismo"
+                      ? [
+                          { id: "pix_cash", label: "PIX à Vista (com desconto)" },
+                          { id: "credit_card", label: "Cartão em até 10x/12x" },
+                          { id: "operator_boleto", label: "Boleto Operadora" },
+                          { id: "split_deposit", label: "Entrada + Saldo Parcelado" },
+                        ]
+                      : [
+                          { id: "pix_cash", label: "PIX à Vista" },
+                          { id: "credit_card", label: "Cartão até 12x" },
+                          { id: "bank_slip", label: "Boleto Bancário PJ" },
+                          { id: "entry_plus_installments", label: "Sinal + Saldo Entrega" },
+                        ]
+                    ).map((m) => {
                       const active = paymentPlan.method === m.id;
                       return (
                         <button
@@ -3382,7 +5633,7 @@ export function TourismPipeCardDossier({
                           className={cn(
                             "h-11 min-h-11 px-3 rounded-lg border text-xs font-semibold transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary",
                             active
-                              ? "border-primary bg-primary text-primary-foreground font-bold"
+                              ? "border-primary bg-primary text-primary-foreground font-bold shadow-2xs"
                               : "border-border/60 bg-card text-foreground hover:bg-muted/40"
                           )}
                         >
@@ -3397,21 +5648,36 @@ export function TourismPipeCardDossier({
                     <Input
                       value={paymentPlan.notes}
                       onChange={(e) => setPaymentPlan((prev) => ({ ...prev, notes: e.target.value }))}
-                      placeholder="Ex: 20% de entrada via PIX + 10x sem juros no cartão..."
-                      className="h-10 text-xs rounded-lg"
+                      placeholder={
+                        paymentPlanNiche === "turismo"
+                          ? "Ex: 20% de entrada via PIX + 10x sem juros no cartão..."
+                          : "Ex: 50% de sinal na aprovação + 50% na entrega técnica..."
+                      }
+                      className="h-11 min-h-11 text-xs rounded-lg"
                     />
                   </div>
 
                   <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleCopyPaymentLink}
-                      className="h-11 min-h-11 px-4 text-xs font-semibold gap-2 cursor-pointer border-border/60 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <Copy className="size-3.5" />
-                      <span>Copiar Link de Cobrança</span>
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleCopyPaymentLink}
+                        className="h-11 min-h-11 px-4 text-xs font-semibold gap-2 cursor-pointer border-border/60 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <Copy className="size-3.5" />
+                        <span>Copiar Link de Cobrança</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => openUnifiedDocumentStudio("contract_legal")}
+                        className="h-11 min-h-11 px-4 text-xs font-semibold gap-2 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <FileSignature className="size-3.5" />
+                        <span>Emitir Contrato Oficial</span>
+                      </Button>
+                    </div>
 
                     <Button
                       type="button"
@@ -3428,7 +5694,7 @@ export function TourismPipeCardDossier({
 
             {/* 7. ANAMNESE & PERFIL DE VIAGEM */}
             {(activeSection === "all" || activeSection === "anamnese") && (
-              <div id="section-anamnese" className="space-y-6">
+              <div id="section-anamnese" className="space-y-4">
                 <div className="flex items-center justify-between pb-2 border-b border-border/40">
                   <div className="flex items-center gap-2">
                     <HeartPulse className="size-4 text-primary" />
@@ -3437,104 +5703,44 @@ export function TourismPipeCardDossier({
                     </h3>
                   </div>
                   <span className="text-2xs text-muted-foreground font-mono">
-                    Perfil Comportamental
+                    Perfil Comportamental & Clínico
                   </span>
                 </div>
 
-                <div className="space-y-3 p-5 rounded-xl border border-border/40 bg-muted/10">
-                  <span className="text-xs font-bold uppercase tracking-wide text-foreground block">Estilo de Viagem</span>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {["Econômica", "Conforto", "Premium / Luxo"].map((style) => {
-                      const isSelected = (formData.notes || "").includes(style);
-                      return (
-                        <button
-                          type="button"
-                          key={style}
-                          onClick={() => {
-                            const updated = `${formData.notes || ""}\nEstilo: ${style}`.trim();
-                            setFormData((prev) => ({ ...prev, notes: updated }));
-                            toast.success(`Estilo selecionado: ${style}`);
-                          }}
-                          className={cn(
-                            "h-11 min-h-11 p-2 rounded-lg border text-center text-xs font-medium cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary",
-                            isSelected
-                              ? "border-primary bg-primary/10 text-primary font-bold"
-                              : "border-border/60 bg-card text-foreground hover:bg-muted/40"
-                          )}
-                        >
-                          {style}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+                <AnamneseDocEditor
+                  initialData={anamneseData}
+                  history={anamneseHistory}
+                  clientName={formData.name || lead.full_name || "Passageiro"}
+                  destination={formData.destination || lead.destination || "Destino a definir"}
+                  onSave={async (nextData, newVersionTitle) => {
+                    setAnamneseData(nextData);
+                    let nextHistory = anamneseHistory;
+                    if (newVersionTitle) {
+                      const newRecord: AnamneseVersionRecord = {
+                        id: `ver-${Date.now()}`,
+                        versionTitle: newVersionTitle,
+                        savedAt: new Date().toISOString(),
+                        authorName: tenantIdentity.companyName || "Consultor",
+                        data: nextData,
+                      };
+                      nextHistory = [newRecord, ...anamneseHistory];
+                      setAnamneseHistory(nextHistory);
+                    }
 
-                <div className="space-y-3 p-5 rounded-xl border border-border/40 bg-muted/10">
-                  <span className="text-xs font-bold uppercase tracking-wide text-foreground block">Preferência de Hospedagem</span>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {["Hotel Central", "Resort All-Inclusive", "Pousada Boutique"].map((h) => {
-                      const isSelected = (formData.notes || "").includes(h);
-                      return (
-                        <button
-                          type="button"
-                          key={h}
-                          onClick={() => {
-                            const updated = `${formData.notes || ""}\nHospedagem: ${h}`.trim();
-                            setFormData((prev) => ({ ...prev, notes: updated }));
-                            toast.success(`Hospedagem selecionada: ${h}`);
-                          }}
-                          className={cn(
-                            "h-11 min-h-11 p-2 rounded-lg border text-center text-xs font-medium cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary",
-                            isSelected
-                              ? "border-primary bg-primary/10 text-primary font-bold"
-                              : "border-border/60 bg-card text-foreground hover:bg-muted/40"
-                          )}
-                        >
-                          {h}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="space-y-3 p-5 rounded-xl border border-border/40 bg-muted/10">
-                  <span className="text-xs font-bold uppercase tracking-wide text-foreground block">Preferência de Voo & Bagagem</span>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {["Assento Janela", "Assento Corredor", "Bagagem Despachada (23kg)"].map((p) => {
-                      const isSelected = (formData.notes || "").includes(p);
-                      return (
-                        <button
-                          type="button"
-                          key={p}
-                          onClick={() => {
-                            const updated = `${formData.notes || ""}\nPreferencia: ${p}`.trim();
-                            setFormData((prev) => ({ ...prev, notes: updated }));
-                            toast.success(`Preferência selecionada: ${p}`);
-                          }}
-                          className={cn(
-                            "h-11 min-h-11 p-2 rounded-lg border text-center text-xs font-medium cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary",
-                            isSelected
-                              ? "border-primary bg-primary/10 text-primary font-bold"
-                              : "border-border/60 bg-card text-foreground hover:bg-muted/40"
-                          )}
-                        >
-                          {p}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="flex justify-end pt-2">
-                  <Button
-                    type="button"
-                    disabled={isSaving}
-                    onClick={handleSaveForm}
-                    className="h-11 min-h-11 px-5 text-xs font-bold rounded-lg bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    {isSaving ? "Salvando..." : "Salvar Anamnese"}
-                  </Button>
-                </div>
+                    await onSaveLead({
+                      ...formData,
+                      notes: nextData.consultantNotes || formData.notes,
+                      custom_fields: {
+                        ...(lead.custom_fields || {}),
+                        tags: formData.tags,
+                        reminders,
+                        next_followup_at: followUpAt,
+                        anamnese_data: nextData,
+                        anamnese_history: nextHistory,
+                      },
+                    });
+                  }}
+                />
               </div>
             )}
 
@@ -3548,41 +5754,59 @@ export function TourismPipeCardDossier({
                       Perfil do Cliente
                     </h3>
                   </div>
-                  <Badge variant="outline" className="text-2xs font-mono">
-                    {customer360Data?.customer ? "Cliente Ativo" : "Não Promovido"}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    {crmCustomer && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsQuickProfileOpen(true)}
+                        className="h-11 sm:min-h-8 sm:h-8 px-3 text-xs font-semibold gap-2 border-primary/30 text-primary hover:bg-primary/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <UserCheck className="size-3.5" />
+                        <span>Edição Rápida & Foto</span>
+                      </Button>
+                    )}
+                    <Badge variant="outline" className="text-2xs font-mono">
+                      {crmCustomer ? "Cliente Ativo" : "Não Promovido"}
+                    </Badge>
+                  </div>
                 </div>
 
                 {customer360Data?.customer ? (
                   <div className="space-y-5">
-                    <div className="p-5 rounded-xl border border-border/40 bg-muted/10 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-foreground text-sm">
-                          {customer360Data.customer.full_name || customer360Data.customer.name || formData.name}
-                        </span>
-                        <Badge variant="outline" className="font-mono text-xs">
-                          Score: {customer360Data.customer.score || 100} pts
-                        </Badge>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-2xs text-muted-foreground">
-                        <div>CPF: <strong className="text-foreground font-mono">{customer360Data.customer.document || "Não informado"}</strong></div>
-                        <div>Cidade: <strong className="text-foreground">{customer360Data.customer.city || "Não informada"}</strong></div>
-                        <div>Viagens: <strong className="text-foreground font-mono">{customer360Data.trips?.length || 0}</strong></div>
-                        <div>Contratos: <strong className="text-foreground font-mono">{customer360Data.contracts?.length || 0}</strong></div>
-                        <div>Atendimentos: <strong className="text-foreground font-mono">{(customer360Data.otherLeads?.length || 0) + 1}</strong></div>
-                        <div>Chamados SOS: <strong className="text-foreground font-mono">{customer360Data.incidents?.length || 0}</strong></div>
-                      </div>
-                    </div>
-
-                    {/* Dossiê Imprimível */}
-                    <Customer360PrintableDossier
+                    <Customer360EditableCard
                       customer={{
                         id: customer360Data.customer.id,
-                        fullName: customer360Data.customer.full_name || customer360Data.customer.name || "Cliente",
+                        fullName: customer360Data.customer.full_name || customer360Data.customer.name || formData.name,
                         taxId: customer360Data.customer.document || null,
-                        email: customer360Data.customer.email || null,
+                        email: sanitizeCustomerEmail(customer360Data.customer.email),
                         phone: customer360Data.customer.phone || null,
                         city: customer360Data.customer.city || null,
+                        state: customer360Data.customer.state || null,
+                        birthDate: customer360Data.customer.birth_date || null,
+                        notes: customer360Data.customer.notes || null,
+                        score: customer360Data.customer.score || 100,
+                      }}
+                      destination={formData.destination}
+                      travelDate={formData.travel_start}
+                      travelers={travelerDossiers}
+                      onSaveCustomer={async (updated) => {
+                        await updateCustomer({
+                          data: {
+                            id: customer360Data.customer.id,
+                            fullName: updated.fullName,
+                            document: updated.taxId,
+                            email: updated.email,
+                            phone: updated.phone,
+                            city: updated.city,
+                            state: updated.state,
+                            birthDate: updated.birthDate,
+                            notes: updated.notes,
+                          },
+                        });
+                        queryClient.invalidateQueries({ queryKey: ["crm-leads"] });
+                        queryClient.invalidateQueries({ queryKey: ["customer-360", lead.id] });
                       }}
                     />
                   </div>
@@ -3597,11 +5821,12 @@ export function TourismPipeCardDossier({
                     </div>
                     <Button
                       type="button"
-                      onClick={() => onPromoteToCustomer(lead.id)}
+                      disabled={isPromoting}
+                      onClick={handlePromoteLead}
                       className="h-11 min-h-11 px-5 text-xs font-bold gap-2 bg-primary text-primary-foreground rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <UserPlus className="size-4" />
-                      <span>Promover Titular a Cliente da Carteira 360°</span>
+                      <span>{isPromoting ? "Promovendo..." : "Promover Titular a Cliente da Carteira 360°"}</span>
                     </Button>
                   </div>
                 )}
@@ -4240,15 +6465,34 @@ export function TourismPipeCardDossier({
                               <span>Abrir no Studio</span>
                             </Button>
                           ) : att.url ? (
-                            <a
-                              href={att.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="h-11 min-h-11 px-3 text-xs text-primary hover:underline font-semibold flex items-center gap-1"
-                            >
-                              <span>Abrir</span>
-                              <ExternalLink className="size-3" />
-                            </a>
+                            <div className="flex items-center gap-2">
+                              <a
+                                href={att.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="h-11 min-h-11 px-3 text-xs text-primary hover:underline font-semibold flex items-center gap-1"
+                              >
+                                <span>Abrir</span>
+                                <ExternalLink className="size-3" />
+                              </a>
+                              {(att.type?.includes("pdf") || att.name?.toLowerCase().endsWith(".pdf") || att.type?.includes("image")) && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setQuoteOcrFileName(att.name);
+                                    setQuoteOcrFileMime(att.type || "application/pdf");
+                                    setIsQuoteOcrModalOpen(true);
+                                  }}
+                                  className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+                                  title="Extrair dados desta cotação com OCR para preencher o card"
+                                >
+                                  <Sparkles className="size-3" />
+                                  <span>Escanear OCR</span>
+                                </Button>
+                              )}
+                            </div>
                           ) : null}
                           <Button
                             type="button"
@@ -4287,53 +6531,27 @@ export function TourismPipeCardDossier({
                   </span>
                 </div>
 
-                <div className="space-y-2">
-                  <Textarea
-                    rows={2}
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Escreva uma observação interna ou registro de contato com o passageiro..."
-                    className="text-xs rounded-lg"
-                  />
-                  <div className="flex justify-end">
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={handleAddComment}
-                      disabled={!newComment.trim()}
-                      className="h-11 min-h-11 px-4 text-xs font-bold bg-primary text-primary-foreground rounded-lg cursor-pointer"
-                    >
-                      <Send className="size-3 mr-2" />
-                      <span>Registrar Nota</span>
-                    </Button>
-                  </div>
-                </div>
+                <LeadActivityTimeline
+                  leadId={lead.id}
+                  legacyComments={internalComments}
+                  onActivityChanged={() =>
+                    queryClient.invalidateQueries({ queryKey: ["crm-leads"] })
+                  }
+                />
 
-                <div className="space-y-3 pt-2">
-                  {internalComments.map((comm) => (
-                    <div
-                      key={comm.id}
-                      className="p-4 rounded-lg border border-border/50 bg-card space-y-1 text-xs"
-                    >
-                      <div className="flex items-center justify-between text-2xs text-muted-foreground">
-                        <span className="font-bold text-foreground">{comm.author}</span>
-                        <span className="font-mono">{comm.date}</span>
-                      </div>
-                      <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{comm.text}</p>
-                    </div>
-                  ))}
-
-                  <div className="p-3 rounded-lg border border-border/40 bg-muted/30 flex items-center justify-between text-2xs text-muted-foreground font-mono">
-                    <span>Card criado no funil</span>
-                    <span>{lead.created_at ? new Date(lead.created_at).toLocaleDateString("pt-BR") : "Recentemente"}</span>
-                  </div>
+                <div className="p-3 rounded-lg border border-border/40 bg-muted/30 flex items-center justify-between text-2xs text-muted-foreground font-mono">
+                  <span>Card criado no funil</span>
+                  <span>{lead.created_at ? new Date(lead.created_at).toLocaleDateString("pt-BR") : "Recentemente"}</span>
                 </div>
               </div>
             )}
           </div>
 
           {/* ══════════ COLUNA DIREITA (GOVERNANÇA DE FASE & SIDECAR - 35%) ══════════ */}
-          <div className="lg:col-span-4 space-y-5">
+          <div
+            ref={sidecarColRef}
+            className="lg:col-span-4 h-auto lg:h-full min-h-0 lg:overflow-y-auto overscroll-contain pr-0 lg:pr-1 scrollbar-waesy space-y-5 pb-16 lg:pb-24"
+          >
             {/* GOVERNANÇA DA FASE ATUAL */}
             <div className="p-4 rounded-xl border border-border/60 bg-card space-y-3">
               <span className="text-2xs font-bold uppercase tracking-wide text-muted-foreground block">
@@ -4349,7 +6567,37 @@ export function TourismPipeCardDossier({
                 <Label className="text-2xs font-semibold text-muted-foreground">Responsável da Etapa</Label>
                 <Select
                   value={formData.assigned_to || "none"}
-                  onValueChange={(val) => setFormData((prev) => ({ ...prev, assigned_to: val === "none" ? "" : val }))}
+                  onValueChange={async (val) => {
+                    const prevOwner = formData.assigned_to;
+                    const nextOwner = val === "none" ? "" : val;
+                    setFormData((prev) => ({ ...prev, assigned_to: nextOwner }));
+                    try {
+                      const res = await transferLead({
+                        data: {
+                          leadId: lead.id,
+                          newOwnerId: val === "none" ? null : val,
+                        },
+                      });
+                      if (!res.unchanged) {
+                        queryClient.invalidateQueries({
+                          queryKey: ["lead-activities", lead.id],
+                        });
+                        queryClient.invalidateQueries({
+                          queryKey: ["crm-leads"],
+                        });
+                        toast.success(
+                          `Responsável alterado para ${res.toName || "Sem responsável"}`
+                        );
+                      }
+                    } catch (err: unknown) {
+                      setFormData((prev) => ({ ...prev, assigned_to: prevOwner }));
+                      toast.error(
+                        err instanceof Error
+                          ? err.message
+                          : "Falha ao transferir responsável."
+                      );
+                    }
+                  }}
                 >
                   <SelectTrigger className="h-10 text-xs rounded-lg">
                     <SelectValue placeholder="Selecione consultor..." />
@@ -4457,23 +6705,52 @@ export function TourismPipeCardDossier({
                   Carteira de Clientes
                 </span>
                 <Badge variant="outline" className="text-3xs font-mono border-border/60">
-                  {customer360Data?.customer ? "Vinculado" : "Pendente"}
+                  {crmCustomer ? "Vinculado" : "Pendente"}
                 </Badge>
               </div>
-              {customer360Data?.customer ? (
-                <div className="space-y-2 text-2xs text-muted-foreground">
-                  <div className="flex justify-between">
-                    <span>Documento:</span>
-                    <strong className="text-foreground font-mono">{customer360Data.customer.document || "CPF não informado"}</strong>
+              {crmCustomer ? (
+                <div className="space-y-3 text-2xs text-muted-foreground">
+                  <div className="flex items-center gap-3">
+                    <div className="size-10 rounded-xl bg-muted border border-border flex items-center justify-center shrink-0 overflow-hidden font-bold text-xs text-foreground">
+                      {crmCustomer.avatar_url ? (
+                        <img
+                          src={crmCustomer.avatar_url}
+                          alt={crmCustomer.full_name || formData.name}
+                          className="size-full object-cover"
+                        />
+                      ) : (
+                        (formData.name || "CL").slice(0, 2).toUpperCase()
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-xs text-foreground truncate">
+                        {crmCustomer.full_name || crmCustomer.name || formData.name}
+                      </p>
+                      <p className="text-3xs font-mono text-muted-foreground truncate">
+                        {crmCustomer.document || "CPF não informado"}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Score de Crédito:</span>
-                    <strong className="text-foreground font-mono">{customer360Data.customer.score || 100} pts</strong>
+                  <div className="space-y-2 pt-1 border-t border-border/30">
+                    <div className="flex justify-between">
+                      <span>Score de Crédito:</span>
+                      <strong className="text-foreground font-mono">{crmCustomer.score || 100} pts</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Viagens Concluídas:</span>
+                      <strong className="text-foreground font-mono">{customer360Data?.trips?.length || 0}</strong>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Viagens Concluídas:</span>
-                    <strong className="text-foreground font-mono">{customer360Data.trips?.length || 0}</strong>
-                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsQuickProfileOpen(true)}
+                    className="w-full min-h-11 sm:min-h-8 sm:h-8 px-3 text-xs font-semibold rounded-lg border-border/60 hover:bg-muted cursor-pointer gap-2"
+                  >
+                    <UserCheck className="size-3.5 text-primary" />
+                    <span>Editar Perfil do Cliente</span>
+                  </Button>
                 </div>
               ) : (
                 <div className="text-center py-2 space-y-2">
@@ -4482,10 +6759,11 @@ export function TourismPipeCardDossier({
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => onPromoteToCustomer(lead.id)}
+                    disabled={isPromoting}
+                    onClick={handlePromoteLead}
                     className="h-11 min-h-11 px-3 text-xs font-semibold rounded-lg border-border/60 hover:bg-muted cursor-pointer"
                   >
-                    Promover a Cliente
+                    {isPromoting ? "Promovendo..." : "Promover a Cliente"}
                   </Button>
                 </div>
               )}
@@ -4996,6 +7274,313 @@ export function TourismPipeCardDossier({
           onIssueOfficialVoucher={handleIssueStudioVoucher}
           onSendWhatsapp={handleSendStudioWhatsapp}
         />
+      )}
+
+      {/* ── MODAL DE EDIÇÃO RÁPIDA DE PERFIL DO CLIENTE & UPLOAD DE FOTO ── */}
+      <QuickCustomerProfileModal
+        open={isQuickProfileOpen}
+        onOpenChange={setIsQuickProfileOpen}
+        customer={
+          crmCustomer
+            ? {
+                id: crmCustomer.id,
+                fullName: crmCustomer.full_name || crmCustomer.name || formData.name,
+                document: crmCustomer.document || lead.document || null,
+                phone: crmCustomer.phone || formData.phone || lead.phone || null,
+                email: sanitizeCustomerEmail(crmCustomer.email) || sanitizeCustomerEmail(formData.email) || sanitizeCustomerEmail(lead.email) || null,
+                avatarUrl: crmCustomer.avatar_url || null,
+                city: crmCustomer.city || null,
+                state: crmCustomer.state || null,
+                birthDate: crmCustomer.birth_date || null,
+                rg: crmCustomer.rg || null,
+                notes: crmCustomer.notes || null,
+                tags: crmCustomer.tags || [],
+                score: crmCustomer.score || 100,
+              }
+            : {
+                id: lead.customer_id || "",
+                fullName: formData.name || lead.title || "Cliente",
+                document: lead.document || null,
+                phone: formData.phone || lead.phone || null,
+                email: sanitizeCustomerEmail(formData.email) || sanitizeCustomerEmail(lead.email) || null,
+                avatarUrl: null,
+                city: null,
+                state: null,
+                birthDate: null,
+                rg: null,
+                notes: formData.notes || null,
+                tags: formData.tags || [],
+                score: 100,
+              }
+        }
+        leadId={lead.id}
+        onSaved={async (savedCust?: any) => {
+          if (savedCust) {
+            setLocalCustomer({
+              id: savedCust.id,
+              full_name: savedCust.fullName,
+              name: savedCust.fullName,
+              document: savedCust.document,
+              phone: savedCust.phone,
+              email: savedCust.email,
+              avatar_url: savedCust.avatarUrl,
+              city: savedCust.city,
+              state: savedCust.state,
+              birth_date: savedCust.birthDate,
+              rg: savedCust.rg,
+              notes: savedCust.notes,
+              tags: savedCust.tags,
+              score: savedCust.score,
+            });
+          }
+          await queryClient.invalidateQueries({ queryKey: ["crm-leads"] });
+          await queryClient.invalidateQueries({ queryKey: ["customer-360", lead.id] });
+          await queryClient.invalidateQueries({ queryKey: ["crm-customers-list"] });
+          await queryClient.invalidateQueries({ queryKey: ["tourism-cockpit-leads"] });
+        }}
+        onViewFullDossier={() => {
+          setActiveSection("customer360");
+        }}
+      />
+
+      {/* ── DIALOG 6: IMPORTADOR & SCANNER OCR DE COTAÇÕES DE OPERADORAS B2B ── */}
+      {isQuoteOcrModalOpen && (
+        <Dialog open={isQuoteOcrModalOpen} onOpenChange={setIsQuoteOcrModalOpen}>
+          <DialogContent className="max-w-2xl max-h-overlay-max overflow-y-auto p-6 bg-background border-border/60 text-xs">
+            <DialogHeader className="pb-3 border-b border-border/40">
+              <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                <FileSearch className="size-5 text-primary" />
+                <span>Importar Cotação / Orçamento da Operadora (OCR)</span>
+              </DialogTitle>
+              <DialogDescription className="text-2xs text-muted-foreground">
+                Envie o arquivo PDF ou print de cotação de operadoras (CVC, Orinter, FRT, Azul Viagens, Trend, Incomum, etc.) ou cole o texto para preencher os dados do lead no CRM.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 my-3">
+              {/* Seletor de Arquivo ou Texto */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-4 rounded-xl border border-dashed border-border/70 bg-muted/10 space-y-2 text-center">
+                  <Upload className="size-6 text-primary mx-auto" />
+                  <p className="text-xs font-semibold text-foreground">Arquivo da Cotação</p>
+                  <p className="text-3xs text-muted-foreground">Suporta PDFs e imagens (PNG, JPEG)</p>
+                  <input
+                    type="file"
+                    id="quote-ocr-file-input"
+                    accept="application/pdf,image/*"
+                    onChange={handleQuoteOcrFileChange}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById("quote-ocr-file-input")?.click()}
+                    className="h-11 min-h-11 px-3 text-xs w-full font-semibold cursor-pointer"
+                  >
+                    {quoteOcrFileName ? "Trocar Arquivo" : "Selecionar Arquivo"}
+                  </Button>
+                  {quoteOcrFileName && (
+                    <p className="text-3xs text-success font-medium truncate flex items-center justify-center gap-1">
+                      <Check className="size-3 shrink-0" />
+                      <span>{quoteOcrFileName}</span>
+                    </p>
+                  )}
+                </div>
+
+                <div className="p-4 rounded-xl border border-border/60 bg-muted/10 space-y-2">
+                  <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
+                    <FileText className="size-3.5 text-primary" />
+                    <span>Ou Cole o Texto do Orçamento</span>
+                  </Label>
+                  <Textarea
+                    rows={4}
+                    value={quoteOcrRawText}
+                    onChange={(e) => setQuoteOcrRawText(e.target.value)}
+                    placeholder="Cole aqui o texto copiado da operadora, GDS ou WhatsApp..."
+                    className="text-2xs resize-none"
+                  />
+                </div>
+              </div>
+
+              {/* Botão de Executar Escaneamento */}
+              <Button
+                type="button"
+                disabled={isScanningQuoteOcr || (!quoteOcrBase64 && !quoteOcrRawText.trim())}
+                onClick={handleRunQuoteOcr}
+                className="w-full h-11 min-h-11 text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {isScanningQuoteOcr ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+                    <span>Extraindo Dados da Cotação via OCR...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="size-4" />
+                    <span>Escanear Documento com OCR</span>
+                  </>
+                )}
+              </Button>
+
+              {/* Prévia dos Dados Estruturados Extraídos */}
+              {extractedOcrQuote && (
+                <div className="space-y-4 pt-2 border-t border-border/40">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="size-4 text-success" />
+                      <span className="font-bold text-xs text-foreground">
+                        Dados Extraídos com Sucesso
+                      </span>
+                    </div>
+                    {extractedOcrQuote.operator_name && (
+                      <Badge variant="secondary" className="text-2xs font-bold">
+                        Operadora: {extractedOcrQuote.operator_name}
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Resumo em Grid de Metadados */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 rounded-xl border border-border/60 bg-muted/20 text-2xs">
+                    <div>
+                      <span className="text-muted-foreground block text-3xs uppercase">Destino</span>
+                      <strong className="text-foreground truncate block font-medium">
+                        {extractedOcrQuote.destination || "A definir"}
+                      </strong>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block text-3xs uppercase">Origem</span>
+                      <strong className="text-foreground truncate block font-medium">
+                        {extractedOcrQuote.origin || "Não informada"}
+                      </strong>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block text-3xs uppercase">Período</span>
+                      <strong className="text-foreground truncate block font-medium">
+                        {extractedOcrQuote.travel_start ? `${extractedOcrQuote.travel_start} até ${extractedOcrQuote.travel_end || ""}` : "Flexível"}
+                      </strong>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block text-3xs uppercase">Total Geral</span>
+                      <strong className="text-success font-mono font-bold block">
+                        {extractedOcrQuote.gross_price_cents ? formatMoney(extractedOcrQuote.gross_price_cents) : "R$ 0,00"}
+                      </strong>
+                    </div>
+                  </div>
+
+                  {/* Detalhes de Hotéis e Voos */}
+                  {(Boolean(extractedOcrQuote.hotels?.length) || Boolean(extractedOcrQuote.flights?.length)) && (
+                    <div className="space-y-2 p-3 rounded-xl border border-border/60 bg-background text-2xs">
+                      {extractedOcrQuote.hotels?.[0] && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Hotel:</span>
+                          <strong className="text-foreground">{extractedOcrQuote.hotels[0].hotel_name} ({extractedOcrQuote.hotels[0].meal_plan || "Regime padrão"})</strong>
+                        </div>
+                      )}
+                      {extractedOcrQuote.flights?.[0] && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Voo:</span>
+                          <strong className="text-foreground">{extractedOcrQuote.flights[0].airline || ""} {extractedOcrQuote.flights[0].flight_number || ""} ({extractedOcrQuote.flights[0].origin_iata || ""} &gt; {extractedOcrQuote.flights[0].destination_iata || ""})</strong>
+                        </div>
+                      )}
+                      {extractedOcrQuote.max_installments && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Condições:</span>
+                          <strong className="text-foreground">Até {extractedOcrQuote.max_installments}x sem juros</strong>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Opções de Aplicação no Card */}
+                  <div className="space-y-2 p-3 rounded-xl border border-border/50 bg-muted/10">
+                    <p className="font-semibold text-2xs text-foreground mb-2">
+                      Selecione o que deseja preencher no Card:
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-2xs">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox
+                          checked={ocrApplyOptions.applyDestinationAndDates}
+                          onCheckedChange={(c) => setOcrApplyOptions((prev) => ({ ...prev, applyDestinationAndDates: Boolean(c) }))}
+                        />
+                        <span>Atualizar Destino e Datas da Viagem</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox
+                          checked={ocrApplyOptions.applyBudget}
+                          onCheckedChange={(c) => setOcrApplyOptions((prev) => ({ ...prev, applyBudget: Boolean(c) }))}
+                        />
+                        <span>Atualizar Valor Estimado da Oportunidade</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox
+                          checked={ocrApplyOptions.applyPax}
+                          onCheckedChange={(c) => setOcrApplyOptions((prev) => ({ ...prev, applyPax: Boolean(c) }))}
+                        />
+                        <span>Atualizar Composição de Passageiros</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox
+                          checked={ocrApplyOptions.applyPaymentBreakdown}
+                          onCheckedChange={(c) => setOcrApplyOptions((prev) => ({ ...prev, applyPaymentBreakdown: Boolean(c) }))}
+                        />
+                        <span>Atualizar Decomposição Tarifária (Aba Pagamento)</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox
+                          checked={ocrApplyOptions.applyTraveler}
+                          onCheckedChange={(c) => setOcrApplyOptions((prev) => ({ ...prev, applyTraveler: Boolean(c) }))}
+                        />
+                        <span>Preencher Passageiro Titular em Acompanhantes</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox
+                          checked={ocrApplyOptions.attachFileToCard}
+                          onCheckedChange={(c) => setOcrApplyOptions((prev) => ({ ...prev, attachFileToCard: Boolean(c) }))}
+                        />
+                        <span>Anexar Arquivo Original ao Card</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Ações de Preenchimento do Card & Criação Direta de Proposta */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                    <Button
+                      type="button"
+                      onClick={() => handleApplyQuoteOcrToDossier(false)}
+                      className="h-11 min-h-11 px-3 text-xs font-bold gap-2 bg-success text-success-foreground hover:bg-success/90 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
+                    >
+                      <CheckCircle2 className="size-4 shrink-0" />
+                      <span>Preencher Card do CRM</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => handleApplyQuoteOcrToDossier(true)}
+                      className="h-11 min-h-11 px-3 text-xs font-bold gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
+                      title="Salva os dados no card e abre imediatamente o Construtor de Propostas com hotéis, voos e operadora preenchidos"
+                    >
+                      <Sparkles className="size-4 shrink-0" />
+                      <span>Preencher & Abrir Proposta</span>
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <DialogFooter className="pt-2 border-t border-border/40">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsQuoteOcrModalOpen(false);
+                  setExtractedOcrQuote(null);
+                }}
+                className="h-11 min-h-11 text-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Fechar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

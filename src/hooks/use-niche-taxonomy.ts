@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { getNicheTranslation, NicheTermKey, NicheDictionaryTerms } from "@/lib/niche-dictionary";
-import { NicheSemantics } from "@/lib/niche-semantics";
+import { getNicheTranslation, NicheTermKey, NicheDictionaryTerms } from "@/lib/niches/niche-dictionary";
+import { NicheSemantics } from "@/lib/niches/niche-semantics";
 
 /**
  * useNicheTaxonomy() — Hook Canônico para Taxonomia, Micro-Copy & Design Tokenization (MASTER PROMPT V138)

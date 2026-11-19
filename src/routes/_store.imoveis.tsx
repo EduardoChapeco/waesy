@@ -5,7 +5,7 @@ import { z } from "zod";
 import { useState, useMemo } from "react";
 import { House, Key, Buildings, Tree, MapPin, FileText, PhoneCall, MagnifyingGlass, ArrowRight, ShieldCheck, Bed } from "@phosphor-icons/react";
 
-import { Button } from "@/components/ui/button";
+import { RouteErrorFallback } from "@/components/state/route-error-fallback";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/state/states";
 import { PageSkeleton } from "@/components/state/loading";
@@ -20,7 +20,7 @@ import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { formatMoney } from "@/lib/money";
-import { resolveNicheDepartments } from "@/lib/niche-helpers";
+import { resolveNicheDepartments } from "@/lib/niches/niche-helpers";
 import { getPublicClassifieds } from "@/services/classifieds.functions";
 
 const SearchSchema = z.object({
@@ -76,27 +76,18 @@ export const Route = createFileRoute("/_store/imoveis")({
       return { banners: null, hotpages: null, marketplaceFeed: null, classifieds: [] };
     }
   },
-  errorComponent: ImoveisErrorComponent,
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorFallback
+      error={error}
+      reset={reset}
+      icon={House}
+      title="Instabilidade ao carregar imóveis"
+      description="Não foi possível carregar os imóveis e oportunidades no momento."
+    />
+  ),
   component: ImoveisVerticalPage,
   pendingComponent: PageSkeleton,
 });
-
-function ImoveisErrorComponent({ error, reset }: { error: any; reset: () => void }) {
-  return (
-    <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
-        <House size={32} />
-      </div>
-      <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar imóveis</h2>
-      <p className="text-sm text-muted-foreground max-w-md mx-auto">
-        {error?.message || "Não foi possível carregar os imóveis e oportunidades no momento."}
-      </p>
-      <Button onClick={reset} className="rounded-lg font-bold">
-        Tentar Novamente
-      </Button>
-    </div>
-  );
-}
 
 function ImoveisVerticalPage() {
   const { banners, hotpages, marketplaceFeed, classifieds = [] } = ((Route.useLoaderData?.() as any) || {});

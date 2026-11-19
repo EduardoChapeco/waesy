@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { listRestaurantTables, updateRestaurantTableStatus, listKdsActiveOrders } from "@/services/pdv.functions";
 import { getUserSession } from "@/services/auth.functions";
+import { RouteErrorFallback } from "@/components/state/route-error-fallback";
 
 export const Route = createFileRoute("/_store/garcom")({
   head: () => ({ meta: [{ title: "App do Garçom | Terminal Móvel" }] }),
@@ -34,30 +35,17 @@ export const Route = createFileRoute("/_store/garcom")({
 
     return { session };
   },
-  errorComponent: GarcomErrorComponent,
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorFallback
+      error={error}
+      reset={reset}
+      icon={Utensils}
+      title="Instabilidade no Terminal do Garçom"
+      description="Não foi possível sincronizar o status das mesas e comandas no PDV."
+    />
+  ),
   component: GarcomTerminalPage,
 });
-
-function GarcomErrorComponent({ error, reset }: { error: any; reset: () => void }) {
-  return (
-    <div className="mx-auto max-w-xl px-4 py-16 text-center space-y-4">
-      <div className="inline-flex size-14 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
-        <Utensils className="size-7" />
-      </div>
-      <h2 className="text-xl font-bold text-foreground">Instabilidade no Terminal do Garçom</h2>
-      <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
-        {error?.message || "Não foi possível sincronizar o status das mesas e comandas no PDV."}
-      </p>
-      <Button
-        type="button"
-        onClick={reset}
-        className="rounded-lg font-bold text-xs h-11 sm:h-9 px-4 focus-visible:ring-2 focus-visible:ring-primary"
-      >
-        Tentar Novamente
-      </Button>
-    </div>
-  );
-}
 
 function GarcomTerminalPage() {
  const queryClient = useQueryClient();

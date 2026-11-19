@@ -3,8 +3,8 @@ import { AlertTriangle, Check, Clock3, Loader2, ShieldCheck, X } from "lucide-re
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { listPendingAiChatApprovals, reviewAiChatAction } from "@/services/ai-conversations.functions";
 import { getBrowserClient } from "@/lib/supabase";
-import { reviewAiChatAction } from "@/services/ai-conversations.functions";
 import { cn } from "@/lib/utils";
 
 type ApprovalRow = {
@@ -78,15 +78,7 @@ export function CopilotApprovalPanel({ currentUserId }: { currentUserId?: string
     }
     setLoading(true);
     try {
-      const client = getBrowserClient();
-      const { data, error: queryError } = await client
-        .from("copilot_action_approvals")
-        .select("id, action_type, payload, status, requested_at, expires_at, store_id, user_id")
-        .eq("status", "pending")
-        .eq("user_id", currentUserId)
-        .order("requested_at", { ascending: false })
-        .limit(10);
-      if (queryError) throw queryError;
+      const data = await listPendingAiChatApprovals({ data: { limit: 10 } });
       setApprovals((data || []) as ApprovalRow[]);
       setError(null);
     } catch (loadError) {

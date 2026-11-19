@@ -2,7 +2,7 @@
  * Seletor de Temas de Apresentação (PostThemeSelector — derivado do Waesy)
  */
 
-import { PRESENTATION_THEMES, type PresentationTheme } from "@/lib/presentation-presets";
+import { PRESENTATION_THEMES, type PresentationTheme } from "@/lib/builder/presentation-presets";
 import { cn } from "@/lib/utils";
 import { Layers, Check } from 'lucide-react';
 

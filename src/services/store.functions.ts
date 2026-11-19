@@ -357,7 +357,40 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
  .eq("id", identity.store_id);
 
  if (error) {
- throw new Error("Erro ao salvar configurações da loja: " + error.message);
+  throw new Error("Erro ao salvar configurações da loja: " + error.message);
+ }
+
+ // Sincronização Bilateral SSOT: propaga dados fiscais e cadastrais para compliance e NFe
+ try {
+   const rawCnpj = columns.cnpj ? String(columns.cnpj).replace(/\D/g, "") : null;
+   const legalName = corporate_name || columns.name;
+   if (legalName || rawCnpj) {
+     if (rawCnpj && rawCnpj.length === 14) {
+       const formattedCnpj = rawCnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
+       await db
+         .from("marketplace_compliance")
+         .update({
+           legal_name: legalName,
+           trade_name: trade_name || columns.name,
+           cnpj: formattedCnpj,
+           ...(columns.phone ? { sac_phone: columns.phone } : {}),
+           ...(columns.email ? { sac_email: columns.email } : {}),
+         })
+         .eq("store_id", identity.store_id);
+
+       await db
+         .from("store_nfe_configs")
+         .update({
+           razao_social: legalName,
+           nome_fantasia: trade_name || columns.name,
+           cnpj: rawCnpj,
+           ...(columns.email ? { accountant_email: columns.email } : {}),
+         })
+         .eq("store_id", identity.store_id);
+     }
+   }
+ } catch (syncErr) {
+   console.warn("[store.functions] Aviso de sincronização bilateral SSOT:", syncErr);
  }
 
  return { status: "success" };
@@ -988,11 +1021,11 @@ export const getMyStoresList = createServerFn({ method: "GET" }).handler(async (
  .from("stores")
  .select("id, name, slug, phone, email, cnpj, address, city, state, description, settings, logo_url, created_at, is_active");
 
- if (isPlatformAdmin) {
- // Platform Admin tem visão completa de todas as lojas e empresas
- query = query.order("created_at", { ascending: false }).limit(50);
- } else if (storeIdsSet.size > 0) {
+ if (storeIdsSet.size > 0) {
  query = query.in("id", Array.from(storeIdsSet)).order("created_at", { ascending: false });
+ } else if (isPlatformAdmin) {
+ // Para administradores da plataforma sem lojas associadas, retorna exclusivamente a matriz institucional
+ query = query.eq("is_platform_root", true).limit(1);
  } else {
  return [];
  }

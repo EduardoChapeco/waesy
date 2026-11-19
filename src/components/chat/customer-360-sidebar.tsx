@@ -1,4 +1,12 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import {
+  getCachedCustomer360,
+  setCachedCustomer360,
+} from "@/lib/chat-client-cache";
+import { sanitizeCustomerEmail } from "@/lib/contact-sanitize";
+import { C360AttributionJourneyCard } from "@/components/chat/c360/C360AttributionJourneyCard";
+import { ImageUpload } from "@/components/ui/image-upload";
+import { MediaUploader } from "@/components/ui/media-uploader";
 import {
   User,
   Phone,
@@ -41,6 +49,12 @@ import {
 import { formatBRL, cn } from "@/lib/utils";
 import { formatDate } from "@/lib/datetime";
 import { isSyntheticMetaLid, isRawLidOrSyntheticName } from "@/lib/chat-media-attachment";
+import {
+  WHATSAPP_CONTACT_SCOPE_OPTIONS,
+  getContactScopeLabel,
+  type WhatsAppContactScope,
+} from "@/lib/whatsapp-contact-scope";
+import { updateWhatsAppContactScope } from "@/services/whatsapp-contact-identity.functions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -64,6 +78,11 @@ import {
   createLinkedCustomerTask,
   toggleCustomerOnboardingStep,
 } from "@/services/chat.functions";
+import {
+  generateCustomerAppMagicAccessFn,
+  revokeCustomerAppMagicAccessFn,
+} from "@/services/branded-app.functions";
+import { buildBrandedClientPortalUrl } from "@/lib/branded-app-links";
 import { updateTaskStatus } from "@/services/tasks.functions";
 import {
   ONBOARDING_CS_STEPS,
@@ -77,7 +96,9 @@ import { CommercialBudgetPadSheet } from "@/components/documents/CommercialBudge
 import { C360ProfileAndDocsView } from "@/components/chat/c360/C360ProfileAndDocsView";
 import { C360LeadAndCommerceView } from "@/components/chat/c360/C360LeadAndCommerceView";
 import { C360ContractsFinanceFormsView } from "@/components/chat/c360/C360ContractsFinanceFormsView";
-import { Loader2 } from "lucide-react";
+import type { QuickComposerModalKind } from "@/components/chat/ChatQuickComposerModals";
+import { searchStoreCrmLeads } from "@/services/chat-quick-actions.functions";
+import { Loader2, Search, Link2 } from "lucide-react";
 import { toast } from "sonner";
 
 const FUNNEL_STAGES = [
@@ -126,10 +147,16 @@ interface Customer360SidebarProps {
   onToggleAiAutoReply?: (checked: boolean) => void;
   onDepartmentChange?: (nextDept: string) => void;
   onAssignedAgentChange?: (nextAgentId: string | null) => void;
-  onOpenQuickComposerModal?: (modal: "invoice" | "boleto" | "contract" | "quote" | "image_card") => void;
+  onOpenQuickComposerModal?: (modal: QuickComposerModalKind) => void;
   onQuickSendMessage?: (text: string) => void;
   onOpenTransfer?: () => void;
   onOpenSchedule?: () => void;
+  onLinkedLeadChange?: (lead: any) => void;
+  onContactScopeChanged?: (payload: {
+    contactScope: WhatsAppContactScope;
+    suppressLeadCapture: boolean;
+    archivedLeadId?: string | null;
+  }) => void;
   onProfileSynced?: (payload: {
     avatarUrl?: string | null;
     fullName?: string | null;
@@ -163,6 +190,8 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
   onQuickSendMessage,
   onOpenTransfer,
   onOpenSchedule,
+  onLinkedLeadChange,
+  onContactScopeChanged,
   onProfileSynced,
 }) => {
   const isTourism = niche === "tourism" || String(storeName || "").toLowerCase().includes("tour") || String(storeName || "").toLowerCase().includes("viag") || String(storeName || "").toLowerCase().includes("excurs");
@@ -171,6 +200,10 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [isCreatingLead, setIsCreatingLead] = useState(false);
   const [isBudgetPadOpen, setIsBudgetPadOpen] = useState(false);
+  const [overviewLeadSearchOpen, setOverviewLeadSearchOpen] = useState(false);
+  const [overviewLeadQuery, setOverviewLeadQuery] = useState("");
+  const [overviewLeadResults, setOverviewLeadResults] = useState<any[]>([]);
+  const [isSearchingOverviewLeads, setIsSearchingOverviewLeads] = useState(false);
   const [leadTitle, setLeadTitle] = useState("");
   const [leadBudget, setLeadBudget] = useState("");
   const [leadNotes, setLeadNotes] = useState("");
@@ -250,61 +283,158 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
   const [activityTitle, setActivityTitle] = useState("");
   const [activityType, setActivityType] = useState<"note" | "call" | "whatsapp_followup" | "proposal_sent" | "meeting">("whatsapp_followup");
   const [isSavingActivity, setIsSavingActivity] = useState(false);
+  const [isUpdatingContactScope, setIsUpdatingContactScope] = useState(false);
+  const [isGeneratingMagicAccess, setIsGeneratingMagicAccess] = useState(false);
+
+  const handleUpdateContactScope = async (
+    nextScope: WhatsAppContactScope,
+    archiveLinkedLead = false,
+  ) => {
+    if (!storeId || (!threadId && !data?.whatsappIdentity?.id)) return;
+    setIsUpdatingContactScope(true);
+    const suppressed = nextScope !== "lead";
+    try {
+      const res = await updateWhatsAppContactScope({
+        data: {
+          threadId: threadId || null,
+          identityId: data?.whatsappIdentity?.id || null,
+          storeId,
+          contactScope: nextScope,
+          suppressLeadCapture: suppressed,
+          archiveLinkedLead,
+        },
+      });
+      setData((prev: any) =>
+        prev
+          ? {
+              ...prev,
+              linkedLead: res.archivedLeadId ? null : prev.linkedLead,
+              whatsappIdentity: prev.whatsappIdentity
+                ? {
+                    ...prev.whatsappIdentity,
+                    contact_scope: nextScope,
+                    suppress_lead_capture: suppressed,
+                  }
+                : prev.whatsappIdentity,
+              threadContext: prev.threadContext
+                ? {
+                    ...prev.threadContext,
+                    ...(res.archivedLeadId ? { lead_id: null } : {}),
+                    metadata: {
+                      ...(prev.threadContext.metadata || {}),
+                      contact_scope: nextScope,
+                      suppress_lead_capture: suppressed,
+                    },
+                  }
+                : prev.threadContext,
+            }
+          : prev,
+      );
+      toast.success(
+        res.archivedLeadId
+          ? `Contato marcado como "${getContactScopeLabel(nextScope)}" e lead arquivado do Kanban.`
+          : `Classificação atualizada: ${getContactScopeLabel(nextScope)}${suppressed ? " (CRM e CAPI silenciados)" : ""}.`,
+      );
+      onContactScopeChanged?.({
+        contactScope: nextScope,
+        suppressLeadCapture: suppressed,
+        archivedLeadId: res.archivedLeadId || null,
+      });
+    } catch (err: any) {
+      toast.error(err?.message || "Não foi possível atualizar a classificação do contato.");
+    } finally {
+      setIsUpdatingContactScope(false);
+    }
+  };
+
+  const identityPropsRef = useRef({ guestPhone, guestName, avatarUrl, isTourism });
+  useEffect(() => {
+    identityPropsRef.current = { guestPhone, guestName, avatarUrl, isTourism };
+  }, [guestPhone, guestName, avatarUrl, isTourism]);
+  const contextReqSeqRef = useRef(0);
+
+  const applyContextData = useCallback((res: any) => {
+    const { guestPhone: gPhone, guestName: gName, avatarUrl: avUrl, isTourism: tourismFlag } = identityPropsRef.current;
+    setData(res);
+    setInternalNotes(res?.threadContext?.internal_notes || "");
+    setFunnelStage(res?.linkedLead?.status || "new");
+    setEditName(res?.profile?.full_name || gName || "");
+    setEditPhone(res?.isGroup ? "" : (res?.profile?.phone || gPhone || ""));
+    setEditEmail(res?.isGroup ? "" : (res?.profile?.email || ""));
+    setEditCpf(res?.isGroup ? "" : (res?.profile?.document_cpf || ""));
+    setEditCity(res?.isGroup ? "" : (res?.profile?.city || ""));
+    setEditAvatarUrl(res?.profile?.avatar_url || avUrl || "");
+    const attr = (res?.attribution || {}) as Record<string, any>;
+    setAttrPlatform(String(attr.platform || ""));
+    setAttrUtmSource(String(attr.utm_source || attr.source || ""));
+    setAttrUtmMedium(String(attr.utm_medium || attr.medium || ""));
+    setAttrCampaign(String(attr.campaign || attr.utm_campaign || ""));
+    setAttrAdId(String(attr.ad_id || attr.meta_ad_id || ""));
+    setAttrHeadline(String(attr.ad_headline || attr.listing_title || ""));
+    if (res?.aiAgentConfig?.handoffMode) {
+      setHandoffMode(res.aiAgentConfig.handoffMode);
+    } else if ((res?.threadContext as any)?.metadata?.handoff_mode) {
+      setHandoffMode((res.threadContext as any).metadata.handoff_mode);
+    }
+    if (res?.aiAgentConfig?.aiAgentId) {
+      setSelectedAiAgent(res.aiAgentConfig.aiAgentId);
+    } else if (tourismFlag) {
+      setSelectedAiAgent("tourism_concierge");
+    }
+  }, []);
 
   const loadContext = useCallback(() => {
-    if (!storeId || (!customerId && !threadId && !guestPhone && !guestName)) return;
-    setLoading(true);
+    const { guestPhone: gPhone, guestName: gName } = identityPropsRef.current;
+    if (!storeId || (!customerId && !threadId && !gPhone && !gName)) return;
+
+    const reqId = ++contextReqSeqRef.current;
+    const cached = getCachedCustomer360(storeId, threadId);
+    if (cached) {
+      applyContextData(cached);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
     setError(null);
     setAvatarImgFailed(false);
+
     getCustomer360Context({
       data: {
         customerId: customerId || null,
         storeId,
         threadId: threadId || null,
-        guestPhone: guestPhone || null,
-        guestName: guestName || null,
+        guestPhone: gPhone || null,
+        guestName: gName || null,
       },
     })
       .then((res) => {
-        setData(res);
-        setInternalNotes(res?.threadContext?.internal_notes || "");
-        setFunnelStage(res?.linkedLead?.status || "new");
-        setEditName(res?.profile?.full_name || guestName || "");
-        setEditPhone(res?.isGroup ? "" : (res?.profile?.phone || guestPhone || ""));
-        setEditEmail(res?.isGroup ? "" : (res?.profile?.email || ""));
-        setEditCpf(res?.isGroup ? "" : (res?.profile?.document_cpf || ""));
-        setEditCity(res?.isGroup ? "" : (res?.profile?.city || ""));
-        setEditAvatarUrl(res?.profile?.avatar_url || avatarUrl || "");
-        const attr = (res?.attribution || {}) as Record<string, any>;
-        setAttrPlatform(String(attr.platform || ""));
-        setAttrUtmSource(String(attr.utm_source || attr.source || ""));
-        setAttrUtmMedium(String(attr.utm_medium || attr.medium || ""));
-        setAttrCampaign(String(attr.campaign || attr.utm_campaign || ""));
-        setAttrAdId(String(attr.ad_id || attr.meta_ad_id || ""));
-        setAttrHeadline(String(attr.ad_headline || attr.listing_title || ""));
-        if (res?.aiAgentConfig?.handoffMode) {
-          setHandoffMode(res.aiAgentConfig.handoffMode);
-        } else if ((res?.threadContext as any)?.metadata?.handoff_mode) {
-          setHandoffMode((res.threadContext as any).metadata.handoff_mode);
-        }
-        if (res?.aiAgentConfig?.aiAgentId) {
-          setSelectedAiAgent(res.aiAgentConfig.aiAgentId);
-        } else if (isTourism) {
-          setSelectedAiAgent("tourism_concierge");
-        }
+        if (contextReqSeqRef.current !== reqId) return;
+        setCachedCustomer360(storeId, threadId, res);
+        applyContextData(res);
       })
       .catch((err) => {
+        if (contextReqSeqRef.current !== reqId) return;
         console.error("Erro ao carregar Customer 360:", err);
-        setError(err instanceof Error ? err.message : "Não foi possível carregar o perfil do cliente.");
+        if (!cached) {
+          setError(err instanceof Error ? err.message : "Não foi possível carregar o perfil do cliente.");
+        }
       })
       .finally(() => {
-        setLoading(false);
+        if (contextReqSeqRef.current === reqId) {
+          setLoading(false);
+        }
       });
-  }, [customerId, storeId, threadId, guestPhone, guestName, avatarUrl, isTourism]);
+  }, [customerId, storeId, threadId, applyContextData]);
 
   useEffect(() => {
     loadContext();
   }, [loadContext]);
+
+  useEffect(() => {
+    if (data && storeId && threadId && (!data.threadContext?.id || data.threadContext.id === threadId)) {
+      setCachedCustomer360(storeId, threadId, data);
+    }
+  }, [data, storeId, threadId]);
 
   const handleSyncWhatsAppProfile = async () => {
     if (!threadId) return;
@@ -557,19 +687,29 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
     setIsLinkingOpportunity(true);
     try {
       const targetId = selectedLeadId === "" ? null : selectedLeadId;
-      await linkThreadToCrmOpportunity({
+      const res = await linkThreadToCrmOpportunity({
         data: {
           threadId,
           leadId: targetId,
         },
       });
       const matchedOpp = targetId
-        ? (data?.opportunities || []).find((op: any) => op.id === targetId) || null
+        ? res?.linkedLead || (data?.opportunities || []).find((op: any) => op.id === targetId) || null
         : null;
-      setData((prev: any) => (prev ? { ...prev, linkedLead: matchedOpp } : prev));
+      setData((prev: any) => {
+        if (!prev) return prev;
+        const existingOpps = Array.isArray(prev.opportunities) ? prev.opportunities : [];
+        const hasMatched = matchedOpp && existingOpps.some((op: any) => op.id === matchedOpp.id);
+        return {
+          ...prev,
+          linkedLead: matchedOpp,
+          opportunities: matchedOpp && !hasMatched ? [matchedOpp, ...existingOpps] : existingOpps,
+        };
+      });
       if (matchedOpp?.status) {
         setFunnelStage(matchedOpp.status);
       }
+      onLinkedLeadChange?.(matchedOpp);
       toast.success(targetId ? "Oportunidade vinculada à conversa." : "Conversa desvinculada da oportunidade.");
     } catch (err: any) {
       toast.error(err?.message || "Erro ao vincular oportunidade.");
@@ -941,7 +1081,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
         <button
           type="button"
           onClick={loadContext}
-          className="px-3 py-1 rounded-lg border border-border/70 bg-background text-xs font-semibold inline-flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="h-11 min-h-11 px-4 py-2 rounded-lg border border-border/70 bg-background text-xs font-semibold inline-flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <RefreshCw className="size-3.5" />
           <span>Tentar Novamente</span>
@@ -983,7 +1123,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
   const activeChecklist = Array.isArray(activeOpportunity?.checklist) ? activeOpportunity.checklist : [];
   const effectiveAvatar = !avatarImgFailed ? (profile?.avatar_url || avatarUrl || null) : null;
   const rawEmailStr = String(profile?.email || "").trim();
-  const cleanCustomerEmail = !rawEmailStr || /@(grupo\.)?whatsap/i.test(rawEmailStr) ? null : rawEmailStr;
+  const cleanCustomerEmail = sanitizeCustomerEmail(rawEmailStr);
   const rawDisplayPhone = effectiveIsGroup || isChannel ? null : (profile?.phone || guestPhone || null);
   const safeDisplayPhone =
     rawDisplayPhone && !isSyntheticMetaLid(rawDisplayPhone, rawDisplayPhone)
@@ -995,6 +1135,156 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
     : effectiveIsGroup
       ? "Grupo WhatsApp"
       : `Contato WhatsApp #${String(rawDisplayName || rawDisplayPhone || "").replace(/\D/g, "").slice(-4) || "LID"}`;
+
+  const clientAccessMeta = data?.storeInfo?.client_app_access || null;
+  const clientCodeDisplay = clientAccessMeta?.client_code || effectiveTraceHash.replace(/^#/, "");
+  const fallbackOrigin =
+    typeof window !== "undefined" ? window.location.origin : "https://waesy.com.br";
+  const resolvedClientPortalUrl =
+    clientAccessMeta?.magic_token && data?.storeInfo?.slug
+      ? buildBrandedClientPortalUrl({
+          slug: data.storeInfo.slug,
+          customDomain: data.storeInfo.custom_domain || null,
+          customDomainStatus: data.storeInfo.custom_domain_status || null,
+          fallbackOrigin,
+          magicToken: clientAccessMeta.magic_token,
+          clientCode: clientCodeDisplay,
+        })
+      : data?.storeInfo?.portal_url ||
+        buildBrandedClientPortalUrl({
+          slug: data?.storeInfo?.slug,
+          customDomain: data?.storeInfo?.custom_domain || null,
+          customDomainStatus: data?.storeInfo?.custom_domain_status || null,
+          fallbackOrigin,
+          clientCode: clientCodeDisplay,
+        });
+
+  const executeClientAppMagicAction = async (
+    mode: "copy" | "open" | "whatsapp" | "regenerate",
+  ) => {
+    if (!storeId) return;
+    if (mode !== "regenerate" && clientAccessMeta?.magic_token && resolvedClientPortalUrl) {
+      if (mode === "copy") {
+        await navigator.clipboard.writeText(resolvedClientPortalUrl);
+        toast.success(`Magic Link (${clientCodeDisplay}) copiado!`);
+        return;
+      }
+      if (mode === "open") {
+        window.open(resolvedClientPortalUrl, "_blank", "noopener,noreferrer");
+        return;
+      }
+      if (mode === "whatsapp" && onQuickSendMessage) {
+        onQuickSendMessage(
+          `Olá ${safeDisplayName || ""}! Acesse o App Oficial de *${data?.storeInfo?.name || "nossa empresa"}* para acompanhar seus pedidos, contratos, vouchers e faturas:\n${resolvedClientPortalUrl}\n\nCódigo do Cliente: *${clientCodeDisplay}*`,
+        );
+        toast.success("Magic Link enviado no WhatsApp!");
+        return;
+      }
+    }
+
+    setIsGeneratingMagicAccess(true);
+    try {
+      const res = await generateCustomerAppMagicAccessFn({
+        data: {
+          storeId,
+          customerId:
+            profile?.id && profile.id !== data?.crmCustomer?.id ? profile.id : null,
+          crmCustomerId: data?.crmCustomer?.id || null,
+          leadId: activeOpportunity?.id || null,
+          threadId: threadId || null,
+          customerName: safeDisplayName || null,
+          customerPhone: safeDisplayPhone || null,
+          customerDocument: profile?.document_cpf || null,
+          customerEmail: cleanCustomerEmail || null,
+          clientCode: clientCodeDisplay,
+          originHint: fallbackOrigin,
+          regenerate: mode === "regenerate",
+        },
+      });
+      setData((prev: any) =>
+        prev
+          ? {
+              ...prev,
+              storeInfo: {
+                ...(prev.storeInfo || {}),
+                portal_url: res.portal_url,
+                client_app_access: res,
+              },
+            }
+          : prev,
+      );
+      if (mode === "copy" || mode === "regenerate") {
+        await navigator.clipboard.writeText(res.portal_url);
+        toast.success(
+          mode === "regenerate"
+            ? `Novo código (${res.client_code}) e Magic Link gerados e copiados!`
+            : `Magic Link (${res.client_code}) gerado e copiado!`,
+        );
+      } else if (mode === "open") {
+        window.open(res.portal_url, "_blank", "noopener,noreferrer");
+      } else if (mode === "whatsapp" && onQuickSendMessage) {
+        onQuickSendMessage(
+          `Olá ${safeDisplayName || ""}! Acesse o App Oficial de *${data?.storeInfo?.name || "nossa empresa"}* para acompanhar seus pedidos, contratos, vouchers e faturas:\n${res.portal_url}\n\nCódigo do Cliente: *${res.client_code}*`,
+        );
+        toast.success("Magic Link enviado no WhatsApp!");
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao gerar Magic Link do cliente.");
+    } finally {
+      setIsGeneratingMagicAccess(false);
+    }
+  };
+
+  const handleRevokeClientAppMagicAccess = async () => {
+    if (!storeId) return;
+    setIsGeneratingMagicAccess(true);
+    try {
+      await revokeCustomerAppMagicAccessFn({
+        data: {
+          storeId,
+          customerId: profile?.id || null,
+          crmCustomerId: data?.crmCustomer?.id || null,
+          leadId: activeOpportunity?.id || null,
+          threadId: threadId || null,
+          customerPhone: safeDisplayPhone || null,
+        },
+      });
+      const resetUrl = buildBrandedClientPortalUrl({
+        slug: data?.storeInfo?.slug,
+        customDomain: data?.storeInfo?.custom_domain || null,
+        customDomainStatus: data?.storeInfo?.custom_domain_status || null,
+        fallbackOrigin,
+        clientCode: clientCodeDisplay,
+      });
+      setData((prev: any) =>
+        prev
+          ? {
+              ...prev,
+              storeInfo: {
+                ...(prev.storeInfo || {}),
+                portal_url: resetUrl,
+                client_app_access: prev.storeInfo?.client_app_access
+                  ? {
+                      ...prev.storeInfo.client_app_access,
+                      portal_url: resetUrl,
+                      magic_token: null,
+                      expires_at: null,
+                      last_accessed_at: null,
+                      access_count: 0,
+                      has_active_token: false,
+                    }
+                  : null,
+              },
+            }
+          : prev,
+      );
+      toast.success("Magic Link revogado com segurança.");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao revogar Magic Link.");
+    } finally {
+      setIsGeneratingMagicAccess(false);
+    }
+  };
 
   return (
     <div className={cn("space-y-4 p-3 text-xs font-sans", className)}>
@@ -1149,11 +1439,14 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
                 </div>
               </>
             )}
-            <input
-              value={editAvatarUrl}
-              onChange={(e) => setEditAvatarUrl(e.target.value)}
-              placeholder="URL da Foto / Avatar (opcional)"
-              className="w-full min-h-11 sm:min-h-9 px-2 py-1 rounded-lg bg-background border border-border/70 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            <ImageUpload
+              value={editAvatarUrl || ""}
+              onChange={(url) => setEditAvatarUrl(url)}
+              bucket="avatars"
+              variant="avatar"
+              aspectPreset="square"
+              label="Foto / Avatar (Bucket)"
+              showExternalUrlOption={false}
             />
             <div className="flex items-center justify-end gap-2">
               <button
@@ -1175,35 +1468,123 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
           </div>
         )}
 
-        {/* Atalho App Próprio do Cliente (/conta) */}
-        {!effectiveIsGroup && !isChannel && data?.storeInfo?.portal_url && (
-          <div className="pt-2 border-t border-border/50 flex items-center justify-between gap-2">
-            <span className="text-xs text-muted-foreground inline-flex items-center gap-2 truncate">
-              <Smartphone className="size-3.5 text-primary shrink-0" />
-              <span className="truncate">App do Cliente</span>
-            </span>
-            <div className="flex items-center gap-1 shrink-0">
-              <button
-                type="button"
-                onClick={async () => {
-                  await navigator.clipboard.writeText(data.storeInfo.portal_url);
-                  toast.success("Link do App do Cliente copiado!");
-                }}
-                className="min-h-11 sm:min-h-7 px-2 py-1 rounded-md border border-border/70 bg-background hover:bg-muted text-xs font-medium text-foreground inline-flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                <Copy className="size-3" />
-                Copiar
-              </button>
-              <a
-                href={data.storeInfo.portal_url}
-                target="_blank"
-                rel="noreferrer"
-                className="min-h-11 sm:min-h-7 px-2 py-1 rounded-md border border-border/70 bg-background hover:bg-muted text-xs font-medium text-primary inline-flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                <ArrowUpRight className="size-3" />
-                Abrir
-              </a>
+        {/* Classificação de Contato & Silenciamento de CRM/CAPI (EARS-03) */}
+        {!effectiveIsGroup && !isChannel && (threadId || data?.whatsappIdentity?.id) && (() => {
+          const activeScope = (
+            data?.whatsappIdentity?.contact_scope ||
+            (data?.threadContext?.metadata as any)?.contact_scope ||
+            ((data?.whatsappIdentity?.suppress_lead_capture || (data?.threadContext?.metadata as any)?.suppress_lead_capture)
+              ? "ignored"
+              : "lead")
+          ) as WhatsAppContactScope;
+          const isSuppressed = activeScope !== "lead";
+          const linkedLeadId = data?.linkedLead?.id || data?.threadContext?.lead_id || null;
+          return (
+            <div className="pt-2 border-t border-border/50 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <label
+                  htmlFor="c360-contact-scope"
+                  className="text-2xs font-semibold text-muted-foreground shrink-0"
+                >
+                  Tipo de Contato
+                </label>
+                <select
+                  id="c360-contact-scope"
+                  value={activeScope}
+                  disabled={isUpdatingContactScope}
+                  onChange={(e) => void handleUpdateContactScope(e.target.value as WhatsAppContactScope, false)}
+                  className="h-11 sm:h-8 max-w-44 rounded-lg border border-border/70 bg-background px-2 text-2xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+                >
+                  {WHATSAPP_CONTACT_SCOPE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {isSuppressed && (
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-2xs text-muted-foreground">
+                    Captura CRM &amp; Meta CAPI silenciadas neste contato.
+                  </span>
+                  {linkedLeadId && (
+                    <button
+                      type="button"
+                      disabled={isUpdatingContactScope}
+                      onClick={() => void handleUpdateContactScope(activeScope, true)}
+                      className="min-h-11 sm:min-h-7 px-3 py-1 rounded-md border border-border/70 bg-background hover:bg-muted text-2xs font-semibold text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      Arquivar Lead Vinculado
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
+          );
+        })()}
+
+        {/* Atalho App Oficial da Empresa & Magic Link do Cliente */}
+        {!effectiveIsGroup && !isChannel && (data?.storeInfo?.slug || data?.storeInfo?.portal_url) && (
+          <div className="pt-2 border-t border-border/50 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs text-muted-foreground inline-flex items-center gap-2 min-w-0">
+                <Smartphone className="size-3.5 text-primary shrink-0" />
+                <span className="truncate font-medium text-foreground">App do Cliente</span>
+                <span className="px-2 py-1 rounded bg-muted font-mono text-2xs font-bold text-primary shrink-0">
+                  {clientCodeDisplay}
+                </span>
+              </span>
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  disabled={isGeneratingMagicAccess}
+                  onClick={() => void executeClientAppMagicAction("copy")}
+                  className="min-h-11 sm:min-h-7 px-2 py-1 rounded-md border border-border/70 bg-background hover:bg-muted text-xs font-medium text-foreground inline-flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  title={clientAccessMeta?.magic_token ? "Copiar Magic Link do App Oficial" : "Gerar e Copiar Magic Link do App Oficial"}
+                >
+                  <Copy className="size-3" />
+                  {isGeneratingMagicAccess ? "Gerando..." : clientAccessMeta?.magic_token ? "Copiar" : "Gerar Link"}
+                </button>
+                <button
+                  type="button"
+                  disabled={isGeneratingMagicAccess}
+                  onClick={() => void executeClientAppMagicAction("open")}
+                  className="min-h-11 sm:min-h-7 px-2 py-1 rounded-md border border-border/70 bg-background hover:bg-muted text-xs font-medium text-primary inline-flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  title="Abrir App Oficial da Empresa com acesso do cliente"
+                >
+                  <ArrowUpRight className="size-3" />
+                  Abrir
+                </button>
+                <button
+                  type="button"
+                  disabled={isGeneratingMagicAccess}
+                  onClick={() => void executeClientAppMagicAction("regenerate")}
+                  className="min-h-11 min-w-11 sm:min-h-7 sm:min-w-7 p-1 rounded-md border border-border/70 bg-background hover:bg-muted text-muted-foreground hover:text-foreground inline-flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  title="Gerar novo código e Magic Link (revoga o anterior)"
+                  aria-label="Gerar novo código e Magic Link"
+                >
+                  <RefreshCw className={cn("size-3", isGeneratingMagicAccess && "animate-spin motion-reduce:animate-none")} />
+                </button>
+              </div>
+            </div>
+            {onQuickSendMessage && (
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-2xs text-muted-foreground truncate">
+                  {clientAccessMeta?.magic_token
+                    ? "Magic Link ativo para o App Oficial da empresa"
+                    : "Gere o código/magic link exclusivo para o App Oficial"}
+                </span>
+                <button
+                  type="button"
+                  disabled={isGeneratingMagicAccess}
+                  onClick={() => void executeClientAppMagicAction("whatsapp")}
+                  className="min-h-11 sm:min-h-7 px-2 py-1 rounded-md border border-primary/30 bg-primary/10 hover:bg-primary/15 text-2xs font-semibold text-primary inline-flex items-center gap-1 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <Send className="size-3" />
+                  Enviar Magic Link
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -1241,7 +1622,18 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
               <C360ProfileAndDocsView
                 data={data}
                 profile={profile}
-                portalUrl={data?.storeInfo?.portal_url || "https://waesy.com.br/conta"}
+                portalUrl={resolvedClientPortalUrl}
+                clientCode={clientCodeDisplay}
+                hasMagicToken={Boolean(clientAccessMeta?.magic_token)}
+                accessCount={Number(clientAccessMeta?.access_count || 0)}
+                lastAccessedAt={clientAccessMeta?.last_accessed_at || null}
+                isGeneratingMagicAccess={isGeneratingMagicAccess}
+                onGenerateMagicAccess={() => executeClientAppMagicAction("regenerate")}
+                onRevokeMagicAccess={handleRevokeClientAppMagicAccess}
+                onCopyMagicLink={() => executeClientAppMagicAction("copy")}
+                onSendMagicWhatsApp={
+                  onQuickSendMessage ? () => executeClientAppMagicAction("whatsapp") : undefined
+                }
                 defaultTab={activeC360Module === "docs" ? "docs" : "profile"}
                 onQuickSendMessage={onQuickSendMessage}
                 onSaveProfile={async (payload) => {
@@ -1274,7 +1666,20 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
               <C360LeadAndCommerceView
                 mode={activeC360Module}
                 niche={niche || data?.storeInfo?.niche || "general"}
+                storeId={storeId}
+                threadId={threadId}
                 data={data}
+                onLinkLead={async (targetLeadId) => {
+                  await handleSelectOpportunity(targetLeadId || "");
+                }}
+                onQuickCreateLead={() => {
+                  setLeadTitle(
+                    isTourism
+                      ? `Cotacao Viagem - ${profile?.full_name || guestName || "Cliente"}`
+                      : `Oportunidade - ${profile?.full_name || guestName || "Cliente"}`,
+                  );
+                  setIsCreatingLead(true);
+                }}
                 onQuickSendMessage={onQuickSendMessage}
                 onOpenQuickComposerModal={onOpenQuickComposerModal}
                 onFunnelStageChange={async (leadId, nextStage) => {
@@ -1455,170 +1860,29 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
         </div>
       )}
 
-      {/* 1.2 ORIGEM, ANÚNCIO E PIXEL (ATRIBUIÇÃO CONECTADA) */}
+      {/* 1.2 ORIGEM, ANÚNCIO, PIXEL & JORNADA MULTI-TOUCH */}
       {threadId && (
-        <div className="rounded-xl border border-border/70 bg-card p-3 space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-2xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1">
-              <Target className="size-3.5 text-primary" />
-              <span>Origem, Anúncio e Pixel</span>
-            </span>
-            <button
-              type="button"
-              onClick={() => setIsEditingAttribution((prev) => !prev)}
-              className="min-h-11 sm:min-h-7 px-2 py-1 rounded-md border border-border/70 bg-background hover:bg-muted text-2xs font-semibold text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              {isEditingAttribution ? "Fechar" : "Editar"}
-            </button>
-          </div>
-
-          {!isEditingAttribution && (
-            <>
-              {attribution ? (
-                <div className="space-y-1 text-2xs">
-                  {(attribution.platform || attribution.utm_source || attribution.source) && (
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-muted-foreground">Canal:</span>
-                      <span className="font-semibold text-foreground truncate">
-                        {attribution.platform || attribution.utm_source || attribution.source}
-                        {attribution.utm_medium ? ` / ${attribution.utm_medium}` : ""}
-                      </span>
-                    </div>
-                  )}
-                  {(attribution.campaign || attribution.utm_campaign || attribution.campaign_id) && (
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-muted-foreground">Campanha:</span>
-                      <span className="font-semibold text-foreground truncate">
-                        {attribution.campaign || attribution.utm_campaign || `#${attribution.campaign_id}`}
-                      </span>
-                    </div>
-                  )}
-                  {(attribution.ad_headline || attribution.ad_id) && (
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-muted-foreground">Anúncio:</span>
-                      <span className="font-semibold text-foreground truncate">
-                        {attribution.ad_headline || `ID ${attribution.ad_id}`}
-                      </span>
-                    </div>
-                  )}
-                  {attribution.listing_title && (
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-muted-foreground">Oferta Waesy:</span>
-                      <span className="font-semibold text-foreground truncate">{attribution.listing_title}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-1 flex-wrap pt-1">
-                    {attribution.ctwa_clid && (
-                      <span className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono">
-                        CTWA
-                      </span>
-                    )}
-                    {(attribution.fbclid || attribution.fbc || attribution.fbp) && (
-                      <span className="px-2 py-1 rounded bg-primary/10 text-primary font-mono">
-                        Meta Pixel
-                      </span>
-                    )}
-                    {attribution.gclid && (
-                      <span className="px-2 py-1 rounded bg-sky-500/10 text-sky-700 dark:text-sky-300 font-mono">
-                        Google Ads
-                      </span>
-                    )}
-                    {attribution.lead_code && (
-                      <span className="px-2 py-1 rounded bg-muted text-muted-foreground font-mono">
-                        #{attribution.lead_code}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <p className="text-2xs text-muted-foreground">
-                  Origem direta ou ainda sem parâmetros de anúncio vinculados.
-                </p>
-              )}
-
-              {pixelConversions.length > 0 && (
-                <div className="pt-2 border-t border-border/50 flex items-center gap-1 flex-wrap">
-                  {pixelConversions.slice(0, 4).map((ev: any) => (
-                    <span
-                      key={ev.id}
-                      className={cn(
-                        "px-2 py-1 rounded font-mono text-2xs border",
-                        ev.status === "delivered" || ev.status === "dispatched"
-                          ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-                          : "bg-destructive/10 text-destructive border-destructive/30",
-                      )}
-                      title={ev.response_data?.error || `${ev.event_name} (${ev.event_source || "capi"})`}
-                    >
-                      CAPI: {ev.event_name}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-
-          {isEditingAttribution && (
-            <div className="pt-2 border-t border-border/50 space-y-2">
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  value={attrPlatform}
-                  onChange={(e) => setAttrPlatform(e.target.value)}
-                  placeholder="Plataforma (meta_ads, google_ads)"
-                  className="w-full min-h-11 sm:min-h-8 px-2 py-1 rounded-lg bg-background border border-border/70 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                />
-                <input
-                  value={attrUtmSource}
-                  onChange={(e) => setAttrUtmSource(e.target.value)}
-                  placeholder="UTM Source (ex: instagram)"
-                  className="w-full min-h-11 sm:min-h-8 px-2 py-1 rounded-lg bg-background border border-border/70 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  value={attrUtmMedium}
-                  onChange={(e) => setAttrUtmMedium(e.target.value)}
-                  placeholder="UTM Medium (ex: cpc, ctwa)"
-                  className="w-full min-h-11 sm:min-h-8 px-2 py-1 rounded-lg bg-background border border-border/70 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                />
-                <input
-                  value={attrAdId}
-                  onChange={(e) => setAttrAdId(e.target.value)}
-                  placeholder="ID do Anúncio (ad_id)"
-                  className="w-full min-h-11 sm:min-h-8 px-2 py-1 rounded-lg bg-background border border-border/70 text-xs font-mono text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                />
-              </div>
-              <input
-                value={attrCampaign}
-                onChange={(e) => setAttrCampaign(e.target.value)}
-                placeholder="Nome da Campanha"
-                className="w-full min-h-11 sm:min-h-8 px-2 py-1 rounded-lg bg-background border border-border/70 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              />
-              <input
-                value={attrHeadline}
-                onChange={(e) => setAttrHeadline(e.target.value)}
-                placeholder="Título / Criativo do Anúncio"
-                className="w-full min-h-11 sm:min-h-8 px-2 py-1 rounded-lg bg-background border border-border/70 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              />
-              <div className="flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsEditingAttribution(false)}
-                  className="min-h-11 sm:min-h-8 px-3 py-1 rounded-lg border border-border/70 bg-background text-2xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  disabled={isSavingAttribution}
-                  onClick={handleSaveAttribution}
-                  className="min-h-11 sm:min-h-8 px-3 py-1 rounded-lg bg-primary text-primary-foreground text-2xs font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  {isSavingAttribution ? "Salvando..." : "Salvar Origem"}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        <C360AttributionJourneyCard
+          attribution={attribution}
+          touchpoints={Array.isArray(data?.touchpoints) ? data.touchpoints : []}
+          pixelConversions={pixelConversions}
+          isEditingAttribution={isEditingAttribution}
+          isSavingAttribution={isSavingAttribution}
+          attrPlatform={attrPlatform}
+          attrUtmSource={attrUtmSource}
+          attrUtmMedium={attrUtmMedium}
+          attrAdId={attrAdId}
+          attrCampaign={attrCampaign}
+          attrHeadline={attrHeadline}
+          onToggleEditing={() => setIsEditingAttribution((prev) => !prev)}
+          onChangePlatform={setAttrPlatform}
+          onChangeUtmSource={setAttrUtmSource}
+          onChangeUtmMedium={setAttrUtmMedium}
+          onChangeAdId={setAttrAdId}
+          onChangeCampaign={setAttrCampaign}
+          onChangeHeadline={setAttrHeadline}
+          onSaveAttribution={() => void handleSaveAttribution()}
+        />
       )}
 
       {/* 2. FEATURES RÁPIDAS: TAGS (COM PASTAS) & OBSERVAÇÕES DA EQUIPE */}
@@ -1979,14 +2243,21 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
 
       {/* 5. DOCUMENTOS, FATURAS PIX, BOLETOS, PEDIDOS / CARRINHO & IMAGEM (1-CLICK) */}
       <div className="rounded-xl border border-border/70 bg-card p-3 space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-2xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1">
-            <Receipt className="size-3.5 text-primary" />
-            <span>Faturas, Boletos, Pedidos & Cards</span>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1">
+            <Receipt className="size-3.5 text-primary shrink-0" />
+            <span>Faturas, Boletos & Pedidos</span>
           </span>
-          <span className="text-2xs font-mono font-bold text-emerald-600">
-            LTV: {formatBRL((metrics?.ltv_cents || 0) / 100)}
-          </span>
+          <div className="flex items-center gap-1 shrink-0">
+            {Number(metrics?.repeat_purchases || 0) > 0 && (
+              <span className="px-2 py-1 rounded bg-primary/10 text-primary font-mono text-xs font-semibold">
+                {metrics.repeat_purchases} recompra{metrics.repeat_purchases > 1 ? "s" : ""}
+              </span>
+            )}
+            <span className="text-xs font-mono font-bold text-emerald-600">
+              LTV: {formatBRL((metrics?.ltv_cents || 0) / 100)}
+            </span>
+          </div>
         </div>
 
         {/* Grade de Disparo Rápido em Botões Squircle Finos */}
@@ -1994,7 +2265,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
           <button
             type="button"
             onClick={() => (onOpenQuickComposerModal ? onOpenQuickComposerModal("invoice") : setIsBudgetPadOpen(true))}
-            className="px-2 py-2 rounded-lg border border-border/70 bg-muted/30 hover:bg-primary/10 hover:border-primary/30 text-2xs font-semibold text-foreground inline-flex items-center gap-2 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="min-h-11 sm:min-h-9 px-2 py-2 rounded-lg border border-border/70 bg-muted/30 hover:bg-primary/10 hover:border-primary/30 text-xs font-semibold text-foreground inline-flex items-center gap-2 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <QrCode className="size-3.5 text-primary shrink-0" />
             <span className="truncate">Gerar Fatura PIX</span>
@@ -2002,7 +2273,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
           <button
             type="button"
             onClick={() => (onOpenQuickComposerModal ? onOpenQuickComposerModal("boleto") : setIsBudgetPadOpen(true))}
-            className="px-2 py-2 rounded-lg border border-border/70 bg-muted/30 hover:bg-primary/10 hover:border-primary/30 text-2xs font-semibold text-foreground inline-flex items-center gap-2 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="min-h-11 sm:min-h-9 px-2 py-2 rounded-lg border border-border/70 bg-muted/30 hover:bg-primary/10 hover:border-primary/30 text-xs font-semibold text-foreground inline-flex items-center gap-2 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <CreditCard className="size-3.5 text-primary shrink-0" />
             <span className="truncate">Emitir Boleto</span>
@@ -2010,7 +2281,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
           <button
             type="button"
             onClick={() => setIsBudgetPadOpen(true)}
-            className="px-2 py-2 rounded-lg border border-border/70 bg-muted/30 hover:bg-primary/10 hover:border-primary/30 text-2xs font-semibold text-foreground inline-flex items-center gap-2 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="min-h-11 sm:min-h-9 px-2 py-2 rounded-lg border border-border/70 bg-muted/30 hover:bg-primary/10 hover:border-primary/30 text-xs font-semibold text-foreground inline-flex items-center gap-2 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <ShoppingBag className="size-3.5 text-primary shrink-0" />
             <span className="truncate">Pedido / Cotação</span>
@@ -2266,11 +2537,15 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
                 className="w-full p-2 rounded-md bg-background border border-border/70 text-xs text-foreground resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               />
 
-              <input
-                value={emailAttachmentUrl}
-                onChange={(e) => setEmailAttachmentUrl(e.target.value)}
-                placeholder="URL de imagem / comprovante em anexo (opcional)"
-                className="w-full px-2 py-1 rounded-md bg-background border border-border/70 text-2xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              <MediaUploader
+                value={emailAttachmentUrl ? [emailAttachmentUrl] : []}
+                onChange={(urls) => setEmailAttachmentUrl(urls[0] || "")}
+                maxFiles={1}
+                bucket="cms-media"
+                folder="crm-email-attachments"
+                label="Anexo / Comprovante (Opcional)"
+                showExternalUrlOption={false}
+                enableCrop={false}
               />
 
               <div className="flex items-center justify-between gap-2 pt-1">
@@ -2352,34 +2627,111 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
             <span>Kanban Comercial ({opportunities.length})</span>
           </span>
           {threadId && (
-            <button
-              type="button"
-              onClick={() => {
-                setLeadTitle(
-                  isTourism
-                    ? `Cotação Viagem - ${profile?.full_name || guestName || "Cliente"}`
-                    : `Oportunidade - ${profile?.full_name || guestName || "Cliente"}`,
-                );
-                setIsCreatingLead(true);
-              }}
-              className="px-2 py-1 rounded-md bg-primary/10 text-primary border border-primary/30 font-bold text-2xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              + Oportunidade
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => {
+                  const nextOpen = !overviewLeadSearchOpen;
+                  setOverviewLeadSearchOpen(nextOpen);
+                  if (nextOpen && storeId) {
+                    setIsSearchingOverviewLeads(true);
+                    searchStoreCrmLeads({
+                      data: { storeId, query: overviewLeadQuery.trim() || undefined, limit: 15 },
+                    })
+                      .then((rows) => setOverviewLeadResults(rows || []))
+                      .catch(() => setOverviewLeadResults([]))
+                      .finally(() => setIsSearchingOverviewLeads(false));
+                  }
+                }}
+                className="min-h-11 sm:min-h-7 px-2 py-1 rounded-md bg-muted text-foreground border border-border/70 font-semibold text-2xs inline-flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                title="Buscar e vincular um Lead ja cadastrado no CRM"
+              >
+                <Link2 className="size-3" />
+                <span>{overviewLeadSearchOpen ? "Fechar" : "Buscar Lead"}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLeadTitle(
+                    isTourism
+                      ? `Cotação Viagem - ${profile?.full_name || guestName || "Cliente"}`
+                      : `Oportunidade - ${profile?.full_name || guestName || "Cliente"}`,
+                  );
+                  setIsCreatingLead(true);
+                }}
+                className="min-h-11 sm:min-h-7 px-2 py-1 rounded-md bg-primary/10 text-primary border border-primary/30 font-bold text-2xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                + Oportunidade
+              </button>
+            </div>
           )}
         </div>
 
-        {threadId && opportunities.length > 0 && (
+        {threadId && overviewLeadSearchOpen && (
+          <div className="p-2 rounded-lg border border-border/70 bg-muted/30 space-y-2">
+            <div className="flex items-center gap-1">
+              <input
+                value={overviewLeadQuery}
+                onChange={(e) => {
+                  const nextQ = e.target.value;
+                  setOverviewLeadQuery(nextQ);
+                  if (storeId) {
+                    setIsSearchingOverviewLeads(true);
+                    searchStoreCrmLeads({ data: { storeId, query: nextQ.trim() || undefined, limit: 15 } })
+                      .then((rows) => setOverviewLeadResults(rows || []))
+                      .catch(() => setOverviewLeadResults([]))
+                      .finally(() => setIsSearchingOverviewLeads(false));
+                  }
+                }}
+                placeholder="Buscar lead por nome, telefone ou titulo..."
+                className="flex-1 min-h-11 sm:min-h-8 px-2 py-1 rounded-md border border-border/70 bg-background text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              />
+            </div>
+            <div className="max-h-36 overflow-y-auto space-y-1">
+              {isSearchingOverviewLeads ? (
+                <p className="text-2xs text-muted-foreground text-center py-2">Buscando leads no CRM...</p>
+              ) : overviewLeadResults.length === 0 ? (
+                <p className="text-2xs text-muted-foreground text-center py-2">Nenhum lead encontrado.</p>
+              ) : (
+                overviewLeadResults.map((row) => (
+                  <button
+                    key={row.id}
+                    type="button"
+                    disabled={isLinkingOpportunity}
+                    onClick={async () => {
+                      await handleSelectOpportunity(row.id);
+                      setOverviewLeadSearchOpen(false);
+                    }}
+                    className="w-full min-h-11 sm:min-h-8 px-2 py-1 rounded-md border border-border/60 bg-background hover:bg-primary/10 text-left flex items-center justify-between gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-foreground truncate">{row.title || row.full_name}</p>
+                      <p className="text-2xs text-muted-foreground truncate">{row.full_name}{row.phone ? ` · ${row.phone}` : ""}</p>
+                    </div>
+                    <span className="text-2xs font-bold text-primary shrink-0">
+                      {activeOpportunity?.id === row.id ? "Ativo" : "Vincular"}
+                    </span>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {threadId && (opportunities.length > 0 || activeOpportunity) && (
           <select
             value={activeOpportunity?.id || ""}
             disabled={isLinkingOpportunity}
             onChange={(e) => handleSelectOpportunity(e.target.value)}
-            className="w-full px-2 py-1 rounded-lg border border-border/70 bg-background text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="w-full min-h-11 sm:min-h-8 px-2 py-1 rounded-lg border border-border/70 bg-background text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <option value="">Sem oportunidade vinculada</option>
-            {opportunities.map((opp: any) => (
+            {(activeOpportunity && !opportunities.some((o: any) => o.id === activeOpportunity.id)
+              ? [activeOpportunity, ...opportunities]
+              : opportunities
+            ).map((opp: any) => (
               <option key={opp.id} value={opp.id}>
-                {opp.title || opp.name || "Oportunidade"} · {FUNNEL_STAGES.find((s) => s.value === opp.status)?.label || opp.status}
+                {opp.title || opp.full_name || "Oportunidade"} · {FUNNEL_STAGES.find((s) => s.value === opp.status)?.label || opp.status}
               </option>
             ))}
           </select>
@@ -2832,7 +3184,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
                   if (!leadTitle.trim()) return;
                   try {
                     const { convertChatThreadToCrmLead } = await import("@/services/chat.functions");
-                    await convertChatThreadToCrmLead({
+                    const res = await convertChatThreadToCrmLead({
                       data: {
                         threadId,
                         leadTitle: leadTitle.trim(),
@@ -2840,6 +3192,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
                         notes: leadNotes.trim() || undefined,
                       },
                     });
+                    onLinkedLeadChange?.(res?.lead || { id: res?.leadId, title: leadTitle.trim() });
                     setIsCreatingLead(false);
                     setLeadTitle("");
                     setLeadBudget("");

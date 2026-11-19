@@ -88,7 +88,9 @@ export const getUserSession = createServerFn({ method: "GET" }).handler(async ()
       effectiveEmail?.split("@")[0] ||
       "membro";
 
-    const resolvedRole = profile?.role || identity.role || "customer";
+    const storeBoundRole =
+      identity.role && identity.role !== "customer" ? identity.role : null;
+    const resolvedRole = storeBoundRole || profile?.role || identity.role || "customer";
     const resolvedIsPlatformAdmin = Boolean(
       (identity as any).isPlatformAdmin ||
         resolvedRole === "platform_admin" ||
@@ -360,6 +362,7 @@ export const signInWithPassword = createServerFn({ method: "POST" })
     // Se o usuário possui empresa/loja vinculada, ativa automaticamente o contexto 'store'
     // e seu tenant primário, garantindo que o redirecionamento ao Workspace não caia em laço civil.
     let targetStoreId: string | null = null;
+    let targetStoreRole: string | null = null;
     try {
       const { setCookie } = await import("@tanstack/start-server-core");
       const isProd = process.env.NODE_ENV === "production";
@@ -368,11 +371,12 @@ export const signInWithPassword = createServerFn({ method: "POST" })
       if (data.user?.id) {
         const wmRes = await adminDb
           .from("workspace_members")
-          .select("store_id")
+          .select("store_id, role")
           .or(`profile_id.eq.${data.user.id},user_id.eq.${data.user.id}`)
           .limit(1)
           .maybeSingle();
         targetStoreId = wmRes?.data?.store_id || null;
+        targetStoreRole = wmRes?.data?.role || null;
       }
 
       if (targetStoreId) {
@@ -465,7 +469,7 @@ export const signInWithPassword = createServerFn({ method: "POST" })
           }
         : null,
       store_id: targetStoreId,
-      role: targetStoreId ? "owner" : ((data.user?.app_metadata?.role as any) || "customer"),
+      role: targetStoreId ? (targetStoreRole || "owner") : ((data.user?.app_metadata?.role as any) || "customer"),
     };
   } catch (e: unknown) {
  logSystemError({ route: "auth.functions.signInWithPassword", error: e, payload: { email, identifier } });
@@ -835,6 +839,8 @@ export const signOut = createServerFn({ method: "POST" }).handler(async () => {
  return { status: "error" as const, message: `Erro ao realizar logout: ${message}` };
  }
 });
+
+export const signOutFn = signOut;
 
 export const updatePassword = createServerFn({ method: "POST" })
  .validator(ResetPasswordSchema)
@@ -1264,41 +1270,11 @@ export async function _updateProfile(data: UpdateProfileInput) {
 
  // Sincroniza avaliações de empregadores para inteligência corporativa comunitária
  if (data.resumeData && Array.isArray((data.resumeData as any).experiences)) {
- for (const exp of (data.resumeData as any).experiences) {
- if (exp.company && (exp.company_rating || exp.salary_cents || exp.exit_reason || exp.review_text)) {
- try {
- await adminDb.from("employer_reviews").delete().eq("user_id", user.id).eq("company_name", exp.company);
- const { error: revErr } = await adminDb.from("employer_reviews").insert({
- user_id: user.id,
- company_name: exp.company,
- store_id: exp.store_id || null,
- job_title: exp.title || "Colaborador",
- employment_type: exp.employment_type || null,
- start_date: exp.start_date || null,
- end_date: exp.end_date || null,
- is_current: exp.is_current ?? false,
- salary_cents: exp.salary_cents ? Number(exp.salary_cents) : null,
- exit_reason: exp.exit_reason || null,
- company_rating: exp.company_rating ? Number(exp.company_rating) : null,
- would_recommend: exp.would_recommend ?? true,
- pros: exp.review_text || null,
- is_anonymous: exp.is_anonymous ?? true,
- status: "published",
- });
- if (revErr) {
- console.error("[auth] Erro ao sincronizar employer_reviews:", {
- error: revErr,
- userId: user.id,
- company: exp.company,
- schema: "public",
- table: "employer_reviews",
- });
- }
- } catch (revErr) {
- console.error("[auth] Falha inesperada ao sincronizar review de empregador:", revErr);
- }
- }
- }
+   const { syncEmployerReviewsForUser } = await import("@/lib/careers/employer-reviews.server");
+   await syncEmployerReviewsForUser(adminDb, user.id, (data.resumeData as any).experiences, {
+     route: "auth.updateProfile",
+     defaultAnonymous: true,
+   });
  }
 
  return { status: "success" as const };

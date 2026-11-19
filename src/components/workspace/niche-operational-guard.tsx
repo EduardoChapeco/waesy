@@ -4,7 +4,7 @@ import { ShieldAlert, ArrowRight, Plane, Users, Bus, Calendar, Layers, Store, Cl
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { getNicheSemantics } from "@/lib/niche-semantics";
+import { getNicheSemantics } from "@/lib/niches/niche-semantics";
 import { resolveUnifiedNicheId } from "@/lib/niches/niche-ssot";
 
 interface NicheOperationalGuardProps {

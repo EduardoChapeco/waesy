@@ -1528,32 +1528,11 @@ export const updateMemberResumeData = createServerFn({ method: "POST" })
 
  // Sincroniza avaliações de empregadores para inteligência comunitária (Avaliação Corporativa)
  if (Array.isArray(resumeData.experiences)) {
- for (const exp of resumeData.experiences) {
- if (exp.company && (exp.company_rating || exp.salary_cents || exp.exit_reason || exp.review_text)) {
- try {
- await db.from("employer_reviews").delete().eq("user_id", userId).eq("company_name", exp.company);
- const { error: revErr } = await db.from("employer_reviews").insert({
- user_id: userId,
- company_name: exp.company,
- store_id: exp.store_id || null,
- job_title: exp.title || "Colaborador",
- employment_type: exp.employment_type || null,
- start_date: exp.start_date || null,
- end_date: exp.end_date || null,
- is_current: exp.is_current ?? false,
- salary_cents: exp.salary_cents || null,
- exit_reason: exp.exit_reason || null,
- company_rating: exp.company_rating || null,
- would_recommend: exp.would_recommend ?? true,
- pros: exp.review_text || null,
- status: "published",
- is_anonymous: exp.is_anonymous ?? false,
- });
- } catch {
- console.error("[social.functions] Erro ao sincronizar review de empregador:", { userId, company: exp.company, table: "employer_reviews" });
- }
- }
- }
+   const { syncEmployerReviewsForUser } = await import("@/lib/careers/employer-reviews.server");
+   await syncEmployerReviewsForUser(db, userId, resumeData.experiences, {
+     route: "social.updateMemberResumeData",
+     defaultAnonymous: false,
+   });
  }
 
  return { status: "ok" as const };

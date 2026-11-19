@@ -35,9 +35,17 @@ describe('ONDA 5: AUDITORIA SILENCIOSA DE DESIGN APPLE HIG & RADIX UI', () => {
     }
   });
 
+  const readRouteAuditSource = (routePath: string) => {
+    let content = fs.readFileSync(path.resolve(routePath), 'utf8');
+    if (routePath === 'src/routes/workspace.configuracoes.pwa.tsx') {
+      content += '\n' + fs.readFileSync(path.resolve('src/components/branded-app/branded-app-workspace-editor.tsx'), 'utf8');
+    }
+    return content;
+  };
+
   it('devem impor touch targets mínimos de 44px para conformidade móvel Apple HIG', () => {
     for (const routePath of routesToCheck) {
-      const content = fs.readFileSync(path.resolve(routePath), 'utf8');
+      const content = readRouteAuditSource(routePath);
       const hasTouchTargetStandard = 
         content.includes('min-h-11') || 
         content.includes('min-h-12') || 
@@ -52,7 +60,7 @@ describe('ONDA 5: AUDITORIA SILENCIOSA DE DESIGN APPLE HIG & RADIX UI', () => {
 
   it('devem seguir a hierarquia de camadas Apple HIG (bg-card, rounded-lg/3xl, border-border)', () => {
     for (const routePath of routesToCheck) {
-      const content = fs.readFileSync(path.resolve(routePath), 'utf8');
+      const content = readRouteAuditSource(routePath);
       expect(content).toContain('bg-card');
       expect(content).toContain('border-border');
     }

@@ -14,21 +14,55 @@ import { CartProvider, useCartContext } from "@/lib/cart-context";
 import { getClientActiveContext, setClientContextCookies } from "@/lib/context-auth";
 import { ErrorState, UnconfiguredState } from "@/components/state/states";
 import { StoreAnalyticsInjector } from "@/components/analytics/StoreAnalyticsInjector";
+import { logSystemError } from "@/services/telemetry.functions";
+
+function traceLayoutQuery<T>(
+  contractName: string,
+  promise: Promise<T>,
+  fallback: T,
+  errors: Array<{ contract: string; message: string }>,
+): Promise<T> {
+  return promise.catch((err: any) => {
+    const message = err instanceof Error ? err.message : String(err || "Unknown layout error");
+    errors.push({ contract: contractName, message });
+    console.error(`[loader:_store] Falha em ${contractName}:`, message);
+    return fallback;
+  });
+}
 
 export const Route = createFileRoute("/_store")({
   staleTime: 15_000,
  loader: async () => {
+ const loaderErrors: Array<{ contract: string; message: string }> = [];
  try {
  const [menusRes, storeRes, brandRes, carts, globalCarts, popupsRes, sessionRes, hostVerticalRes] = await Promise.all([
- getNavigationMenus().catch(() => []),
- getPublicStoreSettings().catch(() => null),
- getPublicBrandSettings().catch(() => null),
- getCart().catch(() => null),
- getGlobalCarts().catch(() => []),
- getActiveGlobalPopups().catch(() => []),
- getUserSession().catch(() => null),
- getHostVerticalSubsystemLandingFn().catch(() => null),
+ traceLayoutQuery("cms.getNavigationMenus", getNavigationMenus(), [], loaderErrors),
+ traceLayoutQuery("cms.getPublicStoreSettings", getPublicStoreSettings(), null, loaderErrors),
+ traceLayoutQuery("master.getPublicBrandSettings", getPublicBrandSettings(), null, loaderErrors),
+ traceLayoutQuery("cart.getCart", getCart(), null, loaderErrors),
+ traceLayoutQuery("cart.getGlobalCarts", getGlobalCarts(), [], loaderErrors),
+ traceLayoutQuery("builder.getActiveGlobalPopups", getActiveGlobalPopups(), [], loaderErrors),
+ traceLayoutQuery("auth.getUserSession", getUserSession(), null, loaderErrors),
+ traceLayoutQuery("vertical.getHostVerticalSubsystemLandingFn", getHostVerticalSubsystemLandingFn(), null, loaderErrors),
  ]);
+ if (loaderErrors.length > 0) {
+ logSystemError({
+ data: {
+ severity: "WARN",
+ subsystem: "store_layout_loader",
+ route: "/_store",
+ message: `${loaderErrors.length} contrato(s) degradado(s) no layout raiz`,
+ error_payload: {
+ page_url: "/_store",
+ contract_name: loaderErrors.reduce<string[]>((acc, e) => {
+ acc.push(e.contract);
+ return acc;
+ }, []).join(","),
+ failures: loaderErrors,
+ },
+ },
+ }).catch(() => {});
+ }
   // Zero-Trust Civil Root para SSR da Vitrine Pública:
   // A vitrine pública opera sob identidade civil pessoal, impedindo vazamento de store_id residual
   const sanitizedSession = sessionRes
@@ -43,8 +77,20 @@ export const Route = createFileRoute("/_store")({
  popups: popupsRes || [],
  session: sanitizedSession,
  hostVertical: hostVerticalRes || null,
+ loaderErrors,
  };
- } catch {
+ } catch (err: any) {
+ const message = err instanceof Error ? err.message : String(err || "Unknown layout failure");
+ console.error("[loader:_store] Unhandled layout loader error:", err);
+ logSystemError({
+ data: {
+ severity: "ERROR",
+ subsystem: "store_layout_loader",
+ route: "/_store",
+ message,
+ error_payload: { page_url: "/_store", contract_name: "_store.loader" },
+ },
+ }).catch(() => {});
  return {
  menus: [],
  store: null,
@@ -53,6 +99,8 @@ export const Route = createFileRoute("/_store")({
  globalCarts: [],
  popups: [],
  session: null,
+ hostVertical: null,
+ loaderErrors: [{ contract: "_store.loader", message }],
  };
  }
  },
@@ -195,16 +243,32 @@ function StoreLayout() {
 
   // Zero-Trust Civil Root na Vitrine Pública (DEC-206):
   // A vitrine pública opera sob identidade civil pessoal na camada SSR.
-  // Preserva o contexto de store no cookie caso o lojista esteja alternando entre vitrine e workspace.
+  // Se o app foi iniciado como PWA exclusivo do Workspace ou conta de staff corporativo, redireciona direto para /workspace.
   useEffect(() => {
     if (typeof window !== "undefined") {
+      const path = window.location.pathname || "/";
+      const search = window.location.search || "";
+      const isWorkspacePwa =
+        search.includes("pwa=workspace") ||
+        window.document.cookie.includes("waesy_pwa_mode=workspace") ||
+        Boolean(activeSession?.user?.user_metadata?.is_staff_account);
+
+      if (isWorkspacePwa && (path === "/" || path === "")) {
+        window.location.replace("/workspace");
+        return;
+      }
+
+      if (path.startsWith("/entrar") || path.startsWith("/painel") || path.startsWith("/workspace")) {
+        return;
+      }
+
       const activeCtx = getClientActiveContext();
-      if (!activeCtx) {
+      if (!activeCtx && (!activeSession?.memberships || activeSession.memberships.length === 0)) {
         window.document.cookie =
           "waesy_active_context=civil; path=/; max-age=31536000; SameSite=Lax";
       }
     }
-  }, []);
+  }, [activeSession]);
 
  const storeData = store?.data || store;
  const storeName = brand?.platform_name || storeData?.name || "Waesy Local Marketplace";

@@ -22,7 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import type { DashboardMetrics } from "@/services/dashboard.functions";
-import type { NicheSemantics } from "@/lib/niche-semantics";
+import type { NicheSemantics } from "@/lib/niches/niche-semantics";
 
 export interface PolymorphicDashboardProps {
   nicheId: string;

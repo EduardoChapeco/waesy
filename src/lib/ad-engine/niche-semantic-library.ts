@@ -13,16 +13,16 @@ export type {
   NicheSemantics as NicheSemanticConfig,
   NicheQuickAction,
   NicheKpiMetric,
-} from '../niche-semantics';
+} from '../niches/niche-semantics';
 
 export {
   NICHE_SEMANTICS_REGISTRY,
   NICHE_SEMANTICS_REGISTRY as NICHE_SEMANTIC_LIBRARY,
   getNicheSemantics,
   enrichNicheSemantics,
-} from '../niche-semantics';
+} from '../niches/niche-semantics';
 
-import { NICHE_SEMANTICS_REGISTRY, type NicheSemantics } from '../niche-semantics';
+import { NICHE_SEMANTICS_REGISTRY, type NicheSemantics } from '../niches/niche-semantics';
 
 export type NicheLabelKey =
   | 'product_singular'

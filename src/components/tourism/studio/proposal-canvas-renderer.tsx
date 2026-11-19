@@ -12,6 +12,15 @@ import {
   formatProposalPaymentTermsForDisplay,
   sanitizeProposalCustomFields,
 } from "@/lib/tourism/proposal-custom-fields";
+import {
+  extractImageUrlsFromMedia,
+  normalizeEntityMediaList,
+  normalizeHotelsList,
+  normalizeToursList,
+  normalizeTransfersList,
+  resolveTransferDisplayTitle,
+  resolveTransferKindBadge,
+} from "@/lib/tourism/proposal-normalization";
 
 interface ProposalCanvasRendererProps {
   proposal: TravelProposalDTO;
@@ -111,8 +120,10 @@ function normalizeProposalForCanvas(proposal: TravelProposalDTO): Record<string,
     destination: f.destination_iata || f.destination || f.destination_city || "---",
     destination_iata: f.destination_iata || f.destination || "---",
     date: f.date || f.departure_date || proposal.travel_start_date || "",
-    stops: f.stops ?? f.stops_count ?? 0,
-    stops_count: f.stops_count ?? f.stops ?? 0,
+    stops: f.stops ?? f.stops_count ?? (Array.isArray(f.connection_airports) ? f.connection_airports.length : 0),
+    stops_count: f.stops_count ?? f.stops ?? (Array.isArray(f.connection_airports) ? f.connection_airports.length : 0),
+    connection_airports: Array.isArray(f.connection_airports) ? f.connection_airports : undefined,
+    legs: Array.isArray(f.legs) ? f.legs : undefined,
     baggage_rules:
       f.baggage_rules ||
       (typeof f.baggage_included === "string"
@@ -121,11 +132,17 @@ function normalizeProposalForCanvas(proposal: TravelProposalDTO): Record<string,
     price: Number(f.price || 0),
   }));
 
-  const normalizedHotels = (proposal.hotels || []).map((h: any) => {
-    const imgList =
-      Array.isArray(h.images) && h.images.length > 0
-        ? h.images
-        : [h.image_url, h.featured_image_url].filter(Boolean);
+  const normalizedHotels = normalizeHotelsList(proposal.hotels || []).map((h: any) => {
+    const mediaList = normalizeEntityMediaList({
+      media: h.media,
+      featured_image_url: h.featured_image_url,
+      image_url: h.image_url,
+      images: h.images,
+      video_url: h.video_url,
+      object_position: h.object_position,
+      image_scale: h.image_scale,
+    });
+    const imgList = extractImageUrlsFromMedia(mediaList);
     const roomsList =
       Array.isArray(h.rooms) && h.rooms.length > 0
         ? h.rooms
@@ -150,9 +167,10 @@ function normalizeProposalForCanvas(proposal: TravelProposalDTO): Record<string,
         BOARD_BASIS_LABELS[h.board_basis || ""] ||
         h.board_basis ||
         "Café da Manhã",
+      media: mediaList,
       images: imgList,
       rooms: roomsList,
-      price: Number(h.price || 0),
+      price: Number(h.price ?? (h.price_cents ? h.price_cents / 100 : 0)),
     };
   });
 
@@ -166,6 +184,14 @@ function normalizeProposalForCanvas(proposal: TravelProposalDTO): Record<string,
           : typeof d.included_meals === "string"
             ? [d.included_meals]
             : [];
+    const dayMedia = normalizeEntityMediaList({
+      media: d.media,
+      image_url: d.image_url,
+      images: d.images,
+      video_url: d.video_url,
+      object_position: d.object_position,
+      image_scale: d.image_scale,
+    });
     return {
       ...d,
       day: d.day || `Dia ${d.day_number || idx + 1}`,
@@ -174,48 +200,56 @@ function normalizeProposalForCanvas(proposal: TravelProposalDTO): Record<string,
       location: d.location || d.city || "",
       meals: rawMeals,
       included_meals: rawMeals,
-      images:
-        Array.isArray(d.images) && d.images.length > 0
-          ? d.images
-          : d.image_url
-            ? [d.image_url]
-            : [],
+      media: dayMedia,
+      images: extractImageUrlsFromMedia(dayMedia),
     };
   });
 
-  const normalizedTransfers = (proposal.transfers || []).map((t: any) => ({
-    ...t,
-    description: t.description || t.route || t.type || "Transfer Aeroporto / Hotel",
-    type: t.type === "shared" || t.type === "Regular" ? "shared" : "private",
-    vehicle:
-      t.vehicle ||
-      t.vehicle_type ||
-      (typeof t.type === "string" && (t.type.includes("Ônibus") || t.type.includes("Van"))
-        ? t.type
-        : "Executivo"),
-    date: t.date || "",
-    notes: [
-      t.notes,
-      t.pickup_time ? `Embarque: ${t.pickup_time}` : null,
-      t.dropoff_time ? `Desembarque: ${t.dropoff_time}` : null,
-    ]
-      .filter(Boolean)
-      .join(" · "),
-    price: Number(t.price ?? (t.price_cents ? t.price_cents / 100 : 0)),
-  }));
+  const normalizedTransfers = normalizeTransfersList(proposal.transfers || []).map((t: any, idx: number) => {
+    const displayTitle = resolveTransferDisplayTitle(t, idx);
+    const kindLabel = resolveTransferKindBadge(t.kind || t.type);
+    return {
+      ...t,
+      name: displayTitle,
+      description: displayTitle,
+      route: displayTitle,
+      route_name: displayTitle,
+      type: t.type === "shared" || t.type === "Regular" || t.is_private === false ? "shared" : "private",
+      kind_label: kindLabel,
+      vehicle:
+        t.vehicle ||
+        t.vehicle_type ||
+        (typeof t.type === "string" && (t.type.includes("Ônibus") || t.type.includes("Van"))
+          ? t.type
+          : "Transfer Regular"),
+      date: t.date || "",
+      notes: [
+        t.notes,
+        t.pickup_time ? `Embarque: ${t.pickup_time}` : null,
+        t.dropoff_time ? `Desembarque: ${t.dropoff_time}` : null,
+      ]
+        .filter(Boolean)
+        .join(" · "),
+      price: Number(t.price ?? (t.price_cents ? t.price_cents / 100 : 0)),
+    };
+  });
 
-  const normalizedTours = (proposal.tours || []).map((t: any) => {
-    const tourImages =
-      Array.isArray(t.images) && t.images.length > 0
-        ? t.images.filter(Boolean)
-        : t.image_url
-          ? [t.image_url]
-          : [];
+  const normalizedTours = normalizeToursList(proposal.tours || []).map((t: any) => {
+    const mediaList = normalizeEntityMediaList({
+      media: t.media,
+      image_url: t.image_url,
+      images: t.images,
+      video_url: t.video_url,
+      object_position: t.object_position,
+      image_scale: t.image_scale,
+    });
+    const tourImages = extractImageUrlsFromMedia(mediaList);
     return {
       ...t,
       description: t.description || t.title || "Passeio / Experiência",
       title: t.title || t.description || "Passeio / Experiência",
       date: t.date || t.duration || "",
+      media: mediaList,
       image_url: t.image_url || tourImages[0] || undefined,
       images: tourImages,
       price: Number(t.price ?? (t.price_cents ? t.price_cents / 100 : 0)),
@@ -342,6 +376,7 @@ function normalizeProposalForCanvas(proposal: TravelProposalDTO): Record<string,
     itinerary: normalizedItinerary,
     transfers: normalizedTransfers,
     tours: normalizedTours,
+    cruises: Array.isArray(proposal.cruises) ? proposal.cruises : Array.isArray(raw.cruises) ? raw.cruises : [],
     rooms: Array.isArray(proposal.rooms) ? proposal.rooms : [],
     options: Array.isArray(proposal.options) ? proposal.options : [],
     custom_payments: customPayments,

@@ -56,6 +56,12 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
    }
  }, [location.pathname]);
 
+  const isAppScopedOrderFlow =
+    (location.pathname.startsWith("/checkout") || location.pathname.startsWith("/pedido/")) &&
+    (Boolean((location.search as any)?.app || (location.search as any)?.store) ||
+      (typeof window !== "undefined" &&
+        (window.location.search.includes("app=") || window.location.search.includes("store="))));
+
   // Check if current page is full-screen standalone auth page, landing form, or mobile customer portal
   const isStandalonePage =
     location.pathname.startsWith("/entrar") ||
@@ -67,7 +73,8 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
     location.pathname.startsWith("/m/") ||
     location.pathname.startsWith("/assinar/") ||
     location.pathname.startsWith("/proposta/") ||
-    location.pathname.startsWith("/entrega/");
+    location.pathname.startsWith("/entrega/") ||
+    isAppScopedOrderFlow;
 
   if (isStandalonePage) {
     return (

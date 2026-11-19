@@ -1260,6 +1260,104 @@ export const submitAndAutoMatchCustomerReceiptFn = createServerFn({ method: "POS
       installments,
     } = data;
 
+    const cleanReceiptUrl = receiptFileUrl.trim();
+    if (!cleanReceiptUrl.startsWith("https://") && !cleanReceiptUrl.startsWith("/")) {
+      throw new Error("URL do comprovante inválida.");
+    }
+
+    const { getServerIdentity } = await import("@/lib/server-access");
+    const identity = await getServerIdentity();
+    if (!identity?.id) {
+      throw new Error("Autenticação obrigatória para enviar comprovantes.");
+    }
+
+    const supabase = getServerClient();
+    const { data: trip, error: tripErr } = await supabase
+      .from("tourism_trips")
+      .select("id, store_id, customer_id, client_email, client_document")
+      .eq("id", tripId)
+      .maybeSingle();
+
+    if (tripErr || !trip) {
+      throw new Error("Viagem não encontrada.");
+    }
+
+    const isStaff =
+      identity.role === "platform_admin" ||
+      (identity.role !== "customer" && Boolean(identity.store_id) && identity.store_id === trip.store_id);
+
+    if (!isStaff) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("cpf")
+        .eq("id", identity.id)
+        .maybeSingle();
+      const userEmail = String(identity.email || "").trim().toLowerCase();
+      const rawUserCpf = String(profile?.cpf || "").replace(/\D/g, "");
+      const userCpf = rawUserCpf.length === 11 && !/^(\d)\1{10}$/.test(rawUserCpf) ? rawUserCpf : "";
+      const rawTripCpf = String(trip.client_document || "").replace(/\D/g, "");
+      const tripCpf = rawTripCpf.length === 11 && !/^(\d)\1{10}$/.test(rawTripCpf) ? rawTripCpf : "";
+
+      let isPassenger = false;
+      if (userEmail || userCpf) {
+        const { data: paxRows } = await supabase
+          .from("trip_passengers")
+          .select("email, document")
+          .eq("trip_id", tripId);
+        isPassenger = (paxRows || []).some((p: any) => {
+          const pCpf = String(p.document || "").replace(/\D/g, "");
+          return (
+            (Boolean(userEmail) && String(p.email || "").trim().toLowerCase() === userEmail) ||
+            (Boolean(userCpf) && pCpf === userCpf)
+          );
+        });
+      }
+
+      const isOwner =
+        trip.customer_id === identity.id ||
+        (Boolean(userEmail) && String(trip.client_email || "").trim().toLowerCase() === userEmail) ||
+        (Boolean(userCpf) && tripCpf === userCpf);
+
+      if (!isOwner && !isPassenger) {
+        throw new Error("Acesso negado: esta viagem pertence a outro passageiro.");
+      }
+    }
+
+    const { data: persistedBoletos, error: fetchBolErr } = await supabase
+      .from("travel_trip_installment_boletos")
+      .select("*")
+      .eq("trip_id", tripId)
+      .order("installment_number", { ascending: true });
+
+    if (fetchBolErr) {
+      throw new Error(`Erro ao carregar parcelas da viagem: ${fetchBolErr.message}`);
+    }
+
+    const serverInstallments: TripInstallmentBoletoDTO[] =
+      (persistedBoletos || []).length > 0
+        ? (persistedBoletos || []).map((b: any) => ({
+            id: b.id,
+            tripId: b.trip_id,
+            installmentNumber: b.installment_number,
+            totalInstallments: b.total_installments,
+            dueDate: b.due_date,
+            amountCents: b.amount_cents,
+            currency: b.currency || "BRL",
+            operatorSlug: b.operator_slug || "agency_direct",
+            paymentChannel: b.payment_channel || "agency_pix",
+            boletoPdfUrl: b.boleto_pdf_url || null,
+            digitableLine: b.digitable_line || null,
+            pixCopiaECola: b.pix_copia_e_cola || null,
+            externalPaymentLink: b.external_payment_link || null,
+            status: b.status || "pending",
+            receiptFileUrl: b.receipt_file_url || null,
+            ocrExtractedAmountCents: b.ocr_extracted_amount_cents ?? null,
+            ocrExtractedDate: b.ocr_extracted_date || null,
+            ocrExtractedPayer: b.ocr_extracted_payer || null,
+            ocrMatchConfidence: b.ocr_match_confidence ?? null,
+          }))
+        : installments;
+
     const matchResult = autoMatchCustomerReceiptToInstallment(
       {
         amountCents: ocrAmountCents,
@@ -1267,31 +1365,50 @@ export const submitAndAutoMatchCustomerReceiptFn = createServerFn({ method: "POS
         payerName: ocrPayerName,
         digitableLineFragment: ocrDigitableLineFragment,
       },
-      installments
+      serverInstallments,
     );
 
-    if (matchResult.matchedInstallmentId) {
-      try {
-        const supabase = getServerClient();
-        await supabase
-          .from("travel_trip_installment_boletos")
-          .update({
-            receipt_file_url: receiptFileUrl,
-            receipt_uploaded_at: new Date().toISOString(),
-            ocr_extracted_amount_cents: ocrAmountCents,
-            ocr_extracted_date: ocrPaymentDate,
-            ocr_extracted_payer: ocrPayerName || null,
-            ocr_match_confidence: matchResult.confidence,
-            status: matchResult.newStatus,
-            reconciled_at: matchResult.newStatus === "reconciled" ? new Date().toISOString() : null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", matchResult.matchedInstallmentId)
-          .eq("trip_id", tripId);
-      } catch {
-        // Persistência resiliente mesmo em ambiente local sem migration aplicada
-      }
+    if (!matchResult.matchedInstallmentId) {
+      return matchResult;
     }
 
-    return matchResult;
+    // Passageiros enviam comprovante para conferência da agência (somente staff concilia/quita no banco)
+    const persistedStatus: ReceiptAutoMatchResult["newStatus"] = isStaff
+      ? matchResult.newStatus
+      : "receipt_uploaded";
+
+    const nowIso = new Date().toISOString();
+    const { data: updatedRow, error: updErr } = await supabase
+      .from("travel_trip_installment_boletos")
+      .update({
+        receipt_file_url: cleanReceiptUrl,
+        receipt_uploaded_at: nowIso,
+        ocr_extracted_amount_cents: ocrAmountCents,
+        ocr_extracted_date: ocrPaymentDate,
+        ocr_extracted_payer: ocrPayerName || null,
+        ocr_match_confidence: matchResult.confidence,
+        status: persistedStatus,
+        reconciled_at: persistedStatus === "reconciled" ? nowIso : null,
+        updated_at: nowIso,
+      })
+      .eq("id", matchResult.matchedInstallmentId)
+      .eq("trip_id", tripId)
+      .select("id")
+      .maybeSingle();
+
+    if (updErr) {
+      throw new Error(`Falha ao gravar conciliação do comprovante na parcela: ${updErr.message}`);
+    }
+    if (!updatedRow?.id) {
+      throw new Error("A parcela conciliada não está sincronizada no banco de boletos da viagem; solicite à agência salvar o carnê antes.");
+    }
+
+    return {
+      ...matchResult,
+      newStatus: persistedStatus,
+      explanationPt:
+        persistedStatus === "reconciled"
+          ? matchResult.explanationPt
+          : `Comprovante anexado à Parcela ${matchResult.matchedInstallmentNumber} e enviado para conferência da agência.`,
+    };
   });

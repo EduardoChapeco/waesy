@@ -12,6 +12,8 @@ export type ObligationCategory =
   | "tax"
   | "marketing"
   | "software"
+  | "off_payroll_award"
+  | "operator_net_payable"
   | "other";
 
 export type ObligationStatus = "pending" | "paid" | "overdue" | "cancelled";
@@ -30,6 +32,9 @@ export interface FinancialObligation {
   payment_method?: string | null;
   notes?: string | null;
   recurrence: ObligationRecurrence;
+  source_type?: "manual" | "payroll" | "off_payroll_award" | "operator_net_payable";
+  source_id?: string | null;
+  off_payroll?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -44,6 +49,8 @@ const CreateObligationSchema = z.object({
     "tax",
     "marketing",
     "software",
+    "off_payroll_award",
+    "operator_net_payable",
     "other",
   ]),
   supplier_name: z.string().min(2, "Fornecedor ou favorecido é obrigatório"),
@@ -65,8 +72,7 @@ const DeleteObligationSchema = z.object({
   obligationId: z.string().min(1),
 });
 
-// Helper para calcular status dinâmico com base na data de hoje
-function computeStatus(ob: FinancialObligation): ObligationStatus {
+function computeStatus(ob: Pick<FinancialObligation, "status" | "due_date">): ObligationStatus {
   if (ob.status === "paid" || ob.status === "cancelled") {
     return ob.status;
   }
@@ -78,7 +84,8 @@ function computeStatus(ob: FinancialObligation): ObligationStatus {
 }
 
 /**
- * Lista todas as contas a pagar da loja ativa com status dinâmico calculado
+ * Lista todas as contas a pagar da loja ativa na tabela SQL `financial_obligations`
+ * (com merge retrocompatível de registros antigos em `stores.settings.financial_obligations`).
  */
 export const listFinancialObligations = createServerFn({ method: "GET" }).handler(async () => {
   try {
@@ -87,31 +94,42 @@ export const listFinancialObligations = createServerFn({ method: "GET" }).handle
     if (!identity.store_id) throw new Error("Contexto de loja inválido");
 
     const supabase = getServerClient();
-    const { data: store, error } = await supabase
-      .from("stores")
-      .select("settings")
-      .eq("id", identity.store_id)
-      .single();
+    const [{ data: sqlRows, error: sqlErr }, { data: store }] = await Promise.all([
+      supabase
+        .from("financial_obligations")
+        .select("*")
+        .eq("store_id", identity.store_id)
+        .order("due_date", { ascending: true }),
+      supabase.from("stores").select("settings").eq("id", identity.store_id).maybeSingle(),
+    ]);
 
-    if (error || !store) throw new Error("Loja não encontrada.");
+    if (sqlErr) {
+      throw new Error(sqlErr.message);
+    }
 
-    const rawObligations: FinancialObligation[] =
-      (store.settings as any)?.financial_obligations || [];
+    const legacyJsonRows: FinancialObligation[] =
+      (store?.settings as any)?.financial_obligations || [];
+    const seenIds = new Set((sqlRows || []).map((r: any) => r.id));
 
-    // Normalizar status dinâmico e ordenar por data de vencimento
-    const obligations = rawObligations
-      .map((ob) => ({
+    const merged: FinancialObligation[] = [
+      ...(sqlRows || []).map((ob: any) => ({
         ...ob,
+        amount_cents: Number(ob.amount_cents || 0),
         status: computeStatus(ob),
-      }))
-      .sort((a, b) => {
-        // Primeiro pendentes e vencidos por data crescente, depois pagos
-        if (a.status === "paid" && b.status !== "paid") return 1;
-        if (a.status !== "paid" && b.status === "paid") return -1;
-        return a.due_date.localeCompare(b.due_date);
-      });
+      })),
+      ...legacyJsonRows
+        .filter((ob) => ob?.id && !seenIds.has(ob.id))
+        .map((ob) => ({
+          ...ob,
+          status: computeStatus(ob),
+        })),
+    ];
 
-    return obligations;
+    return merged.sort((a, b) => {
+      if (a.status === "paid" && b.status !== "paid") return 1;
+      if (a.status !== "paid" && b.status === "paid") return -1;
+      return a.due_date.localeCompare(b.due_date);
+    });
   } catch (err) {
     console.error("[financial-obligations.functions] listFinancialObligations error:", err);
     return [];
@@ -119,7 +137,7 @@ export const listFinancialObligations = createServerFn({ method: "GET" }).handle
 });
 
 /**
- * Cria uma nova conta a pagar
+ * Cria uma nova conta a pagar diretamente na tabela SQL `financial_obligations`.
  */
 export const createFinancialObligation = createServerFn({ method: "POST" })
   .validator(CreateObligationSchema)
@@ -129,53 +147,38 @@ export const createFinancialObligation = createServerFn({ method: "POST" })
     if (!identity.store_id) throw new Error("Contexto de loja inválido");
 
     const supabase = getServerClient();
-    const { data: store, error } = await supabase
-      .from("stores")
-      .select("settings")
-      .eq("id", identity.store_id)
+    const initialStatus = computeStatus({ status: "pending", due_date: data.due_date });
+    const isOffPayroll = data.category === "off_payroll_award";
+
+    const { data: inserted, error } = await supabase
+      .from("financial_obligations")
+      .insert({
+        store_id: identity.store_id,
+        title: data.title.trim(),
+        category: data.category,
+        supplier_name: data.supplier_name.trim(),
+        amount_cents: data.amount_cents,
+        due_date: data.due_date,
+        status: initialStatus,
+        barcode: data.barcode?.trim() || null,
+        recurrence: data.recurrence,
+        notes: data.notes?.trim() || null,
+        source_type: isOffPayroll ? "off_payroll_award" : "manual",
+        off_payroll: isOffPayroll,
+        created_by: identity.id,
+      })
+      .select("*")
       .single();
 
-    if (error || !store) throw new Error("Loja não encontrada.");
+    if (error || !inserted) {
+      throw new Error("Erro ao salvar conta a pagar: " + (error?.message || "Falha de gravação"));
+    }
 
-    const currentSettings = (store.settings as any) || {};
-    const obligations: FinancialObligation[] = currentSettings.financial_obligations || [];
-
-    const now = new Date().toISOString();
-    const newObligation: FinancialObligation = {
-      id: crypto.randomUUID(),
-      title: data.title.trim(),
-      category: data.category,
-      supplier_name: data.supplier_name.trim(),
-      amount_cents: data.amount_cents,
-      due_date: data.due_date,
-      status: "pending",
-      barcode: data.barcode?.trim() || undefined,
-      recurrence: data.recurrence,
-      notes: data.notes?.trim() || undefined,
-      created_at: now,
-      updated_at: now,
-    };
-
-    newObligation.status = computeStatus(newObligation);
-    obligations.push(newObligation);
-
-    const { error: updateError } = await supabase
-      .from("stores")
-      .update({
-        settings: {
-          ...currentSettings,
-          financial_obligations: obligations,
-        },
-      })
-      .eq("id", identity.store_id);
-
-    if (updateError) throw new Error("Erro ao salvar conta a pagar: " + updateError.message);
-
-    return newObligation;
+    return inserted as FinancialObligation;
   });
 
 /**
- * Dá baixa no pagamento de uma conta a pagar
+ * Dá baixa no pagamento de uma conta a pagar com sincronização no DRE e Caixa Ativo.
  */
 export const markObligationAsPaid = createServerFn({ method: "POST" })
   .validator(MarkPaidSchema)
@@ -185,61 +188,106 @@ export const markObligationAsPaid = createServerFn({ method: "POST" })
     if (!identity.store_id) throw new Error("Contexto de loja inválido");
 
     const supabase = getServerClient();
-    const { data: store, error } = await supabase
-      .from("stores")
-      .select("settings")
-      .eq("id", identity.store_id)
-      .single();
-
-    if (error || !store) throw new Error("Loja não encontrada.");
-
-    const currentSettings = (store.settings as any) || {};
-    const obligations: FinancialObligation[] = currentSettings.financial_obligations || [];
-
-    const targetIndex = obligations.findIndex((o) => o.id === obligationId);
-    if (targetIndex === -1) throw new Error("Conta a pagar não encontrada.");
-
     const now = new Date().toISOString();
-    const target = obligations[targetIndex];
+    const resolvedPaidAt = paidAt || now;
 
-    target.status = "paid";
-    target.paid_at = paidAt || now;
-    target.payment_method = paymentMethod;
-    if (notes) {
-      target.notes = target.notes ? `${target.notes} | ${notes}` : notes;
+    // 1. Tentar localizar na tabela SQL `financial_obligations`
+    const { data: sqlTarget } = await supabase
+      .from("financial_obligations")
+      .select("*")
+      .eq("id", obligationId)
+      .eq("store_id", identity.store_id)
+      .maybeSingle();
+
+    let settledTarget: FinancialObligation | null = null;
+
+    if (sqlTarget) {
+      const nextNotes = notes
+        ? sqlTarget.notes
+          ? `${sqlTarget.notes} | ${notes}`
+          : notes
+        : sqlTarget.notes;
+      const { data: updated, error: upErr } = await supabase
+        .from("financial_obligations")
+        .update({
+          status: "paid",
+          paid_at: resolvedPaidAt,
+          payment_method: paymentMethod,
+          notes: nextNotes,
+          updated_at: now,
+        })
+        .eq("id", obligationId)
+        .eq("store_id", identity.store_id)
+        .select("*")
+        .single();
+      if (upErr || !updated) throw new Error("Erro ao liquidar conta: " + upErr?.message);
+      settledTarget = updated as FinancialObligation;
+
+      // Se vinculada a recibo por fora, sincroniza recibo e fichas
+      if (sqlTarget.source_type === "off_payroll_award" && sqlTarget.source_id) {
+        await supabase
+          .from("travel_commission_payout_receipts")
+          .update({
+            status: "paid",
+            paid_at: resolvedPaidAt,
+            payment_method: paymentMethod,
+            paid_by_profile_id: identity.id,
+          })
+          .eq("id", sqlTarget.source_id)
+          .eq("store_id", identity.store_id);
+        await supabase
+          .from("travel_sale_financial_sheets")
+          .update({ agent_commission_status: "paid" })
+          .eq("agent_payout_receipt_id", sqlTarget.source_id)
+          .eq("store_id", identity.store_id);
+      }
+    } else {
+      // Fallback legado JSONB
+      const { data: store, error } = await supabase
+        .from("stores")
+        .select("settings")
+        .eq("id", identity.store_id)
+        .single();
+      if (error || !store) throw new Error("Loja não encontrada.");
+      const currentSettings = (store.settings as any) || {};
+      const obligations: FinancialObligation[] = currentSettings.financial_obligations || [];
+      const targetIndex = obligations.findIndex((o) => o.id === obligationId);
+      if (targetIndex === -1) throw new Error("Conta a pagar não encontrada.");
+      const target = obligations[targetIndex];
+      target.status = "paid";
+      target.paid_at = resolvedPaidAt;
+      target.payment_method = paymentMethod;
+      if (notes) target.notes = target.notes ? `${target.notes} | ${notes}` : notes;
+      target.updated_at = now;
+      obligations[targetIndex] = target;
+      const { error: updateError } = await supabase
+        .from("stores")
+        .update({ settings: { ...currentSettings, financial_obligations: obligations } })
+        .eq("id", identity.store_id);
+      if (updateError) throw new Error("Erro ao liquidar conta: " + updateError.message);
+      settledTarget = target;
     }
-    target.updated_at = now;
-
-    obligations[targetIndex] = target;
-
-    const { error: updateError } = await supabase
-      .from("stores")
-      .update({
-        settings: {
-          ...currentSettings,
-          financial_obligations: obligations,
-        },
-      })
-      .eq("id", identity.store_id);
-
-    if (updateError) throw new Error("Erro ao liquidar conta: " + updateError.message);
 
     // ── Sincronização Transacional com DRE (financial_transactions) & Caixa Ativo ──
     try {
-      const expenseAmountCents = -Math.abs(target.amount_cents);
+      const expenseAmountCents = -Math.abs(settledTarget.amount_cents);
+      const dreCategory =
+        settledTarget.category === "off_payroll_award"
+          ? "premiacao_variavel_comercial"
+          : settledTarget.category === "operator_net_payable"
+            ? "repasse_net_operadora"
+            : settledTarget.category || "other";
 
-      // 1. Registro da Despesa no DRE e Livro Financeiro da Loja
       await supabase.from("financial_transactions").insert({
         store_id: identity.store_id,
         type: "expense_other",
         amount_cents: expenseAmountCents,
-        description: `Pagamento: ${target.title}${target.supplier_name ? ` (${target.supplier_name})` : ""}`,
-        category: target.category || "other",
-        reference_date: (paidAt || now).slice(0, 10),
+        description: `Pagamento: ${settledTarget.title}${settledTarget.supplier_name ? ` (${settledTarget.supplier_name})` : ""}`,
+        category: dreCategory,
+        reference_date: resolvedPaidAt.slice(0, 10),
         created_by: identity.id,
       });
 
-      // 2. Se a baixa foi feita em dinheiro vivo, registra a saída no Caixa Ativo (se houver turno aberto)
       if (paymentMethod === "cash") {
         const { data: openRegister } = await supabase
           .from("cash_registers")
@@ -257,12 +305,12 @@ export const markObligationAsPaid = createServerFn({ method: "POST" })
             amount_cents: expenseAmountCents,
             entry_type: "cash",
             payment_method: "cash",
-            notes: `Pagamento Conta: ${target.title}`,
+            notes: `Pagamento Conta: ${settledTarget.title}`,
             created_by: identity.id,
             channel_source: "pos_counter",
             marketplace_fee_cents: 0,
             net_payout_cents: expenseAmountCents,
-            external_reference_id: target.id,
+            external_reference_id: settledTarget.id,
           });
         }
       }
@@ -270,7 +318,7 @@ export const markObligationAsPaid = createServerFn({ method: "POST" })
       console.warn("[financial-obligations] Falha defensiva na sincronização de despesa com DRE/Caixa:", syncErr);
     }
 
-    return target;
+    return settledTarget;
   });
 
 /**
@@ -284,30 +332,29 @@ export const deleteFinancialObligation = createServerFn({ method: "POST" })
     if (!identity.store_id) throw new Error("Contexto de loja inválido");
 
     const supabase = getServerClient();
-    const { data: store, error } = await supabase
-      .from("stores")
-      .select("settings")
-      .eq("id", identity.store_id)
-      .single();
+    const { data: deletedSql } = await supabase
+      .from("financial_obligations")
+      .delete()
+      .eq("id", obligationId)
+      .eq("store_id", identity.store_id)
+      .select("id");
 
-    if (error || !store) throw new Error("Loja não encontrada.");
-
-    const currentSettings = (store.settings as any) || {};
-    const obligations: FinancialObligation[] = currentSettings.financial_obligations || [];
-
-    const updatedObligations = obligations.filter((o) => o.id !== obligationId);
-
-    const { error: updateError } = await supabase
-      .from("stores")
-      .update({
-        settings: {
-          ...currentSettings,
-          financial_obligations: updatedObligations,
-        },
-      })
-      .eq("id", identity.store_id);
-
-    if (updateError) throw new Error("Erro ao remover conta: " + updateError.message);
+    if (!deletedSql || deletedSql.length === 0) {
+      const { data: store, error } = await supabase
+        .from("stores")
+        .select("settings")
+        .eq("id", identity.store_id)
+        .single();
+      if (error || !store) throw new Error("Loja não encontrada.");
+      const currentSettings = (store.settings as any) || {};
+      const obligations: FinancialObligation[] = currentSettings.financial_obligations || [];
+      const updatedObligations = obligations.filter((o) => o.id !== obligationId);
+      const { error: updateError } = await supabase
+        .from("stores")
+        .update({ settings: { ...currentSettings, financial_obligations: updatedObligations } })
+        .eq("id", identity.store_id);
+      if (updateError) throw new Error("Erro ao remover conta: " + updateError.message);
+    }
 
     return { success: true };
   });
@@ -321,14 +368,21 @@ export const exportObligationsCsv = createServerFn({ method: "GET" }).handler(as
   if (!identity.store_id) throw new Error("Contexto de loja inválido");
 
   const supabase = getServerClient();
-  const { data: store } = await supabase
-    .from("stores")
-    .select("settings")
-    .eq("id", identity.store_id)
-    .single();
+  const [{ data: sqlRows }, { data: store }] = await Promise.all([
+    supabase
+      .from("financial_obligations")
+      .select("*")
+      .eq("store_id", identity.store_id)
+      .order("due_date", { ascending: true }),
+    supabase.from("stores").select("settings").eq("id", identity.store_id).maybeSingle(),
+  ]);
 
-  const rawObligations: FinancialObligation[] =
-    (store?.settings as any)?.financial_obligations || [];
+  const legacyRows: FinancialObligation[] = (store?.settings as any)?.financial_obligations || [];
+  const seenIds = new Set((sqlRows || []).map((r: any) => r.id));
+  const rawObligations: FinancialObligation[] = [
+    ...((sqlRows || []) as FinancialObligation[]),
+    ...legacyRows.filter((o) => !seenIds.has(o.id)),
+  ];
 
   const headers = [
     "Título",
@@ -351,6 +405,8 @@ export const exportObligationsCsv = createServerFn({ method: "GET" }).handler(as
     tax: "Tributos & Impostos",
     marketing: "Publicidade & Mídia",
     software: "Software & Assinaturas",
+    off_payroll_award: "Premiação Comercial (Por Fora)",
+    operator_net_payable: "Repasse Net a Operadora",
     other: "Outras Despesas",
   };
 

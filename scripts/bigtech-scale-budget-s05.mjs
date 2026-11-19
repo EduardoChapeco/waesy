@@ -49,8 +49,21 @@ for (const c of chunks) {
   }
 }
 
+function getWorkerSizeBytes(workerDirOrFile) {
+  if (!fs.existsSync(workerDirOrFile)) return 0;
+  const stat = fs.statSync(workerDirOrFile);
+  if (stat.isFile()) return stat.size;
+  if (!stat.isDirectory()) return 0;
+  let total = 0;
+  for (const entry of fs.readdirSync(workerDirOrFile, { withFileTypes: true })) {
+    const full = path.join(workerDirOrFile, entry.name);
+    total += entry.isDirectory() ? getWorkerSizeBytes(full) : fs.statSync(full).size;
+  }
+  return total;
+}
+
 const workerPath = path.join(root, 'dist', '_worker.js');
-const workerSizeBytes = fs.existsSync(workerPath) ? fs.statSync(workerPath).size : 0;
+const workerSizeBytes = getWorkerSizeBytes(workerPath);
 const workerSizeMb = Math.round(workerSizeBytes / (1024 * 1024) * 100) / 100;
 
 const scaleBudget = {

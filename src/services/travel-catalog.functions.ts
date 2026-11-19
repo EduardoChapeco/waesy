@@ -8,7 +8,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
 import { searchHotelsCatalog, getHotelByNameOrSlug, normalizeHotelName, type HotelRecord } from "@/lib/data/hotels-resorts-catalog";
-import { CANONICAL_DESTINATIONS } from "@/lib/destinations-catalog";
+import { CANONICAL_DESTINATIONS } from "@/lib/tourism/destinations-catalog";
 
 // ─── DTOs Canônicos de Destinos & Hotelaria ─────────────────────────────────
 

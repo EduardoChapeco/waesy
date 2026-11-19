@@ -11,12 +11,16 @@ import {
   getTourMetaLine,
   getTransferBadgeLabel,
   getTransferMetaLine,
+  getTransferTitle,
   ProposalAdaptiveImage,
   ProposalAgencyLogo,
   ProposalDestinationGallerySection,
+  ProposalFlightMapBlock,
+  ProposalHotelMediaGallery,
   ProposalItineraryMediaGrid,
   ProposalMultiNicheSpecsBlock,
   ProposalPricingBreakdownBlock,
+  ProposalTransferListBlock,
 } from "./blocks/UI";
 import {
   Users,
@@ -192,34 +196,22 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
                       </div>
                     </div>
                   ))}
+                  <ProposalFlightMapBlock
+                    flights={p.flights as any}
+                    theme={theme}
+                    showMap={raw?.web_page?.show_flight_route_map !== false}
+                    capturedMapUrl={raw?.captured_map_url || raw?.map_image_url || raw?.custom_fields?.captured_map_url}
+                  />
                 </div>
               )}
 
               {theme.isSectionVisible("transfers") && vm.hasTransfers && (
                 <div className="space-y-3">
-                  {p.transfers!.map((t, idx) => {
-                    const transferMeta = getTransferMetaLine(t as Record<string, any>, formatDate);
-                    return (
-                      <div
-                        key={`tr-${idx}`}
-                        className="p-surface-subtle border p-border-subtle rounded-lg p-4 space-y-2"
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2 font-bold p-text-ink text-sm">
-                            <Bus className="size-4 p-text-brand shrink-0" />
-                            <span>
-                              {t.description || (t as any).route || "Transporte Rodoviário / Transfer"}
-                            </span>
-                          </div>
-                          <span className="text-xs font-bold uppercase px-2 py-1 rounded p-surface-brand-soft p-text-brand">
-                            {t.vehicle || getTransferBadgeLabel(t.type)}
-                          </span>
-                        </div>
-                        {transferMeta && <div className="text-xs p-text-muted">{transferMeta}</div>}
-                        {t.notes && <p className="text-xs p-text-muted">{t.notes}</p>}
-                      </div>
-                    );
-                  })}
+                  <ProposalTransferListBlock
+                    transfers={p.transfers}
+                    formatDateFn={formatDate}
+                    theme={theme}
+                  />
                 </div>
               )}
             </div>
@@ -235,22 +227,31 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
                 {p.hotels!.map((h, idx) => (
                   <div
                     key={idx}
-                    className="p-surface-subtle border p-border-subtle rounded-lg p-4 flex flex-col sm:flex-row justify-between gap-4"
+                    className="p-surface-subtle border p-border-subtle rounded-lg p-4 space-y-3"
                   >
-                    <div className="space-y-1">
-                      <div className="font-bold p-text-ink text-base flex items-center gap-2">
-                        <Building2 className="size-4 p-text-brand shrink-0" />
-                        <span>{h.name}</span>
+                    <div className="flex flex-col sm:flex-row justify-between gap-4">
+                      <div className="space-y-1">
+                        <div className="font-bold p-text-ink text-base flex items-center gap-2">
+                          <Building2 className="size-4 p-text-brand shrink-0" />
+                          <span>{h.name}</span>
+                        </div>
+                        {h.city && <div className="text-xs p-text-muted">{h.city}</div>}
+                        <div className="text-xs p-text-muted pt-1">
+                          Check-in: <strong className="p-text-ink">{formatDate(h.checkin)}</strong> ·
+                          Check-out: <strong className="p-text-ink">{formatDate(h.checkout)}</strong>
+                        </div>
                       </div>
-                      {h.city && <div className="text-xs p-text-muted">{h.city}</div>}
-                      <div className="text-xs p-text-muted pt-1">
-                        Check-in: <strong className="p-text-ink">{formatDate(h.checkin)}</strong> ·
-                        Check-out: <strong className="p-text-ink">{formatDate(h.checkout)}</strong>
+                      <div className="self-start p-surface-brand-soft border p-border-brand px-3 py-1 rounded-full text-xs font-bold p-text-brand">
+                        {h.meal_plan || "Café da Manhã"}
                       </div>
                     </div>
-                    <div className="self-start p-surface-brand-soft border p-border-brand px-3 py-1 rounded-full text-xs font-bold p-text-brand">
-                      {h.meal_plan || "Café da Manhã"}
-                    </div>
+                    <ProposalHotelMediaGallery
+                      images={h.images}
+                      media={(h as any).media}
+                      title={h.name}
+                      objectPosition={(h as any).object_position}
+                      scale={(h as any).image_scale}
+                    />
                   </div>
                 ))}
               </div>
@@ -491,7 +492,7 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
                 {(p.agent_name || vm.agency.name || "A").charAt(0)}
               </div>
               <div className="min-w-0">
-                <div className="font-bold p-text-ink text-sm truncate">
+                <div className="font-bold p-text-ink text-sm break-words">
                   {p.agent_name || vm.agency.name}
                 </div>
                 <div className="text-xs p-text-faint">Atendimento & Reservas</div>

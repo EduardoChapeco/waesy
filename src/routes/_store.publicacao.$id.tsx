@@ -32,20 +32,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { RichPostContent } from "@/components/community/rich-post-content";
-
-function isVideoUrl(url?: string | null): boolean {
-  if (!url) return false;
-  const clean = url.split("?")[0].toLowerCase();
-  return (
-    clean.endsWith(".mp4") ||
-    clean.endsWith(".webm") ||
-    clean.endsWith(".mov") ||
-    clean.endsWith(".quicktime") ||
-    clean.endsWith(".m4v") ||
-    clean.endsWith(".ogg") ||
-    clean.includes("video")
-  );
-}
+import { isVideoUrl } from "@/lib/media-utils";
 
 export const Route = createFileRoute("/_store/publicacao/$id")({
   head: ({ loaderData }) => {

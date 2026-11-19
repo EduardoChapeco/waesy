@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
+import { ImageUpload } from "@/components/ui/image-upload";
 import {
   Users,
   Search,
@@ -1452,19 +1453,18 @@ function AdminUsuariosPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="custom-seal-url" className="text-xs font-bold text-foreground">
-                  URL do Selo Personalizado (PNG / WebP / SVG)
+                <Label className="text-xs font-bold text-foreground">
+                  Selo Personalizado (PNG / WebP / SVG via Bucket)
                 </Label>
-                <Input
-                  id="custom-seal-url"
-                  placeholder="https://.../selo-oficial.png"
-                  value={customBadgeUrlInput}
-                  onChange={(e) => setCustomBadgeUrlInput(e.target.value)}
-                  className="h-11 min-h-11 text-xs font-mono"
+                <ImageUpload
+                  value={customBadgeUrlInput || ""}
+                  onChange={(url) => setCustomBadgeUrlInput(url)}
+                  bucket="brand-assets"
+                  aspectPreset="square"
+                  variant="minimal"
+                  showExternalUrlOption={false}
+                  helperText="Deixe sem imagem para utilizar a roseta geométrica oficial do sistema."
                 />
-                <p className="text-2xs text-muted-foreground">
-                  Deixe em branco para utilizar a roseta geométrica oficial do sistema.
-                </p>
               </div>
 
               <div className="rounded-xl border border-border/60 p-3 bg-background flex items-center justify-between">

@@ -10,8 +10,8 @@ import { CanonicalPage, CanonicalSplit } from "@/components/ui/canonical/page-la
 import { listCategories, listProductTypes, listOptionGroups, listStoreBrands } from "@/services/admin-catalog.functions";
 import { ProductBomCard } from "@/components/admin/catalog/product-bom-card";
 import { ProductFoodSpecsCard } from "@/components/admin/catalog/product-food-specs-card";
-import { getNicheCatalogContext } from "@/lib/catalog-niche-context";
-import { getNicheSemantics } from "@/lib/niche-semantics";
+import { getNicheCatalogContext } from "@/lib/niches/catalog-niche-context";
+import { getNicheSemantics } from "@/lib/niches/niche-semantics";
 import { getClientActiveTenant } from "@/lib/context-auth";
 import { getStoreSettings } from "@/services/store.functions";
 import { MasterCatalogSearchDialog } from "@/components/admin/catalog/master-catalog-search-dialog";
@@ -72,7 +72,7 @@ export function UnifiedNewProductPage() {
   const { categories, productTypes = [], optionGroupsList, store: loaderStore, brands = [], loadError } = ((Route.useLoaderData?.() as any) || {});
   const router = useRouter();
   const clientTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
-  const store = loaderStore || (clientTenant ? { id: clientTenant, name: "Minha Empresa" } : null);
+  const store = loaderStore || (clientTenant ? { id: clientTenant, name: "Loja Atual" } : null);
   const semantics = getNicheSemantics(store);
   const nicheCtx = getNicheCatalogContext(store);
 

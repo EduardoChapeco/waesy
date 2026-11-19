@@ -1,5 +1,5 @@
 import { TOKEN_HEX } from '@/lib/design-tokens';
-import type { ExperienceNode, BlockType } from '@/lib/builder-types';
+import type { ExperienceNode, BlockType } from '@/lib/builder/builder-types';
 
 export interface GenerateExperienceOptions {
  niche?: 'varejo' | 'turismo' | 'gastronomia' | 'servicos' | 'imobiliario';

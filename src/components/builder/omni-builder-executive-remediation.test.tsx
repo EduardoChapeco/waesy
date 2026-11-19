@@ -394,7 +394,7 @@ describe("Omni Builder Executive Remediation & Architectural Verification Suite"
       }
 
       const gestorSrc = fs.readFileSync(
-        path.resolve(root, "src/routes/workspace.pedidos.gestor.tsx"),
+        path.resolve(root, "src/components/workspace/orders/kds-order-manager.tsx"),
         "utf8",
       );
       const kdsFnIdx = gestorSrc.indexOf("export function KDSPage");

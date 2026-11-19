@@ -222,7 +222,8 @@ export function HomeMobileNativeApp({
 
   const resolvedQuickCategories = useMemo(() => {
     const cmsItems = (quickCategoriesSection?.items || []).filter((it) => it.is_active !== false);
-    if (cmsItems.length === 0) return CANONICAL_5X2_CATEGORIES;
+    if (!quickCategoriesSection && cmsItems.length === 0) return CANONICAL_5X2_CATEGORIES;
+    if (cmsItems.length === 0) return [];
     const iconByKey: Record<string, any> = {
       Hamburger,
       Storefront,
@@ -264,7 +265,8 @@ export function HomeMobileNativeApp({
   const resolvedFeatureMiniBanners: FeatureMiniBannerItem[] = useMemo(() => {
     const sec = getSection("feature_mini_banners");
     const cmsItems = (sec?.items || []).filter((it) => it.is_active !== false);
-    if (cmsItems.length === 0) return CANONICAL_FEATURE_MINI_BANNERS;
+    if (!sec && cmsItems.length === 0) return CANONICAL_FEATURE_MINI_BANNERS;
+    if (cmsItems.length === 0) return [];
     return cmsItems.map((it) => ({
       id: it.id,
       title: it.title || "Oferta especial",
@@ -608,7 +610,7 @@ export function HomeMobileNativeApp({
       {isSectionActive("dual_line_filter_pills", false) && <DualLineFilterPills />}
 
       {/* ── 2. GRADE 5x2 DE CATEGORIAS VISUAIS iFOOD (Alimentada pelo CMS — Ativa por padrão) ── */}
-      {isSectionActive("quick_categories_ifood", true) && (
+      {isSectionActive("quick_categories_ifood", true) && resolvedQuickCategories.length > 0 && (
         <section aria-label={quickCategoriesSection?.title || "Categorias Principais"} className="w-full px-3 sm:px-4">
           {quickCategoriesSection?.show_title && quickCategoriesSection.title && (
             <div className="mb-2">
@@ -768,7 +770,9 @@ export function HomeMobileNativeApp({
       )}
 
       {/* ── 5. MINI-BANNERS VERTICAIS ("No Waesy também tem" — Alimentado pelo CMS) ── */}
-      {discoveryPillar !== "classificados" && isSectionActive("feature_mini_banners", true) && (
+      {discoveryPillar !== "classificados" &&
+        isSectionActive("feature_mini_banners", true) &&
+        resolvedFeatureMiniBanners.length > 0 && (
         <IFoodFeatureMiniBannersRail
           title={getSection("feature_mini_banners")?.title || "No Waesy também tem"}
           items={resolvedFeatureMiniBanners}

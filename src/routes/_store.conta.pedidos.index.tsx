@@ -4,6 +4,7 @@ import { formatMoney } from "@/lib/money";
 import { formatHumanOrderId } from "@/lib/order-id";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RouteErrorFallback } from "@/components/state/route-error-fallback";
 import { Input } from "@/components/ui/input";
 import { NativeMobileHeader } from "@/components/navigation";
 import { useEffectiveViewport } from "@/design-system/vitrine";
@@ -103,31 +104,19 @@ export const Route = createFileRoute("/_store/conta/pedidos/")({
       return [];
     }
   },
-  errorComponent: CustomerOrdersErrorComponent,
+  errorComponent: ({ error, reset }: { error: unknown; reset?: () => void }) => (
+    <RouteErrorFallback
+      error={error}
+      reset={reset}
+      icon={AlertCircle}
+      title="Instabilidade ao carregar pedidos"
+      description="Não foi possível carregar seu histórico de pedidos no momento."
+      secondaryHref="/conta"
+      secondaryLabel="Voltar para Conta"
+    />
+  ),
   component: CustomerOrdersPage,
 } as any);
-
-function CustomerOrdersErrorComponent({ error, reset }: { error: any; reset: () => void }) {
-  return (
-    <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
-        <AlertCircle className="size-8" />
-      </div>
-      <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar pedidos</h2>
-      <p className="text-sm text-muted-foreground max-w-md mx-auto">
-        {error?.message || "Não foi possível carregar seu histórico de pedidos no momento."}
-      </p>
-      <div className="flex items-center justify-center gap-3">
-        <Button onClick={reset} className="rounded-lg font-bold">
-          Tentar Novamente
-        </Button>
-        <Button asChild variant="outline" className="rounded-lg font-bold">
-          <Link to="/conta">Voltar para Conta</Link>
-        </Button>
-      </div>
-    </div>
-  );
-}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

@@ -268,6 +268,48 @@ describe("Consultor IA da Proposta — Enriquecimento Público, Cidade do Hotel,
     expect(context).toContain("Passeios opcionais");
   });
 
+  it("buildFullProposalAdvisorContext inclui configuracoes da pagina web (FAQ, vagas, PIX, urgencia)", () => {
+    const context = buildFullProposalAdvisorContext(
+      buildSampleProposal({
+        web_page: {
+          is_published: true,
+          hero_media: [],
+          availability_config: { enabled: true, spots_remaining: 5 },
+          payment_display_config: {
+            show_pix: true,
+            pix_discount_percent: 6,
+            show_card: true,
+            max_installments: 10,
+            interest_free: true,
+          },
+          blocks: [
+            {
+              id: "blk-faq",
+              type: "faq",
+              title: "Dúvidas",
+              visible: true,
+              order: 1,
+              faqItems: [{ question: "Tem transfer?", answer: "Sim, aeroporto-hotel-aeroporto." }],
+            },
+            {
+              id: "blk-urg",
+              type: "urgency_banner",
+              title: "Últimas vagas",
+              body: "Tarifa promocional válida até sexta-feira.",
+              visible: true,
+              order: 2,
+            },
+          ],
+        },
+      }),
+    );
+
+    expect(context).toContain("restam 5 vaga(s)");
+    expect(context).toContain("PIX (6% desconto)");
+    expect(context).toContain("Tem transfer?");
+    expect(context).toContain("Tarifa promocional válida até sexta-feira.");
+  });
+
   it("askProposalSalesAdvisorAI recusa proposta bloqueada por PIN e injeta grounding web + contexto sem mordaça", async () => {
     const maybeSingleMock = vi.fn().mockResolvedValue({
       data: {
@@ -377,7 +419,6 @@ describe("Consultor IA da Proposta — Enriquecimento Público, Cidade do Hotel,
       "utf8",
     );
     expect(proposalRouteSrc).not.toContain("**${proposal?.agency_name");
-    expect(proposalRouteSrc).toContain("<AdvisorFormattedMessage content={m.content} />");
-    expect(proposalRouteSrc).toContain("scrollbar-waesy");
+    expect(proposalRouteSrc).toContain("TourismProposalAiDrawer");
   });
 });

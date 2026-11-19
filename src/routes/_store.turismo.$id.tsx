@@ -19,12 +19,14 @@ import { ProtectedContactButton } from "@/components/common/protected-contact-bu
 import { ProductTelemetry } from "@/components/commerce/product-telemetry";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
 import { MapLibreCanvas, type MapMarkerItem } from "@/components/mobility/maplibre-canvas";
-import { InstagramTravelView } from "@/components/classifieds/instagram-travel-view";
 import { ActionAuthGuardModal } from "@/components/common/action-auth-guard-modal";
 import { useActionAuthGuard } from "@/hooks/use-action-auth-guard";
 import { TravelItineraryTimeline } from "@/components/commerce/dynamic-sections/travel-itinerary-timeline";
 import { SmartTravelBookingModal } from "@/components/tourism/booking/SmartTravelBookingModal";
 import { buildTourismSeoHead } from "@/lib/seo/universal-seo-head";
+import { ProposalWebShowcase } from "@/components/tourism/studio/proposal-web-showcase";
+import { ExcursionAndPackageBlocks } from "@/components/tourism/studio/excursion-and-package-blocks";
+import { blueprintFromGroupTour, blueprintToTravelProposalDTO } from "@/lib/tourism/travel-blueprint";
 
 export const Route = createFileRoute("/_store/turismo/$id")({
   head: ({
@@ -141,59 +143,18 @@ function TourismDetailPage() {
     return {};
   }, [experience?.description]);
 
-  const [viewMode, setViewMode] = useState<"standard" | "instagram_editorial">(
-    "instagram_editorial"
+  const [viewMode, setViewMode] = useState<"unified_editorial" | "standard">(
+    "unified_editorial"
   );
 
-  const editorialClassified = useMemo(() => {
-    if (!experience) return null;
-    const gallery =
-      Array.isArray(experience.gallery_urls) && experience.gallery_urls.length > 0
-        ? experience.gallery_urls
-        : [experience.image_url, experience.cover_image_url].filter(Boolean);
-
-    const dest = experience.destination || experience.location || "Destino";
-    const depCity = experience.departure_city || "São Miguel do Oeste";
-
-    return {
-      id: experience.id,
-      title: experience.title,
-      category: "travel",
-      deal_type: "venda",
-      price_cents: experience.price_cents || 0,
-      content: meta.notes || experience.notes || experience.subtitle || experience.title,
-      images:
-        gallery.length > 0
-          ? (gallery as string[])
-          : ([experience.image_url, experience.cover_image_url].filter(Boolean) as string[]),
-      location_name: dest,
-      city: depCity,
-      contact_whatsapp: experience.contact_whatsapp,
-      author_profile_id: (experience as any).author_profile_id,
-      store_id: (experience as any).store_id,
-      store: (experience as any).store || null,
-      status: experience.status || "active",
-      attributes: {
-        niche: "viagem",
-        travel_type: experience.category === "group_tour" ? "pacote_rodoviario" : "experiencia",
-        view_template: "instagram_editorial",
-        departure_city: depCity,
-        destination_city: dest,
-        duration: experience.duration || "Excursão Completa",
-        included_items: experience.included_items || [],
-        excluded_items: experience.excluded_items || [],
-        total_seats: experience.total_seats || 46,
-        available_seats: experience.available_seats || experience.total_seats || 46,
-        boarding_points: meta.boarding_points || [],
-        itinerary: meta.itinerary || [],
-        hotel_details: meta.hotel_details || null,
-        promo_media: meta.promo_media || null,
-        bus_company_name: meta.bus_company_name || experience.bus_company_name,
-        payment_conditions: meta.payment_conditions || null,
-        ...(meta || {}),
-      },
-    };
-  }, [experience, meta]);
+  const unifiedBlueprint = useMemo(
+    () => (experience ? blueprintFromGroupTour(experience) : null),
+    [experience],
+  );
+  const unifiedProposal = useMemo(
+    () => (unifiedBlueprint ? blueprintToTravelProposalDTO(unifiedBlueprint) : null),
+    [unifiedBlueprint],
+  );
 
   if (!experience) {
     return (
@@ -434,52 +395,84 @@ function TourismDetailPage() {
         session.memberships?.some((m: any) => m.store_id === experience?.store_id))
   );
 
-  // ── Vista Instagram Editorial ─────────────────────────────────────
-  if (viewMode === "instagram_editorial" && editorialClassified) {
+  // ── Vista Editorial Unificada (ProposalWebShowcase + Blocos Excursão) ──
+  if (viewMode === "unified_editorial" && unifiedBlueprint && unifiedProposal) {
+    const rawWa = String(experience.contact_whatsapp || "").replace(/\D/g, "");
+    const whatsappHref = rawWa
+      ? `https://wa.me/${rawWa.startsWith("55") ? rawWa : `55${rawWa}`}?text=${encodeURIComponent(`Olá! Tenho interesse em "${experience.title}".`)}`
+      : null;
+
     return (
       <div className="w-full min-h-screen bg-background">
-        <div className="max-w-6xl mx-auto px-0 sm:px-4 pt-3 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-2 sm:px-4 pt-3 pb-2 flex flex-wrap items-center justify-between gap-2">
           <Link
             to="/turismo"
-            className="size-11 sm:size-auto rounded-full sm:rounded-none flex items-center justify-center text-xs font-semibold text-muted-foreground hover:text-foreground group gap-2 hover:bg-muted/80 sm:hover:bg-transparent transition-colors"
+            className="h-11 min-h-11 px-3 rounded-lg flex items-center justify-center text-xs font-semibold text-muted-foreground hover:text-foreground group gap-2 hover:bg-muted/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Voltar para Turismo"
           >
             <ArrowLeft size={18} weight="bold" className="group-hover:-translate-x-1 transition-transform" />
-            <span className="hidden sm:inline">Voltar para Turismo</span>
+            <span>Voltar para Turismo</span>
           </Link>
 
-          <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/50 border border-border/60">
-            <button
-              type="button"
-              onClick={() => setViewMode("instagram_editorial")}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                viewMode === "instagram_editorial"
-                  ? "bg-background text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Instagram Editorial
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("standard")}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                (viewMode as string) === "standard"
-                  ? "bg-background text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Página Padrão
-            </button>
+          <div className="flex items-center gap-2">
+            {isOwner && (
+              <Button
+                asChild
+                variant="outline"
+                className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Link
+                  to={
+                    isGroupExcursion
+                      ? (`/workspace/turismo/grupos/$id` as any)
+                      : (`/workspace/turismo` as any)
+                  }
+                  params={isGroupExcursion ? ({ id: experience.id } as any) : undefined}
+                >
+                  <PencilSimple size={14} weight="bold" />
+                  <span>Editar Excursão</span>
+                </Link>
+              </Button>
+            )}
+
+            <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/50 border border-border/60">
+              <button
+                type="button"
+                onClick={() => setViewMode("unified_editorial")}
+                className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 text-xs font-bold rounded-lg transition-colors cursor-pointer bg-background text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Vitrine Editorial
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("standard")}
+                className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 text-xs font-bold rounded-lg transition-colors cursor-pointer text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Página Padrão
+              </button>
+            </div>
           </div>
         </div>
 
-        <InstagramTravelView
-          classified={editorialClassified}
-          isOwner={isOwner}
-          onOpenBookingModal={handleOpenBooking}
-          onOpenProposalModal={() => setIsTravelQuoteOpen(true)}
-        />
+        <div className="max-w-5xl mx-auto px-2 sm:px-4">
+          <ProposalWebShowcase
+            proposal={unifiedProposal}
+            ctaLabel={isGroupExcursion ? "Reservar Poltrona & Vaga" : "Solicitar Reserva"}
+            onAcceptClick={handleOpenBooking}
+            whatsappHref={whatsappHref}
+            supplementarySlot={
+              <ExcursionAndPackageBlocks
+                seats={unifiedBlueprint.publicSeats}
+                totalSeats={unifiedBlueprint.totalSeats}
+                availableSeats={unifiedBlueprint.availableSeats}
+                busCompanyName={unifiedBlueprint.busCompanyName}
+                boardingPoints={unifiedBlueprint.boardingPoints}
+                pricingTiers={unifiedBlueprint.pricingTiers}
+                extraOptions={unifiedBlueprint.extraOptions}
+              />
+            }
+          />
+        </div>
 
         {renderBookingDialog()}
         <TravelQuoteModal
@@ -558,10 +551,10 @@ function TourismDetailPage() {
             <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/50 border border-border/60">
               <button
                 type="button"
-                onClick={() => setViewMode("instagram_editorial")}
-                className="px-3 py-1 text-xs font-bold rounded-lg transition-colors text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                onClick={() => setViewMode("unified_editorial")}
+                className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 text-xs font-bold rounded-lg transition-colors text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                Instagram Editorial
+                Vitrine Editorial
               </button>
               <button
                 type="button"

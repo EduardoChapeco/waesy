@@ -1,0 +1,30 @@
+src/components/branded-app/branded-app-workspace-editor.tsx(545,72): error TS2345: Argument of type '() => { store: { id: any; name: any; slug: any; description: any; phone: any; whatsapp: any; email: any; address: any; city: any; state: any; latitude: any; longitude: any; logo_url: any; banner_url: any; category: any; ... 12 more ...; settings: any; }; ... 16 more ...; leadForms: { ...; }[]; } | null' is not assignable to parameter of type '() => BrandedAppRuntimeBundleDTO | null'.
+  Type '{ store: { id: any; name: any; slug: any; description: any; phone: any; whatsapp: any; email: any; address: any; city: any; state: any; latitude: any; longitude: any; logo_url: any; banner_url: any; category: any; ... 12 more ...; settings: any; }; ... 16 more ...; leadForms: { ...; }[]; } | null' is not assignable to type 'BrandedAppRuntimeBundleDTO | null'.
+    Type '{ store: { id: any; name: any; slug: any; description: any; phone: any; whatsapp: any; email: any; address: any; city: any; state: any; latitude: any; longitude: any; logo_url: any; banner_url: any; category: any; ... 12 more ...; settings: any; }; ... 16 more ...; leadForms: { ...; }[]; }' is not assignable to type 'BrandedAppRuntimeBundleDTO'.
+      Types of property 'collections' are incompatible.
+        Type '{ id: any; name: any; slug: any; }[]' is not assignable to type 'BrandedAppCollectionDTO[]'.
+          Property 'product_ids' is missing in type '{ id: any; name: any; slug: any; }' but required in type 'BrandedAppCollectionDTO'.
+src/components/chat/ChatQuickComposerModals.tsx(1002,11): error TS2322: Type '"low" | "normal" | "high" | "urgent"' is not assignable to type '"low" | "high" | "urgent" | "medium" | undefined'.
+  Type '"normal"' is not assignable to type '"low" | "high" | "urgent" | "medium" | undefined'.
+src/components/chat/ChatQuickComposerModals.tsx(1755,17): error TS2322: Type '{ itens_publicados: number; registros?: undefined; linhas?: undefined; } | { registros: number; itens_publicados?: undefined; linhas?: undefined; } | { linhas: number; itens_publicados?: undefined; registros?: undefined; }' is not assignable to type 'Record<string, number> | undefined'.
+  Type '{ itens_publicados: number; registros?: undefined; linhas?: undefined; }' is not assignable to type 'Record<string, number>'.
+    Property 'registros' is incompatible with index signature.
+      Type 'undefined' is not assignable to type 'number'.
+src/routes/viajante.viagem.$id.tsx(1660,69): error TS2367: This comparison appears to be unintentional because the types '"pending" | "overdue" | "waived"' and '"in_verification"' have no overlap.
+src/routes/workspace.turismo.cotacoes.tsx(149,32): error TS2339: Property 'protocol_number' does not exist on type 'TravelQuoteRequestDTO'.
+src/routes/workspace.turismo.cotacoes.tsx(150,39): error TS2339: Property 'protocol_number' does not exist on type 'TravelQuoteRequestDTO'.
+src/routes/workspace.turismo.cotacoes.tsx(1576,32): error TS2339: Property 'customerRoomsSummary' does not exist on type 'RadarMatchLeadPreview'.
+src/routes/workspace.turismo.cotacoes.tsx(1576,64): error TS2339: Property 'customerRoomsSummary' does not exist on type 'RadarMatchLeadPreview'.
+src/routes/workspace.turismo.oportunidades.tsx(258,11): error TS2322: Type '"new" | "reviewed" | "approached" | "dismissed"' is not assignable to type '"reviewed" | "approached" | "promoted_to_crm" | "dismissed" | "engaged"'.
+  Type '"new"' is not assignable to type '"reviewed" | "approached" | "promoted_to_crm" | "dismissed" | "engaged"'.
+src/routes/workspace.turismo.oportunidades.tsx(2095,37): error TS2339: Property 'customerRoomsSummary' does not exist on type 'RadarMatchLeadPreview'.
+src/services/opportunity-radar.functions.ts(716,5): error TS2345: Argument of type 'string' is not assignable to parameter of type 'CanonicalSupplyOffer'.
+src/services/tourism-incidents.functions.ts(254,10): error TS18047: 'tripRow' is possibly 'null'.
+src/services/tourism-incidents.functions.ts(255,41): error TS18047: 'tripRow' is possibly 'null'.
+src/services/tourism.functions.ts(875,11): error TS2353: Object literal may only specify known properties, and 'paxAges' does not exist in type 'OmnichannelLeadInput'.
+src/services/travel-lifecycle.functions.ts(3204,29): error TS2551: Property 'full_name' does not exist on type 'ServerIdentity'. Did you mean 'fullName'?
+src/services/travel-proposal.functions.ts(1689,53): error TS2552: Cannot find name 'normalizedTransfers'. Did you mean 'normalizeTransfersList'?
+src/services/travel-proposal.functions.ts(1690,15): error TS2552: Cannot find name 'normalizedTransfers'. Did you mean 'normalizeTransfersList'?
+src/services/travel-reaccommodation.functions.ts(165,10): error TS18047: 'tripRow' is possibly 'null'.
+src/services/travel-reaccommodation.functions.ts(166,41): error TS18047: 'tripRow' is possibly 'null'.
+src/services/whatsapp-channel-instances.functions.ts(2125,26): error TS18048: 'data.departments' is possibly 'undefined'.

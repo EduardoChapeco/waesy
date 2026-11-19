@@ -1,3 +1,5 @@
+import type { ProposalMediaItem, ProposalWebPageDTO } from "@/lib/tourism/proposal-normalization";
+
 export interface TravelHighlightCircle {
  id: string;
  label: string;
@@ -11,8 +13,13 @@ export interface TravelItineraryDay {
  period?: string;
  title: string;
  description: string;
+ location?: string;
  imageUrl?: string;
  images?: string[];
+ media?: ProposalMediaItem[];
+ videoUrl?: string;
+ video_url?: string;
+ included_meals?: string[];
  highlights?: string[];
  morning?: string;
  afternoon?: string;
@@ -214,6 +221,9 @@ export interface TravelHotelStay {
   stars?: number;
   featured_image_url?: string;
   image_url?: string;
+  images?: string[];
+  media?: ProposalMediaItem[];
+  video_url?: string;
   address?: string;
   badges?: string[];
   amenities?: string[];
@@ -225,8 +235,45 @@ export interface TravelPackageData {
  inclusions: string[];
  exclusions?: string[];
  itinerary_days: TravelItineraryDay[];
+ itinerary?: TravelItineraryDay[];
  recommendations?: TravelNearbyRecommendation[];
  flight_details?: FlightDetails;
+ flights?: TravelFlightLeg[];
+ hotels?: TravelHotelStay[];
+ transfers?: Array<{
+   id?: string;
+   type?: string;
+   name?: string;
+   title?: string;
+   kind?: string;
+   vehicle?: string;
+   route?: string;
+   date?: string;
+   is_private?: boolean;
+   included?: boolean;
+   add_to_quote?: boolean;
+   price_cents?: number;
+   notes?: string;
+ }>;
+ cruises?: Array<Record<string, any>>;
+ tours?: Array<{
+   id?: string;
+   title: string;
+   description?: string;
+   duration?: string;
+   date?: string;
+   price_cents?: number;
+   included?: boolean;
+   add_to_quote?: boolean;
+   image_url?: string;
+   images?: string[];
+   media?: ProposalMediaItem[];
+   video_url?: string;
+ }>;
+ media?: ProposalMediaItem[];
+ web_page_config?: ProposalWebPageDTO | null;
+ origin_city?: string;
+ boarding_points?: Array<string | { city?: string; time?: string; location?: string }>;
  installments?: TravelPricingInstallments;
  payment_conditions?: PaymentConditions;
  story_highlights?: TravelHighlightCircle[];

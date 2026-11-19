@@ -21,34 +21,23 @@ import { formatDate } from "@/lib/datetime";
 
 import { FrostedCard, FrostedCardContent } from "@/components/ui/frosted-card";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
+import { RouteErrorFallback } from "@/components/state/route-error-fallback";
 
 export const Route = createFileRoute("/_store/conta/negociacoes")({
   head: () => ({ meta: [{ title: "Minhas Negociações | Waesy" }] }),
-  errorComponent: NegociacoesErrorComponent,
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorFallback
+      error={error}
+      reset={reset}
+      icon={XCircle}
+      title="Instabilidade ao carregar negociações"
+      description="Não foi possível carregar o histórico de propostas e negociações."
+      secondaryHref="/conta"
+      secondaryLabel="Voltar para Conta"
+    />
+  ),
   component: NegociacoesPage,
 });
-
-function NegociacoesErrorComponent({ error, reset }: { error: any; reset: () => void }) {
-  return (
-    <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
-        <XCircle className="size-8" />
-      </div>
-      <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar negociações</h2>
-      <p className="text-sm text-muted-foreground max-w-md mx-auto">
-        {error?.message || "Não foi possível carregar o histórico de propostas e negociações."}
-      </p>
-      <div className="flex items-center justify-center gap-3">
-        <Button onClick={reset} className="rounded-lg font-bold h-11">
-          Tentar Novamente
-        </Button>
-        <Button asChild variant="outline" className="rounded-lg font-bold h-11">
-          <Link to="/conta">Voltar para Conta</Link>
-        </Button>
-      </div>
-    </div>
-  );
-}
 
 const STATUS_CONFIG: Record<
   string,

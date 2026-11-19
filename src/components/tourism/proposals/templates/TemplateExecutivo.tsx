@@ -9,12 +9,17 @@ import {
   getTourMetaLine,
   getTransferBadgeLabel,
   getTransferMetaLine,
+  getTransferTitle,
   ProposalAdaptiveImage,
   ProposalAgencyLogo,
+  ProposalCruiseBlock,
   ProposalDestinationGallerySection,
+  ProposalFlightMapBlock,
+  ProposalHotelMediaGallery,
   ProposalItineraryMediaGrid,
   ProposalMultiNicheSpecsBlock,
   ProposalPricingBreakdownBlock,
+  ProposalTransferListBlock,
 } from "./blocks/UI";
 import {
   Plane,
@@ -196,6 +201,12 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
                 </div>
               ))}
             </div>
+            <ProposalFlightMapBlock
+              flights={p.flights as any}
+              theme={theme}
+              showMap={raw?.web_page?.show_flight_route_map !== false}
+              capturedMapUrl={raw?.captured_map_url || raw?.map_image_url || raw?.custom_fields?.captured_map_url}
+            />
           </section>
         )}
 
@@ -208,18 +219,8 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
               {p.hotels!.map((h, i) => (
                 <div
                   key={i}
-                  className="border p-border-main p-surface-card rounded-xl p-5 break-inside-avoid flex flex-col sm:flex-row gap-5"
+                  className="border p-border-main p-surface-card rounded-xl p-5 break-inside-avoid space-y-4"
                 >
-                  {h.images?.[0] && (
-                    <div className="w-full sm:w-32 h-32 shrink-0 rounded-lg overflow-hidden border p-border-subtle">
-                      <img
-                        src={h.images[0]}
-                        alt={h.name}
-                        crossOrigin="anonymous"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
                   <div className="flex-1">
                     <div className="flex justify-between items-start gap-3 mb-3">
                       <div>
@@ -253,6 +254,14 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
                       )}
                     </div>
                   </div>
+                  <ProposalHotelMediaGallery
+                    images={h.images}
+                    media={(h as any).media}
+                    title={h.name}
+                    objectPosition={(h as any).object_position}
+                    scale={(h as any).image_scale}
+                    className="mt-2"
+                  />
                 </div>
               ))}
             </div>
@@ -321,37 +330,37 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
           </section>
         )}
 
-        {((theme.isSectionVisible("transfers") && vm.hasTransfers) ||
-          (theme.isSectionVisible("tours") && vm.hasTours)) && (
+        {/* CRUZEIROS MARÍTIMOS */}
+        {Array.isArray((raw as any).cruises) && (raw as any).cruises.length > 0 && (
           <section className="break-inside-avoid space-y-4">
             <h2 className="text-lg font-bold p-text-ink pb-2 border-b p-border-main p-heading-font">
-              Logística Terrestre & Serviços
+              Cruzeiro Marítimo & Itinerário Náutico
+            </h2>
+            <ProposalCruiseBlock cruises={(raw as any).cruises} theme={theme} />
+          </section>
+        )}
+
+        {/* TRASLADOS (LINHAS COMPLETAS / FULL-WIDTH) */}
+        {theme.isSectionVisible("transfers") && vm.hasTransfers && (
+          <section className="break-inside-avoid space-y-4">
+            <h2 className="text-lg font-bold p-text-ink pb-2 border-b p-border-main p-heading-font">
+              {nc.transfersTitle}
+            </h2>
+            <ProposalTransferListBlock
+              transfers={p.transfers}
+              formatDateFn={formatDate}
+              theme={theme}
+            />
+          </section>
+        )}
+
+        {/* PASSEIOS */}
+        {theme.isSectionVisible("tours") && vm.hasTours && (
+          <section className="break-inside-avoid space-y-4">
+            <h2 className="text-lg font-bold p-text-ink pb-2 border-b p-border-main p-heading-font">
+              {nc.toursTitle}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {theme.isSectionVisible("transfers") &&
-                p.transfers!.map((t, i) => {
-                  const transferMeta = getTransferMetaLine(t as Record<string, any>, formatDate);
-                  return (
-                    <div
-                      key={`tr-${i}`}
-                      className="border p-border-main p-surface-card rounded-xl p-4 flex items-start gap-3 break-inside-avoid"
-                    >
-                      <div className="w-9 h-9 rounded-lg p-surface-brand-soft flex items-center justify-center shrink-0">
-                        <Car className="size-4 p-text-brand" />
-                      </div>
-                      <div className="space-y-1">
-                        <div className="font-bold p-text-ink text-sm">
-                          {t.description || (t as any).route || "Transfer"}
-                        </div>
-                        <div className="text-xs p-text-muted">
-                          {getTransferBadgeLabel(t.type)}
-                          {transferMeta ? ` · ${transferMeta}` : ""}
-                        </div>
-                        {t.notes && <div className="text-xs p-text-faint">{t.notes}</div>}
-                      </div>
-                    </div>
-                  );
-                })}
               {theme.isSectionVisible("tours") &&
                 p.tours!.map((t, i) => {
                   const tourMeta = getTourMetaLine(t as Record<string, any>);

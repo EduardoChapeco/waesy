@@ -35,7 +35,9 @@ const consolidatedReport = {
   },
   checksSummary: {
     total: 43,
-    conforming: Object.values(checksRaw).filter(c => c.count === 0).length,
+    evaluated: Object.values(checksRaw).filter(c => c.evaluated !== false).length,
+    notEvaluated: Object.values(checksRaw).filter(c => c.evaluated === false).length,
+    conforming: Object.values(checksRaw).filter(c => c.evaluated !== false && c.count === 0).length,
     open: Object.values(checksRaw).filter(c => c.count > 0).length
   },
   checks: checksRaw,
@@ -84,12 +86,12 @@ const html = `<!DOCTYPE html>
         <div class="metric">${Number(consolidatedReport.system.linesOfCode).toLocaleString()}</div>
       </div>
       <div class="card">
-        <div style="font-size: 0.8rem; color: #94a3b8; text-transform: uppercase;">Checks Conformes</div>
-        <div class="metric text-emerald">${consolidatedReport.checksSummary.conforming} / 43</div>
+        <div style="font-size: 0.8rem; color: #94a3b8; text-transform: uppercase;">Checks Conformes (Avaliados)</div>
+        <div class="metric text-emerald">${consolidatedReport.checksSummary.conforming} / ${consolidatedReport.checksSummary.evaluated}</div>
       </div>
       <div class="card">
-        <div style="font-size: 0.8rem; color: #94a3b8; text-transform: uppercase;">Checks com Violações</div>
-        <div class="metric text-rose">${consolidatedReport.checksSummary.open} / 43</div>
+        <div style="font-size: 0.8rem; color: #94a3b8; text-transform: uppercase;">Checks Abertos / Nao Avaliados</div>
+        <div class="metric text-rose">${consolidatedReport.checksSummary.open} / ${consolidatedReport.checksSummary.notEvaluated} N/A</div>
       </div>
     </div>
 
@@ -107,14 +109,16 @@ const html = `<!DOCTYPE html>
         ${Object.entries(checksRaw).map(([code, data]) => `
           <tr>
             <td><strong>${code}</strong></td>
-            <td><code>${data.count}</code></td>
+            <td><code>${data.evaluated === false ? 'N/A' : data.count}</code></td>
             <td>
-              ${data.count === 0 
-                ? '<span class="badge badge-green">CONFORME</span>' 
-                : '<span class="badge badge-red">ABERTO</span>'}
+              ${data.evaluated === false
+                ? '<span class="badge badge-red">NAO AVALIADO</span>'
+                : data.count === 0
+                  ? '<span class="badge badge-green">CONFORME</span>'
+                  : '<span class="badge badge-red">ABERTO</span>'}
             </td>
             <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
-              ${data.violations[0] || 'Nenhuma violação'}
+              ${data.evaluated === false ? 'Sem detector implementado neste script' : (data.violations[0] || 'Nenhuma violação')}
             </td>
           </tr>
         `).join('')}

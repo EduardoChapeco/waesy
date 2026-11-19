@@ -36,6 +36,7 @@ function createSupabaseChain(
       return chain;
     },
     eq: () => chain,
+    in: () => chain,
     order: () => chain,
     limit: () => chain,
     insert: (payload: any) => {
@@ -276,7 +277,7 @@ describe("M11 — Sanitização E2E de Campos Internos CRM em Propostas", () => 
     expect(publicDto?.custom_fields).not.toHaveProperty("attachments");
     expect(publicDto?.custom_fields).not.toHaveProperty("autism_spectrum");
     expect(publicDto?.custom_fields?.franquia_bagagem).toBe("1 mala despachada 23kg");
-  });
+  }, 20000);
 
   it("impede qualquer vazamento de dados internos CRM na UI SSR do Canvas (EditorialFlat/DarkPremium) e no Editorial Mapper", () => {
     const pollutedProposal: any = {

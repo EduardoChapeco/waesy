@@ -36,6 +36,24 @@ export const sendJusProposalSchema = z.object({
 });
 
 // ============================================================
+// Helpers Internos de Autenticação e Escopo JUS
+// ============================================================
+
+async function requireJusIdentity() {
+  const identity = await getServerIdentity();
+  if (!identity?.id) {
+    throw new Error("Não autenticado");
+  }
+  return identity as typeof identity & { id: string };
+}
+
+function buildJusOwnerFilter(identity: { id: string; store_id?: string | null }): string {
+  return identity.store_id
+    ? `profile_id.eq.${identity.id},store_id.eq.${identity.store_id}`
+    : `profile_id.eq.${identity.id}`;
+}
+
+// ============================================================
 // Server Functions
 // ============================================================
 
@@ -45,8 +63,7 @@ export const sendJusProposalSchema = z.object({
 export const listMyLawsuits = createServerFn({ method: "GET" })
  .validator(z.object({ cpf: z.string().optional() }).optional())
  .handler(async ({ data }) => {
- const identity = await getServerIdentity();
- if (!identity) throw new Error("Não autenticado");
+ const identity = await requireJusIdentity();
 
  const supabase = getServerClient();
  let query = supabase
@@ -72,8 +89,7 @@ export const listMyLawsuits = createServerFn({ method: "GET" })
 export const createJusDemand = createServerFn({ method: "POST" })
  .validator(createJusDemandSchema)
  .handler(async ({ data }) => {
- const identity = await getServerIdentity();
- if (!identity) throw new Error("Não autenticado");
+ const identity = await requireJusIdentity();
 
  const supabase = getServerClient();
  const { data: demand, error } = await supabase
@@ -136,8 +152,7 @@ export const listMarketplaceDemands = createServerFn({ method: "GET" })
 export const sendJusProposal = createServerFn({ method: "POST" })
  .validator(sendJusProposalSchema)
  .handler(async ({ data }) => {
- const identity = await getServerIdentity();
- if (!identity) throw new Error("Não autenticado");
+ const identity = await requireJusIdentity();
 
  const supabase = getServerClient();
  const { data: proposal, error } = await supabase
@@ -173,8 +188,7 @@ export const sendJusProposal = createServerFn({ method: "POST" })
 export const acceptJusProposal = createServerFn({ method: "POST" })
  .validator(z.object({ proposal_id: z.string().uuid() }))
  .handler(async ({ data }) => {
- const identity = await getServerIdentity();
- if (!identity) throw new Error("Não autenticado");
+ const identity = await requireJusIdentity();
 
  const supabase = getServerClient();
 
@@ -230,7 +244,7 @@ export const acceptJusProposal = createServerFn({ method: "POST" })
  */
 export const getMyDemands = createServerFn({ method: "GET" }).handler(async () => {
  const identity = await getServerIdentity();
- if (!identity) return [];
+ if (!identity?.id) return [];
 
  const supabase = getServerClient();
  const { data: demands, error } = await supabase
@@ -315,8 +329,7 @@ export const searchProcessByCNJ = createServerFn({ method: "POST" })
 export const saveLawsuitMonitor = createServerFn({ method: "POST" })
  .validator(saveLawsuitMonitorSchema)
  .handler(async ({ data }) => {
- const identity = await getServerIdentity();
- if (!identity) throw new Error("Não autenticado");
+ const identity = await requireJusIdentity();
 
  const supabase = getServerClient();
 
@@ -341,6 +354,7 @@ export const saveLawsuitMonitor = createServerFn({ method: "POST" })
  .from("lawsuit_monitors")
  .update(payload)
  .eq("id", data.id)
+ .or(buildJusOwnerFilter(identity))
  .select()
  .single();
 
@@ -363,7 +377,7 @@ export const saveLawsuitMonitor = createServerFn({ method: "POST" })
  */
 export const listLawsuitMonitors = createServerFn({ method: "GET" }).handler(async () => {
  const identity = await getServerIdentity();
- if (!identity) return [];
+ if (!identity?.id) return [];
 
  const supabase = getServerClient();
  let query = supabase
@@ -391,14 +405,14 @@ export const listLawsuitMonitors = createServerFn({ method: "GET" }).handler(asy
 export const deleteLawsuitMonitor = createServerFn({ method: "POST" })
  .validator(z.object({ id: z.string().uuid() }))
  .handler(async ({ data }) => {
- const identity = await getServerIdentity();
- if (!identity) throw new Error("Não autenticado");
+ const identity = await requireJusIdentity();
 
  const supabase = getServerClient();
  const { error } = await supabase
  .from("lawsuit_monitors")
  .delete()
- .eq("id", data.id);
+ .eq("id", data.id)
+ .or(buildJusOwnerFilter(identity));
 
  if (error) throw new Error(`Falha ao excluir monitoramento: ${error.message}`);
  return { success: true };
@@ -410,6 +424,7 @@ export const deleteLawsuitMonitor = createServerFn({ method: "POST" })
 export const getLawsuitDetails360 = createServerFn({ method: "POST" })
  .validator(z.object({ lawsuitId: z.string().uuid() }))
  .handler(async ({ data }) => {
+ await requireJusIdentity();
  const supabase = getServerClient();
 
  const { data: lawsuit, error } = await supabase
@@ -432,8 +447,7 @@ export const getLawsuitDetails360 = createServerFn({ method: "POST" })
 export const toggleLawsuitMonitoring = createServerFn({ method: "POST" })
  .validator(z.object({ lawsuitId: z.string().uuid(), is_monitored: z.boolean() }))
  .handler(async ({ data }) => {
- const identity = await getServerIdentity();
- if (!identity) throw new Error("Não autenticado");
+ await requireJusIdentity();
 
  const supabase = getServerClient();
  const { data: updated, error } = await supabase
@@ -453,8 +467,7 @@ export const toggleLawsuitMonitoring = createServerFn({ method: "POST" })
 export const toggleLawsuitFavorite = createServerFn({ method: "POST" })
  .validator(z.object({ lawsuitId: z.string().uuid(), is_favorite: z.boolean() }))
  .handler(async ({ data }) => {
- const identity = await getServerIdentity();
- if (!identity) throw new Error("Não autenticado");
+ await requireJusIdentity();
 
  const supabase = getServerClient();
  const { data: updated, error } = await supabase
@@ -554,7 +567,7 @@ export const listLawsuitDeadlines = createServerFn({ method: "GET" })
  )
  .handler(async ({ data }) => {
  const identity = await getServerIdentity();
- if (!identity) return [];
+ if (!identity?.id) return [];
 
  const supabase = getServerClient();
  let query = supabase
@@ -590,8 +603,7 @@ export const listLawsuitDeadlines = createServerFn({ method: "GET" })
 export const saveLawsuitDeadline = createServerFn({ method: "POST" })
  .validator(saveLawsuitDeadlineSchema)
  .handler(async ({ data }) => {
- const identity = await getServerIdentity();
- if (!identity) throw new Error("Não autenticado");
+ const identity = await requireJusIdentity();
 
  const supabase = getServerClient();
 
@@ -615,6 +627,7 @@ export const saveLawsuitDeadline = createServerFn({ method: "POST" })
  .from("lawsuit_deadlines")
  .update(payload)
  .eq("id", data.id)
+ .or(buildJusOwnerFilter(identity))
  .select()
  .single();
 
@@ -646,8 +659,7 @@ export const completeLawsuitDeadline = createServerFn({ method: "POST" })
  }),
  )
  .handler(async ({ data }) => {
- const identity = await getServerIdentity();
- if (!identity) throw new Error("Não autenticado");
+ const identity = await requireJusIdentity();
 
  const supabase = getServerClient();
  const { data: updated, error } = await supabase
@@ -660,6 +672,7 @@ export const completeLawsuitDeadline = createServerFn({ method: "POST" })
  updated_at: new Date().toISOString(),
  })
  .eq("id", data.id)
+ .or(buildJusOwnerFilter(identity))
  .select()
  .single();
 
@@ -673,14 +686,14 @@ export const completeLawsuitDeadline = createServerFn({ method: "POST" })
 export const deleteLawsuitDeadline = createServerFn({ method: "POST" })
  .validator(z.object({ id: z.string().uuid() }))
  .handler(async ({ data }) => {
- const identity = await getServerIdentity();
- if (!identity) throw new Error("Não autenticado");
+ const identity = await requireJusIdentity();
 
  const supabase = getServerClient();
  const { error } = await supabase
  .from("lawsuit_deadlines")
  .delete()
- .eq("id", data.id);
+ .eq("id", data.id)
+ .or(buildJusOwnerFilter(identity));
 
  if (error) throw new Error(`Falha ao remover prazo: ${error.message}`);
  return { success: true };
@@ -691,7 +704,7 @@ export const deleteLawsuitDeadline = createServerFn({ method: "POST" })
  */
 export const getLawsuitDeadlinesDigest = createServerFn({ method: "GET" }).handler(async () => {
  const identity = await getServerIdentity();
- if (!identity) return { pendingCount: 0, urgentCount: 0, attentionCount: 0, completedCount: 0 };
+ if (!identity?.id) return { pendingCount: 0, urgentCount: 0, attentionCount: 0, completedCount: 0 };
 
  const supabase = getServerClient();
  let query = supabase.from("lawsuit_deadlines").select("id, due_date, priority, status");

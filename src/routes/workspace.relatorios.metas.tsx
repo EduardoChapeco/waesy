@@ -11,8 +11,8 @@ import { CurrencyField } from "@/components/ui/currency-field";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { formatMoney } from "@/lib/money";
 import { playCashRegisterSound } from "@/lib/audio-chimes";
-import { Target, TrendingUp, Calendar, DollarSign, ShoppingCart, Receipt, FileSpreadsheet, Settings2, CheckCircle2, AlertCircle, Clock, Star, ArrowUpRight } from "lucide-react";
-import { getRevenueGoalsAndForecast, saveRevenueGoals, RevenueGoalsAndForecastDTO } from "@/services/revenue-goals.functions";
+import { Target, TrendingUp, Calendar, DollarSign, ShoppingCart, Receipt, FileSpreadsheet, Settings2, CheckCircle2, AlertCircle, Clock, Star, ArrowUpRight, Sparkles, Loader2, ShieldCheck, Users } from "lucide-react";
+import { getRevenueGoalsAndForecast, saveRevenueGoals, generateGoalsAiInsightsFn, RevenueGoalsAndForecastDTO } from "@/services/revenue-goals.functions";
 
 export const Route = createFileRoute("/workspace/relatorios/metas")({
   head: () => ({ meta: [{ title: "Metas de Vendas | Workspace Waesy" }] }),
@@ -33,27 +33,89 @@ function RevenueGoalsPage() {
   const rawData = Route.useLoaderData();
 
   const data: RevenueGoalsAndForecastDTO = rawData || {
+    niche_id: "default",
+    is_tourism: false,
+    can_edit_goals: false,
+    is_personal_scope: true,
+    competence_month: `${new Date().getUTCFullYear()}-${String(new Date().getUTCMonth() + 1).padStart(2, "0")}`,
     month_label: "Mês Atual",
     days_in_month: 30,
     elapsed_days: 1,
     remaining_days: 29,
-    monthly_goal_cents: 5000000,
+    monthly_goal_cents: 0,
+    agency_revenue_goal_cents: 0,
     realized_cents: 0,
+    realized_agency_revenue_cents: 0,
+    realized_net_profit_cents: 0,
     percent_achieved: 0,
     projected_closing_cents: 0,
     projected_percent: 0,
     daily_run_rate_cents: 0,
-    required_daily_run_rate_cents: 172413,
+    required_daily_run_rate_cents: 0,
     orders_count: 0,
-    orders_goal: 300,
+    orders_goal: 0,
     average_ticket_cents: 0,
-    average_ticket_goal_cents: 16500,
+    average_ticket_goal_cents: 0,
     status: "on_track",
     channels: [],
+    agents_breakdown: [],
+    statistical: {
+      daysInMonth: 30,
+      elapsedDays: 1,
+      remainingDays: 29,
+      elapsedBusinessWeightRatio: 0.04,
+      realizedGrossCents: 0,
+      realizedAgencyRevenueCents: 0,
+      realizedNetProfitCents: 0,
+      realizedSalesCount: 0,
+      averageTicketCents: 0,
+      takeRatePct: 0,
+      seasonalityFactor: 1,
+      simpleLinearGrossCents: 0,
+      ewmaDailyVelocityGrossCents: 0,
+      ewmaDailyVelocityRevenueCents: 0,
+      p10GrossCents: 0,
+      p50GrossCents: 0,
+      p90GrossCents: 0,
+      p10AgencyRevenueCents: 0,
+      p50AgencyRevenueCents: 0,
+      p90AgencyRevenueCents: 0,
+      goalHitProbabilityPct: 0,
+      revenueGoalHitProbabilityPct: 0,
+      requiredDailyGrossCents: 0,
+      requiredBusinessDailyGrossCents: 0,
+      requiredDailyRevenueCents: 0,
+      momGrowthGrossPct: 0,
+      momGrowthRevenuePct: 0,
+      pipeline: {
+        totalOpenGrossCents: 0,
+        weightedExpectedGrossCents: 0,
+        weightedExpectedAgencyRevenueCents: 0,
+        inMonthClosureFactor: 0,
+        topHighImpactDeals: [],
+      },
+      confidenceScore: 0,
+      modelMethodLabel: "EWMA + Sazonalidade + Pipeline Ponderado",
+    },
   };
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [aiInsights, setAiInsights] = useState<Awaited<ReturnType<typeof generateGoalsAiInsightsFn>> | null>(null);
+  const [isLoadingAi, setIsLoadingAi] = useState(false);
+
+  const handleAnalyzeWithAi = async () => {
+    setIsLoadingAi(true);
+    try {
+      const res = await generateGoalsAiInsightsFn({ data: {} });
+      setAiInsights(res);
+      toast.success("Análise estatística e projeção por IA atualizada.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao gerar análise de IA.");
+    } finally {
+      setIsLoadingAi(false);
+    }
+  };
 
   // Estados locais para edição de metas
   const [editMonthlyGoalCents, setEditMonthlyGoalCents] = useState<number>(data.monthly_goal_cents);
@@ -206,29 +268,47 @@ function RevenueGoalsPage() {
   return (
     <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
-        eyebrow="Planejamento Comercial & Gestão de Vendas"
-        title="Metas de Faturamento"
-        description="Monitore o atingimento das metas mensais de faturamento, a projeção preditiva de fechamento e a meta diária necessária."
+        eyebrow={data.is_personal_scope ? "Minha Meta Individual (Somente Leitura)" : "Planejamento Estatístico & IA"}
+        title={data.is_tourism ? "Metas & Projeção Estatística" : "Metas de Faturamento"}
+        description="Projeção preditiva real (EWMA, sazonalidade, pipeline ponderado P10/P50/P90) e diagnóstico por IA."
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {data.is_personal_scope && (
+              <Badge variant="outline" className="h-11 px-3 gap-2 text-xs">
+                <ShieldCheck className="size-3.5 text-primary" />
+                Somente Leitura
+              </Badge>
+            )}
+            <Button
+              onClick={handleAnalyzeWithAi}
+              disabled={isLoadingAi}
+              variant="outline"
+              size="sm"
+              className="rounded-lg text-xs font-bold h-11 min-h-11 gap-2 cursor-pointer focus-visible:ring-2"
+            >
+              {isLoadingAi ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Sparkles className="size-3.5 text-primary" />}
+              <span>{isLoadingAi ? "Calculando IA..." : "Analisar com IA"}</span>
+            </Button>
             <Button
               onClick={handleExportCsv}
               variant="outline"
               size="sm"
-              className="rounded-lg text-xs font-bold h-9 gap-2 cursor-pointer"
+              className="rounded-lg text-xs font-bold h-11 min-h-11 gap-2 cursor-pointer focus-visible:ring-2"
             >
               <FileSpreadsheet className="size-3.5 text-emerald-600" />
               <span>Exportar CSV</span>
             </Button>
-            <Button
-              onClick={handleOpenSettings}
-              variant="default"
-              size="sm"
-              className="rounded-lg text-xs font-bold h-9 gap-2 cursor-pointer"
-            >
-              <Settings2 className="size-3.5" />
-              <span>Configurar Metas</span>
-            </Button>
+            {data.can_edit_goals && (
+              <Button
+                onClick={handleOpenSettings}
+                variant="default"
+                size="sm"
+                className="rounded-lg text-xs font-bold h-11 min-h-11 gap-2 cursor-pointer focus-visible:ring-2"
+              >
+                <Settings2 className="size-3.5" />
+                <span>Configurar Metas</span>
+              </Button>
+            )}
           </div>
         }
       />
@@ -427,6 +507,146 @@ function RevenueGoalsPage() {
         </div>
       </div>
 
+      {/* ── PROJEÇÃO ESTATÍSTICA REAL (P10 / P50 / P90 + IA) ── */}
+      <div className="p-6 rounded-lg bg-card border border-border/70 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/50 pb-3">
+          <div>
+            <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+              <TrendingUp className="size-4 text-primary" />
+              Motor Estatístico Preditivo (EWMA + Sazonalidade + Pipeline)
+            </h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              {data.statistical.modelMethodLabel}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="outline" className="font-mono text-xs">
+              Chance de Bater Meta: {data.statistical.goalHitProbabilityPct}%
+            </Badge>
+            <Badge variant="secondary" className="font-mono text-xs">
+              Confiança Amostral: {data.statistical.confidenceScore}%
+            </Badge>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="p-4 rounded-lg border border-border/70 bg-muted/20 space-y-1">
+            <span className="text-xs text-muted-foreground font-medium">Cenário Conservador (P10)</span>
+            <div className="text-xl font-mono font-bold text-foreground">
+              {formatMoney(data.statistical.p10GrossCents)}
+            </div>
+          </div>
+          <div className="p-4 rounded-lg border border-primary/40 bg-primary/5 space-y-1">
+            <span className="text-xs text-primary font-semibold">Fechamento Esperado (P50)</span>
+            <div className="text-xl font-mono font-bold text-primary">
+              {formatMoney(data.statistical.p50GrossCents)}
+            </div>
+          </div>
+          <div className="p-4 rounded-lg border border-border/70 bg-muted/20 space-y-1">
+            <span className="text-xs text-muted-foreground font-medium">Cenário Otimista (P90)</span>
+            <div className="text-xl font-mono font-bold text-emerald-700 dark:text-emerald-300">
+              {formatMoney(data.statistical.p90GrossCents)}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs pt-1">
+          <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+            <span className="text-muted-foreground block">Ritmo EWMA / Dia</span>
+            <strong className="font-mono text-sm text-foreground">
+              {formatMoney(data.statistical.ewmaDailyVelocityGrossCents)}
+            </strong>
+          </div>
+          <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+            <span className="text-muted-foreground block">Índice Sazonal (S_m)</span>
+            <strong className="font-mono text-sm text-foreground">
+              {data.statistical.seasonalityFactor.toFixed(2)}x
+            </strong>
+          </div>
+          <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+            <span className="text-muted-foreground block">Pipeline Ponderado</span>
+            <strong className="font-mono text-sm text-foreground">
+              {formatMoney(data.statistical.pipeline.weightedExpectedGrossCents)}
+            </strong>
+          </div>
+          {data.is_tourism ? (
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+              <span className="text-muted-foreground block">Receita Agência Realizada</span>
+              <strong className="font-mono text-sm text-primary">
+                {formatMoney(data.realized_agency_revenue_cents)}
+              </strong>
+            </div>
+          ) : (
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+              <span className="text-muted-foreground block">Crescimento MoM</span>
+              <strong className="font-mono text-sm text-foreground">
+                {data.statistical.momGrowthGrossPct >= 0 ? "+" : ""}
+                {data.statistical.momGrowthGrossPct.toFixed(1)}%
+              </strong>
+            </div>
+          )}
+        </div>
+
+        {aiInsights && (
+          <div className="p-4 rounded-xl border border-primary/30 bg-primary/5 space-y-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-xs font-bold text-primary flex items-center gap-2">
+                <Sparkles className="size-3.5" />
+                Diagnóstico Executivo ({aiInsights.provider})
+              </span>
+              <Badge variant="outline" className="text-2xs">
+                Risco: {aiInsights.riskLevel.toUpperCase()}
+              </Badge>
+            </div>
+            <p className="text-sm font-medium text-foreground">{aiInsights.headline}</p>
+            {aiInsights.recommendations?.length > 0 && (
+              <ul className="list-disc pl-5 text-xs text-muted-foreground space-y-1">
+                {aiInsights.recommendations.map((rec: string, i: number) => (
+                  <li key={i}>{rec}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </div>
+
+      {!data.is_personal_scope && data.agents_breakdown.length > 0 && (
+        <div className="rounded-lg border border-border/70 bg-card overflow-hidden space-y-3 p-5">
+          <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+            <Users className="size-4 text-primary" />
+            Metas & Realizado por Consultor
+          </h3>
+          <Table>
+            <TableHeader>
+              <TableRow className="border-border/60 bg-muted/20">
+                <TableHead className="text-xs font-bold">Consultor</TableHead>
+                <TableHead className="text-xs font-bold font-mono">Vendas</TableHead>
+                <TableHead className="text-xs font-bold font-mono">Faturamento Bruto</TableHead>
+                <TableHead className="text-xs font-bold font-mono">Receita Agência</TableHead>
+                <TableHead className="text-xs font-bold font-mono">Meta Individual</TableHead>
+                <TableHead className="text-xs font-bold text-right">% Meta</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.agents_breakdown.map((ag) => (
+                <TableRow key={ag.profile_id || ag.agent_name}>
+                  <TableCell className="text-xs font-semibold">{ag.agent_name}</TableCell>
+                  <TableCell className="text-xs font-mono">{ag.sales_count}</TableCell>
+                  <TableCell className="text-xs font-mono font-bold">{formatMoney(ag.gross_realized_cents)}</TableCell>
+                  <TableCell className="text-xs font-mono">{formatMoney(ag.agency_revenue_cents)}</TableCell>
+                  <TableCell className="text-xs font-mono text-muted-foreground">
+                    {ag.gross_goal_cents > 0 ? formatMoney(ag.gross_goal_cents) : "Sem meta"}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-xs font-bold">
+                    {ag.gross_goal_cents > 0 ? `${ag.percent_achieved}%` : "-"}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
       {/* ── METAS SEGMENTADAS POR CANAL DE VENDA ── */}
       <div className="rounded-lg border border-border/70 bg-card overflow-hidden space-y-4 p-5">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-border/50 pb-3">
@@ -497,8 +717,9 @@ function RevenueGoalsPage() {
         </Table>
       </div>
 
-      {/* ── SHEET LATERAL DE CONFIGURAÇÃO DE METAS ── */}
-      <Sheet open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+      {/* ── SHEET LATERAL DE CONFIGURAÇÃO DE METAS (EXCLUSIVO GESTÃO) ── */}
+      {data.can_edit_goals && (
+        <Sheet open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
         <SheetContent size="wide" className="sm:max-w-xl flex flex-col h-full bg-background border-l border-border/60">
           <SheetHeader>
             <SheetTitle>Definir Metas Comerciais</SheetTitle>
@@ -581,7 +802,7 @@ function RevenueGoalsPage() {
 
           <div className="pt-4 border-t border-border/60">
             <Button
-              className="w-full font-bold rounded-lg h-11 cursor-pointer"
+              className="w-full font-bold rounded-lg h-11 cursor-pointer focus-visible:ring-2"
               onClick={handleSaveGoals}
               disabled={isSubmitting}
             >
@@ -590,6 +811,7 @@ function RevenueGoalsPage() {
           </div>
         </SheetContent>
       </Sheet>
+      )}
     </div>
   );
 }

@@ -6,8 +6,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { MiningDashboard } from "@/components/mining/mining-dashboard";
 import { getMiningStatsFn } from "@/services/mining.functions";
-import { Button } from "@/components/ui/button";
-import { AlertTriangle } from "lucide-react";
+import { RouteErrorFallback } from "@/components/state/route-error-fallback";
 
 export const Route = createFileRoute("/workspace/mining")({
   head: () => ({
@@ -22,30 +21,16 @@ export const Route = createFileRoute("/workspace/mining")({
       return { stats: undefined };
     }
   },
-  errorComponent: WorkspaceMiningErrorComponent,
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorFallback
+      error={error}
+      reset={reset}
+      title="Falha ao carregar"
+      description="Não foi possível carregar os dados."
+    />
+  ),
   component: WorkspaceMiningPage,
 });
-
-function WorkspaceMiningErrorComponent({ error, reset }: { error: any; reset: () => void }) {
-  return (
-    <div className="mx-auto max-w-xl px-4 py-16 text-center space-y-4">
-      <div className="inline-flex size-14 items-center justify-center rounded-lg bg-muted text-destructive mb-2">
-        <AlertTriangle className="size-7" />
-      </div>
-      <h2 className="text-xl font-bold text-foreground">Falha ao carregar</h2>
-      <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
-        {error?.message || "Não foi possível carregar os dados."}
-      </p>
-      <Button
-        type="button"
-        onClick={reset}
-        className="rounded-lg font-bold text-xs h-11 px-4 focus-visible:ring-2 focus-visible:ring-primary"
-      >
-        Tentar Novamente
-      </Button>
-    </div>
-  );
-}
 
 function WorkspaceMiningPage() {
   const { stats } = Route.useLoaderData();

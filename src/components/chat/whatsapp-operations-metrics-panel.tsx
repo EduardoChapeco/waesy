@@ -13,7 +13,7 @@ function healthClass(status: WhatsAppOperationsMetricsDTO["health"]["worker_stat
   return status === "running" || status === "idle" ? "text-emerald-700" : status === "degraded" || status === "starting" ? "text-warning-strong" : "text-rose-700";
 }
 
-export function WhatsAppOperationsMetricsPanel() {
+export function WhatsAppOperationsMetricsPanel({ storeId }: { storeId?: string } = {}) {
   const [metrics, setMetrics] = useState<WhatsAppOperationsMetricsDTO | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -21,24 +21,46 @@ export function WhatsAppOperationsMetricsPanel() {
 
   useEffect(() => {
     let disposed = false;
+    let debounceTimer: number | null = null;
     const refresh = async () => {
       try {
-        const value = await getWhatsAppOperationsMetrics({ data: {} });
+        const value = await getWhatsAppOperationsMetrics({
+          data: storeId ? { storeId } : {},
+        });
         if (!disposed && value) { setMetrics(value); setUpdatedAt(value.generated_at); setError(null); }
       } catch (cause) {
         if (!disposed) setError(cause instanceof Error ? cause.message : "Não foi possível consultar a telemetria WhatsApp.");
       } finally { if (!disposed) setLoading(false); }
     };
+    const scheduleRefresh = () => {
+      if (debounceTimer !== null) window.clearTimeout(debounceTimer);
+      debounceTimer = window.setTimeout(() => {
+        debounceTimer = null;
+        void refresh();
+      }, 600);
+    };
     void refresh();
     const timer = window.setInterval(() => void refresh(), 30_000);
-    const { channel, unsubscribe } = getRealtimeChannel("whatsapp-operations-metrics");
-    channel?.on("postgres_changes", { event: "*", schema: "public", table: "whatsapp_outbox" }, () => void refresh())
-      .on("postgres_changes", { event: "*", schema: "public", table: "whatsapp_outbox_attempts" }, () => void refresh())
-      .on("postgres_changes", { event: "*", schema: "public", table: "chat_threads" }, () => void refresh())
-      .on("postgres_changes", { event: "*", schema: "public", table: "whatsapp_worker_heartbeats" }, () => void refresh())
+    const storeFilter = storeId ? `store_id=eq.${storeId}` : undefined;
+    const { channel, ensureAuth, unsubscribe } = getRealtimeChannel(
+      `whatsapp-operations-metrics:${storeId || "default"}`,
+    );
+    void (ensureAuth?.());
+    channel
+      ?.on("postgres_changes", { event: "*", schema: "public", table: "whatsapp_outbox", ...(storeFilter ? { filter: storeFilter } : {}) }, scheduleRefresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "whatsapp_outbox_attempts" }, scheduleRefresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "chat_threads", ...(storeFilter ? { filter: storeFilter } : {}) }, scheduleRefresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "whatsapp_channel_live_state", ...(storeFilter ? { filter: storeFilter } : {}) }, scheduleRefresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "whatsapp_history_sync_jobs", ...(storeFilter ? { filter: storeFilter } : {}) }, scheduleRefresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "whatsapp_worker_heartbeats" }, scheduleRefresh)
       .subscribe();
-    return () => { disposed = true; window.clearInterval(timer); unsubscribe(); };
-  }, []);
+    return () => {
+      disposed = true;
+      if (debounceTimer !== null) window.clearTimeout(debounceTimer);
+      window.clearInterval(timer);
+      unsubscribe();
+    };
+  }, [storeId]);
 
   const topAgents = useMemo(() => [...(metrics?.agents || [])].sort((a, b) => b.open_threads - a.open_threads).slice(0, 3), [metrics?.agents]);
   if (loading && !metrics) return <section className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">Carregando telemetria operacional WhatsApp...</section>;

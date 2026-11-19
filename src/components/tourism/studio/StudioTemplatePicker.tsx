@@ -1,5 +1,5 @@
 import { CanvasFormat } from "./StudioFrame";
-import { PROPOSAL_TEMPLATES } from "@/components/proposals/templates";
+import { PROPOSAL_TEMPLATES } from "@/components/tourism/proposals/templates";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 

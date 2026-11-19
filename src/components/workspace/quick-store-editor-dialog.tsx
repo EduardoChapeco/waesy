@@ -13,7 +13,7 @@ import { updateStoreDetails } from "@/services/store.functions";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
-import { NICHE_SEMANTICS_REGISTRY } from "@/lib/niche-semantics";
+import { NICHE_SEMANTICS_REGISTRY } from "@/lib/niches/niche-semantics";
 
 export interface QuickStoreData {
  id: string;

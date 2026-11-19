@@ -1,5 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import type { ResumeDataDTO } from '@/components/profile/professional-resume-editor';
+import { parseSalaryInputToCents } from '@/lib/money';
+import { syncEmployerReviewsForUser } from '@/lib/careers/employer-reviews.server';
 import * as claimIntel from './claim-intelligence.functions';
 
 describe('Professional Resume 360° & Talent Intelligence ([REQ-1], [REQ-3])', () => {
@@ -60,5 +62,42 @@ describe('Professional Resume 360° & Talent Intelligence ([REQ-1], [REQ-3])', (
     expect(typeof claimIntel.listConsumerClaims).toBe('function');
     expect(typeof claimIntel.respondToConsumerClaim).toBe('function');
     expect(typeof claimIntel.escalateClaimToLegal).toBe('function');
+  });
+
+  it('deve converter salários BRL para centavos sem erro de fator 100x em reedições', () => {
+    expect(parseSalaryInputToCents('3500')).toBe(350000);
+    expect(parseSalaryInputToCents('3.500')).toBe(350000);
+    expect(parseSalaryInputToCents('3500,50')).toBe(350050);
+    expect(parseSalaryInputToCents('R$ 5.500,00')).toBe(550000);
+    expect(parseSalaryInputToCents('')).toBeUndefined();
+  });
+
+  it('deve sincronizar avaliações de empregadores e contabilizar erro sem engolir falha', async () => {
+    const deleteEqMock = vi.fn().mockResolvedValue({ error: null });
+    const insertMock = vi.fn().mockResolvedValue({ error: null });
+    const db = {
+      from: () => ({
+        delete: () => ({ eq: () => ({ eq: deleteEqMock }) }),
+        insert: insertMock,
+      }),
+    };
+
+    const okRes = await syncEmployerReviewsForUser(db, 'user-1', [
+      { company: 'Waesy Tech', title: 'Engenheiro', company_rating: 5, salary_cents: 1200000 },
+      { company: 'Sem Insight', title: 'Estagiário' },
+    ]);
+    expect(okRes).toEqual({ synced: 1, errors: 0 });
+    expect(insertMock).toHaveBeenCalledTimes(1);
+
+    const failDb = {
+      from: () => ({
+        delete: () => ({ eq: () => ({ eq: vi.fn().mockResolvedValue({ error: null }) }) }),
+        insert: vi.fn().mockResolvedValue({ error: { message: 'RLS violation' } }),
+      }),
+    };
+    const errRes = await syncEmployerReviewsForUser(failDb, 'user-1', [
+      { company: 'Empresa Erro', company_rating: 4 },
+    ]);
+    expect(errRes).toEqual({ synced: 0, errors: 1 });
   });
 });

@@ -2,7 +2,8 @@ import { BusFleetSelectorModal } from "@/components/tourism/groups/bus-fleet-sel
 import { createFileRoute, Link, Outlet, useChildMatches } from "@tanstack/react-router";
 import { useState, useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { ArrowLeft, Bus, Users, Building, FileText, Download, Check, Loader2, Calendar, MapPin, Phone, ShieldCheck, DollarSign, Link2, UserCheck, Wallet } from "lucide-react";
+import { ArrowLeft, Bus, Users, Building, FileText, Download, Check, Loader2, Calendar, MapPin, Phone, ShieldCheck, DollarSign, Link2, UserCheck, Wallet, Globe, ExternalLink } from "lucide-react";
+import { GroupTourContentEditor } from "@/components/tourism/groups/group-tour-content-editor";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Input } from "@/components/ui/input";
@@ -167,6 +168,21 @@ function WorkspaceGroupTourDetailPage() {
  className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-11 px-4 sm:px-3 cursor-pointer"
  >
  <Link
+ to={"/turismo/$id" as any}
+ params={{ id: tour.id } as any}
+ target="_blank"
+ >
+ <ExternalLink className="size-4 sm:size-3.5 text-primary" />
+ <span>Ver Página Web</span>
+ </Link>
+ </Button>
+
+ <Button
+ asChild
+ variant="outline"
+ className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-11 px-4 sm:px-3 cursor-pointer"
+ >
+ <Link
  to={"/workspace/turismo/grupos/$id/embarque" as any}
  params={{ id: tour.id } as any}
  >
@@ -220,6 +236,10 @@ function WorkspaceGroupTourDetailPage() {
  <TabsTrigger value="transporte" className="min-h-11 sm:min-h-9 text-xs rounded-lg font-bold gap-2 py-2 shrink-0 whitespace-nowrap cursor-pointer flex items-center justify-center">
  <ShieldCheck className="size-3.5 shrink-0" />
  <span>Veículo / ANTT</span>
+ </TabsTrigger>
+ <TabsTrigger value="conteudo" className="min-h-11 sm:min-h-9 text-xs rounded-lg font-bold gap-2 py-2 shrink-0 whitespace-nowrap cursor-pointer flex items-center justify-center">
+ <Globe className="size-3.5 shrink-0" />
+ <span>Conteúdo & Web</span>
  </TabsTrigger>
  </TabsList>
 
@@ -305,6 +325,11 @@ function WorkspaceGroupTourDetailPage() {
               Salvar Dados do Transporte
             </Button>
  </div>
+ </TabsContent>
+
+ {/* ABA 6: CONTEÚDO EDITORIAL & PÁGINA WEB */}
+ <TabsContent value="conteudo" className="space-y-4">
+   <GroupTourContentEditor tour={tour} onTourUpdated={setTour} />
  </TabsContent>
  </Tabs>
 

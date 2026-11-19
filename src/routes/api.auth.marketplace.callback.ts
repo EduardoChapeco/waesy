@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getServerClient } from "@/lib/supabase";
-import { decryptSecret, encryptSecret } from "@/lib/crypto-vault.server";
+import { encryptSecret } from "@/lib/crypto-vault.server";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import {
   decodeMarketplaceOAuthState,
   exchangeMarketplaceOAuthCode,
 } from "@/lib/marketplace-api-client";
+import { safeDecryptVaultValue as safeDecrypt } from "@/lib/marketplace-vault.server";
 
 import type {} from "@tanstack/react-start";
 
@@ -25,15 +26,6 @@ export function resolveSafeMarketplaceReturnPath(rawPath?: string | null): strin
     return DEFAULT_MARKETPLACE_RETURN_PATH;
   }
   return trimmed;
-}
-
-function safeDecrypt(val: unknown): string {
-  if (typeof val !== "string" || !val.trim()) return "";
-  try {
-    return decryptSecret(val.trim());
-  } catch {
-    return val.trim();
-  }
 }
 
 export const Route = createFileRoute("/api/auth/marketplace/callback")({

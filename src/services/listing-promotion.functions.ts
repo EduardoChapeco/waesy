@@ -21,6 +21,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { publishDomainEvent } from "./domain-events.functions";
+import { slugify } from "@/lib/slug-utils";
 
 // ---------------------------------------------------------------------------
 // Schema de validação — Zod estrito
@@ -44,22 +45,6 @@ export interface PromoteClassifiedResult {
   classifiedId: string;
   storeId: string;
   wasAlreadyPromoted: boolean;
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function slugify(text: string): string {
-  return text
-    .toString()
-    .toLowerCase()
-    .trim()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 }
 
 // ---------------------------------------------------------------------------

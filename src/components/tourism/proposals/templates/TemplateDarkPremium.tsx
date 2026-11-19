@@ -11,18 +11,24 @@ import {
   getTourMetaLine,
   getTransferBadgeLabel,
   getTransferMetaLine,
+  getTransferTitle,
   ProposalAdaptiveImage,
   ProposalAgencyLogo,
+  ProposalCruiseBlock,
   ProposalDestinationGallerySection,
+  ProposalFlightMapBlock,
+  ProposalHotelMediaGallery,
   ProposalItineraryMediaGrid,
   ProposalMultiNicheSpecsBlock,
   ProposalPricingBreakdownBlock,
+  ProposalTransferListBlock,
 } from "./blocks/UI";
 import {
   Plane,
   Hotel,
   Car,
   Compass,
+  Ship,
   Check,
   X,
   PhoneCall,
@@ -211,6 +217,12 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                 </div>
               ))}
             </div>
+            <ProposalFlightMapBlock
+              flights={p.flights as any}
+              theme={theme}
+              showMap={raw?.web_page?.show_flight_route_map !== false}
+              capturedMapUrl={raw?.captured_map_url || raw?.map_image_url || raw?.custom_fields?.captured_map_url}
+            />
           </section>
         )}
 
@@ -277,38 +289,13 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                       </div>
                     </div>
 
-                    {h.images?.[0] && (
-                      <div
-                        className={`grid gap-4 h-52 ${
-                          h.images.length === 1 ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-3"
-                        }`}
-                      >
-                        <div
-                          className={`${
-                            h.images.length === 1 ? "col-span-1" : "sm:col-span-2"
-                          } rounded-lg overflow-hidden border p-border-subtle h-full`}
-                        >
-                          <ProposalAdaptiveImage
-                            src={h.images[0]}
-                            alt={h.name}
-                            objectPosition={(h as any).object_position}
-                            scale={(h as any).image_scale}
-                            className="w-full h-full"
-                          />
-                        </div>
-                        {h.images[1] && (
-                          <div className="rounded-lg overflow-hidden border p-border-subtle h-full">
-                            <ProposalAdaptiveImage
-                              src={h.images[1]}
-                              alt={h.name}
-                              objectPosition={(h as any).object_position}
-                              scale={(h as any).image_scale}
-                              className="w-full h-full"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    <ProposalHotelMediaGallery
+                      images={h.images}
+                      media={(h as any).media}
+                      title={h.name}
+                      objectPosition={(h as any).object_position}
+                      scale={(h as any).image_scale}
+                    />
                   </div>
                 </div>
               ))}
@@ -382,7 +369,20 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
           </section>
         )}
 
-        {/* TRASLADOS */}
+        {/* CRUZEIROS MARÍTIMOS */}
+        {Array.isArray((raw as any).cruises) && (raw as any).cruises.length > 0 && (
+          <section className="break-inside-avoid space-y-5">
+            <div className="flex items-center gap-3 pb-3 border-b p-border-main">
+              <Ship className="size-5 p-text-brand shrink-0" />
+              <h2 className="text-2xl font-bold p-text-ink p-heading-font">
+                Cruzeiro Marítimo & Itinerário Náutico
+              </h2>
+            </div>
+            <ProposalCruiseBlock cruises={(raw as any).cruises} theme={theme} />
+          </section>
+        )}
+
+        {/* TRASLADOS (LINHAS COMPLETAS / FULL-WIDTH) */}
         {theme.isSectionVisible("transfers") && vm.hasTransfers && (
           <section className="break-inside-avoid space-y-5">
             <div className="flex items-center gap-3 pb-3 border-b p-border-main">
@@ -391,30 +391,11 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                 Traslados & Receptivo
               </h2>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {p.transfers!.map((t, i) => {
-                const transferMeta = getTransferMetaLine(t as Record<string, any>, formatDate);
-                return (
-                  <div
-                    key={i}
-                    className="p-5 rounded-xl border p-border-main p-surface-card space-y-2"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-bold p-text-ink text-sm">
-                        {t.description || (t as any).route || "Transfer In/Out"}
-                      </span>
-                      <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider p-surface-brand-soft border p-border-brand">
-                        {getTransferBadgeLabel(t.type)}
-                      </span>
-                    </div>
-                    {transferMeta && (
-                      <div className="text-xs p-text-muted leading-relaxed">{transferMeta}</div>
-                    )}
-                    {t.notes && <p className="text-xs p-text-faint">{t.notes}</p>}
-                  </div>
-                );
-              })}
-            </div>
+            <ProposalTransferListBlock
+              transfers={p.transfers}
+              formatDateFn={formatDate}
+              theme={theme}
+            />
           </section>
         )}
 

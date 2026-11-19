@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { listStoreCarnes, getCarnesReportSummary, approveInstallmentPayment, rejectInstallmentPayment, adjustInstallmentAmount, sendMassBillingReminders, generateInstallmentWhatsAppReminder, createStoreCarne, searchCustomersForCarne, renegotiateCarne } from "@/services/receivables.functions";
 import { listStoreCondicionais, createStoreCondicional, resolveCondicionalItems, type StoreCondicionalDTO, type CondicionalItemDTO } from "@/services/condicionais.functions";
 import { createContract } from "@/services/contracts.functions";
+import { OperatorBillingPanel } from "@/components/tourism/OperatorBillingPanel";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/workspace/financeiro/recebiveis")({
@@ -50,7 +51,7 @@ function ReceivablesDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
 
   // Navegação Principal de Abas (Clean & Standby de BaaS)
-  const [mainTab, setMainTab] = useState<"carnes" | "condicionais">("carnes");
+  const [mainTab, setMainTab] = useState<"carnes" | "operadoras" | "condicionais">("carnes");
 
   // Módulo de Condicionais & Prova em Casa (Varejo de Moda - 100% Persistência Real em Banco)
   const [condicionaisFilter, setCondicionaisFilter] = useState<"all" | "open" | "due_today" | "overdue" | "closed">("all");
@@ -464,6 +465,13 @@ Assinatura da Loja (Consignante)`;
         </div>
 
         <div className="flex items-center gap-3">
+          <Button
+            asChild
+            variant="outline"
+            className="rounded-lg text-xs h-11 min-h-11 px-4 focus-visible:ring-2"
+          >
+            <a href="/workspace/turismo/comissoes">Cobrança Operadoras (Turismo)</a>
+          </Button>
           {mainTab === "carnes" && (
             <>
               {selectedInstallmentIds.length > 0 && (
@@ -495,7 +503,7 @@ Assinatura da Loja (Consignante)`;
       </div>
 
       {/* Seletor de Abas Principais (Clean Paradigm) */}
-      <div className="flex items-center gap-2 p-2 rounded-lg bg-muted border border-border max-w-xl">
+      <div className="flex flex-wrap items-center gap-2 p-2 rounded-lg bg-muted border border-border max-w-2xl">
         <button
           type="button"
           onClick={() => setMainTab("carnes")}
@@ -510,6 +518,19 @@ Assinatura da Loja (Consignante)`;
           <Badge variant="secondary" className="text-xs px-2 py-1">
             {carnes.length}
           </Badge>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setMainTab("operadoras")}
+          className={cn("flex-1 flex items-center justify-center gap-2 h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+            mainTab === "operadoras"
+              ? "bg-card border border-border text-foreground"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          <Building2 className="h-4 w-4 text-primary" />
+          <span>Operadoras & Borderôs</span>
         </button>
 
         <button
@@ -531,6 +552,10 @@ Assinatura da Loja (Consignante)`;
           </Badge>
         </button>
       </div>
+
+      {mainTab === "operadoras" && (
+        <OperatorBillingPanel competenceMonth={new Date().toISOString().slice(0, 7)} />
+      )}
 
       {/* Conteúdo da Aba 1: Carnês & Caderninho */}
       {mainTab === "carnes" && (

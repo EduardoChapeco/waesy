@@ -3,7 +3,7 @@ import { Tag, Edit3, LayoutGrid, Copy, Trash2, Sliders, Layers, ArrowUp, ArrowDo
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { builderRegistry } from "@/lib/builder-registry";
+import { builderRegistry } from "@/lib/builder/builder-registry";
 
 export interface BuilderFloatingActionBarProps {
  selectedNode: any;

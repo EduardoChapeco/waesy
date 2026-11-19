@@ -549,7 +549,7 @@ export async function evaluateControlledAiInboundRuntime(input: {
     }
   }
 
-  // 4. Acesso contextual controlado ao CRM (mesmo store_id)
+  // 4. Acesso contextual multi-nicho e geração SDR unificada
   const phoneDigits = String(input.phone || "").replace(/\D/g, "");
   let opportunitiesCount = 0;
   let activeStage: string | null = null;
@@ -566,53 +566,25 @@ export async function evaluateControlledAiInboundRuntime(input: {
     quotesCount = (quotesRes.data || []).length;
   }
 
-  const customerName = String(thread?.guest_name || input.payload?.pushName || "Cliente").trim();
-  const storeName = String(store?.name || "Nossa Equipe").trim();
+  const { buildMultiNicheCopilotContextAndReply } = await import("@/services/omnichannel-ai-copilot.server");
+  const copilotInsight = await buildMultiNicheCopilotContextAndReply({
+    db,
+    storeId: input.storeId,
+    threadId: input.threadId,
+    latestMessageText: input.text,
+    persistToThread: false,
+  });
 
-  const textLower = String(input.text || "").toLowerCase();
-  const mentionsTourism = /(pacote|roteiro|viagem|passeio|destino|voo|aéreo|aereo|hotel|anac|bagagem|cancelamento|parcelamento|cia a[ée]rea)/i.test(textLower);
-
-  let packageInfoText = "";
-  if (mentionsTourism) {
-    const packages = await toolLookupTourismPackages({ storeId: input.storeId, query: input.text, limit: 2 }).catch(() => []);
-    if (packages && packages.length > 0) {
-      const p = packages[0];
-      packageInfoText = `\n\n[PACOTE DISPONÍVEL] *${p.title}* (${p.destination})\n- Valor: ${p.priceDisplay}\n- Condições: ${p.installmentTerms}\n- Datas: ${p.datesDescription || "Consulte saídas"}\n- Itens inclusos: ${(p.includedItems || []).slice(0, 3).join(", ")}`;
-    }
-  }
-
-  let aviationInfoText = "";
-  if (/(anac|bagagem|mala|cancelamento|arrependimento|no-show|no show|atraso)/i.test(textLower)) {
-    const aviation = toolGetTourismAviationPolicies();
-    if (/(bagagem|mala)/i.test(textLower)) {
-      const bag = aviation.policies.find((p) => p.topic.includes("Bagagem"));
-      if (bag) aviationInfoText = `\n\n[Regras de Bagagem - ANAC Res. 400]:\n- ${bag.rules[0]}\n- ${bag.rules[1]}\n- ${bag.rules[2]}`;
-    } else if (/(cancelamento|arrependimento|desist)/i.test(textLower)) {
-      const cancel = aviation.policies.find((p) => p.topic.includes("Arrependimento"));
-      if (cancel) aviationInfoText = `\n\n[Política de Cancelamento e Arrependimento]:\n- ${cancel.rules[0]}\n- ${cancel.rules[1]}`;
-    } else if (/(no-show|no show)/i.test(textLower)) {
-      const noshow = aviation.policies.find((p) => p.topic.includes("No-Show"));
-      if (noshow) aviationInfoText = `\n\n[Regra de No-Show na Ida - ANAC e STJ]:\n- ${noshow.rules[0]}\n- ${noshow.rules[1]}`;
-    } else if (/(atraso)/i.test(textLower)) {
-      const delay = aviation.policies.find((p) => p.topic.includes("Atrasos"));
-      if (delay) aviationInfoText = `\n\n[Assistência Material por Atraso - ANAC]:\n- ${delay.rules[0]}\n- ${delay.rules[1]}\n- ${delay.rules[2]}`;
-    }
-  }
-
-  let suggestedReply = "";
-  if (packageInfoText || aviationInfoText) {
-    suggestedReply = `Olá, ${customerName}! Aqui é o assistente virtual da ${storeName}.${packageInfoText}${aviationInfoText}\n\nPosso detalhar o roteiro completo ou conectar você com um dos nossos consultores para finalizar sua reserva?`;
-  } else if (intent === "quote_request" || effectiveAgentSlug === "sales_closer" || effectiveAgentSlug === "tourism_concierge") {
-    suggestedReply = `Olá, ${customerName}! Aqui é o assistente da ${storeName}. Identifiquei seu interesse em cotação/roteiro${opportunitiesCount > 0 ? ` (já localizei seu histórico comercial conosco)` : ""}. Qual destino e período você planeja para prepararmos sua proposta?`;
-  } else if (intent === "financial_query" || effectiveAgentSlug === "financial_assistant") {
-    suggestedReply = `Olá, ${customerName}! Recebi sua solicitação sobre pagamento/fatura na ${storeName}. Já estou verificando os detalhes financeiros do seu cadastro.`;
-  } else if (effectiveAgentSlug === "sac_support") {
-    suggestedReply = `Olá, ${customerName}! Recebi seu chamado na central de suporte da ${storeName}. Me conte os detalhes ou o código da reserva/pedido para agilizar o atendimento.`;
-  } else {
-    suggestedReply = `Olá, ${customerName}! Aqui é da ${storeName}. Como posso ajudar?`;
-  }
-
-  const crmContextSummary = { opportunitiesCount, activeStage, quotesCount };
+  const suggestedReply = copilotInsight.suggestedReply;
+  const crmContextSummary = {
+    opportunitiesCount,
+    activeStage,
+    quotesCount,
+    buyerIntent: copilotInsight.buyerIntent,
+    sdrScore: copilotInsight.sdrScore,
+    nicheId: copilotInsight.nicheId,
+    recommendedNextStep: copilotInsight.recommendedNextStep,
+  };
 
   const decisionLog: ControlledAiDecisionLog = {
     decisionId,
@@ -626,7 +598,7 @@ export async function evaluateControlledAiInboundRuntime(input: {
     reason:
       mode === "sandbox"
         ? "Resposta gerada em modo Sandbox controlado e enfileirada com idempotência."
-        : "Sugestão gerada em modo Copilot Assistido para revisão do atendente.",
+        : "Sugestão multi-nicho SDR gerada em modo Copilot Assistido para revisão do atendente.",
     suggestedReply,
     crmContextSummary,
   };
@@ -675,6 +647,13 @@ export async function evaluateControlledAiInboundRuntime(input: {
           agentSlug,
           intent,
           suggestedReply,
+          buyerIntent: copilotInsight.buyerIntent,
+          sdrScore: copilotInsight.sdrScore,
+          detectedObjections: copilotInsight.detectedObjections,
+          recommendedNextStep: copilotInsight.recommendedNextStep,
+          nicheId: copilotInsight.nicheId,
+          catalogMatchTitle: copilotInsight.catalogMatchTitle,
+          aiProviderUsed: copilotInsight.aiProviderUsed,
           createdAt: nowIso,
           crmContextSummary,
         },
@@ -689,3 +668,92 @@ export async function evaluateControlledAiInboundRuntime(input: {
 }
 
 export function protectedInboundPreview(text: string) { return encryptConversationMessage(text); }
+
+// ==============================================================================
+// GATILHOS DE AUTOMAÇÃO DE CICLO DE VIDA (PÓS-COMPRA, RECOMPRA E TURISMO)
+// ==============================================================================
+
+export type LifecycleTriggerType =
+  | "repurchase_window_opened"
+  | "travel_last_installment_settled_or_due"
+  | "travel_post_return_followup";
+
+export interface LifecycleTriggerPayload {
+  storeId: string;
+  customerId: string;
+  triggerType: LifecycleTriggerType;
+  referenceEntityId: string;
+  metadata?: Record<string, any>;
+}
+
+export async function evaluateLifecycleWorkflowTrigger(input: LifecycleTriggerPayload): Promise<{
+  triggered: boolean;
+  flowRunId?: string;
+  reason?: string;
+}> {
+  const db = getServerClient();
+
+  // 1. Invariante de Idempotência: verifica se este ciclo já foi executado para esta entidade
+  const cycleKey = `${input.triggerType}:${input.customerId}:${input.referenceEntityId}`;
+  const { data: existingRuns } = await db
+    .from("whatsapp_flow_runs")
+    .select("id")
+    .eq("store_id", input.storeId)
+    .contains("input_payload", { cycle_key: cycleKey })
+    .limit(1);
+
+  if (existingRuns && existingRuns.length > 0) {
+    return { triggered: false, reason: "already_executed_for_cycle" };
+  }
+
+  // 2. Invariante Canônica de Turismo: se for pós-viagem, NUNCA disparar se houver boleto/parcela em aberto!
+  if (input.triggerType === "travel_post_return_followup") {
+    const { data: pendingBoletos } = await db
+      .from("travel_trip_installment_boletos")
+      .select("id")
+      .eq("trip_id", input.referenceEntityId)
+      .neq("status", "paid")
+      .limit(1);
+
+    if (pendingBoletos && pendingBoletos.length > 0) {
+      return { triggered: false, reason: "suppressed_due_to_unpaid_installments" };
+    }
+  }
+
+  // 3. Busca fluxos ativos compatíveis com este triggerType
+  const { data: flows } = await db
+    .from("store_workflows")
+    .select("id, nodes, edges, trigger_type, status")
+    .eq("store_id", input.storeId)
+    .eq("status", "active")
+    .eq("trigger_type", input.triggerType);
+
+  if (!flows || flows.length === 0) {
+    return { triggered: false, reason: "no_active_flow_for_trigger" };
+  }
+
+  const flow = flows[0];
+  const { data: run, error: runError } = await db
+    .from("whatsapp_flow_runs")
+    .insert({
+      workflow_id: flow.id,
+      store_id: input.storeId,
+      status: "completed",
+      input_payload: {
+        triggerType: input.triggerType,
+        customerId: input.customerId,
+        referenceEntityId: input.referenceEntityId,
+        cycle_key: cycleKey,
+        metadata: input.metadata || {},
+      },
+      output_payload: { dispatched_at: new Date().toISOString() },
+    })
+    .select("id")
+    .single();
+
+  if (runError || !run) {
+    return { triggered: false, reason: runError?.message || "run_creation_failed" };
+  }
+
+  return { triggered: true, flowRunId: run.id };
+}

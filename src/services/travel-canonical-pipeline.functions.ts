@@ -342,3 +342,5 @@ export const applyReviewedTravelDocumentToTrip = createServerFn({ method: "POST"
       result,
     };
   });
+
+export const ingestTravelDocumentForReview = ingestTravelDocument;

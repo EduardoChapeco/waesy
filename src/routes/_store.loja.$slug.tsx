@@ -260,20 +260,59 @@ function StoreSlugCanonicalPage() {
      data.identity.memberships?.some((m: any) => m.store_id === profile.id || m.id === profile.id))
   );
 
+  if (profile.waesy_marketplace_enabled === false && !isOwner) {
+    return (
+      <div className="min-h-96 flex items-center justify-center px-4 py-16 text-center">
+        <div className="max-w-md w-full space-y-4">
+          <div className="size-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto text-primary">
+            <Storefront size={30} weight="duotone" />
+          </div>
+          <h2 className="text-lg font-bold text-foreground">
+            {profile.name} opera em App Oficial Próprio
+          </h2>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Esta empresa escolheu atender seus clientes diretamente no seu aplicativo oficial com catálogo digital completo.
+          </p>
+          <Button
+            asChild
+            className="w-full h-11 min-h-11 rounded-xl font-bold text-xs gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Link to="/app/$slug" params={{ slug }}>
+              <Storefront size={16} weight="bold" />
+              <span>Abrir App Oficial de {profile.name}</span>
+            </Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {isOwner && (
         <div className="bg-primary/10 border-b border-primary/20 px-4 py-2">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 text-xs">
+          <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 text-xs">
             <span className="font-medium text-foreground">
-              Você é gestor desta empresa.
+              Perfil no Marketplace Waesy{profile.waesy_marketplace_enabled === false ? " (oculto ao público · modo App Privado)" : ""}.
             </span>
-            <Button asChild size="default" className="h-11 min-h-11 px-4 rounded-lg font-semibold text-xs gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-              <Link to="/workspace" search={{ storeId: profile.id }}>
-                <Storefront size={16} weight="bold" />
-                <span>Gerenciar no Workspace</span>
-              </Link>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                asChild
+                variant="outline"
+                size="default"
+                className="h-11 min-h-11 px-4 rounded-lg font-semibold text-xs gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Link to="/app/$slug" params={{ slug }}>
+                  <span>Abrir App Oficial</span>
+                </Link>
+              </Button>
+              <Button asChild size="default" className="h-11 min-h-11 px-4 rounded-lg font-semibold text-xs gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <Link to="/workspace" search={{ storeId: profile.id }}>
+                  <Storefront size={16} weight="bold" />
+                  <span>Gerenciar no Workspace</span>
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       )}

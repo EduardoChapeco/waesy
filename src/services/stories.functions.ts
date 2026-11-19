@@ -16,6 +16,12 @@ export interface StoryMediaItemDTO {
  media_url: string;
  link_url?: string | null;
  link_cta?: string | null;
+ story_kind?: "standard" | "hot_offer" | "hot_black";
+ hot_offer_id?: string | null;
+ source_proposal_id?: string | null;
+ offer_badge_label?: string | null;
+ offer_price_cents?: number | null;
+ flame_style?: "none" | "instagram_ring" | "pixel_fire" | "hot_black" | null;
  duration_seconds: number;
  is_long_format: boolean;
  niche: string;

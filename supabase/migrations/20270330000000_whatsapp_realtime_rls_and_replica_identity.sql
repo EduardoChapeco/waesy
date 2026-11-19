@@ -60,20 +60,9 @@ CREATE POLICY "chat_threads_wave2_select"
         AND p.role IN ('platform_admin', 'master')
     )
     OR EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = chat_threads.store_id
-        AND s.owner_id = auth.uid()
-    )
-    OR EXISTS (
       SELECT 1 FROM public.workspace_members wm
       WHERE wm.store_id = chat_threads.store_id
         AND wm.profile_id = auth.uid()
-        AND (
-          COALESCE(chat_threads.is_confidential, false) = false
-          OR wm.role IN ('owner', 'admin', 'manager')
-          OR chat_threads.assigned_to = auth.uid()
-          OR chat_threads.assigned_to_profile_id = auth.uid()
-        )
     )
   );
 
@@ -95,20 +84,9 @@ CREATE POLICY "chat_messages_wave2_select"
         AND (
           ct.customer_id = auth.uid()
           OR EXISTS (
-            SELECT 1 FROM public.stores s
-            WHERE s.id = ct.store_id
-              AND s.owner_id = auth.uid()
-          )
-          OR EXISTS (
             SELECT 1 FROM public.workspace_members wm
             WHERE wm.store_id = ct.store_id
               AND wm.profile_id = auth.uid()
-              AND (
-                COALESCE(ct.is_confidential, false) = false
-                OR wm.role IN ('owner', 'admin', 'manager')
-                OR ct.assigned_to = auth.uid()
-                OR ct.assigned_to_profile_id = auth.uid()
-              )
           )
         )
     )

@@ -6,23 +6,6 @@ import { ClassicBlockAdapter } from "./ClassicBlockAdapter";
 import { OmniPageRenderer } from "./OmniPageRenderer";
 import type { OmniBlockInstance, OmniPageDocument } from "./types";
 
-// Mock do framer-motion para evitar issues em ambiente node
-vi.mock("framer-motion", () => ({
-  motion: {
-    div: ({ children, className, style, ...props }: any) => (
-      <div className={className} style={style} {...props}>
-        {children}
-      </div>
-    ),
-    section: ({ children, className, style, ...props }: any) => (
-      <section className={className} style={style} {...props}>
-        {children}
-      </section>
-    ),
-  },
-  AnimatePresence: ({ children }: any) => <>{children}</>,
-}));
-
 // Mock do cart context
 vi.mock("@/lib/cart-context", () => ({
   useCart: () => ({

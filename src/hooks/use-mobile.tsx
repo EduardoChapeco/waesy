@@ -39,12 +39,7 @@ export function getWindowSizeClass(width: number): WindowSizeClass {
 const WindowSizeContext = React.createContext<WindowSizeContextValue | null>(null);
 
 export function WindowSizeProvider({ children }: { children: React.ReactNode }) {
-  const [width, setWidth] = React.useState<number>(() => {
-    if (typeof window !== "undefined") {
-      return window.innerWidth;
-    }
-    return 1280; // Default SSR fallback = Expanded desktop
-  });
+  const [width, setWidth] = React.useState<number>(1280);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -97,10 +92,7 @@ export function useWindowSizeClass(): WindowSizeContextValue {
   }
 
   // Fallback autônomo caso usado fora do WindowSizeProvider
-  const [width, setWidth] = React.useState<number>(() => {
-    if (typeof window !== "undefined") return window.innerWidth;
-    return 1280;
-  });
+  const [width, setWidth] = React.useState<number>(1280);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -139,12 +131,7 @@ export function useIsDesktop(customBreakpoint?: number): boolean {
 }
 
 export function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = React.useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      return window.matchMedia(query).matches;
-    }
-    return false;
-  });
+  const [matches, setMatches] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;

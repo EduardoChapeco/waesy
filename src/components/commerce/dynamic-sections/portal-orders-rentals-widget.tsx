@@ -4,6 +4,7 @@ import { Package, RotateCcw, Calendar, CheckCircle2, Truck, ExternalLink } from 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { EmptyState } from "@/components/state/states";
 import { cn } from "@/lib/utils";
 
 export interface PortalOrderRentalItem {
@@ -27,27 +28,7 @@ interface PortalOrdersRentalsWidgetProps {
 }
 
 export function PortalOrdersRentalsWidget({ content, design_tokens }: PortalOrdersRentalsWidgetProps) {
- const items: PortalOrderRentalItem[] = content?.items || [
- {
- id: "ord-101",
- order_number: "#8921",
- type: "purchase",
- title: "Mochila Impermeável de Trekking 45L + Kit Acessórios",
- total_cents: 28990,
- status: "delivered",
- created_at: "2026-08-15",
- },
- {
- id: "ord-102",
- order_number: "#8955",
- type: "rental",
- title: "Locação de Barraca 4 Pessoas Pro + 2 Isolantes Térmicos",
- total_cents: 14000,
- status: "active_rental",
- created_at: "2026-08-28",
- return_deadline: "2026-09-15",
- },
- ];
+ const items: PortalOrderRentalItem[] = content?.items || [];
 
  return (
  <div className={cn("w-full max-w-5xl mx-auto py-8 px-4", design_tokens?.className)}>
@@ -65,6 +46,12 @@ export function PortalOrdersRentalsWidget({ content, design_tokens }: PortalOrde
  </div>
  </div>
 
+ {items.length === 0 ? (
+ <EmptyState
+ title="Nenhum pedido ou locação registrado"
+ description="Suas compras e contratos de locação aparecerão aqui."
+ />
+ ) : (
  <div className="grid grid-cols-1 gap-4">
  {items.map((item) => (
  <div
@@ -124,6 +111,7 @@ export function PortalOrdersRentalsWidget({ content, design_tokens }: PortalOrde
  </div>
  ))}
  </div>
+ )}
  </div>
  );
 }

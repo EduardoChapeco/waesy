@@ -20,7 +20,7 @@ import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { EmptyState } from "@/components/state/states";
-import { resolveNicheDepartments } from "@/lib/niche-helpers";
+import { resolveNicheDepartments } from "@/lib/niches/niche-helpers";
 import { buildUniversalHead } from "@/lib/seo/universal-seo-head";
 
 const DIRECTORY_CATEGORIES: FilterChipOption[] = [

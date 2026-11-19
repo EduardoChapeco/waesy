@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getNicheTranslation, NICHE_DICTIONARY_REGISTRY } from "@/lib/niche-dictionary";
+import { getNicheTranslation, NICHE_DICTIONARY_REGISTRY } from "@/lib/niches/niche-dictionary";
 import { formatNicheNotification } from "@/services/notifications.functions";
 
 describe("MASTER PROMPT V138: Niche Taxonomy, Micro-Copy Metamorphosis & Design Tokenization", () => {

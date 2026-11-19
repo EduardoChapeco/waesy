@@ -32,6 +32,7 @@ export interface TravelVoucherItem {
   status: "confirmed" | "pending" | "completed" | "cancelled";
   statusText: string;
   voucherPdfUrl?: string;
+  voucherToken?: string;
 }
 
 export interface CustomerTravelPortalProps {
@@ -59,14 +60,16 @@ export const CustomerTravelPortal: React.FC<CustomerTravelPortalProps> = ({
   });
 
   const handleDownload = (voucher: TravelVoucherItem) => {
-    toast.success(`Baixando voucher ${voucher.locatorCode}...`);
     if (voucher.voucherPdfUrl) {
-      window.open(voucher.voucherPdfUrl, "_blank");
-    } else {
-      setTimeout(() => {
-        toast.info("Voucher gerado com sucesso em formato digital.");
-      }, 800);
+      window.open(voucher.voucherPdfUrl, "_blank", "noopener,noreferrer");
+      return;
     }
+    const token = (voucher.voucherToken || voucher.locatorCode || "").trim();
+    if (token) {
+      window.open(`/voucher/${encodeURIComponent(token)}`, "_blank", "noopener,noreferrer");
+      return;
+    }
+    toast.error("Este voucher ainda não possui arquivo ou localizador emitido para download.");
   };
 
   const handleSupport = (voucher: TravelVoucherItem) => {
@@ -75,9 +78,9 @@ export const CustomerTravelPortal: React.FC<CustomerTravelPortalProps> = ({
       const msg = encodeURIComponent(
         `Olá! Preciso de suporte com a minha viagem *${voucher.destination}* (Localizador: *${voucher.locatorCode}*).`
       );
-      window.open(`https://wa.me/${cleanPhone}?text=${msg}`, "_blank");
+      window.open(`https://wa.me/${cleanPhone}?text=${msg}`, "_blank", "noopener,noreferrer");
     } else {
-      toast.info("Conectando ao suporte da agência...");
+      toast.error("Telefone de WhatsApp da agência não configurado para suporte direto.");
     }
   };
 

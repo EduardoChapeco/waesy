@@ -11,26 +11,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess, STAFF_ROLES } from "@/lib/server-access";
-import {
-  isBrokenOrMissingMediaUri,
-  parseMediaDataUri,
-  resolveWhisperExtensionAndMime,
-} from "@/lib/whatsapp-media-utils";
 import { getAllActiveKeysForProvider } from "@/services/api-orchestrator.functions";
-
-async function resolveVoiceProviderKey(
-  provider: "groq" | "openai",
-  ownerId?: string,
-  storeId?: string,
-): Promise<string> {
-  const poolKeys = await getAllActiveKeysForProvider(provider, ownerId, storeId).catch(() => []);
-  if (poolKeys.length > 0 && poolKeys[0]?.rawKey) {
-    return poolKeys[0].rawKey;
-  }
-  return provider === "groq"
-    ? process.env.GROQ_API_KEY?.trim() || ""
-    : process.env.OPENAI_API_KEY?.trim() || "";
-}
+import {
+  extractMediaAndChatToLeadAndKnowledge,
+  resolveVoiceProviderKey,
+  transcribeAudioMediaServer,
+} from "@/services/whatsapp-media-intelligence.server";
 
 export const voicePersonaSchema = z.object({
   gender: z.enum(["female", "male"]).default("female"),
@@ -55,172 +41,104 @@ export type TranscribeWhatsAppAudioInput = z.infer<typeof transcribeWhatsAppAudi
 export const transcribeWhatsAppAudioMessage = createServerFn({ method: "POST" })
   .validator(transcribeWhatsAppAudioSchema)
   .handler(async ({ data }) => {
-    const { threadId, messageId } = data;
+    const { threadId, messageId, audioUrl } = data;
     const identity = await getServerIdentity();
     if (!identity.id) throw new Error("Não autorizado");
 
     const db = getServerClient();
     const { data: thread } = await db
       .from("chat_threads")
-      .select("id, store_id, channel_instance_id, entity_id, metadata")
+      .select("id, store_id")
       .eq("id", threadId)
       .maybeSingle();
 
     if (!thread) throw new Error("Conversa não encontrada");
     assertStoreAccess(identity, STAFF_ROLES, thread.store_id);
 
-    const { data: msg } = await db
-      .from("chat_messages")
-      .select("id, message, message_type, attachments, payload, external_message_id, is_staff_reply")
-      .eq("id", messageId)
-      .eq("thread_id", threadId)
-      .maybeSingle();
+    const res = await transcribeAudioMediaServer({
+      db,
+      storeId: thread.store_id,
+      threadId,
+      messageId,
+      ownerId: identity.id,
+      audioUrlOverride: audioUrl ?? null,
+    });
 
-    if (!msg) throw new Error("Mensagem não encontrada");
-
-    const curPayload = (msg.payload && typeof msg.payload === "object" ? msg.payload : {}) as Record<string, any>;
-    if (curPayload.transcript && typeof curPayload.transcript === "string" && curPayload.transcript.trim().length > 0) {
-      return { transcript: curPayload.transcript, cached: true };
+    if (!res.ok || !res.transcript) {
+      throw new Error(
+        res.reason ||
+          "Transcrição de áudio indisponível: verifique a mídia ou configure uma chave Groq/OpenAI em Integrações > Cofre IA.",
+      );
     }
-
-    const rawAudioUri =
-      Array.isArray(msg.attachments) && msg.attachments.length > 0 && typeof msg.attachments[0] === "string"
-        ? msg.attachments[0]
-        : curPayload.media?.url || null;
-
-    let transcriptText = "";
-    let effectiveAudioUri: string | null = data.audioUrl || rawAudioUri;
-    let resolvedHydratedMime: string | null = null;
-
-    if (isBrokenOrMissingMediaUri(effectiveAudioUri, "audio") && msg.external_message_id) {
-      const { hydrateMediaFromEvolution } = await import("./whatsapp-media.server");
-      const threadMeta = (thread.metadata && typeof thread.metadata === "object" ? thread.metadata : {}) as Record<string, any>;
-      const remoteJid =
-        typeof threadMeta.whatsapp_jid === "string" && threadMeta.whatsapp_jid.trim()
-          ? threadMeta.whatsapp_jid.trim()
-          : typeof thread.entity_id === "string" && thread.entity_id.trim()
-            ? thread.entity_id.trim()
-            : null;
-      const hydrated = await hydrateMediaFromEvolution({
-        db,
-        storeId: thread.store_id,
-        channelInstanceId: thread.channel_instance_id,
-        threadId: thread.id,
-        messageId: msg.id,
-        externalMessageId: String(msg.external_message_id),
-        remoteJid,
-        fromMe: Boolean(msg.is_staff_reply),
-        messageType: "audio",
-        preferredMime: typeof curPayload.media?.mimetype === "string" ? curPayload.media.mimetype : "audio/ogg",
-        persistToMessage: true,
-      }).catch(() => null);
-      if (hydrated?.dataUri) {
-        effectiveAudioUri = hydrated.dataUri;
-        resolvedHydratedMime = hydrated.mimetype;
-      }
-    }
-
-    // Resolve chaves via Cofre BYOK / api_key_pools do Admin Master + fallback ENV
-    const [groqKey, openaiKey] = await Promise.all([
-      resolveVoiceProviderKey("groq", identity.id, thread.store_id),
-      resolveVoiceProviderKey("openai", identity.id, thread.store_id),
-    ]);
-
-    if ((groqKey || openaiKey) && effectiveAudioUri) {
-      try {
-        let audioBuffer: Buffer | null = null;
-        let mimeType = resolvedHydratedMime || "audio/ogg";
-        if (effectiveAudioUri.startsWith("data:")) {
-          const parsedUri = parseMediaDataUri(effectiveAudioUri, mimeType);
-          if (parsedUri) {
-            mimeType = parsedUri.mimeType;
-            audioBuffer = Buffer.from(parsedUri.base64Data, "base64");
-          }
-        } else if (/^https?:\/\//i.test(effectiveAudioUri)) {
-          const mediaRes = await fetch(effectiveAudioUri, { signal: AbortSignal.timeout(15000) });
-          if (mediaRes.ok) {
-            const contentType = mediaRes.headers.get("content-type");
-            if (contentType) mimeType = contentType.split(";")[0].trim();
-            audioBuffer = Buffer.from(await mediaRes.arrayBuffer());
-          }
-        }
-
-        if (audioBuffer && audioBuffer.byteLength > 32) {
-          const { ext, normalizedMime } = resolveWhisperExtensionAndMime(mimeType);
-          const blob = new Blob([new Uint8Array(audioBuffer)], { type: normalizedMime });
-
-          const formData = new FormData();
-          formData.append("file", blob, `audio.${ext}`);
-          formData.append("model", groqKey ? "whisper-large-v3" : "whisper-1");
-          formData.append("language", "pt");
-          formData.append("response_format", "json");
-
-          const targetUrl = groqKey
-            ? "https://api.groq.com/openai/v1/audio/transcriptions"
-            : "https://api.openai.com/v1/audio/transcriptions";
-
-          const res = await fetch(targetUrl, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${groqKey || openaiKey}`,
-            },
-            body: formData,
-            signal: AbortSignal.timeout(15000),
-          });
-
-          if (res.ok) {
-            const json = await res.json().catch(() => ({}));
-            transcriptText = String((json as any).text || "").trim();
-          }
-        }
-      } catch (err: any) {
-        console.warn("[whatsapp-voice-ai] Falha na chamada Whisper:", err?.message);
-      }
-    }
-
-    if (!transcriptText) {
-      const msgText = String(msg.message || "").trim();
-      if (msgText && !["[Áudio]", "[Audio]", "audio"].includes(msgText)) {
-        transcriptText = msgText;
-      } else {
-        throw new Error(
-          groqKey || openaiKey
-            ? "Não foi possível transcrever o áudio: mídia inacessível ou serviço Whisper indisponível."
-            : "Transcrição de áudio indisponível: configure uma chave Groq ou OpenAI em Integrações > Cofre IA."
-        );
-      }
-    }
-
-    // Salva a transcrição no banco de dados para evitar reprocessamento (preservando media hidratada se ocorreu)
-    const updatedPayload = {
-      ...curPayload,
-      ...(resolvedHydratedMime && effectiveAudioUri
-        ? {
-            media: {
-              ...(curPayload.media || {}),
-              type: "audio",
-              url: effectiveAudioUri,
-              mimetype: resolvedHydratedMime,
-            },
-          }
-        : {}),
-      transcript: transcriptText,
-      transcribed_at: new Date().toISOString(),
-    };
-
-    await db
-      .from("chat_messages")
-      .update({
-        ...(resolvedHydratedMime && effectiveAudioUri ? { attachments: [effectiveAudioUri] } : {}),
-        payload: updatedPayload,
-      })
-      .eq("id", messageId);
 
     return {
-      transcript: transcriptText,
-      cached: false,
-      ...(resolvedHydratedMime && effectiveAudioUri ? { audioDataUri: effectiveAudioUri } : {}),
+      transcript: res.transcript,
+      cached: res.status === "cached",
+      ...(res.audioUri ? { audioDataUri: res.audioUri } : {}),
     };
+  });
+
+export const analyzeChatMediaWithAi = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      threadId: z.string().uuid(),
+      messageId: z.string().uuid().optional(),
+      mediaUrl: z.string().optional().nullable(),
+      caption: z.string().optional().nullable(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    if (!identity.id) throw new Error("Não autorizado");
+
+    const db = getServerClient();
+    const { data: thread } = await db
+      .from("chat_threads")
+      .select("id, store_id, lead_id")
+      .eq("id", data.threadId)
+      .maybeSingle();
+
+    if (!thread) throw new Error("Conversa não encontrada");
+    assertStoreAccess(identity, STAFF_ROLES, thread.store_id);
+
+    const [{ data: storeRow }, { data: productRows }, { data: classifiedRows }] = await Promise.all([
+      db.from("stores").select("id, niche").eq("id", thread.store_id).maybeSingle(),
+      db
+        .from("products")
+        .select("title")
+        .eq("store_id", thread.store_id)
+        .eq("status", "published")
+        .limit(15),
+      db
+        .from("classifieds")
+        .select("title")
+        .eq("store_id", thread.store_id)
+        .eq("status", "active")
+        .limit(10),
+    ]);
+
+    const availableTitles = [...(productRows || []), ...(classifiedRows || [])]
+      .map((l: any) => String(l.title || "").trim())
+      .filter(Boolean);
+
+    const extraction = await extractMediaAndChatToLeadAndKnowledge({
+      db,
+      storeId: thread.store_id,
+      threadId: thread.id,
+      messageId: data.messageId ?? null,
+      leadId: thread.lead_id ?? null,
+      ownerId: identity.id,
+      mediaUrl: data.mediaUrl ?? null,
+      caption: data.caption ?? null,
+      storeNiche: storeRow?.niche ?? null,
+      availableCatalogTitles: availableTitles,
+    });
+
+    if (!extraction.ok || !extraction.summary) {
+      throw new Error(extraction.reason || "Não foi possível analisar esta mídia com IA.");
+    }
+
+    return extraction;
   });
 
 export const generateAiVoiceAudioSchema = z.object({

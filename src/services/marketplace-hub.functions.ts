@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { encryptSecret, decryptSecret } from "@/lib/crypto-vault.server";
+import { encryptSecret } from "@/lib/crypto-vault.server";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { logSystemError } from "@/lib/logger";
 import { fetchWithExponentialBackoff } from "@/lib/resilient-api-client";
@@ -14,6 +14,7 @@ import {
 import {
   resolveConnectorCredentialsWithRefresh,
   pushOrderUpdateToOriginMarketplace,
+  safeDecryptVaultValue as safeDecryptField,
 } from "@/lib/marketplace-vault.server";
 
 export const MARKETPLACE_PLATFORMS = [
@@ -399,16 +400,6 @@ export interface MarketplaceDispatchResult {
   status: "dispatched" | "unconfigured" | "test_mode_recorded" | "completed" | "failed";
   message: string;
   itemsProcessed: number;
-}
-
-function safeDecryptField(val: unknown): string {
-  if (typeof val !== "string" || !val.trim()) return "";
-  const trimmed = val.trim();
-  try {
-    return decryptSecret(trimmed);
-  } catch {
-    return trimmed;
-  }
 }
 
 export async function resolveMarketplaceConnectorCredentials(params: {

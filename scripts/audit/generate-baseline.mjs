@@ -41,13 +41,34 @@ const hooks = allSrc.filter(f => f.includes('/hooks/') || f.includes('use-'));
 const routes = allSrc.filter(f => f.startsWith('src/routes/'));
 const services = allSrc.filter(f => f.startsWith('src/services/'));
 
-// Load checks raw if available
+// Load checks raw & design-lint & tsc summary dynamically
 let checksSummary = {};
+let evaluatedCount = 0;
+let conformingCount = 0;
+let openChecks = [];
 if (fs.existsSync('.audit/checks-raw.json')) {
   const raw = JSON.parse(fs.readFileSync('.audit/checks-raw.json', 'utf8'));
   for (const [k, v] of Object.entries(raw)) {
     checksSummary[k] = v.count;
+    if (v.evaluated !== false) {
+      evaluatedCount++;
+      if (v.count === 0) conformingCount++;
+    }
+    if (v.count > 0) openChecks.push(`${k}(${v.count})`);
   }
+}
+
+let designLintTotal = 'N/A (report ausente)';
+if (fs.existsSync('design-lint.report.json')) {
+  const dl = JSON.parse(fs.readFileSync('design-lint.report.json', 'utf8'));
+  designLintTotal = `${dl.totalViolations ?? 0} violações atuais`;
+}
+
+let tscSummary = 'Não executado neste ciclo';
+if (fs.existsSync('.audit/tsc-baseline.txt')) {
+  const tscText = fs.readFileSync('.audit/tsc-baseline.txt', 'utf8');
+  const errCount = (tscText.match(/: error TS\d+:/g) || []).length;
+  tscSummary = `${errCount} erro(s) registrados em .audit/tsc-baseline.txt`;
 }
 
 const baselineData = {
@@ -67,10 +88,10 @@ const baselineData = {
 
 fs.writeFileSync('.audit/BASELINE.json', JSON.stringify(baselineData, null, 2));
 
-// Generate markdown report
-let md = `# BASELINE.md — Baseline Mensurável do Sistema (P05)
+// Generate dynamic markdown report (zero hardcoded numbers)
+let md = `# BASELINE.md — Baseline Mensurável do Sistema
 
-**Data da Medição:** 2026-10-01  
+**Data da Medição:** ${baselineData.timestamp.slice(0, 10)}  
 **Métrica Global:** ${baselineData.metrics.totalSourceFiles} arquivos em \`src/\` | ${baselineData.metrics.totalLinesOfCode.toLocaleString()} linhas de código | ${(baselineData.metrics.totalSizeBytes / (1024 * 1024)).toFixed(2)} MB
 
 ---
@@ -95,12 +116,11 @@ top20Largest.forEach(f => {
 md += `\n---
 
 ## 3. Resumo dos Checks C01-C43
-- **Total de Checks:** 43
-- **Checks Conformes (0 violações):** 30
-- **Checks Abertos:** 13 (C01, C02, C03, C06, C07, C08, C09, C18, C22, C23, C26, C28, C37)
-- **Compilação TypeScript:** 0 erros (\`tsc --noEmit\` verificado)
-- **Teto Design Lint Ratchet:** 38.378 violações congeladas em \`design-lint.baseline.json\`
+- **Checks Avaliados / Conformes / Abertos:** ${evaluatedCount} avaliados (${conformingCount} conformes, ${openChecks.length} abertos)
+- **Abertos:** ${openChecks.join(', ') || 'Nenhum'}
+- **Compilação TypeScript:** ${tscSummary}
+- **Design Lint Report:** ${designLintTotal}
 `;
 
 fs.writeFileSync('.audit/BASELINE.md', md);
-console.log('P05 Baseline generated successfully.');
+console.log('Dynamic baseline generated successfully.');

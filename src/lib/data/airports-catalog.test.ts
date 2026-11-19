@@ -1,81 +1,71 @@
 import { describe, it, expect } from "vitest";
+import fs from "node:fs";
+import path from "node:path";
 import {
-  GLOBAL_AIRPORTS_CATALOG,
-  AIRPORTS_BY_IATA_MAP,
-  getAirportByIata,
-  searchAirportsCatalog,
   formatAirportLabel,
-} from "./airports-catalog";
+  normalizeAirportSearchText,
+  type AirportRecord,
+} from "@/types/airports";
 
-describe("Catálogo Global de Aeroportos & IATA SSOT", () => {
-  it("deve conter mais de 7.000 aeroportos comerciais, regionais e hubs mundiais cadastrados", () => {
-    expect(GLOBAL_AIRPORTS_CATALOG.length).toBeGreaterThan(7000);
+describe("Aeroportos SSOT no Supabase (airports_global) & Contratos Leves", () => {
+  it("normaliza texto de busca removendo acentos e pontuação de forma idempotente", () => {
+    expect(normalizeAirportSearchText("Chapecó")).toBe("chapeco");
+    expect(normalizeAirportSearchText("  São Paulo / Guarulhos  ")).toBe(
+      "sao paulo / guarulhos",
+    );
   });
 
-  it("não deve conter códigos IATA duplicados (unicidade estrita)", () => {
-    const seen = new Set<string>();
-    const duplicates: string[] = [];
-    for (const a of GLOBAL_AIRPORTS_CATALOG) {
-      if (seen.has(a.iata_code)) {
-        duplicates.push(a.iata_code);
-      }
-      seen.add(a.iata_code);
-    }
-    expect(duplicates).toEqual([]);
-    expect(seen.size).toBe(GLOBAL_AIRPORTS_CATALOG.length);
+  it("formata rótulo amigável para aeroportos nacionais e internacionais", () => {
+    const xap: AirportRecord = {
+      iata_code: "XAP",
+      icao_code: "SBCH",
+      name: "Aeroporto Serafin Enoss Bertaso",
+      city: "Chapecó",
+      state_province: "SC",
+      country: "Brasil",
+      country_code: "BR",
+      latitude: -27.13,
+      longitude: -52.65,
+      timezone: "America/Sao_Paulo",
+      is_commercial: true,
+    };
+    expect(formatAirportLabel(xap)).toBe(
+      "XAP — Chapecó/SC (Aeroporto Serafin Enoss Bertaso)",
+    );
+
+    const lis: AirportRecord = {
+      iata_code: "LIS",
+      icao_code: "LPPT",
+      name: "Aeroporto Humberto Delgado",
+      city: "Lisboa",
+      state_province: null,
+      country: "Portugal",
+      country_code: "PT",
+      latitude: 38.78,
+      longitude: -9.13,
+      timezone: "Europe/Lisbon",
+      is_commercial: true,
+    };
+    expect(formatAirportLabel(lis)).toBe(
+      "LIS — Lisboa, Portugal (Aeroporto Humberto Delgado)",
+    );
   });
 
-  it("deve indexar todos os aeroportos no mapa O(1) AIRPORTS_BY_IATA_MAP", () => {
-    expect(AIRPORTS_BY_IATA_MAP.size).toBe(GLOBAL_AIRPORTS_CATALOG.length);
-    expect(AIRPORTS_BY_IATA_MAP.get("XAP")?.city).toBe("Chapecó");
-    expect(AIRPORTS_BY_IATA_MAP.get("GRU")?.city).toContain("São Paulo");
-    expect(AIRPORTS_BY_IATA_MAP.get("LIS")?.country).toBe("Portugal");
-    expect(AIRPORTS_BY_IATA_MAP.get("MIA")?.country).toBe("Estados Unidos");
-    expect(AIRPORTS_BY_IATA_MAP.get("PUJ")?.country).toBe("República Dominicana");
-    expect(AIRPORTS_BY_IATA_MAP.get("HND")?.iata_code).toBe("HND");
-    expect(AIRPORTS_BY_IATA_MAP.get("DXB")?.iata_code).toBe("DXB");
-    expect(AIRPORTS_BY_IATA_MAP.get("LHR")?.iata_code).toBe("LHR");
-    expect(AIRPORTS_BY_IATA_MAP.get("SYD")?.iata_code).toBe("SYD");
-  });
+  it("assegura que BFF e combobox não carregam catálogo estático em memória", () => {
+    const bffSrc = fs.readFileSync(
+      path.resolve(process.cwd(), "src/services/tourism-airports.functions.ts"),
+      "utf8",
+    );
+    expect(bffSrc).toContain('.from("airports_global")');
+    expect(bffSrc).not.toContain("airports-catalog");
+    expect(bffSrc).not.toContain("memory_catalog");
 
-  it("deve resolver aeroporto com getAirportByIata independentemente de caixa ou espaçamento", () => {
-    const xap = getAirportByIata("  xap  ");
-    expect(xap).toBeDefined();
-    expect(xap?.iata_code).toBe("XAP");
-    expect(xap?.icao_code).toBe("SBCH");
-
-    const jfk = getAirportByIata("JFK");
-    expect(jfk).toBeDefined();
-    expect(jfk?.city).toContain("Nova York");
-  });
-
-  it("deve realizar busca e autofiltro insensível a acentos e caixa", () => {
-    // Busca por cidade com e sem acento
-    const cha1 = searchAirportsCatalog("Chapecó");
-    const cha2 = searchAirportsCatalog("chapeco");
-    expect(cha1[0]?.iata_code).toBe("XAP");
-    expect(cha2[0]?.iata_code).toBe("XAP");
-
-    // Busca exata por IATA
-    const gru = searchAirportsCatalog("GRU");
-    expect(gru[0]?.iata_code).toBe("GRU");
-
-    // Busca por país
-    const dominicana = searchAirportsCatalog("Dominicana");
-    expect(dominicana.some((a) => a.iata_code === "PUJ")).toBe(true);
-
-    // Busca por aeroportos regionais de SC/RS
-    const sul = searchAirportsCatalog("Caxias do Sul");
-    expect(sul[0]?.iata_code).toBe("CXJ");
-  });
-
-  it("deve formatar rótulo legível com formatAirportLabel", () => {
-    const xap = getAirportByIata("XAP")!;
-    const label = formatAirportLabel(xap);
-    expect(label).toBe("XAP — Chapecó/SC (Aeroporto Serafin Enoss Bertaso)");
-
-    const lis = getAirportByIata("LIS")!;
-    const lisLabel = formatAirportLabel(lis);
-    expect(lisLabel).toBe("LIS — Lisboa, Portugal (Aeroporto Humberto Delgado)");
+    const comboSrc = fs.readFileSync(
+      path.resolve(process.cwd(), "src/components/ui/airport-combobox.tsx"),
+      "utf8",
+    );
+    expect(comboSrc).not.toContain("searchAirportsCatalog");
+    expect(comboSrc).toContain("searchGlobalAirports");
+    expect(comboSrc).toContain("getAirportsByIatasFn");
   });
 });

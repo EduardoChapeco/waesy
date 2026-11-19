@@ -3,7 +3,19 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess, STAFF_ROLES, MANAGER_ROLES } from "@/lib/server-access";
 import { encryptSecret, decryptSecret } from "@/lib/crypto-vault.server";
+import { getEnvVar } from "@/lib/env";
+import {
+  buildEvolutionWebhookConfig,
+  buildEvolutionWebhookUrl,
+  ensureEvolutionWebhookRegisteredDetailed,
+  resolveWebhookOrigin,
+} from "./whatsapp-evolution-config.server";
+import {
+  reconcileEvolutionWebhookIfNeeded,
+  runEvolutionDeltaSyncForInstance,
+} from "./whatsapp-evolution-sync.server";
 import { assertStoreWhatsAppInstanceAvailable } from "@/lib/architecture/module-plan-governance";
+import { slugify } from "@/lib/slug-utils";
 
 const ProviderSchema = z.enum(["meta_cloud_api", "evolution_api", "wasender_api", "render_bridge", "custom_webhook"]);
 const ModeSchema = z.enum(["official", "unofficial"]);
@@ -272,21 +284,8 @@ export const listWhatsAppChannelAudit = createServerFn({ method: "GET" }).valida
 
 // ─── Integração Direta Evolution API server-side e QR Code ao vivo ───
 
-const rawWebhookOrigin = process.env.VITE_APP_URL || process.env.VITE_SITE_URL || "https://waesy.com.br";
-const DEFAULT_WEBHOOK_ORIGIN =
-  rawWebhookOrigin.includes("pages.dev") || rawWebhookOrigin.includes("usewaesy.com")
-    ? "https://waesy.com.br"
-    : rawWebhookOrigin;
-
-const EVOLUTION_WEBHOOK_EVENTS = [
-  "QRCODE_UPDATED",
-  "CONNECTION_UPDATE",
-  "MESSAGES_SET",
-  "MESSAGES_UPSERT",
-  "MESSAGES_UPDATE",
-  "MESSAGES_DELETE",
-  "SEND_MESSAGE",
-];
+const rawWebhookOrigin = resolveWebhookOrigin();
+const DEFAULT_WEBHOOK_ORIGIN = rawWebhookOrigin;
 
 async function ensureEvolutionWebhookRegistered(
   baseUrl: string,
@@ -295,22 +294,13 @@ async function ensureEvolutionWebhookRegistered(
   webhookUrl: string,
 ): Promise<boolean> {
   if (!baseUrl || !apiKey || !externalName) return false;
-  const cleanBase = baseUrl.replace(/\/$/, "");
-  const webhookConfig = {
-    enabled: true,
-    url: webhookUrl,
-    byEvents: false,
-    base64: true,
-    headers: { apikey: apiKey, "x-api-key": apiKey },
-    events: EVOLUTION_WEBHOOK_EVENTS,
-  };
-  const res = await fetch(`${cleanBase}/webhook/set/${encodeURIComponent(externalName)}`, {
-    method: "POST",
-    headers: { apikey: apiKey, "Content-Type": "application/json" },
-    body: JSON.stringify({ webhook: webhookConfig, ...webhookConfig }),
-    signal: AbortSignal.timeout(5000),
-  }).catch(() => null);
-  return Boolean(res && res.ok);
+  const result = await ensureEvolutionWebhookRegisteredDetailed(
+    baseUrl,
+    apiKey,
+    externalName,
+    webhookUrl,
+  );
+  return result.ok;
 }
 
 async function resolveEvolutionGatewayConfig(
@@ -669,7 +659,7 @@ export async function _connectWhatsAppQrCodeInstance(data: z.infer<typeof Connec
   }
 
   let externalName = existing?.external_instance_id || `waesy_${shortStore}_${cleanKey}`.slice(0, 48);
-  const webhookUrl = `${DEFAULT_WEBHOOK_ORIGIN.replace(/\/$/, "")}/api/webhooks/whatsapp/evolution/${encodeURIComponent(externalName)}`;
+  const webhookUrl = buildEvolutionWebhookUrl(cleanKey);
 
   let qrBase64: string | null = null;
   let pairingCode: string | null = null;
@@ -751,18 +741,7 @@ export async function _connectWhatsAppQrCodeInstance(data: z.infer<typeof Connec
               instanceName: externalName,
               qrcode: true,
               integration: "WHATSAPP-BAILEYS",
-              webhook: {
-                url: webhookUrl,
-                byEvents: false,
-                base64: true,
-                events: [
-                  "QRCODE_UPDATED",
-                  "CONNECTION_UPDATE",
-                  "MESSAGES_UPSERT",
-                  "MESSAGES_UPDATE",
-                  "SEND_MESSAGE",
-                ],
-              },
+              webhook: buildEvolutionWebhookConfig(webhookUrl, apiKey),
             }),
             signal: AbortSignal.timeout(12000),
           }).catch(() => null);
@@ -797,18 +776,7 @@ export async function _connectWhatsAppQrCodeInstance(data: z.infer<typeof Connec
           instanceName: externalName,
           qrcode: true,
           integration: "WHATSAPP-BAILEYS",
-          webhook: {
-            url: webhookUrl,
-            byEvents: false,
-            base64: true,
-            events: [
-              "QRCODE_UPDATED",
-              "CONNECTION_UPDATE",
-              "MESSAGES_UPSERT",
-              "MESSAGES_UPDATE",
-              "SEND_MESSAGE",
-            ],
-          },
+          webhook: buildEvolutionWebhookConfig(webhookUrl, apiKey),
         }),
         signal: AbortSignal.timeout(12000),
       });
@@ -831,10 +799,11 @@ export async function _connectWhatsAppQrCodeInstance(data: z.infer<typeof Connec
               instanceName: externalName,
               qrcode: true,
               integration: "WHATSAPP-BAILEYS",
-              webhook: { url: webhookUrl, byEvents: false, base64: true, events: ["QRCODE_UPDATED", "CONNECTION_UPDATE", "MESSAGES_UPSERT", "MESSAGES_UPDATE", "SEND_MESSAGE"] },
+              webhook: buildEvolutionWebhookConfig(webhookUrl, apiKey),
             }),
             signal: AbortSignal.timeout(12000),
           });
+
           const freshCreateJson = (await freshCreateRes.json().catch(() => ({}))) as Record<string, any>;
           const freshExtracted = extractEvolutionQrPayload(freshCreateJson);
           qrBase64 = freshExtracted.qrCodeBase64;
@@ -855,6 +824,9 @@ export async function _connectWhatsAppQrCodeInstance(data: z.infer<typeof Connec
         pairingCode = followUpConnect.pairingCode || pairingCode;
       }
     }
+
+    // Garante registro completo do webhook (enabled:true, base64:false, headers) em todos os fluxos de conexao/QR
+    await ensureEvolutionWebhookRegistered(baseUrl, apiKey, externalName, webhookUrl);
   } catch (err) {
     connectionState = "error";
     gatewayErrorCode = "GATEWAY_QR_ERROR";
@@ -1002,6 +974,22 @@ export async function _connectWhatsAppQrCodeInstance(data: z.infer<typeof Connec
     throw new Error("Erro desconhecido ao registrar instância WhatsApp.");
   }
 
+  if (connectionState === "connected") {
+    await runEvolutionDeltaSyncForInstance({
+      db,
+      instance: {
+        ...(saved as any),
+        secret_payload_encrypted: secretEncrypted,
+      },
+      storeId,
+      requestedBy: identity.id,
+      mode: "auto_connect",
+      maxChats: 15,
+      messagesPerChat: 10,
+      force: existing?.status !== "connected",
+    }).catch(() => null);
+  }
+
   await audit(
     String(saved.id),
     storeId,
@@ -1110,8 +1098,7 @@ export async function _syncWhatsAppInstanceStatus(data: z.infer<typeof SyncWhats
     if (liveState === "open") {
       qrCodeBase64 = null;
       pairingCode = null;
-      const webhookUrl = `${DEFAULT_WEBHOOK_ORIGIN.replace(/\/$/, "")}/api/webhooks/whatsapp/evolution/${encodeURIComponent(instance.instance_key)}`;
-      await ensureEvolutionWebhookRegistered(baseUrl, apiKey, externalName, webhookUrl);
+      await reconcileEvolutionWebhookIfNeeded(db, instance as any, true).catch(() => null);
     } else if (stateRes.ok) {
       // Busca QR Code atualizado enquanto aguarda leitura
       const connectRes = await fetch(`${baseUrl}/instance/connect/${encodeURIComponent(externalName)}`, {
@@ -1224,6 +1211,9 @@ export async function _syncWhatsAppInstanceStatus(data: z.infer<typeof SyncWhats
       status: mappedStatus,
       is_active: mappedStatus === "connected" || instance.is_active,
       display_phone_number: connectedPhone,
+      ...(mappedStatus === "connected"
+        ? { webhook_url: buildEvolutionWebhookUrl(instance.instance_key || externalName) }
+        : {}),
       public_config: nextPublicConfig,
       last_error_code: mappedStatus === "connected" ? null : health.diagnosticState.toUpperCase(),
       last_error_message: mappedStatus === "connected" ? null : syncErrorMessage || health.reason,
@@ -1233,6 +1223,28 @@ export async function _syncWhatsAppInstanceStatus(data: z.infer<typeof SyncWhats
     .eq("id", instance.id)
     .select(PublicFields)
     .single();
+
+  // Auto-sync incremental na transicao para connected ou se ultimo sync estiver defasado (> 5 min)
+  if (mappedStatus === "connected") {
+    const pubRecord = nextPublicConfig as Record<string, unknown>;
+    const lastSyncMs = Date.parse(String(pubRecord.last_auto_sync_at || pubRecord.last_synced_at || 0)) || 0;
+    const becameConnected = instance.status !== "connected";
+    if (becameConnected || Date.now() - lastSyncMs > 5 * 60 * 1000) {
+      await runEvolutionDeltaSyncForInstance({
+        db,
+        instance: {
+          ...(updated || instance),
+          secret_payload_encrypted: (instance as any).secret_payload_encrypted ?? null,
+        } as any,
+        storeId,
+        requestedBy: identity.id,
+        mode: becameConnected ? "auto_connect" : "delta",
+        maxChats: 15,
+        messagesPerChat: 10,
+        force: becameConnected,
+      }).catch(() => null);
+    }
+  }
 
   return {
     instance: (updated || instance) as WhatsAppChannelInstanceDTO,
@@ -1683,15 +1695,7 @@ export type ChatDepartmentDTO = {
 };
 
 function slugifyDepartment(name: string): string {
-  return (
-    name
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 60) || "geral"
-  );
+  return slugify(name).slice(0, 60) || "geral";
 }
 
 async function mirrorDepartmentsToGovernanceSettings(
@@ -1915,6 +1919,7 @@ export const deleteChatDepartment = createServerFn({ method: "POST" })
   .handler(async ({ data }) => _deleteChatDepartment(data));
 
 export const WhatsAppGovernanceConfigSchema = z.object({
+  storeId: z.string().uuid().optional(),
   instanceId: z.string().uuid().optional(),
   agentPermissions: z
     .array(
@@ -1933,7 +1938,7 @@ export const WhatsAppGovernanceConfigSchema = z.object({
       }),
     )
     .optional(),
-  departments: z.array(WhatsAppDepartmentSchema),
+  departments: z.array(WhatsAppDepartmentSchema).optional(),
   permissions: z.object({
     onlyManagersCanViewQr: z.boolean().default(true),
     onlyManagersCanDisconnect: z.boolean().default(true),
@@ -1951,17 +1956,20 @@ export const saveWhatsAppGovernanceConfig = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
     if (!identity.id) throw new Error("Autenticação obrigatória.");
+    const storeId =
+      identity.role === "platform_admin" && data.storeId
+        ? data.storeId
+        : identity.store_id || identity.memberships?.[0]?.store_id;
     if (identity.role !== "platform_admin") {
-      assertStoreAccess(identity, ["owner", "admin", "manager"]);
+      assertStoreAccess(identity, ["owner", "admin", "manager"], storeId);
     }
-    const storeId = identity.store_id;
     if (!storeId) throw new Error("Loja obrigatória.");
 
     const db = getServerClient();
     const nowIso = new Date().toISOString();
 
-    // Sincroniza 1:1 com public.chat_departments mantendo slug/id consistentes
-    for (const dept of data.departments) {
+    // Sincroniza 1:1 com public.chat_departments mantendo slug/id consistentes quando enviados
+    for (const dept of data.departments || []) {
       const slug = slugifyDepartment(dept.slug || dept.name || dept.id);
       const validUuidAgents = (dept.assignedAgentIds || []).filter((id) => z.string().uuid().safeParse(id).success);
       const prefInstance = dept.whatsappInstanceId && z.string().uuid().safeParse(dept.whatsappInstanceId).success
@@ -2046,15 +2054,20 @@ export const saveWhatsAppGovernanceConfig = createServerFn({ method: "POST" })
 
     const { data: storeRow } = await db.from("stores").select("settings").eq("id", storeId).maybeSingle();
     const currentSettings = ((storeRow?.settings as any) || {}) as Record<string, any>;
+    const prevGov = (currentSettings.whatsapp_governance || {}) as Record<string, any>;
+    const resolvedDepartments =
+      data.departments !== undefined ? data.departments : (prevGov.departments || []);
+    const resolvedAgentPermissions =
+      data.agentPermissions !== undefined ? data.agentPermissions : (prevGov.agentPermissions || []);
     await db
       .from("stores")
       .update({
         settings: {
           ...currentSettings,
           whatsapp_governance: {
-            departments: data.departments,
+            departments: resolvedDepartments,
             permissions: data.permissions,
-            agentPermissions: data.agentPermissions || [],
+            agentPermissions: resolvedAgentPermissions,
             updated_at: nowIso,
           },
         },
@@ -2066,9 +2079,9 @@ export const saveWhatsAppGovernanceConfig = createServerFn({ method: "POST" })
         id: storeId,
         store_id: storeId,
         public_config: {
-          departments: data.departments,
+          departments: resolvedDepartments,
           governance_permissions: data.permissions,
-          agent_permissions: data.agentPermissions || [],
+          agent_permissions: resolvedAgentPermissions,
         },
       } as unknown as WhatsAppChannelInstanceDTO;
     }
@@ -2084,9 +2097,9 @@ export const saveWhatsAppGovernanceConfig = createServerFn({ method: "POST" })
 
     const updatedConfig = {
       ...(current.public_config || {}),
-      departments: data.departments,
+      departments: resolvedDepartments,
       governance_permissions: data.permissions,
-      agent_permissions: data.agentPermissions || [],
+      agent_permissions: resolvedAgentPermissions,
       updated_governance_at: nowIso,
     };
 
@@ -2102,7 +2115,7 @@ export const saveWhatsAppGovernanceConfig = createServerFn({ method: "POST" })
 
     if (error) throw new Error(`Erro ao salvar governança de atendimento: ${error.message}`);
     await audit(data.instanceId, storeId, identity.id, "governance.updated", "info", {
-      departments_count: data.departments.length,
+      departments_count: resolvedDepartments.length,
     });
     return saved as WhatsAppChannelInstanceDTO;
   });
@@ -2115,12 +2128,12 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
     const targetStoreId = data?.storeId || data?.store_id || identity.store_id || identity.memberships?.[0]?.store_id;
     if (!targetStoreId) throw new Error("Loja obrigatória.");
     assertStoreAccess(identity, ["owner", "admin", "manager", "support", "agent", "sales"], targetStoreId);
-    const storeId = (identity as any).store_id || targetStoreId;
+    const storeId = targetStoreId;
 
     const db = getServerClient();
     let query = db
       .from("whatsapp_channel_instances")
-      .select("id, store_id, provider, instance_key, external_instance_id, public_config, display_phone_number, sync_mode")
+      .select("id, store_id, provider, instance_key, external_instance_id, webhook_url, public_config, secret_payload_encrypted, display_phone_number, sync_mode, status")
       .eq("store_id", storeId)
       .eq("provider", "evolution_api")
       .eq("is_active", true);
@@ -2154,370 +2167,120 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
       }
     }
 
-    const externalName = instance.external_instance_id || instance.instance_key;
-    const { baseUrl, apiKey } = await resolveEvolutionGatewayConfig(db, storeId, instance as any);
-
-    // 1. Garantir webhook ativo na Evolution API em todos os modos (incluindo new_only)
-    const webhookUrl = `${DEFAULT_WEBHOOK_ORIGIN.replace(/\/$/, "")}/api/webhooks/whatsapp/evolution/${encodeURIComponent(instance.instance_key)}`;
-    await ensureEvolutionWebhookRegistered(baseUrl, apiKey, externalName, webhookUrl);
-
-    // Por padrao canais em new_only sincronizam a janela recente ativa (15 conversas) e em manual_full ate 50
     const shouldImportHistory = Boolean(
       data?.forceImport ||
         (instance.public_config as any)?.auto_import_history ||
         (instance as any).sync_mode === "manual_full",
     );
-    const maxChatsToSync = shouldImportHistory ? 50 : 15;
 
-    let syncJobRow: { id: string } | null = null;
-    try {
-      const { data: sj } = await db
-        .from("whatsapp_history_sync_jobs")
-        .insert({
-          store_id: storeId,
-          instance_id: instance.id,
-          requested_by: identity.id,
-          sync_mode: data?.forceImport ? "manual_full" : ((instance as any).sync_mode || "new_only"),
-          status: "running",
-        })
-        .select("id")
-        .single();
-      syncJobRow = sj;
-    } catch {
-      syncJobRow = null;
+    const result = await runEvolutionDeltaSyncForInstance({
+      db,
+      instance: instance as any,
+      storeId,
+      requestedBy: identity.id,
+      mode: shouldImportHistory ? "manual_full" : "delta",
+      maxChats: shouldImportHistory ? 35 : 15,
+      messagesPerChat: shouldImportHistory ? 20 : 12,
+      force: true,
+    });
+
+    if (!result.success) {
+      throw new Error(result.error || "Falha ao sincronizar conversas na Evolution API.");
     }
 
-    // 2. Buscar conversas recentes e contatos com foto na Evolution API em paralelo
-    const [chatsRes, contactsRes] = await Promise.all([
-      fetch(`${baseUrl}/chat/findChats/${encodeURIComponent(externalName)}`, {
-        method: "POST",
-        headers: { apikey: apiKey, "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-        signal: AbortSignal.timeout(15000),
-      }).catch(() => null),
-      fetch(`${baseUrl}/chat/findContacts/${encodeURIComponent(externalName)}`, {
-        method: "POST",
-        headers: { apikey: apiKey, "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-        signal: AbortSignal.timeout(15000),
-      }).catch(() => null),
-    ]);
-
-    if (!chatsRes || !chatsRes.ok) {
-      throw new Error(`Falha ao consultar conversas no gateway WhatsApp: HTTP ${chatsRes?.status || "Falha de Rede"}`);
-    }
-
-    const rawChats = (await chatsRes.json().catch(() => [])) as Array<Record<string, any>>;
-    if (!Array.isArray(rawChats)) return { importedCount: 0, totalFound: 0 };
-
-    // Mapeamento enriquecido de contatos e fotos de perfil reais
-    const contactMap = new Map<string, { pushName?: string; profilePicUrl?: string; isGroup?: boolean }>();
-    if (contactsRes && contactsRes.ok) {
-      const rawContacts = (await contactsRes.json().catch(() => [])) as Array<Record<string, any>>;
-      if (Array.isArray(rawContacts)) {
-        for (const c of rawContacts) {
-          const rJid = String(c.remoteJid || c.id || "");
-          if (rJid) {
-            const pic = c.profilePicUrl || null;
-            const pName = c.pushName || c.name || null;
-            contactMap.set(rJid, { pushName: pName, profilePicUrl: pic, isGroup: Boolean(c.isGroup || rJid.includes("@g.us")) });
-            const cleanDigits = rJid.replace(/@.*$/, "").replace(/\D/g, "");
-            if (cleanDigits) {
-              contactMap.set(cleanDigits, { pushName: pName, profilePicUrl: pic, isGroup: Boolean(c.isGroup || rJid.includes("@g.us")) });
-            }
-          }
-        }
-      }
-    }
-
-    let importedCount = 0;
-    let fetchedPicsCount = 0;
-    const validChats = rawChats
-      .filter((c) => {
-        const jid = String(c.remoteJid || "");
-        return jid && !jid.startsWith("0@") && !jid.includes("@broadcast");
-      })
-      .slice(0, maxChatsToSync);
-
-    for (const chat of validChats) {
-      try {
-        const remoteJid = String(chat.remoteJid || "");
-        const remoteJidAlt = String(chat.lastMessage?.key?.remoteJidAlt || chat.remoteJidAlt || "");
-        const rawPhoneSource = (remoteJid.endsWith("@lid") && remoteJidAlt) ? remoteJidAlt : remoteJid;
-        const digits = rawPhoneSource.replace(/@.*$/, "").replace(/\D/g, "");
-        if (digits.length < 8) continue;
-        const isPureLid =
-          (remoteJid.endsWith("@lid") && !remoteJidAlt) ||
-          (!remoteJid.includes("@g.us") && !remoteJid.includes("@newsletter") && digits.length >= 14);
-        const phone = isPureLid ? "" : `+${digits}`;
-
-        const contactInfo = contactMap.get(remoteJid) || contactMap.get(digits) || (remoteJidAlt ? contactMap.get(remoteJidAlt) : null) || null;
-        const isGroup = remoteJid.includes("@g.us") || Boolean(contactInfo?.isGroup);
-        const isChannel = remoteJid.includes("@newsletter");
-        const isLastFromMe = Boolean(chat.lastMessage?.key?.fromMe);
-        const safeCandidate = (...candidates: unknown[]): string | null => {
-          for (const cand of candidates) {
-            if (typeof cand !== "string") continue;
-            const trimmed = cand.trim();
-            if (!trimmed) continue;
-            const lower = trimmed.toLowerCase();
-            if (lower === "você" || lower === "voce" || lower === "you" || lower === "eu") continue;
-            if (/^\+?\d{14,}$/.test(trimmed) || lower.endsWith("@lid")) continue;
-            return trimmed;
-          }
-          return null;
-        };
-        let cleanName =
-          safeCandidate(
-            chat.subject,
-            chat.groupMetadata?.subject,
-            chat.name,
-            contactInfo?.pushName,
-            chat.pushName,
-            chat.contact?.pushName,
-            chat.contact?.name,
-            isLastFromMe ? null : chat.lastMessage?.pushName,
-          ) || (isGroup ? `Grupo WhatsApp ${digits.slice(-4)}` : isChannel ? "Canal WhatsApp" : isPureLid ? `Contato Meta #${digits.slice(-4)}` : phone);
-        let groupParticipants: Array<{ phone: string | null; name: string; jid: string | null }> = [];
-        if (isGroup && (cleanName.startsWith("Grupo WhatsApp") || /^\+?\d+$/.test(cleanName))) {
-          try {
-            const gRes = await fetch(`${baseUrl}/group/findGroupInfos/${encodeURIComponent(externalName)}?groupJid=${encodeURIComponent(remoteJid)}`, {
-              method: "GET",
-              headers: { apikey: apiKey },
-              signal: AbortSignal.timeout(3000),
-            });
-            if (gRes.ok) {
-              const gJson = (await gRes.json().catch(() => ({}))) as Record<string, any>;
-              const subject = safeCandidate(gJson.subject, gJson.groupName, gJson.name);
-              if (subject) cleanName = subject;
-              if (Array.isArray(gJson.participants)) {
-                groupParticipants = gJson.participants.slice(0, 40).map((p: any) => {
-                  const pJid = String(p?.id || p?.jid || "");
-                  const pDigits = pJid.includes("@lid") ? "" : pJid.replace(/@.*$/, "").replace(/\D/g, "");
-                  return {
-                    phone: pDigits.length >= 8 ? `+${pDigits}` : null,
-                    name: String(p?.name || p?.pushName || (pDigits ? `+${pDigits}` : "Participante")),
-                    jid: pJid || null,
-                  };
-                });
-              }
-            }
-          } catch {
-            // Best-effort group info lookup
-          }
-        }
-        let avatarUrl =
-          contactInfo?.profilePicUrl ||
-          chat.profilePicUrl ||
-          chat.profilePictureUrl ||
-          chat.contact?.profilePicUrl ||
-          null;
-
-        const lastMsgObj = chat.lastMessage?.message || {};
-        const lastMsgType = lastMsgObj.stickerMessage
-          ? "sticker"
-          : lastMsgObj.imageMessage
-            ? "image"
-            : lastMsgObj.videoMessage
-              ? "video"
-              : lastMsgObj.audioMessage
-                ? "audio"
-                : lastMsgObj.documentMessage
-                  ? "document"
-                  : "text";
-        const text = String(
-          lastMsgObj.conversation ||
-          lastMsgObj.extendedTextMessage?.text ||
-          lastMsgObj.imageMessage?.caption ||
-          lastMsgObj.videoMessage?.caption ||
-          lastMsgObj.documentMessage?.caption ||
-          lastMsgObj.documentMessage?.fileName ||
-          (lastMsgObj.stickerMessage
-            ? "[Figurinha]"
-            : lastMsgObj.imageMessage
-              ? "[Imagem]"
-              : lastMsgObj.videoMessage
-                ? "[Vídeo]"
-                : lastMsgObj.audioMessage
-                  ? "[Áudio]"
-                  : lastMsgObj.documentMessage
-                    ? "[Documento]"
-                    : "[Mensagem WhatsApp]")
-        ).trim();
-
-        const timestampSeconds = Number(chat.lastMessage?.messageTimestamp || Date.now() / 1000);
-        const occurredAt = new Date(timestampSeconds < 2_000_000_000 ? timestampSeconds * 1000 : timestampSeconds).toISOString();
-
-        const { resolveWhatsAppIdentity } = await import("./whatsapp-automation-runtime.server");
-        const identityRecord =
-          phone && !isGroup && !isChannel
-            ? await resolveWhatsAppIdentity({
-                storeId,
-                instanceId: instance.id,
-                provider: "evolution_api",
-                externalUserId: remoteJid,
-                phone,
-                displayName: cleanName !== phone ? cleanName : null,
-              })
-            : null;
-
-        let thread = null;
-        const lookupFilters = [`entity_id.eq.${remoteJid}`, `entity_id.eq.${digits}`];
-        if (phone) lookupFilters.unshift(`entity_id.eq.${phone}`);
-        const { data: foundThread } = await db
-          .from("chat_threads")
-          .select("id, metadata, guest_name")
-          .eq("store_id", storeId)
-          .or(lookupFilters.join(","))
-          .limit(1)
-          .maybeSingle();
-
-        const existingMeta = (foundThread?.metadata && typeof foundThread.metadata === "object" ? foundThread.metadata : {}) as Record<string, any>;
-        if (!avatarUrl && !existingMeta.avatar_url && fetchedPicsCount < 15 && !isChannel) {
-          fetchedPicsCount += 1;
-          try {
-            const picRes = await fetch(`${baseUrl}/chat/fetchProfilePictureUrl/${encodeURIComponent(externalName)}`, {
-              method: "POST",
-              headers: { apikey: apiKey, "Content-Type": "application/json" },
-              body: JSON.stringify({ number: remoteJidAlt || remoteJid || digits }),
-              signal: AbortSignal.timeout(2500),
-            });
-            if (picRes.ok) {
-              const picJson = (await picRes.json().catch(() => ({}))) as Record<string, any>;
-              const fetchedPic = picJson.profilePictureUrl || picJson.profilePicUrl || picJson.picture || null;
-              if (typeof fetchedPic === "string" && fetchedPic.startsWith("http")) {
-                avatarUrl = fetchedPic;
-              }
-            }
-          } catch {
-            // Best-effort profile picture fetch
-          }
-        }
-        const enrichedMeta = {
-          ...existingMeta,
-          is_group: isGroup,
-          is_channel: isChannel,
-          is_lid: isPureLid,
-          avatar_url: avatarUrl || existingMeta.avatar_url || null,
-          whatsapp_jid: remoteJid,
-          ...(remoteJidAlt ? { whatsapp_jid_alt: remoteJidAlt } : {}),
-          ...(isGroup ? { group_subject: cleanName } : { push_name: cleanName }),
-          ...(isGroup && groupParticipants.length > 0 ? { participants: groupParticipants } : {}),
-        };
-
-        if (foundThread) {
-          thread = foundThread;
-          const preservedName = safeCandidate(cleanName !== phone ? cleanName : null, foundThread.guest_name) || cleanName;
-          await db
-            .from("chat_threads")
-            .update({
-              guest_name: preservedName,
-              ...(isGroup ? { group_subject: preservedName } : {}),
-              ...(!isGroup && !isChannel && phone ? { primary_phone_e164: phone } : {}),
-              thread_type: isGroup ? "group" : isChannel ? "channel" : "store",
-              metadata: enrichedMeta,
-              last_message_text: text.slice(0, 200),
-              last_message_at: occurredAt,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", thread.id);
-        } else {
-          const syntheticEmail = isGroup ? `${digits}@grupo.whatsapp.waesy` : `${digits}@whatsapp.waesy`;
-          const { data: newThread, error: newThErr } = await db
-            .from("chat_threads")
-            .insert({
-              store_id: storeId,
-              channel_instance_id: instance.id,
-              channel_identity_id: identityRecord?.id ?? null,
-              guest_name: cleanName,
-              guest_email: syntheticEmail,
-              group_subject: isGroup ? cleanName : null,
-              primary_phone_e164: isGroup || isChannel || !phone ? null : phone,
-              status: "open",
-              subject: isGroup ? `Grupo: ${cleanName}` : isChannel ? `Canal: ${cleanName}` : isPureLid ? `Contato Meta ${cleanName}` : `WhatsApp ${phone}`,
-              context_type: "whatsapp",
-              entity_id: isGroup || isChannel || !phone ? remoteJid : phone,
-              department: "geral",
-              priority: "normal",
-              thread_type: isGroup ? "group" : isChannel ? "channel" : "store",
-              metadata: enrichedMeta,
-              ...(isLastFromMe ? {} : { last_customer_message_at: occurredAt }),
-              last_message_text: text.slice(0, 200),
-              last_message_at: occurredAt,
-              created_at: occurredAt,
-              updated_at: occurredAt,
-            })
-            .select("id")
-            .single();
-
-          if (newThErr) continue;
-          thread = newThread;
-        }
-
-        if (thread?.id && text && chat.lastMessage?.key?.id) {
-          const fromMe = Boolean(chat.lastMessage?.key?.fromMe);
-          const externalId = String(chat.lastMessage.key.id);
-          const { data: existingMsg } = await db
-            .from("chat_messages")
-            .select("id")
-            .eq("thread_id", thread.id)
-            .eq("external_message_id", externalId)
-            .maybeSingle();
-
-          if (!existingMsg) {
-            await db.from("chat_messages").insert({
-              thread_id: thread.id,
-              channel_identity_id: identityRecord?.id ?? null,
-              channel: "whatsapp",
-              message: text,
-              message_type: lastMsgType,
-              is_staff_reply: fromMe,
-              provider: "evolution_api",
-              external_message_id: externalId,
-              delivery_status: fromMe ? "sent" : "delivered",
-              sent_at: occurredAt,
-              ...(fromMe ? {} : { delivered_at: occurredAt }),
-              payload: {
-                from_me: fromMe,
-                origin: fromMe ? "whatsapp_device_sync" : "whatsapp_customer_sync",
-                ...(lastMsgType !== "text" ? { media: { type: lastMsgType } } : {}),
-              },
-              created_at: occurredAt,
-            });
-          }
-        }
-
-        importedCount++;
-      } catch (chatItemErr) {
-        console.warn("[whatsapp-sync] Erro ao sincronizar conversa individual:", chatItemErr);
-      }
-    }
-
-    if (syncJobRow?.id) {
+    if (data?.forceImport) {
       await db
-        .from("whatsapp_history_sync_jobs")
-        .update({
-          status: "completed",
-          imported_chats: importedCount,
-          total_found: rawChats.length,
-          completed_at: new Date().toISOString(),
-        })
-        .eq("id", syncJobRow.id);
+        .from("whatsapp_channel_instances")
+        .update({ sync_mode: "manual_full", updated_at: new Date().toISOString() })
+        .eq("id", instance.id);
     }
-
-    await db
-      .from("whatsapp_channel_instances")
-      .update({
-        ...(data?.forceImport ? { sync_mode: "manual_full" } : {}),
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", instance.id);
 
     return {
-      importedCount,
-      totalFound: rawChats.length,
+      importedCount: result.importedChats,
+      importedMessages: result.importedMessages,
+      totalFound: result.totalFound,
       connectedPhone: instance.display_phone_number,
-      jobId: syncJobRow?.id || null,
+      jobId: result.jobId || null,
+      syncedAt: result.syncedAt,
+    };
+  });
+
+export const syncWhatsAppDeltaNowSchema = z.object({
+  storeId: z.string().uuid().optional(),
+  instanceId: z.string().uuid().optional(),
+  force: z.boolean().optional(),
+});
+
+/**
+ * Sincronizacao delta leve automatica para auto-cura de conversas, ecos `fromMe` e midias
+ * quando a UI abre, reconecta o WebSocket ou recupera foco de aba.
+ */
+export const syncWhatsAppDeltaNow = createServerFn({ method: "POST" })
+  .validator(syncWhatsAppDeltaNowSchema.optional())
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    if (!identity.id) throw new Error("Autenticação obrigatória.");
+    const storeId = data?.storeId || identity.store_id || identity.memberships?.[0]?.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, STAFF_ROLES, storeId);
+
+    const db = getServerClient();
+    let query = db
+      .from("whatsapp_channel_instances")
+      .select("id, store_id, provider, instance_key, external_instance_id, webhook_url, public_config, secret_payload_encrypted, display_phone_number, sync_mode, status")
+      .eq("store_id", storeId)
+      .eq("provider", "evolution_api")
+      .eq("is_active", true)
+      .order("is_default", { ascending: false })
+      .limit(2);
+
+    if (data?.instanceId) {
+      query = query.eq("id", data.instanceId);
+    } else {
+      query = query.eq("status", "connected");
+    }
+
+    const { data: instances } = await query;
+    const list = instances || [];
+    if (list.length === 0) {
+      return {
+        success: true,
+        skipped: true,
+        reason: "no_connected_instance",
+        syncedAt: new Date().toISOString(),
+        importedChats: 0,
+        importedMessages: 0,
+      };
+    }
+
+    let importedChats = 0;
+    let importedMessages = 0;
+    let anyRan = false;
+    let latestSyncedAt = new Date().toISOString();
+
+    for (const inst of list) {
+      const res = await runEvolutionDeltaSyncForInstance({
+        db,
+        instance: inst as any,
+        storeId,
+        requestedBy: identity.id,
+        mode: "delta",
+        maxChats: 15,
+        messagesPerChat: 10,
+        force: Boolean(data?.force),
+      });
+      if (!res.skipped) anyRan = true;
+      importedChats += res.importedChats;
+      importedMessages += res.importedMessages;
+      if (res.syncedAt) latestSyncedAt = res.syncedAt;
+    }
+
+    return {
+      success: true,
+      skipped: !anyRan,
+      syncedAt: latestSyncedAt,
+      importedChats,
+      importedMessages,
     };
   });
 

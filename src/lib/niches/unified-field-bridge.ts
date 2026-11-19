@@ -10,7 +10,17 @@
  */
 
 import { getUnifiedNicheSpec, resolveUnifiedNicheId, type UnifiedNicheId } from "./niche-ssot";
+export { getUnifiedNicheSpec, resolveUnifiedNicheId };
 import type { TravelPackageData, TravelFlightLeg, TravelHotelStay, TravelItineraryDay } from "@/types/travel-package";
+import { blueprintFromGroupTour } from "@/lib/tourism/travel-blueprint";
+import {
+  normalizeEntityMediaList,
+  normalizeHotelsList,
+  normalizeToursList,
+  normalizeTransfersList,
+  type ProposalMediaItem,
+  type ProposalWebPageDTO,
+} from "@/lib/tourism/proposal-normalization";
 
 export interface UnifiedBridgeFieldSpec {
   id: string;
@@ -27,7 +37,7 @@ export interface UnifiedBridgeSpecRow {
 
 export interface UnifiedBridgeCatalogContext {
   id: string;
-  origin: "product" | "classified";
+  origin: "product" | "classified" | "experience";
   nicheId: UnifiedNicheId;
   title: string;
   subtitle: string;
@@ -37,11 +47,16 @@ export interface UnifiedBridgeCatalogContext {
   destination: string;
   originCity?: string;
   transportType?: string;
+  departureDate?: string | null;
+  returnDate?: string | null;
   durationLabel: string;
   durationDays: number | null;
   heroImageUrl: string;
+  media?: ProposalMediaItem[];
   flights: TravelFlightLeg[];
   hotels: TravelHotelStay[];
+  transfers?: any[];
+  tours?: any[];
   itinerary: TravelItineraryDay[];
   includes: string[];
   excludes: string[];
@@ -61,6 +76,8 @@ export interface UnifiedBridgeCatalogContext {
   roomRates?: Record<string, number | undefined>;
   boardingRequirements?: string[];
   cancellationPolicy?: string;
+  paymentConditionsText?: string;
+  webPageConfig?: ProposalWebPageDTO | null;
   customInquiryFields?: Array<{ id?: string; key?: string; label?: string; type?: string; options?: string[] }>;
   specsRows: UnifiedBridgeSpecRow[];
   rawAttributes: Record<string, any>;
@@ -90,7 +107,7 @@ export interface UnifiedBridgeContractBlueprint {
   isTourism: boolean;
 }
 
-const INTERNAL_CUSTOM_FIELD_KEYS = new Set([
+export const INTERNAL_CUSTOM_FIELD_KEYS = new Set([
   "consent_records",
   "last_consent_at",
   "telemetry",
@@ -106,7 +123,67 @@ const INTERNAL_CUSTOM_FIELD_KEYS = new Set([
   "source_form_id",
   "source_listing_id",
   "source_listing_origin",
+  "source_listing_title",
   "email_provided",
+  // Rastreamento tecnico / Ads / UTMs / CLIDs — armazenados em custom_fields.attribution, nunca em notes
+  "platform",
+  "source",
+  "medium",
+  "ad_id",
+  "adset_id",
+  "campaign_id",
+  "creative_id",
+  "form_id",
+  "ad_headline",
+  "ad_body",
+  "ad_media_url",
+  "source_url",
+  "landing_url",
+  "referrer",
+  "ctwa_clid",
+  "fbclid",
+  "fbp",
+  "fbc",
+  "gclid",
+  "gbraid",
+  "wbraid",
+  "ttclid",
+  "lead_code",
+  "device_id",
+  "captured_via",
+  "detected_at",
+  "thread_id",
+  "kanban_stage_key",
+  "kanban_stage_purpose",
+  "meta_ad_id",
+  "meta_campaign_id",
+  "meta_adset_id",
+  "meta_form_id",
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_content",
+  "utm_term",
+  "ad_name",
+  "adset_name",
+  "campaign",
+  "campaign_name",
+  "listing_id",
+  "listing_origin",
+  "listing_title",
+  "attribution",
+  "ad_attribution_touchpoints",
+  "interests",
+  "waesy_interests",
+  "timeline",
+  "last_message_at",
+  "channel_identity_id",
+  "lead_source_detail",
+  "pixel_id",
+  "source_pixel_id",
+  "external_pixel_id",
+  "contact_scope",
+  "suppress_lead_capture",
 ]);
 
 const KNOWN_FIELD_LABELS: Record<string, string> = {
@@ -351,7 +428,7 @@ export function extractSemanticLeadFieldsFromAnswers(
     paxInfants,
     document,
     estimatedValueCents,
-    notesAppend: notesParts.length > 0 ? notesParts.join(" | ") : undefined,
+    notesAppend: notesParts.length > 0 ? notesParts.join("\n") : undefined,
     customFields,
   };
 }
@@ -474,10 +551,84 @@ export function getNicheContractBlueprint(storeOrNiche?: unknown): UnifiedBridge
 }
 
 export function extractNormalizedCatalogContext(
-  item: { origin: "product" | "classified"; row: any },
+  item: { origin: "product" | "classified" | "experience"; row: any },
   nicheHint?: unknown,
 ): UnifiedBridgeCatalogContext {
   const row = item.row || {};
+
+  if (item.origin === "experience") {
+    const bp = blueprintFromGroupTour(row);
+    const boardingStrings = bp.boardingPoints.map((b) =>
+      [b.city, b.time, b.location].filter(Boolean).join(" — "),
+    );
+    const specsObj: Record<string, unknown> = {
+      ...(bp.destinationCity ? { destino: bp.destinationCity } : {}),
+      ...(bp.originCity ? { origem: bp.originCity } : {}),
+      ...(bp.durationLabel ? { duracao: bp.durationLabel } : {}),
+      ...(bp.busCompanyName ? { empresa_onibus: bp.busCompanyName } : {}),
+      ...(bp.totalSeats ? { vagas: `${bp.availableSeats ?? bp.totalSeats}/${bp.totalSeats}` } : {}),
+    };
+    return {
+      id: bp.id,
+      origin: "experience",
+      nicheId: "tourism",
+      title: bp.title,
+      subtitle: String(bp.subtitle || bp.destinationCity || ""),
+      description: String(bp.description || bp.subtitle || ""),
+      priceCents: bp.priceCents,
+      compareAtCents: null,
+      destination: bp.destinationCity,
+      originCity: bp.originCity || undefined,
+      transportType: bp.transportType || "terrestre",
+      departureDate: bp.departureDate || null,
+      returnDate: bp.returnDate || null,
+      durationLabel: bp.durationLabel || "",
+      durationDays: bp.itinerary.length > 0 ? bp.itinerary.length : null,
+      heroImageUrl: bp.coverImageUrl || bp.media[0]?.url || "",
+      media: bp.media,
+      flights: bp.flights as any,
+      hotels: bp.hotels as any,
+      transfers: bp.transfers,
+      tours: bp.tours,
+      itinerary: bp.itinerary.map((d, idx) => ({
+        id: d.id || `day-${idx + 1}`,
+        day: Number(d.day_number || idx + 1),
+        date: d.date,
+        title: d.title,
+        description: d.description,
+        location: d.location,
+        imageUrl: d.image_url,
+        images: d.images,
+        media: d.media,
+        videoUrl: d.video_url,
+      })),
+      includes: bp.includes,
+      excludes: bp.excludes,
+      importantNotes: bp.importantNotes,
+      highlights: [],
+      departureOptions: bp.departureDate
+        ? [
+            {
+              id: "exc-dep-1",
+              label: bp.departureDate,
+              departure_date: bp.departureDate,
+              return_date: bp.returnDate || undefined,
+              departure_time: bp.departureTime || undefined,
+              price_cents: bp.priceCents,
+              available_spots: bp.availableSeats ?? undefined,
+            },
+          ]
+        : [],
+      boardingPoints: boardingStrings,
+      lodgings: bp.hotels,
+      boardingRequirements: bp.boardingRequirements,
+      paymentConditionsText: bp.paymentConditionsText || undefined,
+      webPageConfig: bp.webPageConfig || null,
+      specsRows: buildStructuredCustomFieldsSummaryRows(specsObj),
+      rawAttributes: specsObj,
+    };
+  }
+
   const meta = (row.metadata && typeof row.metadata === "object" ? row.metadata : {}) as Record<string, any>;
   const nicheMeta = (row.niche_metadata && typeof row.niche_metadata === "object" ? row.niche_metadata : {}) as Record<string, any>;
   const attrs = (row.attributes && typeof row.attributes === "object" ? row.attributes : {}) as Record<string, any>;
@@ -596,6 +747,20 @@ export function extractNormalizedCatalogContext(
     ];
   }
 
+  const normalizedHotels = normalizeHotelsList(hotels) as TravelHotelStay[];
+  const rawTransfers = Array.isArray(travelPkg.transfers)
+    ? travelPkg.transfers
+    : Array.isArray(attrs.transfers)
+      ? attrs.transfers
+      : [];
+  const transfers = normalizeTransfersList(rawTransfers);
+  const rawTours = Array.isArray(travelPkg.tours)
+    ? travelPkg.tours
+    : Array.isArray(attrs.tours)
+      ? attrs.tours
+      : [];
+  const tours = normalizeToursList(rawTours);
+
   const rawItinerary = Array.isArray(travelPkg.itinerary)
     ? travelPkg.itinerary
     : Array.isArray(travelPkg.itinerary_days)
@@ -615,7 +780,12 @@ export function extractNormalizedCatalogContext(
     description: String(
       d.description || [d.morning, d.afternoon, d.night].filter(Boolean).join(" • ") || "",
     ),
+    location: d.location,
     imageUrl: d.imageUrl || d.image_url || (Array.isArray(d.images) ? d.images[0] : undefined),
+    images: Array.isArray(d.images) ? d.images.filter(Boolean) : undefined,
+    media: Array.isArray(d.media) ? d.media : undefined,
+    videoUrl: d.video_url || d.videoUrl || undefined,
+    included_meals: Array.isArray(d.included_meals) ? d.included_meals : undefined,
     highlights: Array.isArray(d.highlights) ? d.highlights : Array.isArray(d.activities) ? d.activities : undefined,
     morning: d.morning,
     afternoon: d.afternoon,
@@ -808,6 +978,31 @@ export function extractNormalizedCatalogContext(
 
   const specsRows = buildStructuredCustomFieldsSummaryRows(mergedSpecsObj);
 
+  const pkgMedia = normalizeEntityMediaList({
+    media: Array.isArray(travelPkg.media) ? travelPkg.media : attrs.media,
+    featured_image_url: heroImageUrl || undefined,
+    images: mediaUrls,
+  });
+
+  const payConditions =
+    travelPkg.payment_conditions && typeof travelPkg.payment_conditions === "object"
+      ? (travelPkg.payment_conditions as Record<string, any>)
+      : null;
+  const paymentConditionsText = payConditions
+    ? [
+        payConditions.installments_max ? `Até ${payConditions.installments_max}x` : "",
+        payConditions.pix_discount_percent ? `${payConditions.pix_discount_percent}% desc. PIX` : "",
+        payConditions.custom_terms_text ? String(payConditions.custom_terms_text) : "",
+      ]
+        .filter(Boolean)
+        .join(" | ") || undefined
+    : undefined;
+
+  const webPageConfig =
+    (travelPkg.web_page_config as ProposalWebPageDTO | null) ||
+    (attrs.web_page_config as ProposalWebPageDTO | null) ||
+    null;
+
   return {
     id: String(row.id || ""),
     origin: item.origin,
@@ -820,11 +1015,16 @@ export function extractNormalizedCatalogContext(
     destination,
     originCity,
     transportType,
+    departureDate: departureOptions[0]?.departure_date || attrs.departure_date || null,
+    returnDate: departureOptions[0]?.return_date || attrs.return_date || null,
     durationLabel,
     durationDays,
     heroImageUrl,
+    media: pkgMedia,
     flights,
-    hotels,
+    hotels: normalizedHotels,
+    transfers,
+    tours,
     itinerary,
     includes,
     excludes,
@@ -836,6 +1036,8 @@ export function extractNormalizedCatalogContext(
     roomRates,
     boardingRequirements,
     cancellationPolicy,
+    paymentConditionsText,
+    webPageConfig,
     customInquiryFields,
     specsRows,
     rawAttributes: mergedSpecsObj,

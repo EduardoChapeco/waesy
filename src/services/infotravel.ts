@@ -2,8 +2,16 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { assertStoreAccess, getServerIdentity } from "@/lib/server-access";
+import {
+  clearNodeFallbackInflightMap,
+  getRequestScopedInflightMap,
+} from "@/lib/request-inflight";
 import { type Hotel, type Flight } from "@/services/proposals";
-import { searchWoobaFlights } from "@/services/travel-wooba-connector.service";
+import {
+  searchWoobaFlights,
+  searchWoobaBusRoutes,
+  searchWoobaCars,
+} from "@/services/travel-wooba-connector.service";
 import {
   createCanonicalQuoteSession,
   finalizeCanonicalQuoteSession,
@@ -50,6 +58,42 @@ export class InfotravelRateLimitError extends Error {
   }
 }
 
+export type InfoTravelOperatorSlug =
+  | "infotravel_default"
+  | "orinter"
+  | "frt"
+  | "incomum"
+  | "cativa"
+  | "befly"
+  | "confianca";
+
+export const INFOTRAVEL_OPERATOR_SLUGS = new Set<string>([
+  "infotravel",
+  "infotravel_default",
+  "orinter",
+  "frt",
+  "incomum",
+  "cativa",
+  "befly",
+  "confianca",
+]);
+
+export function normalizeInfoTravelOperatorSlug(code: string): InfoTravelOperatorSlug {
+  const clean = (code || "").toLowerCase().replace(/^infotravel_/, "");
+  if (
+    clean === "orinter" ||
+    clean === "frt" ||
+    clean === "incomum" ||
+    clean === "cativa" ||
+    clean === "befly" ||
+    clean === "confianca" ||
+    clean === "infotravel_default"
+  ) {
+    return clean;
+  }
+  return "infotravel_default";
+}
+
 // ── Motor Canônico Anti-Loop, Cache TTL (15 min), Deduplicação e Circuit Breaker ──
 export const INFOTRAVEL_CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutos
 export const INFOTRAVEL_CIRCUIT_FAILURE_THRESHOLD = 3;
@@ -70,7 +114,6 @@ interface CircuitState {
 }
 
 const availabilityCache = new Map<string, CacheEntry>();
-const inFlightRequests = new Map<string, Promise<unknown>>();
 const circuitBreakers = new Map<string, CircuitState>();
 const rateLimitBuckets = new Map<string, number[]>();
 
@@ -161,8 +204,9 @@ export async function withInfotravelResilience<T>(
     availabilityCache.delete(cacheKey);
   }
 
-  // 2. Deduplicação de chamadas concorrentes idênticas (In-Flight)
-  const pending = inFlightRequests.get(cacheKey);
+  // 2. Deduplicação de chamadas concorrentes idênticas (In-Flight intra-requisição)
+  const inFlightRequests = getRequestScopedInflightMap<unknown>("infotravel");
+  const pending = inFlightRequests?.get(cacheKey);
   if (pending) {
     return (await pending) as T;
   }
@@ -189,17 +233,18 @@ export async function withInfotravelResilience<T>(
       recordCircuitFailure(circuitKey, err);
       throw err;
     } finally {
-      inFlightRequests.delete(cacheKey);
+      inFlightRequests?.delete(cacheKey);
     }
   })();
 
-  inFlightRequests.set(cacheKey, promise);
+  inFlightRequests?.set(cacheKey, promise);
   return await promise;
 }
 
 export function resetInfotravelResilienceStateForTests(): void {
   availabilityCache.clear();
-  inFlightRequests.clear();
+  clearNodeFallbackInflightMap("infotravel");
+  getRequestScopedInflightMap<unknown>("infotravel")?.clear();
   circuitBreakers.clear();
   rateLimitBuckets.clear();
 }
@@ -207,7 +252,7 @@ export function resetInfotravelResilienceStateForTests(): void {
 export function getInfotravelResilienceMetrics() {
   return {
     cacheSize: availabilityCache.size,
-    inFlightCount: inFlightRequests.size,
+    inFlightCount: getRequestScopedInflightMap<unknown>("infotravel")?.size ?? 0,
     openCircuits: Array.from(circuitBreakers.entries())
       .filter(([, state]) => state.openedUntil > Date.now())
       .map(([key, state]) => ({
@@ -558,15 +603,6 @@ export const testCurrentInfotravelConnection = createServerFn({ method: "POST" }
 // 5. COBERTURA COMPLETA 100% INFOTRAVEL API v1 (PACOTES, BLOQUEIOS/GRUPOS,
 //    SEGURO VIAGEM, LOCAÇÃO DE CARROS, IMPORTAÇÃO DE RESERVAS E CRÉDITO CRM)
 // ============================================================================
-
-export type InfoTravelOperatorSlug =
-  | "infotravel_default"
-  | "orinter"
-  | "frt"
-  | "incomum"
-  | "cativa"
-  | "befly"
-  | "confianca";
 
 export interface InfoTravelPackageAvailItem {
   id: string;
@@ -1578,10 +1614,21 @@ export const searchAgencyGdsFlightsFn = createServerFn({ method: "POST" })
 
 export interface PublicTourismAutoServiceItemDTO {
   id: string;
-  category: "packages" | "hotels" | "flights" | "activities" | "cars";
+  category:
+    | "packages"
+    | "hotels"
+    | "flights"
+    | "bus"
+    | "cars"
+    | "activities"
+    | "insurance"
+    | "cruises";
   title: string;
   subtitle: string;
+  origin?: string;
+  originIata?: string;
   destination: string;
+  destinationIata?: string;
   departureDate?: string;
   returnDate?: string;
   nights?: number;
@@ -1590,7 +1637,7 @@ export interface PublicTourismAutoServiceItemDTO {
   includes: string[];
   imageUrl?: string | null;
   slug?: string | null;
-  source: "infotravel_live" | "agency_catalog";
+  source: "infotravel_live" | "wooba_live" | "agency_catalog";
   dailyRateBrl?: number;
   totalThreeDaysBrl?: number;
   freeCancellation?: boolean;
@@ -1598,26 +1645,74 @@ export interface PublicTourismAutoServiceItemDTO {
   pickupLocation?: string;
   rentalCompany?: string;
   transmission?: "Automático" | "Manual";
+  airline?: string;
+  carrierName?: string;
+  stopsCount?: number;
+  stopsDescription?: string;
+  departureTime?: string;
+  arrivalTime?: string;
+  fareFamily?: string;
+  baggageIncluded?: boolean;
+  roomsCount?: number;
 }
 
 export const publicTourismAutoServiceSearchFn = createServerFn({ method: "POST" })
   .validator(
     z.object({
       storeId: z.string().uuid().optional(),
-      service: z.enum(["packages", "hotels", "flights", "activities", "cars"]).default("packages"),
+      service: z
+        .enum([
+          "packages",
+          "hotels",
+          "flights",
+          "bus",
+          "cars",
+          "activities",
+          "insurance",
+          "cruises",
+        ])
+        .default("packages"),
       origin: z.string().optional().default(""),
+      originIata: z.string().optional().default(""),
       destination: z.string().min(2),
+      destinationIata: z.string().optional().default(""),
       departureDate: z.string().optional().default(""),
       returnDate: z.string().optional().default(""),
+      cabinClass: z
+        .enum(["economy", "premium_economy", "business", "first"])
+        .optional()
+        .default("economy"),
       guests: z.string().optional().default("2 Adultos"),
+      rooms: z
+        .array(
+          z.object({
+            adults: z.number().int().min(1).max(10),
+            childrenAges: z.array(z.number().int().min(0).max(17)).max(8).default([]),
+          }),
+        )
+        .max(6)
+        .optional(),
     }),
   )
   .handler(async ({ data }): Promise<{
     results: PublicTourismAutoServiceItemDTO[];
     infotravelLiveActive: boolean;
+    woobaLiveActive: boolean;
   }> => {
     const safeDest = sanitizeInfotravelSearchText(data.destination, 60);
     const safeOrigin = sanitizeInfotravelSearchText(data.origin || "", 60);
+    const originIataClean = sanitizeInfotravelSearchText(data.originIata || "", 6).toUpperCase().slice(0, 3);
+    const destIataClean = sanitizeInfotravelSearchText(data.destinationIata || "", 6).toUpperCase().slice(0, 3);
+    const cabinClass = data.cabinClass || "economy";
+    const normalizedRooms =
+      Array.isArray(data.rooms) && data.rooms.length > 0
+        ? data.rooms.map((r) => ({
+            adults: Math.max(1, Number(r.adults || 1)),
+            childrenAges: Array.isArray(r.childrenAges) ? r.childrenAges : [],
+          }))
+        : [{ adults: 2, childrenAges: [] }];
+    const totalAdults = normalizedRooms.reduce((sum, r) => sum + r.adults, 0);
+    const totalChildren = normalizedRooms.reduce((sum, r) => sum + r.childrenAges.length, 0);
     const scopeKey = `public_autoservice:${data.storeId || "global"}:${data.service}`;
 
     // Proteção Anti-Bot/Anti-Scraping na vitrine pública (máx 12 buscas/min por escopo)
@@ -1626,6 +1721,7 @@ export const publicTourismAutoServiceSearchFn = createServerFn({ method: "POST" 
     const db = getServerClient();
     const results: PublicTourismAutoServiceItemDTO[] = [];
     let infotravelLiveActive = false;
+    let woobaLiveActive = false;
 
     // 1. Se houver storeId e a agência tiver credenciais InfoTravel configuradas, consulta em tempo real com cache de 15min
     if (data.storeId && data.departureDate && data.returnDate) {
@@ -1643,6 +1739,7 @@ export const publicTourismAutoServiceSearchFn = createServerFn({ method: "POST" 
                   destination: safeDest,
                   departureDate: data.departureDate,
                   returnDate: data.returnDate,
+                  rooms: normalizedRooms,
                 },
                 maxRequestsPerMin: 12,
               },
@@ -1651,10 +1748,11 @@ export const publicTourismAutoServiceSearchFn = createServerFn({ method: "POST" 
                   method: "POST",
                   headers: creds.authHeader,
                   body: JSON.stringify({
-                    destination: safeDest,
+                    origin: originIataClean || safeOrigin || undefined,
+                    destination: destIataClean || safeDest,
                     departure: data.departureDate,
                     arrival: data.returnDate,
-                    occupancies: [{ adults: 2, childrenAges: [] }],
+                    occupancies: normalizedRooms,
                     operator: "orinter",
                   }),
                 });
@@ -1673,7 +1771,10 @@ export const publicTourismAutoServiceSearchFn = createServerFn({ method: "POST" 
                 category: data.service,
                 title,
                 subtitle: String(pkg.hotel?.name || pkg.board?.name || safeDest),
+                origin: safeOrigin || undefined,
+                originIata: originIataClean || undefined,
                 destination: safeDest,
+                destinationIata: destIataClean || undefined,
                 departureDate: data.departureDate,
                 returnDate: data.returnDate,
                 priceCents,
@@ -1686,12 +1787,109 @@ export const publicTourismAutoServiceSearchFn = createServerFn({ method: "POST" 
                 ].filter(Boolean) as string[],
                 imageUrl: null,
                 source: "infotravel_live",
+                roomsCount: normalizedRooms.length,
               });
             }
           }
         }
       } catch {
         // Prossegue de forma transparente com o catálogo real do banco de dados
+      }
+    }
+
+    // 1.a Voos & Ônibus ao vivo via Wooba Travellink (Canal B2C escopado por loja)
+    if (data.storeId && data.departureDate) {
+      if (data.service === "flights" && originIataClean.length === 3 && destIataClean.length === 3) {
+        try {
+          const gdsFlights = await searchWoobaFlights({
+            agencyId: data.storeId,
+            originIata: originIataClean,
+            destinationIata: destIataClean,
+            departureDate: data.departureDate,
+            returnDate: data.returnDate || undefined,
+            adultsCount: totalAdults,
+            childrenCount: totalChildren,
+            cabinClass,
+          });
+          if (Array.isArray(gdsFlights) && gdsFlights.length > 0) {
+            woobaLiveActive = true;
+            for (const offer of gdsFlights.slice(0, 8)) {
+              const details = (offer as any).details || {};
+              const priceCents = Number(offer?.pricing?.selling_total_cents || 0);
+              if (priceCents <= 0) continue;
+              const carrier = String(details.carrier_name || details.airline || "Companhia Aérea");
+              const flightNum = String(details.flight_number || "").trim();
+              const stopsCount = Number(details.stops_count || 0);
+              results.push({
+                id: String(offer.offer_id || crypto.randomUUID()),
+                category: "flights",
+                title: `${carrier}${flightNum ? ` · Voo ${flightNum}` : ""} (${originIataClean} → ${destIataClean})`,
+                subtitle: `${details.departure_time || "--:--"} → ${details.arrival_time || "--:--"} · ${stopsCount === 0 ? "Voo Direto" : `${stopsCount} parada(s)`}`,
+                origin: safeOrigin || originIataClean,
+                originIata: originIataClean,
+                destination: safeDest,
+                destinationIata: destIataClean,
+                departureDate: data.departureDate,
+                returnDate: data.returnDate || undefined,
+                priceCents,
+                badge: "Wooba Aéreo Ao Vivo",
+                includes: [
+                  offer.rules?.fare_family || "Tarifa GDS",
+                  offer.rules?.baggage_allowance ? `Bagagem: ${offer.rules.baggage_allowance}` : null,
+                ].filter(Boolean) as string[],
+                imageUrl: null,
+                source: "wooba_live",
+                airline: carrier,
+                stopsCount,
+                stopsDescription: stopsCount === 0 ? "Direto" : `${stopsCount} parada(s)`,
+                departureTime: details.departure_time ? String(details.departure_time) : undefined,
+                arrivalTime: details.arrival_time ? String(details.arrival_time) : undefined,
+                fareFamily: offer.rules?.fare_family || undefined,
+                baggageIncluded: Boolean(
+                  offer.rules?.baggage_allowance && !String(offer.rules.baggage_allowance).startsWith("0PC"),
+                ),
+              });
+            }
+          }
+        } catch {
+          // Agência sem Wooba configurado ou indisponível: segue sem fabricar voos fictícios
+        }
+      }
+
+      if (data.service === "bus" && safeOrigin && safeDest) {
+        try {
+          const busRoutes = await searchWoobaBusRoutes({
+            agencyId: data.storeId,
+            originTerminalCityId: originIataClean || safeOrigin,
+            destinationTerminalCityId: destIataClean || safeDest,
+            departureDate: data.departureDate,
+          });
+          if (Array.isArray(busRoutes) && busRoutes.length > 0) {
+            woobaLiveActive = true;
+            for (const route of busRoutes.slice(0, 8)) {
+              const priceCents = Number((route as any).priceCents || (route as any).sellingTotalCents || 0);
+              if (priceCents <= 0) continue;
+              const company = String((route as any).companyName || "Viação Rodoviária");
+              results.push({
+                id: String((route as any).tripScheduleId || crypto.randomUUID()),
+                category: "bus",
+                title: `${company} · ${safeOrigin} → ${safeDest}`,
+                subtitle: `${(route as any).departureTime || "Horário programado"} · ${(route as any).seatClass || "Convencional"}`,
+                origin: safeOrigin,
+                destination: safeDest,
+                departureDate: data.departureDate,
+                priceCents,
+                badge: "Wooba Rodoviário",
+                includes: [(route as any).seatClass || "Leito / Executivo"].filter(Boolean),
+                imageUrl: null,
+                source: "wooba_live",
+                carrierName: company,
+              });
+            }
+          }
+        } catch {
+          // Sem credenciais rodoviárias: prossegue honestamente
+        }
       }
     }
 
@@ -1743,6 +1941,42 @@ export const publicTourismAutoServiceSearchFn = createServerFn({ method: "POST" 
         }
       } catch {
         // Sem credenciais InfoTravel ou API indisponível: retorna vazio honesto ou itens reais de catálogo
+      }
+      if (data.storeId) {
+        try {
+          const woobaCars = await searchWoobaCars({
+            agencyId: data.storeId,
+            pickupLocationCode: destIataClean || safeDest,
+            pickupDate,
+            dropoffDate,
+          });
+          if (Array.isArray(woobaCars) && woobaCars.length > 0) {
+            woobaLiveActive = true;
+            for (const carOffer of woobaCars.slice(0, 6)) {
+              const details = (carOffer as any).details || {};
+              const priceCents = Number(carOffer?.pricing?.selling_total_cents || 0);
+              if (priceCents <= 0) continue;
+              results.push({
+                id: String(carOffer.offer_id || crypto.randomUUID()),
+                category: "cars",
+                title: String(details.vehicle_category || details.model || "Locação de Veículo"),
+                subtitle: String(details.supplier_name || safeDest),
+                destination: safeDest,
+                departureDate: pickupDate,
+                returnDate: dropoffDate,
+                priceCents,
+                badge: "Wooba Carros Ao Vivo",
+                includes: ["Quilometragem / Taxas GDS"],
+                imageUrl: null,
+                source: "wooba_live",
+                pickupLocation: String(details.pickup_location || safeDest),
+                rentalCompany: String(details.supplier_name || ""),
+              });
+            }
+          }
+        } catch {
+          // Sem Wooba Carros configurado: segue com InfoTravel/catálogo
+        }
       }
     }
 
@@ -1822,6 +2056,7 @@ export const publicTourismAutoServiceSearchFn = createServerFn({ method: "POST" 
     return {
       results,
       infotravelLiveActive,
+      woobaLiveActive,
     };
   });
 

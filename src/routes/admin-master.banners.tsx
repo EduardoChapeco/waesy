@@ -3,6 +3,7 @@ import { useState } from "react";
 import { z } from "zod";
 import { Tag, Image as ImageIcon, Plus, Trash2, Pencil, Search, ExternalLink, Loader2, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { RouteErrorFallback } from "@/components/state/route-error-fallback";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -33,40 +34,19 @@ export const Route = createFileRoute("/admin-master/banners")({
       return { banners: [] };
     }
   },
-  errorComponent: AdminMasterBannersErrorComponent,
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorFallback
+      error={error}
+      reset={reset}
+      icon={ImageIcon}
+      title="Falha ao Carregar Banners de Anúncios"
+      description="Não foi possível sincronizar os banners das vitrines públicas."
+      actionLabel="Recarregar Página"
+      showErrorDetails
+    />
+  ),
   component: AdminMasterBannersPage,
 });
-
-function AdminMasterBannersErrorComponent({ error }: { error: any }) {
-  return (
-    <div className="mx-auto max-w-xl px-4 py-12 text-center space-y-4">
-      <div className="inline-flex size-14 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-1">
-        <ImageIcon className="size-7" />
-      </div>
-      <div className="space-y-1">
-        <h2 className="text-lg font-bold text-foreground">Falha ao Carregar Banners de Anúncios</h2>
-        <p className="text-xs text-muted-foreground max-w-md mx-auto">
-          Não foi possível sincronizar os banners das vitrines públicas.
-        </p>
-      </div>
-      {error?.message && (
-        <pre className="mt-2 rounded-lg bg-muted/40 border border-border/50 p-3 text-xs text-muted-foreground overflow-auto max-h-32 text-left font-mono">
-          {error.message}
-        </pre>
-      )}
-      <div className="pt-2 flex items-center justify-center gap-3">
-        <Button
-          variant="default"
-          size="sm"
-          className="rounded-lg text-xs h-11 sm:h-10 px-5 font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          onClick={() => window.location.reload()}
-        >
-          Recarregar Página
-        </Button>
-      </div>
-    </div>
-  );
-}
 
 export const PLACEMENT_OPTIONS: { id: BannerPlacement; label: string }[] = [
   { id: "all", label: "Todas as Vitrines" },

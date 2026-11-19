@@ -18,28 +18,7 @@ import {
 import { RichPostContent } from "@/components/community/rich-post-content";
 import { Quote } from "lucide-react";
 import { VerifiedBadge } from "@/components/common/VerifiedBadge";
-
-function isVideoUrl(url?: string | null): boolean {
-  if (!url) return false;
-  const clean = url.split("?")[0].toLowerCase();
-  const lower = url.toLowerCase();
-  return (
-    clean.endsWith(".mp4") ||
-    clean.endsWith(".webm") ||
-    clean.endsWith(".mov") ||
-    clean.endsWith(".quicktime") ||
-    clean.endsWith(".m4v") ||
-    clean.endsWith(".ogg") ||
-    clean.endsWith(".avi") ||
-    clean.endsWith(".mkv") ||
-    clean.includes("video") ||
-    lower.includes(".mp4") ||
-    lower.includes(".webm") ||
-    lower.includes(".mov") ||
-    lower.includes("/video/") ||
-    lower.includes("video=")
-  );
-}
+import { isVideoUrl } from "@/lib/media-utils";
 
 export interface HomePostsShowcaseProps {
   posts: NormalizedShowcasePost[];

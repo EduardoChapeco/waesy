@@ -19,6 +19,7 @@ import {
   FileText,
   PhoneCall,
   Car,
+  Ship,
   Utensils,
 } from "lucide-react";
 import {
@@ -26,11 +27,16 @@ import {
   getTourMetaLine,
   getTransferBadgeLabel,
   getTransferMetaLine,
+  getTransferTitle,
   ProposalAdaptiveImage,
   ProposalAgencyLogo,
+  ProposalCruiseBlock,
+  ProposalFlightMapBlock,
+  ProposalHotelMediaGallery,
   ProposalItineraryMediaGrid,
   ProposalMultiNicheSpecsBlock,
   ProposalPricingBreakdownBlock,
+  ProposalTransferListBlock,
 } from "./blocks/UI";
 
 interface TemplateProps {
@@ -219,7 +225,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                         <span className="px-3 py-1 rounded-full text-xs font-bold uppercase p-surface-brand shrink-0">
                           {d.day || `Dia ${absoluteDayNumber}`}
                         </span>
-                        <h4 className="font-bold text-lg p-text-ink truncate">{d.title}</h4>
+                        <h4 className="font-bold text-lg p-text-ink break-words">{d.title}</h4>
                       </div>
                       {Boolean(
                         d.city ||
@@ -300,18 +306,8 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                 {slideHotels.map((h, i) => (
                   <div
                     key={i}
-                    className="p-surface-card border p-border-main rounded-xl p-6 flex flex-col sm:flex-row gap-6"
+                    className="p-surface-card border p-border-main rounded-xl p-6 space-y-4"
                   >
-                    {h.images?.[0] && (
-                      <div className="w-full sm:w-40 h-40 shrink-0 rounded-lg overflow-hidden border p-border-subtle p-surface-subtle">
-                        <img
-                          src={h.images[0]}
-                          alt={h.name}
-                          crossOrigin="anonymous"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
                     <div className="flex-1 flex flex-col justify-between gap-4">
                       <div>
                         <h4 className="text-xl font-bold p-text-ink mb-1">{h.name}</h4>
@@ -338,6 +334,14 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                         Regime: {h.meal_plan || "Café da Manhã"}
                       </div>
                     </div>
+                    <ProposalHotelMediaGallery
+                      images={h.images}
+                      media={(h as any).media}
+                      title={h.name}
+                      objectPosition={(h as any).object_position}
+                      scale={(h as any).image_scale}
+                      className="mt-2"
+                    />
                   </div>
                 ))}
               </div>
@@ -424,6 +428,16 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                   </div>
                 ))}
               </div>
+              {slideIdx === 0 && (
+                <div className="mt-6">
+                  <ProposalFlightMapBlock
+                    flights={p.flights as any}
+                    theme={theme}
+                    showMap={raw?.web_page?.show_flight_route_map !== false}
+                    capturedMapUrl={raw?.captured_map_url || raw?.map_image_url || raw?.custom_fields?.captured_map_url}
+                  />
+                </div>
+              )}
             </div>
 
             <div className="flex justify-between items-center text-xs p-text-faint border-t p-border-subtle pt-4 mt-8">
@@ -433,16 +447,40 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
           </DocumentPage>
         ))}
 
+      {/* ─── SLIDE: CRUZEIRO MARÍTIMO ─── */}
+      {Array.isArray((raw as any).cruises) && (raw as any).cruises.length > 0 && (
+        <DocumentPage format={format} className="p-10 sm:p-12 justify-between">
+          <div className="space-y-6">
+            <div className="flex justify-between items-center border-b p-border-main pb-4">
+              <div className="flex items-center gap-3">
+                <Ship className="size-6 p-text-brand" />
+                <h2 className="text-2xl font-bold tracking-tight p-text-ink p-heading-font">
+                  Cruzeiro Marítimo & Itinerário Náutico
+                </h2>
+              </div>
+              <span className="text-xs font-bold p-text-faint uppercase tracking-widest">
+                Experiência Náutica
+              </span>
+            </div>
+            <ProposalCruiseBlock cruises={(raw as any).cruises} theme={theme} />
+          </div>
+          <div className="pt-4 border-t p-border-main flex justify-between items-center text-xs p-text-muted">
+            <span>{p.title}</span>
+            <span>Roteiro Marítimo</span>
+          </div>
+        </DocumentPage>
+      )}
+
       {/* ─── SLIDE: TRASLADOS & PASSEIOS ─── */}
       {((theme.isSectionVisible("transfers") && vm.hasTransfers) ||
         (theme.isSectionVisible("tours") && vm.hasTours)) && (
         <DocumentPage format={format} className="p-10 sm:p-12 justify-between">
-          <div className="space-y-8">
+          <div className="space-y-6">
             <div className="flex justify-between items-center border-b p-border-main pb-4">
               <div className="flex items-center gap-3">
                 <Car className="size-6 p-text-brand" />
                 <h2 className="text-2xl font-bold tracking-tight p-text-ink p-heading-font">
-                  Serviços Terrestres & Experiências
+                  Serviços Terrestres & Receptivo
                 </h2>
               </div>
               <span className="text-xs font-bold p-text-faint uppercase tracking-widest">
@@ -450,28 +488,13 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {theme.isSectionVisible("transfers") &&
-                p.transfers?.map((t, idx) => {
-                  const transferMeta = getTransferMetaLine(t as Record<string, any>, formatDate);
-                  return (
-                    <div
-                      key={`tr-${idx}`}
-                      className="p-surface-card border p-border-main rounded-xl p-5 flex flex-col gap-2"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="p-text-ink font-bold text-base">
-                          {t.description || (t as any).route || "Transfer"}
-                        </span>
-                        <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider p-surface-brand-soft border p-border-brand">
-                          {getTransferBadgeLabel(t.type)}
-                        </span>
-                      </div>
-                      {transferMeta && <div className="text-xs p-text-muted">{transferMeta}</div>}
-                      {t.notes && <p className="text-xs p-text-faint">{t.notes}</p>}
-                    </div>
-                  );
-                })}
+            {theme.isSectionVisible("transfers") && vm.hasTransfers && (
+              <ProposalTransferListBlock
+                transfers={p.transfers}
+                formatDateFn={formatDate}
+                theme={theme}
+              />
+            )}
 
               {theme.isSectionVisible("tours") &&
                 p.tours?.map((tour, idx) => {
@@ -496,7 +519,6 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                     </div>
                   );
                 })}
-            </div>
           </div>
 
           <div className="flex justify-between items-center text-xs p-text-faint border-t p-border-subtle pt-4 mt-8">

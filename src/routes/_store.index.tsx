@@ -28,6 +28,22 @@ import {
   listPublicHomePageSections,
   getUnifiedShowcasePosts,
 } from "@/services/admin-home-cms.functions";
+import { useEffectiveViewport } from "@/design-system/vitrine";
+import { logSystemError } from "@/services/telemetry.functions";
+
+function traceHomeQuery<T>(
+  contractName: string,
+  promise: Promise<T>,
+  fallback: T,
+  errors: Array<{ contract: string; message: string }>,
+): Promise<T> {
+  return promise.catch((err: any) => {
+    const message = err instanceof Error ? err.message : String(err || "Unknown home loader error");
+    errors.push({ contract: contractName, message });
+    console.error(`[loader:_store.index] Falha em ${contractName}:`, message);
+    return fallback;
+  });
+}
 
 export const Route = createFileRoute("/_store/")({
   staleTime: 15_000,
@@ -65,6 +81,7 @@ export const Route = createFileRoute("/_store/")({
     ],
   }),
   loader: async ({ location }) => {
+    const loaderErrors: Array<{ contract: string; message: string }> = [];
     try {
       const filteredCity = resolveActiveCity(location.search as any);
 
@@ -90,29 +107,53 @@ export const Route = createFileRoute("/_store/")({
         rootLanding,
         hostVertical,
       ] = await Promise.all([
-        listActiveBanners({ data: { placement: "home", city: filteredCity } }).catch(() => []),
-        listActiveBanners({ data: { placement: "home_middle", city: filteredCity } }).catch(() => []),
-        listActiveBanners({ data: { placement: "home_footer", city: filteredCity } }).catch(() => []),
-        listEditorialHotpages({ data: { module: "home" } }).catch(() => []),
-        getMarketplaceFeed().catch(() => ({ sections: [], allProducts: [] })),
-        getPublicDirectory({ data: { limit: 12, city: filteredCity } }).catch(() => []),
-        getPublicClassifieds({ data: { limit: 12, city: filteredCity } }).catch(() => []),
-        listPublicJobs({ data: { limit: 8, city: filteredCity } }).catch(() => []),
-        getPublicEvents({ data: { limit: 8, city: filteredCity } }).catch(() => []),
-        listPublicArticles({ data: { limit: 6, city: filteredCity } }).catch(() => []),
-        getMuralFeed({ data: { limit: 8 } }).catch(() => ({ items: [] })),
-        getAllPublicConcursos({ data: { filter: "all" } }).catch(() => []),
-        listUnifiedListings({ data: { origin: "workspace", limit: 36 } }).catch(() => []),
-        listPublicHomePageSections({ data: { city: filteredCity } }).catch(() => []),
-        getUnifiedShowcasePosts({ data: { limit: 12, city: filteredCity } }).catch(() => []),
-        getUserSession().catch(() => null),
-        resolveSurfacePageExperienceDocument({ data: { surfaceSlug: "home", city: filteredCity } }).catch(
-          () => ({ mode: "canonical_cms" as const, documentId: null, document: null, liveData: null }),
+        traceHomeQuery("banner.home", listActiveBanners({ data: { placement: "home", city: filteredCity } }), [], loaderErrors),
+        traceHomeQuery("banner.home_middle", listActiveBanners({ data: { placement: "home_middle", city: filteredCity } }), [], loaderErrors),
+        traceHomeQuery("banner.home_footer", listActiveBanners({ data: { placement: "home_footer", city: filteredCity } }), [], loaderErrors),
+        traceHomeQuery("hotpage.editorial", listEditorialHotpages({ data: { module: "home" } }), [], loaderErrors),
+        traceHomeQuery("marketplace.getMarketplaceFeed", getMarketplaceFeed(), { sections: [], allProducts: [] }, loaderErrors),
+        traceHomeQuery("directory.getPublicDirectory", getPublicDirectory({ data: { limit: 12, city: filteredCity } }), [], loaderErrors),
+        traceHomeQuery("classifieds.getPublicClassifieds", getPublicClassifieds({ data: { limit: 12, city: filteredCity } }), [], loaderErrors),
+        traceHomeQuery("jobs.listPublicJobs", listPublicJobs({ data: { limit: 8, city: filteredCity } }), [], loaderErrors),
+        traceHomeQuery("events.getPublicEvents", getPublicEvents({ data: { limit: 8, city: filteredCity } }), [], loaderErrors),
+        traceHomeQuery("news.listPublicArticles", listPublicArticles({ data: { limit: 6, city: filteredCity } }), [], loaderErrors),
+        traceHomeQuery(
+          "social.getMuralFeed",
+          getMuralFeed({ data: { limit: 8 } }),
+          { items: [], hasMore: false, nextCursor: null },
+          loaderErrors,
         ),
-        getPublicEcosystemSubsystemsFn().catch(() => null),
-        getPublicVerticalLandingFn({ data: { slug: "waesy" } }).catch(() => null),
-        getHostVerticalSubsystemLandingFn().catch(() => null),
+        traceHomeQuery("invite.getAllPublicConcursos", getAllPublicConcursos({ data: { filter: "all" } }), [], loaderErrors),
+        traceHomeQuery("unifiedListing.workspace", listUnifiedListings({ data: { origin: "workspace", limit: 36 } }), [], loaderErrors),
+        traceHomeQuery("cms.listPublicHomePageSections", listPublicHomePageSections({ data: { city: filteredCity } }), [], loaderErrors),
+        traceHomeQuery("surfaceCms.getUnifiedShowcasePosts", getUnifiedShowcasePosts({ data: { limit: 12, city: filteredCity } }), [], loaderErrors),
+        traceHomeQuery("auth.getUserSession", getUserSession(), null, loaderErrors),
+        traceHomeQuery(
+          "surfaceCms.resolveSurfacePageExperienceDocument",
+          resolveSurfacePageExperienceDocument({ data: { surfaceSlug: "home", city: filteredCity } }),
+          { mode: "canonical_cms" as const, documentId: null, document: null, liveData: null },
+          loaderErrors,
+        ),
+        traceHomeQuery("vertical.getPublicEcosystemSubsystemsFn", getPublicEcosystemSubsystemsFn(), null, loaderErrors),
+        traceHomeQuery("vertical.getPublicVerticalLandingFn", getPublicVerticalLandingFn({ data: { slug: "waesy" } }), null, loaderErrors),
+        traceHomeQuery("vertical.getHostVerticalSubsystemLandingFn", getHostVerticalSubsystemLandingFn(), null, loaderErrors),
       ]);
+      if (loaderErrors.length > 0) {
+        logSystemError({
+          data: {
+            severity: "WARN",
+            subsystem: "store_home_loader",
+            route: "/",
+            message: `${loaderErrors.length} contrato(s) falharam na carga da página inicial`,
+            error_payload: {
+              page_url: "/",
+              contract_name: loaderErrors.map((e) => e.contract).join(","),
+              city: filteredCity || null,
+              failures: loaderErrors,
+            },
+          },
+        }).catch(() => {});
+      }
 
       const directWorkspaceProducts =
         !workspaceListings || workspaceListings.length === 0
@@ -171,9 +212,20 @@ export const Route = createFileRoute("/_store/")({
             (location.search as any)?.vitrine === "true",
         ),
         activeCity: filteredCity,
+        loaderErrors,
       };
-    } catch (err) {
+    } catch (err: any) {
+      const message = err instanceof Error ? err.message : String(err || "Unknown home loader error");
       console.error("[loader:_store.index] Unhandled loader error:", err);
+      logSystemError({
+        data: {
+          severity: "ERROR",
+          subsystem: "store_home_loader",
+          route: "/",
+          message,
+          error_payload: { page_url: "/", contract_name: "_store.index.loader" },
+        },
+      }).catch(() => {});
       return {
         banners: [],
         middleBanners: [],
@@ -189,6 +241,7 @@ export const Route = createFileRoute("/_store/")({
         concursos: [],
         ecosystemConfig: null,
         forceVitrineMode: false,
+        loaderErrors: [{ contract: "_store.index.loader", message }],
       };
     }
   },
@@ -196,6 +249,7 @@ export const Route = createFileRoute("/_store/")({
 });
 
 export function VitrineHome() {
+  const { isCompact } = useEffectiveViewport();
   const data = (Route.useLoaderData?.() as any) || {};
   const {
     marketplaceProducts = [],
@@ -219,7 +273,10 @@ export function VitrineHome() {
   }
 
   return (
-    <div className="space-y-6">
+    <div
+      data-viewport={isCompact ? "compact" : "expanded"}
+      className={isCompact ? "space-y-4" : "space-y-6"}
+    >
       {showSalesLanding ? (
         <WaesySalesLanding
           subsystems={data?.ecosystemConfig?.subsystems || []}

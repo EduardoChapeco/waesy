@@ -3,13 +3,16 @@ import { z } from "zod";
 import * as crypto from "crypto";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess, requireAdmin } from "@/lib/server-access";
-import { inspectPromptSecurity, buildSandboxedPromptPayload, sanitizeAiOutput } from "@/lib/prompt-shield";
+import { inspectPromptSecurity, buildSandboxedPromptPayload, sanitizeAiOutput } from "@/lib/ai/prompt-shield";
 import { logOperationalEvent } from "@/lib/telemetry/operational-logger";
+import { getRequestScopedInflightMap } from "@/lib/request-inflight";
 import * as apiOrchestrator from "./api-orchestrator.functions";
 import {
   embedSingleWithProvider,
   generateBatchEmbeddings,
   l2NormalizeEmbedding,
+  safeMarkKeyError,
+  safeRecordKeyUsage,
 } from "./ai-embedding-client";
 
 export { l2NormalizeEmbedding };
@@ -48,28 +51,6 @@ async function safeLoadProviderKeys(
   }
   const singleKey = await apiOrchestrator.getNextActiveKey(provider as any, ownerId);
   return singleKey && singleKey.rawKey ? [singleKey] : [];
-}
-
-function safeRecordKeyUsage(keyId: string): void {
-  try {
-    const fn = apiOrchestrator.recordKeyUsage;
-    if (typeof fn === "function") {
-      fn(keyId).catch(() => {});
-    }
-  } catch {
-    // Fallback para mocks parciais sem recordKeyUsage
-  }
-}
-
-function safeMarkKeyError(keyId: string, errMessage: string, status?: number): void {
-  try {
-    const fn = apiOrchestrator.markKeyError;
-    if (typeof fn === "function") {
-      fn(keyId, errMessage, status).catch(() => {});
-    }
-  } catch {
-    // Fallback para mocks parciais sem markKeyError
-  }
 }
 
 // ============================================================
@@ -192,8 +173,7 @@ export function calculateCost(provider: string, model: string, inTokens: number,
   return Number(cost.toFixed(6));
 }
 
-// In-Flight Promise Dedup Map
-const inFlightRequests = new Map<string, Promise<AIGatewayResponse>>();
+// In-Flight Promise Dedup (intra-request scoped via request-inflight)
 
 // Circuit Breakers em Memória (com fallback e persistência assíncrona)
 export interface ProviderCircuit {
@@ -1106,8 +1086,9 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
     }
   }
 
-  // 3. In-Flight Promise Deduplication (Chamadas idênticas simultâneas)
-  if (inFlightRequests.has(fingerprint)) {
+  // 3. In-Flight Promise Deduplication (intra-requisição apenas)
+  const inFlightRequests = getRequestScopedInflightMap<AIGatewayResponse>("ai-core-gateway");
+  if (inFlightRequests?.has(fingerprint)) {
     try {
       const sharedRes = await inFlightRequests.get(fingerprint)!;
       return {
@@ -1481,11 +1462,11 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
     return failedResult;
   })();
 
-  inFlightRequests.set(fingerprint, executionPromise);
+  inFlightRequests?.set(fingerprint, executionPromise);
   try {
     return await executionPromise;
   } finally {
-    inFlightRequests.delete(fingerprint);
+    inFlightRequests?.delete(fingerprint);
   }
 }
 

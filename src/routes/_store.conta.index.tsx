@@ -241,12 +241,11 @@ function AccountDashboardPage() {
       ],
     },
     {
-      title: "Empresas",
+      title: "Documentos & Identidade",
       items: [
-        { to: "/conta/empresa", label: "Empresa", icon: Store },
-        { to: "/conta/colaborador", label: "Equipe", icon: Users },
         { to: "/conta/contratos", label: "Contratos", icon: FileText },
         { to: "/conta/verificacao", label: "Verificação", icon: ShieldCheck },
+        { to: "/conta/colaborador", label: "Vínculos", icon: Users },
       ],
     },
     {

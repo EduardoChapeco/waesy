@@ -194,13 +194,20 @@ export const recordTimeClock = createServerFn({ method: "POST" })
  // Validar que o colaborador pertence à loja do workspace
  const { data: employee, error: empErr } = await supabase
  .from("employees")
- .select("id, store_id, full_name")
+ .select("id, store_id, profile_id, full_name")
  .eq("id", data.employeeId)
  .eq("store_id", identity.store_id)
  .single();
 
  if (empErr || !employee) {
  throw new Error("Colaborador não encontrado ou não pertence a esta empresa.");
+ }
+ assertStoreAccess(identity);
+ const isHrOrMgr = ["owner", "admin", "manager", "finance", "rh", "recruiter", "gerente", "financeiro"].includes(
+   String(identity.role || "").toLowerCase(),
+ );
+ if (!isHrOrMgr && employee.profile_id && employee.profile_id !== identity.id) {
+   throw new Error("Você só pode registrar batida de ponto para o seu próprio cadastro.");
  }
 
  const { data: entry, error } = await supabase
@@ -237,14 +244,31 @@ export const listEmployeeTimeEntries = createServerFn({ method: "GET" })
  .handler(async ({ data }) => {
  const supabase = getServerClient();
  const identity = await getServerIdentity();
+ assertStoreAccess(identity);
+
+ const isHrOrMgr = ["owner", "admin", "manager", "finance", "rh", "recruiter", "gerente", "financeiro"].includes(
+   String(identity.role || "").toLowerCase(),
+ );
 
  let query = supabase
  .from("employee_time_entries")
- .select("*, employee:employees(id, full_name, job_title)")
+ .select("*, employee:employees(id, full_name, job_title, profile_id)")
  .eq("store_id", identity.store_id)
  .order("recorded_at", { ascending: false });
 
- if (data?.employeeId) {
+ if (!isHrOrMgr) {
+   const { data: ownEmp } = await supabase
+     .from("employees")
+     .select("id")
+     .eq("store_id", identity.store_id)
+     .eq("profile_id", identity.id)
+     .maybeSingle();
+   if (!ownEmp?.id) return [];
+   if (data?.employeeId && data.employeeId !== ownEmp.id) {
+     throw new Error("Acesso negado: colaboradores só podem consultar o próprio registro de ponto.");
+   }
+   query = query.eq("employee_id", ownEmp.id);
+ } else if (data?.employeeId) {
  query = query.eq("employee_id", data.employeeId);
  }
  if (data?.startDate) {
@@ -1175,6 +1199,38 @@ export const upsertStoreEmployee = createServerFn({ method: "POST" })
 
     if (data.profileId) {
       payload.profile_id = data.profileId;
+    } else if (data.email && data.email.trim().includes("@") && ["owner", "admin", "manager"].includes(String(identity.role))) {
+      try {
+        const { _inviteTeamMember } = await import("./admin-team.functions");
+        const titleLower = String(data.jobTitle || "").toLowerCase();
+        const inferredRole = titleLower.includes("caixa")
+          ? "cashier"
+          : titleLower.includes("financ")
+            ? "finance"
+            : titleLower.includes("gerent")
+              ? "manager"
+              : titleLower.includes("estoq") || titleLower.includes("expedi")
+                ? "stock"
+                : titleLower.includes("market") || titleLower.includes("conte")
+                  ? "content"
+                  : titleLower.includes("suport")
+                    ? "support"
+                    : "seller";
+        const inviteRes = await _inviteTeamMember(
+          {
+            email: data.email.trim().toLowerCase(),
+            fullName: data.fullName.trim(),
+            phone: data.phone?.trim() || null,
+            role: inferredRole,
+          },
+          { db: supabase, identity },
+        );
+        if (inviteRes?.profileId) {
+          payload.profile_id = inviteRes.profileId;
+        }
+      } catch (bridgeErr) {
+        console.warn("[hr.functions] Aviso ao sincronizar colaborador com workspace_members:", bridgeErr);
+      }
     }
 
     let savedEmployee;
@@ -1266,18 +1322,34 @@ export const closePayrollAndPostToPayables = createServerFn({ method: "POST" })
       );
     }
 
-    // 2. Bilateralidade com Financeiro: Criar despesa de Folha em financial_transactions
+    // 2. Bilateralidade com Financeiro CLT: Cria despesa e título exclusivamente da Folha Oficial
+    //    (Premiações/Comissões de Turismo pagas "por fora" NÃO entram aqui para preservar a separação contábil).
     if (totalNetCents > 0) {
       const today = new Date().toISOString().split("T")[0];
-      const desc = `Folha de Pagamento - Competência ${data.referencePeriod} (${data.payslips.length} colaboradores)`;
+      const refDate = data.paymentDate || today;
+      const desc = `Folha Oficial CLT - Competência ${data.referencePeriod} (${data.payslips.length} colaboradores)`;
 
       await supabase.from("financial_transactions").insert({
         store_id: identity.store_id,
-        type: "expense",
+        type: "expense_other",
         amount_cents: -totalNetCents,
         category: "folha_pagamento",
         description: desc,
-        reference_date: data.paymentDate || today,
+        reference_date: refDate,
+        created_by: identity.id,
+      });
+
+      await supabase.from("financial_obligations").insert({
+        store_id: identity.store_id,
+        title: desc,
+        category: "payroll",
+        supplier_name: "Folha Oficial de Colaboradores",
+        amount_cents: totalNetCents,
+        due_date: refDate,
+        status: "pending",
+        notes: `Folha CLT competência ${data.referencePeriod}. Premiações variáveis externas tramitam em recibos próprios.`,
+        source_type: "payroll",
+        off_payroll: false,
         created_by: identity.id,
       });
     }
@@ -1454,4 +1526,379 @@ export const batchUpdateDepartmentBenefits = createServerFn({ method: "POST" })
     }
 
     return { status: "success", updatedCount: count };
+  });
+
+export interface HRDashboardMetricsDTO {
+  totalEmployees: number;
+  activeCount: number;
+  vacationCount: number;
+  leaveCount: number;
+  terminatedCount: number;
+  totalPayrollBaseCents: number;
+  todayClock: {
+    clockedIn: number;
+    atLunch: number;
+    clockedOut: number;
+    absent: number;
+  };
+  alerts: {
+    expiringAsoCount: number;
+    pendingCertificatesCount: number;
+    expiringContractsCount: number;
+  };
+  departmentHeadcount: Array<{ name: string; count: number }>;
+}
+
+export interface StoreDepartmentItemDTO {
+  id: string;
+  store_id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  assigned_agent_ids: string[];
+  employee_count: number;
+  is_active: boolean;
+  manager_id?: string | null;
+  manager_name?: string | null;
+}
+
+/**
+ * Resumo consolidado de métricas do Cockpit 360° do RH/DP
+ */
+export const getStoreHRDashboardMetrics = createServerFn({ method: "GET" }).handler(
+  async (): Promise<HRDashboardMetricsDTO> => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "finance"]);
+
+    // 1. Colaboradores
+    const { data: dbEmployees } = await supabase
+      .from("employees")
+      .select("*")
+      .eq("store_id", identity.store_id);
+
+    const employees = dbEmployees || [];
+    const activeCount = employees.filter((e: any) => (e.status || "active") === "active").length;
+    const vacationCount = employees.filter((e: any) => e.status === "vacation").length;
+    const leaveCount = employees.filter((e: any) => e.status === "on_leave" || e.status === "suspended").length;
+    const terminatedCount = employees.filter((e: any) => e.status === "terminated").length;
+    const totalPayrollBaseCents = employees
+      .filter((e: any) => (e.status || "active") === "active")
+      .reduce((sum: number, e: any) => sum + (e.base_salary_cents || 0), 0);
+
+    // Contagem por departamento
+    const deptMap: Record<string, number> = {};
+    for (const emp of employees) {
+      if ((emp.status || "active") !== "terminated") {
+        const dName = emp.metadata?.departmentName || emp.metadata?.department || "Operações";
+        deptMap[dName] = (deptMap[dName] || 0) + 1;
+      }
+    }
+    const departmentHeadcount = Object.entries(deptMap).map(([name, count]) => ({ name, count }));
+
+    // 2. Ponto de hoje (registros da data atual)
+    const todayStr = new Date().toISOString().split("T")[0];
+    const { data: todayEntries } = await supabase
+      .from("employee_time_entries")
+      .select("id, employee_id, entry_type, recorded_at")
+      .eq("store_id", identity.store_id)
+      .gte("recorded_at", `${todayStr}T00:00:00Z`)
+      .lte("recorded_at", `${todayStr}T23:59:59Z`);
+
+    const clockedEmployees = new Set((todayEntries || []).map((e: any) => e.employee_id));
+    let atLunch = 0;
+    let clockedOut = 0;
+
+    // Analisa última batida de cada colaborador hoje
+    const lastEntryByEmployee: Record<string, string> = {};
+    for (const ent of todayEntries || []) {
+      const prev = lastEntryByEmployee[ent.employee_id];
+      if (!prev || new Date(ent.recorded_at) > new Date(prev)) {
+        lastEntryByEmployee[ent.employee_id] = ent.entry_type;
+      }
+    }
+    for (const lastType of Object.values(lastEntryByEmployee)) {
+      if (lastType === "lunch_out") atLunch++;
+      if (lastType === "clock_out") clockedOut++;
+    }
+
+    const clockedIn = clockedEmployees.size - atLunch - clockedOut;
+    const absent = Math.max(0, activeCount - clockedEmployees.size);
+
+    // 3. Alertas de documentos (ASO vencendo em < 30 dias ou expirado)
+    let expiringAsoCount = 0;
+    const nowMs = Date.now();
+    const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+    for (const emp of employees) {
+      const asoRecords = Array.isArray(emp.metadata?.aso_records) ? emp.metadata.aso_records : [];
+      for (const aso of asoRecords) {
+        if (aso.validUntil) {
+          const validMs = new Date(aso.validUntil).getTime();
+          if (validMs - nowMs < thirtyDaysMs) {
+            expiringAsoCount++;
+            break;
+          }
+        }
+      }
+    }
+
+    // 4. Atestados médicos / afastamentos pendentes (employee_requests)
+    const { count: pendingCertificatesCount } = await supabase
+      .from("employee_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("store_id", identity.store_id)
+      .eq("request_type", "leave_absence")
+      .eq("status", "pending");
+
+    return {
+      totalEmployees: employees.length,
+      activeCount,
+      vacationCount,
+      leaveCount,
+      terminatedCount,
+      totalPayrollBaseCents,
+      todayClock: {
+        clockedIn: Math.max(0, clockedIn),
+        atLunch,
+        clockedOut,
+        absent,
+      },
+      alerts: {
+        expiringAsoCount,
+        pendingCertificatesCount: pendingCertificatesCount || 0,
+        expiringContractsCount: 0,
+      },
+      departmentHeadcount,
+    };
+  },
+);
+
+/**
+ * Lista todos os departamentos/setores da loja enriquecidos com contagem de funcionários
+ */
+export const listStoreDepartments = createServerFn({ method: "GET" }).handler(
+  async (): Promise<StoreDepartmentItemDTO[]> => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "finance", "seller", "support"]);
+
+    const { data: rawDepts, error } = await supabase
+      .from("chat_departments")
+      .select("*")
+      .eq("store_id", identity.store_id)
+      .order("name", { ascending: true });
+
+    if (error) {
+      console.warn("[hr.functions] listStoreDepartments error:", error.message);
+    }
+
+    let depts = rawDepts || [];
+
+    // Se a loja não possuir departamentos, semeia os setores padrão universais
+    if (depts.length === 0) {
+      const defaultPresets = [
+        { name: "Comercial / Vendas", slug: "comercial", description: "Prospecção, negociação e fechamento de clientes" },
+        { name: "Atendimento & SAC", slug: "atendimento", description: "Suporte ao cliente e canais WhatsApp" },
+        { name: "Financeiro & Contábil", slug: "financeiro", description: "Faturamento, tesouraria, contas a pagar e receber" },
+        { name: "Operações & Produção", slug: "operacoes", description: "Execução operacional, serviços e logística" },
+        { name: "Recursos Humanos & DP", slug: "rh-dp", description: "Gente, gestão de talentos, ponto e benefícios" },
+        { name: "Marketing & Comunicação", slug: "marketing", description: "Campanhas, tráfego pago e mídias sociais" },
+      ];
+
+      const toInsert = defaultPresets.map((d) => ({
+        store_id: identity.store_id,
+        name: d.name,
+        slug: d.slug,
+        description: d.description,
+        assigned_agent_ids: [],
+        is_active: true,
+      }));
+
+      const { data: seeded } = await supabase
+        .from("chat_departments")
+        .upsert(toInsert, { onConflict: "store_id,slug" })
+        .select("*");
+
+      if (seeded) depts = seeded;
+    }
+
+    // Contagem de colaboradores associados a cada departamento
+    const { data: emps } = await supabase
+      .from("employees")
+      .select("id, metadata, status")
+      .eq("store_id", identity.store_id);
+
+    const activeEmps = (emps || []).filter((e: any) => (e.status || "active") !== "terminated");
+
+    return depts.map((d: any) => {
+      const matchCount = activeEmps.filter((e: any) => {
+        const dName = e.metadata?.departmentName || e.metadata?.department;
+        const dId = e.metadata?.departmentId;
+        return dId === d.id || (dName && dName.toLowerCase() === d.name.toLowerCase());
+      }).length;
+
+      return {
+        id: d.id,
+        store_id: d.store_id,
+        name: d.name,
+        slug: d.slug,
+        description: d.description || null,
+        assigned_agent_ids: Array.isArray(d.assigned_agent_ids) ? d.assigned_agent_ids : [],
+        employee_count: matchCount,
+        is_active: d.is_active !== false,
+      };
+    });
+  },
+);
+
+export const saveEmployeeFullProfileSchema = z.object({
+  id: z.string().uuid().optional(),
+  profileId: z.string().uuid().optional().nullable(),
+  fullName: z.string().min(2, "Nome obrigatório"),
+  cpfMasked: z.string().optional().nullable(),
+  rg: z.string().optional().nullable(),
+  pis: z.string().optional().nullable(),
+  ctps: z.string().optional().nullable(),
+  birthDate: z.string().optional().nullable(),
+  email: z.string().email("E-mail inválido").optional().or(z.literal("")).nullable(),
+  phone: z.string().optional().nullable(),
+  address: z.string().optional().nullable(),
+  jobTitle: z.string().min(2, "Cargo obrigatório"),
+  employmentType: z
+    .enum(["clt", "pj", "internship", "apprentice", "temporary", "freelancer", "partner"])
+    .default("clt"),
+  status: z.enum(["active", "on_leave", "vacation", "terminated", "suspended"]).default("active"),
+  baseSalaryCents: z.number().int().min(0, "Salário base não pode ser negativo").default(0),
+  hireDate: z.string().optional().nullable(),
+  terminationDate: z.string().optional().nullable(),
+  departmentId: z.string().optional().nullable(),
+  departmentName: z.string().optional().nullable(),
+  managerProfileId: z.string().optional().nullable(),
+  bankInfo: z
+    .object({
+      bankName: z.string().optional(),
+      agency: z.string().optional(),
+      account: z.string().optional(),
+      accountType: z.string().optional(),
+      pixKey: z.string().optional(),
+      pixKeyType: z.string().optional(),
+    })
+    .optional(),
+  commercial: z
+    .object({
+      isSeller: z.boolean().default(false),
+      commissionPct: z.number().min(0).max(100).default(0),
+      monthlyGoalCents: z.number().min(0).default(0),
+      whatsappInstanceId: z.string().optional().nullable(),
+      assignedCustomerIds: z.array(z.string()).default([]),
+    })
+    .optional(),
+  workSchedule: z.record(z.any()).optional(),
+  defaultBenefits: z.record(z.any()).optional(),
+  pinCode: z.string().optional().nullable(),
+  asoRecords: z.array(z.any()).optional(),
+  documents: z.array(z.any()).optional(),
+  nicheData: z.record(z.any()).optional(),
+});
+
+export type SaveEmployeeFullProfilePayload = z.infer<typeof saveEmployeeFullProfileSchema>;
+
+/**
+ * Salva ou atualiza a ficha 360° completa do colaborador
+ */
+export const saveEmployeeFullProfile = createServerFn({ method: "POST" })
+  .validator(saveEmployeeFullProfileSchema)
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "finance", "manager"]);
+
+    const metadata: Record<string, any> = {
+      rg: data.rg || null,
+      pis: data.pis || null,
+      ctps: data.ctps || null,
+      birth_date: data.birthDate || null,
+      address: data.address || null,
+      termination_date: data.terminationDate || null,
+      departmentId: data.departmentId || null,
+      departmentName: data.departmentName || null,
+      manager_profile_id: data.managerProfileId || null,
+      bank_info: data.bankInfo || {},
+      commercial: data.commercial || {},
+      default_benefits: data.defaultBenefits || {},
+      pin_code: data.pinCode || null,
+      aso_records: data.asoRecords || [],
+      documents: data.documents || [],
+      niche_data: data.nicheData || {},
+      last_updated_by: identity.id,
+      last_updated_at: new Date().toISOString(),
+    };
+
+    const payload: Record<string, any> = {
+      store_id: identity.store_id,
+      full_name: data.fullName,
+      cpf_masked: data.cpfMasked || null,
+      email: data.email || null,
+      phone: data.phone || null,
+      job_title: data.jobTitle,
+      employment_type: data.employmentType === "partner" ? "pj" : data.employmentType,
+      status: data.status,
+      base_salary_cents: data.baseSalaryCents,
+      hire_date: data.hireDate || new Date().toISOString().split("T")[0],
+      work_schedule: data.workSchedule || { weekly_hours: 44, daily_hours: 8.8 },
+      metadata,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.profileId) {
+      payload.profile_id = data.profileId;
+    }
+
+    let savedEmployeeId = data.id;
+
+    if (data.id) {
+      const { error: updErr } = await supabase
+        .from("employees")
+        .update(payload)
+        .eq("id", data.id)
+        .eq("store_id", identity.store_id);
+
+      if (updErr) {
+        throw new Error("Erro ao atualizar ficha do colaborador: " + updErr.message);
+      }
+    } else {
+      const { data: inserted, error: insErr } = await supabase
+        .from("employees")
+        .insert(payload)
+        .select("id")
+        .single();
+
+      if (insErr) {
+        throw new Error("Erro ao cadastrar colaborador: " + insErr.message);
+      }
+      savedEmployeeId = inserted.id;
+    }
+
+    // Se o colaborador tiver perfil comercial de vendedor com clientes vinculados, propaga para os leads/clientes
+    if (data.commercial?.assignedCustomerIds && data.commercial.assignedCustomerIds.length > 0 && data.profileId) {
+      try {
+        await supabase
+          .from("customers_crm")
+          .update({ assigned_to: data.profileId, updated_at: new Date().toISOString() })
+          .in("id", data.commercial.assignedCustomerIds)
+          .eq("store_id", identity.store_id);
+      } catch (custErr) {
+        console.warn("[saveEmployeeFullProfile] Erro ao sincronizar carteira de clientes:", custErr);
+      }
+    }
+
+    await logAuditAction(
+      identity,
+      data.id ? "EMPLOYEE_UPDATED" : "EMPLOYEE_CREATED",
+      "employees",
+      savedEmployeeId,
+      { fullName: data.fullName, jobTitle: data.jobTitle, storeId: identity.store_id }
+    ).catch(() => null);
+
+    return { status: "success", employeeId: savedEmployeeId };
   });

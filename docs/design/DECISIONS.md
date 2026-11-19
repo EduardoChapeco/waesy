@@ -1,5 +1,411 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-532: Reconciliação e Sincronização de Contratos Digitais no CRM/Kanban, Extração Mecânica de Imagens JPEG em PDFs no OCR de Cotações B2B, Hidratação Direta no Construtor de Propostas e Validação de Pastas de Inspiração Multi-Nicho
+- **Data (ISO):** 2026-11-19
+- **ID da Decisão:** DEC-532
+- **Contexto:**
+  1. A sincronização de contratos digitais no CRM (`TourismPipeCardDossier`) apresentava falhas onde contratos emitidos para leads recentes sem `customer_id` geravam erros PostgREST 400 Bad Request devido à interpolação de strings como `customer_id.eq.undefined`, resultando em falhas silenciosas e renderização de lista vazia.
+  2. O formulário de emissão rápida de contrato no Kanban não permitia redirecionar imediatamente o contrato para personalização visual e jurídica completa no Editor A4 de Contratos (`/workspace/contratos/[id]/editor`).
+  3. O OCR de orçamentos e cotações de operadoras (CVC, Orinter, Azul Viagens, Trend, Incomum, etc.) falhava em arquivos escaneados/digitalizados porque o fluxo não isolava imagens JPEG embutidas no fluxo de dados do PDF, além de prefixos `data:application/pdf;base64,` corromperem a decodificação de buffer no Node.
+  4. Ao concluir o OCR no card de atendimento, os dados estruturados de hotéis, voos, traslados e passeios não estavam sendo propagados diretamente para o Construtor de Propostas (`UnifiedProposalWorkspace`).
+  5. O módulo de Inspirações e Fotos Aleatórias no card do lead precisava de suporte nativo a taxonomia por nicho (`tourism`, `real_estate`, `automotive`, `events`, `beauty_salon`) com suporte a pastas personalizadas e upload de referências visuais com persistência em `custom_fields`.
+- **Decisão Adotada:**
+  1. **Reconciliação e Resiliência da Busca de Contratos no CRM (`src/services/crm.functions.ts`):**
+     - Saneamento das cláusulas de filtro em `getCustomer360Profile`: inclusão estrita de `customer_id.eq` e `metadata->>customer_id.eq` somente quando `lead.customer_id` for estritamente truthy.
+     - Fallback direto e resiliente para a tabela `contracts` quando a query relacional encadeada com `versions:contract_versions(...)` retornar erro ou nulo.
+     - Remoção de filtros de categoria rígidos (`tourism`) que descartavam contratos de pacotes categorizados como `tourism_package`, `services` ou `general_deal`.
+     - Comparação de telefone aprimorada utilizando sufixo numérico de 8 dígitos para prevenir divergências de DDI/DDD.
+  2. **Emissão de Contratos com Abertura Direta no Editor A4 (`TourismPipeCardDossier.tsx`):**
+     - Adição do botão "Gerar & Abrir no Editor A4" com altura canônica de 44px (`h-11 min-h-11`) e foco `:focus-visible:ring-2`.
+     - Suporte a redirecionamento seguro com verificação de autorização e carga da minuta no editor visual A4.
+  3. **Extração de Imagens JPEG Embutidas em PDFs para OCR Multimodal (`src/services/mechanical-document-extractor.server.ts` & `travel-operator-ocr.functions.ts`):**
+     - Sanitização de base64 com remoção sistemática de cabeçalhos Data URI.
+     - Implementação da função pura `extractFirstEmbeddedJpegFromPdf`: varredura de marcadores SOI (`0xFF, 0xD8, 0xFF`) e EOI (`0xFF, 0xD9`) para extrair JPEGs de documentos escaneados e enviar ao pool multimodal de IA com `image/jpeg`.
+     - Envio de texto mecânico auxiliar no prompt para enriquecer a precisão de extração dos LLMs.
+  4. **Hidratação Bilateral Lead ⇄ Construtor de Propostas (`TourismPipeCardDossier.tsx` & `UnifiedProposalWorkspace.tsx`):**
+     - Botão primário "Preencher & Abrir Proposta" no modal de prévia do OCR que atualiza o lead e aciona imediatamente o construtor com os dados extraídos.
+     - `UnifiedProposalWorkspace` hidrata automaticamente voos, hotéis, traslados, passeios e nome da operadora a partir de `lead.custom_fields`.
+  5. **Pastas de Inspiração & Moodboard Multi-Nicho (`LeadInspirationMoodboard.tsx`):**
+     - Validação e integração de pastas de inspiração por nicho com upload de mídia e sincronização com `custom_fields.inspiration_photos` e `inspiration_folders`.
+- **Fundamentação Teórica:** `AGENTS.md` (B.1, B.2, B.4, B.5, B.6, B.7, B.8, B.9, B.12, B.22, B.25, B.26, B.28, B.31, B.33); WCAG 2.2 AA.
+- **Consequências:** Vinculação e exibição 100% confiável de contratos no card do CRM mesmo sem cliente previamente cadastrado; suporte a OCR de PDFs digitalizados via extração mecânica de JPEG; transição instantânea de cotações para propostas e contratos; organização de fotos de referência no dossiê de atendimento.
+
+## DEC-531: Sincronização Integral End-to-End: Aceite de Proposta com Contratos e CRM, OCR Resiliente no Pool de IA, Projeção Equirretangular 1:1 de Rotas Aéreas e Cruzeiros e Submódulo Canônico de RH/DP
+- **Data (ISO):** 2026-11-19
+- **ID da Decisão:** DEC-531
+- **Contexto:**
+  1. O aceite público de propostas turísticas (`approveTravelProposal`) registrava o aceite no banco mas não propagava atômica e imediatamente para o CRM (`leads_crm`), emissão automática do contrato digital em `contracts` e `signature_envelopes`, nem lançava o recebível financeiro correspondente em `financial_transactions`.
+  2. A aba "Contratos" do card do CRM (`TourismPipeCardDossier`) carecia de atalho inteligente para pré-preenchimento instantâneo da minuta contratual a partir das propostas e cotações geradas no atendimento.
+  3. O OCR de orçamentos e cotações de operadoras (`processOperatorQuoteOcr` / `executeUnifiedAiCall`) falhava devido a modelos Groq depreciados/inexistentes, envio inadequado de PDFs em chamadas Anthropic e tentativa de inclusão de PDFs em `image_url` em OpenAI/OpenRouter.
+  4. As projeções dos mapas SVG de rotas aéreas e cruzeiros náuticos sofriam de distorção anamórfica (achatamento vertical de mais de 5x), decorrente da escala independente de X e Y sem consideração do fator métrico `cos(lat)`.
+  5. As rotas de RH e DP (`/workspace/rh`, `/workspace/rh/ponto`, `/workspace/rh/folha`, `/workspace/rh/compliance`) estavam desprovidas de uma barra canônica persistente de submódulos com alvos táteis mínimos de 44px e contadores de pendências em tempo real.
+- **Decisão Adotada:**
+  1. **Sincronização Atômica End-to-End no Aceite de Proposta (`src/services/travel-proposal.functions.ts`):**
+     - No aceite da proposta, o lead é automaticamente avançado para o estágio ganho (`status: "won"`), com preenchimento em `custom_fields` de `accepted_proposal_id`, `accepted_at`, `payment_plan` e o manifesto completo de passageiros em `traveler_dossiers`.
+     - Emissão e vinculação imediata do contrato digital em `contracts` e `signature_envelopes` com código de verificação criptográfico e status `signing`.
+     - Lançamento financeiro a receber registrado em `financial_transactions` e notificação interna disparada em `notifications`.
+     - Banner de 1 clique inserido na aba "Contratos" do CRM (`TourismPipeCardDossier.tsx`) para pré-preenchimento instantâneo com base nas propostas do cliente.
+  2. **Pool de IA & OCR Resiliente (`src/services/api-orchestrator.functions.ts`, `travel-operator-ocr.functions.ts`):**
+     - Modelos Groq saneados para produção: `llama-3.3-70b-versatile`, `llama-3.1-8b-instant`, `mixtral-8x7b-32768`, `gemma2-9b-it`.
+     - Anthropic: envio nativo de PDFs com `type: "document"` e `media_type: "application/pdf"`.
+     - OpenAI/OpenRouter: proteção contra injeção de PDFs em blocos `image_url`.
+     - Fast-path de OCR via Groq ativado quando o extrator mecânico extrair >= 80 caracteres de texto legível.
+  3. **Projeção Equirretangular Geodésica e Náutica 1:1 (`src/lib/tourism/flight-route-geometry.ts`):**
+     - Reformulação matemática de `buildSvgProjectionForRoute` e `buildSvgProjectionForCruise`: adoção de fator de escala métrico uniforme baseado em `cos(midLat)`, garantindo que 1 grau de latitude tenha a mesma proporção em pixels que a longitude correspondente.
+     - Erradicação de distorções em silhuetas costeiras, aeroportos e portos náuticos de cruzeiros.
+  4. **Sub-Navegação Canônica de RH/DP (`src/components/hr/HrSubmoduleNavigation.tsx`):**
+     - Criado componente `HrSubmoduleNavigation` com abas para Colaboradores & Setores (`/workspace/rh`), Ponto Eletrônico (`/workspace/rh/ponto`), Folha & Benefícios (`/workspace/rh/folha`) e Compliance & ASO (`/workspace/rh/compliance`).
+     - Alvos de toque conformes com WCAG 2.2 AA (`min-h-11 h-11`), zero `!important`, conformidade com DL-03 e DL-30 (`tab-strip`), e integrado no topo das 4 rotas de RH.
+  5. **Conformidade Estrita de CI, Typecheck e Design Lint:**
+     - `design-lint.mjs --ratchet`: 2.407 arquivos inspecionados, 0 violações (P0=0, P1=0, P2=0, P3=0) — Catraca Aprovada.
+     - Vitest: 19 testes aprovados (100% de sucesso em testes de propostas, web controls e OCR).
+- **Fundamentação Teórica:** `AGENTS.md` (B.1, B.2, B.4, B.5, B.6, B.7, B.8, B.9, B.12, B.24, B.25, B.26, B.31, B.33); WCAG 2.2 AA.
+- **Consequências:** Aceite de propostas com reflexo imediato e auditável no CRM, emissão de contratos e recebíveis sem intervenção manual; OCR resiliente com modelos reais; mapas com proporções geográficas honestas; submódulo de RH unificado e consistente em toda a plataforma.
+
+## DEC-530: Vitrine Web de Propostas Turísticas: Paridade com Classificados (Card Sticky Lateral), Chat com IA em Drawer (Estilo Direct/Instagram), Checkout Inpage em 4 Etapas com Gateway Online e Blocos de Conversão
+- **Data (ISO):** 2026-11-18
+- **ID da Decisão:** DEC-530
+- **Contexto:**
+  1. O usuário apontou e forneceu evidências visuais (`media_1794964392849_01a12d94.jpg` e `media_1795026695791_47b27b6f.png`) demonstrando que o card comercial de investimento/reserva da proposta web de turismo estava acoplado internamente ao bloco de capa hero, rolando para fora da viewport durante a navegação das seções do roteiro (hotéis, voos, transfers, cruzeiros), em desacordo com o padrão dos classificados de turismo (`EditorialShowcaseView`), onde o card acompanha o scroll na lateral direita.
+  2. Havia necessidade de unificar a renderização responsiva das opções de capa (`split`, `immersive`, `gallery`, `gallery_mosaic_3`, `gallery_bento_4`, `minimal`) mantendo a coluna lateral direita fixa (`sticky top-24 self-start`) no desktop e uma barra de ação persistente de 44px no mobile.
+  3. Ausência de canal direto de atendimento por IA integrado na página da proposta (drawer lateral estilo Instagram Direct / Workspace Copilot) para responder dúvidas de roteiro, bagagem, documentação e voos, com atalho para WhatsApp humano e ativação/desativação no painel do administrador.
+  4. O fluxo de aceite da proposta requeria evolução para um checkout/reserva inpage passo a passo de 4 etapas (`Passageiros` -> `Pagamento` -> `Revisão` -> `Sucesso`), suporte a gateway de pagamento online configurável pelo admin, aviso legal explícito de simulação orçamentária com checkbox de concordância do passageiro e blocos opcionais de pacotes relacionados e banner promocional.
+- **Decisão Adotada:**
+  1. **Arquitetura de Grid Mestre com Card Comercial Sticky (`src/components/tourism/studio/proposal-web-showcase.tsx`):**
+     - Estruturação do layout em grade mestre de 2 colunas (`lg:grid-cols-12 gap-8`): coluna principal com conteúdo e roteiro (`lg:col-span-7 xl:col-span-8`) e barra lateral dedicada (`lg:col-span-5 xl:col-span-4`) com `<aside className="lg:sticky lg:top-24 self-start space-y-6">` envolvendo o `ProposalCommercialPanel`.
+     - Suporte transparente para todos os estilos de hero: nos modos full-width (`immersive`, `gallery`, `gallery_mosaic_3`, `gallery_bento_4`), o hero ocupa 100% da largura acima e a grade de 2 colunas inicia logo abaixo; no modo `split`, o hero integra a coluna esquerda enquanto o card comercial ancora no topo da coluna direita.
+     - No mobile, incorporação da barra de ação inferior fixa (`z-30 pb-safe`) com preço destacado, parcelas e CTA proeminente de 44px (`h-11 min-h-11`) para abertura direta do checkout inpage.
+  2. **Chat com Consultor IA em Drawer Lateral (`src/components/tourism/shared/TourismProposalAiDrawer.tsx`):**
+     - Implementação de gaveta lateral estilo Direct/Instagram com header com avatar da agência, indicador verde de status online, badges contextuais do roteiro (número de voos, hotéis, cruzeiros e transfers), histórico de mensagens com bolhas contrastantes, botão de fechamento com área tátil de 44x44px, pills de perguntas rápidas frequentes e link direto para o WhatsApp do atendente humano.
+     - Integração total com a server function `askProposalSalesAdvisorAI`.
+  3. **Checkout Inpage Passo a Passo & Gateway Online (`src/components/tourism/studio/travel-proposal-checkout-modal.tsx`):**
+     - Stepper de 4 etapas (`1. Passageiros`, `2. Pagamento`, `3. Revisão`, `4. Sucesso`) com barra de progresso visual.
+     - Suporte a `paymentPreference: "gateway_online"` exibindo botão com link direto configurável pelo lojista (`payment_gateway_url`).
+     - Alerta legal obrigatório de simulação orçamentária com checkbox de consentimento prévio do cliente antes do aceite final.
+     - Tela de sucesso com protocolo do aceite (`#ACEITE-...`), resumo do pacote, botão para o gateway de pagamento e atalho direto para o WhatsApp da agência.
+  4. **Novos Blocos de Conversão & Normalização DTO (`src/lib/tourism/proposal-normalization.ts`, `src/services/travel-proposal.functions.ts`):**
+     - Criação e normalização dos blocos `simulation_disclaimer`, `related_packages` e `promo_banner`.
+     - Migração SQL `20270614000000_proposal_web_pages_sticky_card_ai_and_gateway.sql` adicionando 13 colunas com `ADD COLUMN IF NOT EXISTS` em `proposal_web_pages`.
+     - Extensão do `ProposalWebPageBuilder` com painéis de controle no Studio para configuração de IA, WhatsApp, Gateway, Termos de Simulação e Pacotes Relacionados.
+  5. **Conformidade de CI, Design Lint e Testes:**
+     - `design-lint.mjs --ratchet`: 2.406 arquivos inspecionados, 0 violações (P0=0, P1=0, P2=0, P3=0) — Catraca Aprovada.
+     - Vitest `proposal-web-sticky-showcase-and-gateway-e2e.test.ts`: 4/4 testes aprovados (100%).
+     - Vitest `travel-proposal-advisor.test.ts`: 6/6 testes aprovados (100%).
+     - Vitest `proposal-normalization.test.ts` e controles: 30/30 testes aprovados (100%).
+- **Fundamentação Teórica:** `AGENTS.md` (B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.12, B.20, B.22, B.25, B.26, B.28, B.31, B.33, B.36); WCAG 2.2 AA.
+- **Consequências:** Paridade visual completa do card de reserva de propostas com os classificados do turismo, suporte a atendimento por IA em drawer flutuante, checkout transparente e seguro em 4 etapas, aviso legal de simulação auditável e integração a gateways de pagamento online.
+
+## DEC-529: Motor Geodésico & Náutico de Rotas de Voo e Cruzeiros Marítimos (MSC/Costa), Mapa Costeiro SVG CORS-Free e Layout Horizontal Full-Width de Traslados
+- **Data (ISO):** 2026-11-18
+- **ID da Decisão:** DEC-529
+- **Contexto:** O usuário reportou e forneceu evidências visuais (`media_1794964102778_113bdb56.jpg`, `media_1794964254526_e90ccab7.png`, `media_1794964254668_bac88698.png`) de três deficiências centrais no ecossistema de propostas e orçamentos turísticos: (1) no mapa geodésico de voos e cidades, faltava renderização fidedigna dos pontos geográficos reais, silhueta costeira e suporte a captura de snapshot em alta resolução para inclusão sincronizada tanto no PDF/PNG quanto na página web pública; (2) os cards de traslados e receptivo renderizavam com layout curto e espremido, comprimindo textos e trajetos; o usuário exigiu renderização em formato de lista/linhas horizontais completas (full-width) com suporte a foto/mídia do veículo ou receptivo, ponto de encontro e notas de bagagem; (3) ausência de suporte estruturado a viagens de Cruzeiros Marítimos no editor de propostas e orçamentos, com necessidade de itinerário diário completo (embarque, portos de escala, dias em navegação, horários ARR/DEP) e mapa vetorial da costa marítima brasileira (ex: Santos -> Búzios -> Santos no Oceano Atlântico).
+- **Decisão Adotada:**
+  1. **Motor de Geometria Geodésica e Náutica (`src/lib/tourism/flight-route-geometry.ts`):**
+     - Adicionado `CURATED_CRUISE_PORTS` com coordenadas de alta precisão para portos brasileiros e sul-americanos (Santos, Búzios, Rio de Janeiro, Ilhabela, Angra, Salvador, Ilhéus, Maceió, Balneário Camboriú, etc.).
+     - Implementada a função resiliente `resolveCruisePortCoordinates` com normalização de diacríticos e buscas compactas case-insensitive.
+     - Implementado `buildSvgProjectionForCruise`: projeta trajetos náuticos em SVG com curva quadrática suave, setas de navegação, silhueta da costa do Sudeste/Sul e labels geográficos ("Brazil", "Atlantic Ocean").
+     - Adicionada a silhueta da costa sul-americana (`SOUTH_AMERICA_COASTLINE_COORDS`) e fronteira do Brasil (`BRAZIL_BORDER_COORDS`) em `buildSvgProjectionForRoute`.
+  2. **Componentes Náuticos e Costeiros Integrados (`src/components/tourism/shared/CruiseRouteSvgMap.tsx`, `CruiseItinerarySection.tsx`, `FlightRouteSvgMap.tsx`):**
+     - Criado `CruiseRouteSvgMap`: mapa náutico em SVG puro, 100% livre de bloqueios de CORS, síncrono e pronto para PDF, exportação em PNG e vitrine web pública.
+     - Criado `CruiseItinerarySection`: timeline vertical de cruzeiros com badges táteis de atividades (embarque, navegação, desembarque, escala livre), cabines e regime de alimentação.
+  3. **Sidebar do Studio de Propostas (`src/components/tourism/studio/studio-sidebar-editor.tsx`):**
+     - Inserida a aba dedicada `Cruzeiros` com prévia ao vivo da rota náutica via `CruiseRouteSvgMap`, inputs para navio, cabine, portos, noites, upload de imagem do navio e lista diária com alternância de dias de mar e horários.
+     - Inseridos 3 presets instantâneos de 1 clique: MSC Santos -> Búzios, Costa Santos -> Ilhabela -> Rio, e MSC Santos -> Salvador.
+     - Inserido no final da aba de Voos o `StudioMapWidget`, permitindo inspecionar e salvar snapshots estáticos de alta resolução em `captured_map_url`.
+     - Atualizada a aba de Serviços/Traslados com campos para `meeting_point`, `luggage_notes` e upload de foto de veículo/receptivo.
+  4. **Padronização de Traslados em Linha Horizontal Full-Width (`src/components/tourism/proposals/templates/blocks/UI.tsx` e Templates):**
+     - Criado o componente canônico `ProposalTransferListBlock`: renderiza cada traslado como uma linha horizontal completa (full-width), com badges de sentido ("Ida e Volta" / "Somente Ida"), categoria de veículo, ponto de encontro e observações sem qualquer esmagamento de texto.
+     - Substituído o layout espremido em todos os 6 templates de proposta (`TemplateEditorialFlat`, `TemplateBentoGrid`, `TemplateDarkPremium`, `TemplateExecutivo`, `TemplateLandscape`, `TemplateVerticalPremium`) e na vitrine web pública (`proposal-web-showcase.tsx`).
+  5. **Contratos DTO, Schemas Zod e Sincronização Bilateral (`src/services/travel-proposal.functions.ts` & `src/services/proposals.ts`):**
+     - Atualizados `createTravelProposalInputSchema`, `updateTravelProposalInputSchema`, `snapshotHash`, `proposalInsertPayload`, `rowToProposalDTO` e `toPublicTravelProposalDTO` para suportar `cruises`, `map_image_url` e `captured_map_url`.
+     - Definidas as interfaces `CruiseDTO`, `CruiseItineraryDayDTO` e estendida `TransferDTO`.
+  6. **Evidências, Testes e Catraca Visual de CI:**
+     - `vitest run src/services/__tests__/tourism-cruise-and-transfer-e2e.test.ts`: 6/6 testes aprovados (100%).
+     - `vitest run src/services/__tests__/proposal-studio-multiniche-bento-e2e.test.ts`: 13/13 testes aprovados (100%).
+     - `node scripts/design-lint.mjs --ratchet`: 2.405 arquivos inspecionados, 0 violações (P0=0, P1=0, P2=0, P3=0) — Catraca Aprovada.
+- **Fundamentação Teórica:** `AGENTS.md` (B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.12, B.20, B.22, B.25, B.26, B.28, B.31, B.32, B.33); WCAG 2.2 AA.
+- **Consequências:** Solução unificada e precisa para itinerários náuticos e voos, renderização de mapas em PDF/PNG/Web sem erros de CORS, traslados apresentados com máxima legibilidade em formato lista horizontal e dados sincronizados de ponta a ponta.
+
+## DEC-528: Erradicação Estrita de Fallbacks Mocks, Sincronização Reativa Bilateral Lead-Cliente-Contratos e Vínculo de Proposta Aceita ao Pagamento Multi-Nicho no CRM Dossiê
+- **Data (ISO):** 2026-11-18
+- **ID da Decisão:** DEC-528
+- **Contexto:** Identificação de gaps na transição de leads promovidos para a carteira de clientes ativos, onde o botão do cabeçalho do dossiê permanecia apresentando "Converter em Cliente" mesmo após o vínculo ou quando o contato já constava na base de clientes. Adicionalmente, identificou-se que propostas aceitas/aprovadas não sincronizavam automaticamente os valores econômicos e condições de parcelamento na aba de Pagamento e na emissão de Contratos Digitais (mantendo campos zerados), a aba de Pastas de Inspiração / Moodboard não estava exposta na barra de navegação de ferramentas rápidas do dossiê, e foram detectados 5 pontos críticos de fallbacks sintéticos / arrays hardcodados violando as regras B.8 e B.33 do AGENTS.md (mesas do PDV, vagas de emprego estáticas, destaques de cultura estáticos, serviços turísticos hardcoded no BioLink e fallback silencioso de foto de praia do Unsplash ao publicar Hot Story).
+- **Decisão Adotada:**
+  1. **Erradicação Estrita de Fallbacks Sintéticos e Imagens de Estoque:**
+     - `src/routes/workspace.pdv.index.tsx`: Eliminado o fallback estático de 12 mesas (`m1` a `m12`). Se `floorPlan.tables` estiver vazio ou nulo, o salão agora renderiza um empty state honesto com ícone `Armchair` e aviso claro ("Nenhuma mesa cadastrada no salão").
+     - `src/components/commerce/dynamic-sections/careers-job-grid.tsx`: Eliminado o array estático de 3 vagas de emprego (`Consultor de Vendas Senior`, `Dev Full-Stack`, `Analista de Expedição`). Quando a unidade não possui vagas abertas, renderiza empty state honesto com `Briefcase`.
+     - `src/components/commerce/dynamic-sections/careers-hero-banner.tsx`: Eliminado o array sintético de 3 destaques de cultura; se a loja não cadastrou destaques no CMS, a seção omite o container preservando layout limpo.
+     - `src/routes/_store.bio.$slug.tsx`: Eliminado o array estático de 8 serviços de turismo com cidades hardcoded ("Maceió, Caldas, Portugal"). Renderiza estritamente os serviços configurados pelo lojista no bloco `services_grid`, omitindo o bloco caso vazio.
+     - `src/services/hot-offers.functions.ts`: Eliminada a URL de foto do Unsplash no canal de stories. A publicação de Hot Story 9:16 agora exige mídia real cadastrada na oferta, lançando erro de validação caso ausente.
+  2. **Identificação e Edição Ágil de Perfil do Cliente ("Converter em Cliente"):**
+     - Em `src/components/tourism/crm/TourismPipeCardDossier.tsx`, o botão de cabeçalho foi corrigido para avaliar `isLinkedToCustomer` (ou `lead.customer_id` / `localCustomer?.id`), exibindo imediatamente `Perfil do Cliente` com badge `Vinculado` e abrindo o `QuickCustomerProfileModal`.
+     - Injetado o estado reativo `localCustomer` populado imediatamente no retorno de `onPromoteToCustomer`, assegurando que o modal receba o payload do cliente com ID válido para edição imediata de foto (avatar), documentos, telefones, e-mail e notas sem exigir refresh.
+     - Quando o perfil é salvo em `QuickCustomerProfileModal`, o evento `onSaved` atualiza instantaneamente `localCustomer` e revalida as caches do CRM de forma bilateral.
+  3. **Vínculo Automático e Reativo de Proposta Aprovada ao Pagamento e Contrato:**
+     - Adicionado `useEffect` em `TourismPipeCardDossier.tsx` que monitora `acceptedProposal`. Ao detectar proposta aprovada ou aceita, aciona automaticamente `applyProposalToPaymentPlan(acceptedProposal)`, populando todos os campos de decomposição financeira e condições de pagamento por nicho.
+     - Auto-preenchimento reativo da minuta contratual (`handleApplyProposalToContract`), sincronizando o título, resumo de serviços, valor total contratado e condições de pagamento sem requerer cliques adicionais.
+  4. **Emissão e Acompanhamento em Tempo Real de Contratos Digitais:**
+     - Em `handleIssueContractClick`, o novo contrato emitido é imediatamente registrado em `localContracts` com fallback seguro de envelope e signatários, atualizando a contagem de contratos no dossiê de `(0)` para `(1)` e exibindo o card estilo DocuSign com stepper de 5 etapas, botões de copiar link, envio individual no WhatsApp e link para o Editor A4.
+  5. **Desbloqueio da Aba de Inspirações & Fotos Multi-Nicho no Dossiê:**
+     - Adicionada a aba `Inspirações (${inspirationPhotos.length})` com ícone `ImageIcon` diretamente na barra de ferramentas rápidas do card, permitindo acesso imediato ao `LeadInspirationMoodboard` com upload de fotos de destinos, hotéis, fachadas, veículos e moodboards de eventos.
+  6. **Evidências e Gates Aprovados:**
+     - `node scripts/design-lint.mjs --ratchet`: 2.403 arquivos inspecionados, 0 violações (P0=0, P1=0, P2=0, P3=0) — APROVADO.
+     - `vitest run src/services/__tests__/tourism-crm-multipane-scroll-and-hr-suite-e2e.test.ts`: 4/4 testes aprovados (100%).
+     - `vitest run src/services/__tests__/travel-operator-ocr-crm-fill-e2e.test.ts`: 4/4 testes aprovados (100%).
+- **Fundamentação Teórica:** AGENTS.md Regras B.1, B.2, B.4, B.6, B.7, B.8, B.9, B.12, B.20, B.22, B.26, B.28, B.31, B.33; WCAG 2.2 AA.
+- **Consequências:** Eliminação completa de dados falsos e imagens de estoque em produção; sincronização bilateral instantânea entre lead, carteira de clientes, propostas aceitas, pagamentos e contratos digitais com zero fricção para o operador.
+
+---
+
+## DEC-527: Arquitetura de Scroll Interno Multi-Pane Independente no CRM Dossier (3 e 2 Colunas) e Motor Resiliente de OCR de Orçamentos com Failover Triplo
+- **Data (ISO):** 2026-11-18
+- **ID da Decisão:** DEC-527
+- **Contexto:** Necessidade imperativa de saneamento end-to-end da visualização de colunas no Dossiê do Lead (`TourismPipeCardDossier.tsx`), onde o anti-pattern `h-full` concorrente com `flex-1 min-h-0` no contêiner raiz do card empurrava 110px do rodapé para fora da viewport, e a ausência de restrição de linha (`lg:grid-rows-1 min-h-0`) no CSS Grid impedia que as colunas rolassem de forma independente. O usuário apontou que nas abas com 3 grids (Aba Geral: Coluna 1 Viagem, Coluna 2 Procedência/Saúde, Coluna 3 Lateral Direita/Sidecar) e nas abas com 2 grids (Acompanhantes, Pagamento, Contratos, Oportunidades, Cotações, Anamnese, Perfil, etc.), cada coluna deve possuir rolagem interna vertical soberana e suave (`overflow-y-auto h-full scrollbar-waesy min-h-0`). Adicionalmente, foi corrigida a extração determinística e IA do OCR de orçamentos e vouchers de operadoras B2B (`quote-ocr-normalizer.ts`, `travel-operator-ocr.functions.ts`), com failover triplo e preenchimento atômico no CRM.
+- **Decisão Adotada:**
+  1. **Arquitetura Multi-Pane de Scroll Independente por Coluna (`TourismPipeCardDossier.tsx`):**
+     - Removido `h-full` do contêiner flexível `flex-1 min-h-0`, assegurando que o espaço disponível seja estritamente delimitado por `calc(100vh - headerHeight)`.
+     - Injetada a restrição canônica `lg:grid-rows-1 min-h-0 h-full items-stretch` no grid principal de 12 colunas e no subgrid de 2 colunas da aba `form`, garantindo que os trilhos verticais não expandam para o `max-content` e forçando o disparo do `overflow-y-auto` interno em cada coluna.
+     - **Abas com 3 Colunas (`activeSection === "form"`):** Coluna 1 (Viagem & Interesse), Coluna 2 (Atendimento, Procedência & Saúde) e Coluna 3 (Sidecar do Lead: Funil, Responsável, Contato, Resumo, Carteira, Checklists, Studios) operam com rolagem vertical independente, separando o contêiner de scroll da casca visual de cartões (`bg-card border p-5 rounded-xl`).
+     - **Abas com 2 Colunas (`activeSection !== "form"`):** Coluna 1 (`lg:col-span-8` com a respectiva aba ativa: Acompanhantes, Pagamento, Contratos, etc.) e Coluna 2 (`lg:col-span-4` com o Sidecar) operam com rolagem vertical independente e sem interferência cruzada.
+     - Suporte a scroll suave (`scrollIntoView` inline center) nos chips/pills da barra de navegação rápida e reset de scroll ao topo ao trocar de aba sem saltos na página.
+  2. **Motor Resiliente de OCR de Orçamentos B2B com Failover Triplo (`quote-ocr-normalizer.ts`, `travel-operator-ocr.functions.ts`):**
+     - Cascata de 3 camadas: (1) IA Multimodal primária com higienização estrita de Base64; (2) IA de texto puro via Groq/Qwen com parsing mecânico; (3) Extrator determinístico offline de alta performance com suporte a FRT, Orinter, CVC, Trend, Visual, Incomum, Azul Viagens, Schultz, Europlus e BestBuy.
+     - Correção da extração contextual de parcelamento (`max_installments`, `installment_cents`) e regime de alimentação/noites em blocos estruturados de hotéis.
+  3. **Conformidade Estrita com Design Lint (Catraca CI Zero Regressões):**
+     - Corrigidos espaçamentos fora da grade de 4px (`p-3.5` -> `p-3`, `mr-1.5` -> `mr-2`, `gap-1.5` -> `gap-2`, `px-2.5` -> `px-3`, `gap-2.5` -> `gap-2`, `mb-1.5` -> `mb-2`).
+     - Erradicado emoji proibido `✓` no uploader de arquivos em favor de `<Check className="size-3" />`.
+     - Adicionados ícones canônicos `FileSearch` e `Loader2` importados de `lucide-react`.
+  4. **Evidências e Gates Aprovados:**
+     - `node scripts/design-lint.mjs --ratchet`: 2.403 arquivos inspecionados, 0 violações (P0=0, P1=0, P2=0, P3=0) — APROVADO.
+     - `vitest run src/services/__tests__/tourism-crm-multipane-scroll-and-hr-suite-e2e.test.ts`: 4/4 testes aprovados (100%).
+     - `vitest run src/services/__tests__/travel-operator-ocr-crm-fill-e2e.test.ts`: 4/4 testes aprovados (100%).
+- **Fundamentação Teórica:** AGENTS.md Regras B.1, B.2, B.4, B.6, B.7, B.8, B.9, B.12, B.14, B.22, B.26, B.28, B.31; WCAG 2.2 AA.
+- **Consequências:** Zero vazamentos de layout ou oclusão vertical; colunas do Dossiê CRM e abas de negócio rolam de forma perfeitamente isolada em 3 ou 2 eixos verticais com 100% dos testes e catraca visual verdes.
+
+---
+
+## DEC-526: Galeria de Inspiração / Moodboard Visual e Inteligência Adaptativa Multi-Nicho no Dossiê do CRM
+- **Data:** 2026-11-18
+- **Contexto:** No Dossiê do CRM Comercial (`TourismPipeCardDossier.tsx`), os atendentes e vendedores não possuíam mecanismo nativo para upload de fotos aleatórias, criação de pastas de inspiração/moodboard temáticos (destinos, hotéis, fachadas, veículos, vestidos de noiva, antes/depois, exames clínicos) ou suporte a colar prints da área de transferência (`Ctrl+V`). Adicionalmente, os campos, abas e presets de contrato estavam rigidamente acoplados à terminologia turística (Acompanhantes, Anamnese, Destino), mesmo quando o card operava em imobiliárias, oficinas, eventos, clínicas de estética, barbearias ou serviços B2B.
+- **Decisão Adotada:**
+  1. **Novo Componente Canônico `LeadInspirationMoodboard.tsx` (`src/components/crm/LeadInspirationMoodboard.tsx`):**
+     - Moodboard visual completo com upload de imagens para `cms-media` via `uploadStoreMedia`, suporte nativo a colar imagens diretamente com `Ctrl+V` (paste listener), criação de novas pastas personalizadas e 12 presets canônicos por nicho (Turismo, Imobiliária, Automotivo, Eventos, Salão de Beleza, Barbearia, Estética, Saúde, Odontologia, Serviços B2B, Gastronomia, Varejo).
+     - Grade responsiva com aspect ratio seguro (`aspect-video`), badges de pasta, marcação de foto destaque (`is_featured`), lightbox ampliado de alta fidelidade com notas da referência, edição inline de legendas, disparo rápido para o WhatsApp do cliente e cópia de link em 1 clique.
+     - Conformidade total com o piso WCAG 2.2 AA e Design Lint (alvos táteis >= 44px, `:focus-visible:ring-2`, tokens semânticos e grade modular de 4px).
+  2. **Integração e Roteamento no Dossiê (`TourismPipeCardDossier.tsx`):**
+     - Adicionada aba `Inspirações (${inspirationPhotos.length})` no tab strip e renderização da seção dedicada `section-inspiration` com persistência em `lead.custom_fields.inspiration_photos` e `inspiration_folders`.
+  3. **Inteligência e Adaptação Multi-Nicho (`niche-ssot.ts` e `kanban-niche-taxonomy.ts`):**
+     - Resolução unificada do nicho via `resolveUnifiedNicheId` e consumo de `getNicheKanbanTerminology`.
+     - Adaptação dinâmica de rótulos de abas: Acompanhantes ➔ Cônjuge & Dependentes (Real Estate), Condutores (Automotive), Padrinhos & Família (Events), Acompanhantes/Resp. (Health/Beauty); Anamnese ➔ Briefing de Compra (Real Estate), Check-in & Vistoria (Automotive), Briefing de Cerimonial (Events), Ficha de Anamnese (Health/Beauty), Briefing de Escopo (Services/B2B).
+     - Adaptação contextual do campo de interesse e presets de contrato automáticos por nicho (Compra e Venda de Imóvel, Locação, Veículo, Buffet, Consentimento Clínico, SLA B2B).
+  4. **Gates Aprovados:**
+     - `node scripts/design-lint.mjs --ratchet`: 0 violações em 2.400 arquivos (P0: 0, P1: 0, P2: 0, P3: 0).
+     - `node scripts/check-type-duplications.mjs`: 0 tipos concorrentes em 2.985 arquivos.
+     - `node scripts/check-bff-table-contracts.mjs`: 0 tabelas sem declaração local.
+     - Vitest: 20/20 testes unitários e de integração aprovados em `tourism-crm-advanced-dossier-e2e.test.ts`.
+- **Fundamentação Teórica:** `AGENTS.md` (B.1, B.4, B.6, B.7, B.8, B.9, B.12, B.20, B.22, B.25, B.28, B.31, B.33), `docs/design/DESIGN.md`, `docs/design/DESIGN-LINT.md` (`DL-02`, `DL-03`, `DL-14`, `DL-15`, `DL-18`, `DL-30`, `DL-33`).
+- **Consequências:** Atendentes de qualquer segmento comercial dispõem agora de um moodboard visual de alta conversão dentro do card do CRM, com vocabulário, entidades e contratos 100% afinados ao seu mercado de atuação.
+
+## DEC-525: Sincronização Completa de Contratos, Envelopes & Dossiê CRM (Tier DocuSign / ClickSign)
+- **Data:** 2026-11-18
+- **Contexto:** Na aba `Contratos (0)` do Dossiê do Lead (`TourismPipeCardDossier.tsx`), contratos emitidos ou vinculados desapareciam ou não sincronizavam com o atendimento devido a filtro restritivo `.eq("category", "tourism")` no BFF (descartando contratos salvos sob `tourism_package` ou `general_deal`), ausência de join com versões e envelopes de assinatura, e inexistência de cache reativo em 0ms. Além disso, a tela não oferecia auto-preenchimento a partir de proposta aceita, presets de contrato, criação direta no Editor A4, modal de vinculação do cofre e acompanhamento visual do status do contrato com lista de signatários e disparo de links individuais no WhatsApp.
+- **Decisão Adotada:**
+  1. **Saneamento do BFF (`src/services/crm.functions.ts`):**
+     - Em `getCustomer360Profile`, removido o filtro restritivo de categoria e incluído join relacional profundo com `contract_versions` e `signature_envelopes (id, signer_name, signer_email, signer_phone, signer_role, status, viewed_at, signed_at, signing_token, dispatch_channel)`. O filtro OR agora inclui contratos registrados em `lead.custom_fields.contract_ids`, `lead.custom_fields.linked_contract_id` e `lead.custom_fields.payment_plan.linked_contract_id`.
+     - Em `issueLeadContract`, seleção automática do envelope criado com `signing_token` real e persistência imediata dos IDs e tokens em `leads_crm.custom_fields`.
+     - Criadas as funções `linkContractToLead` (vínculo manual de contrato a lead/customer com auditoria em `lead_activities`) e `listLinkableStoreContracts` (listagem dos contratos disponíveis no cofre da agência).
+  2. **Unificação Reativa de Contratos no Dossiê (`TourismPipeCardDossier.tsx`):**
+     - Unificação canônica de `allContracts` combinando `customer360Data.contracts` e `localContracts` com ordenação temporal decrescente e atualização instantânea da aba `Contratos (${allContracts.length})`.
+     - Presets rápidos de modelos de minuta: "Pacote Turístico Completo", "Aéreo + Hospedagem", "Corporativo B2B" e "Serviços / Consultoria".
+     - Banner inteligente de auto-preenchimento a partir de proposta aceita (`acceptedProposal`), preenchendo título, resumo descritivo, valor total e termos de parcelamento em 1 clique.
+     - Botão de atualização em tempo real (`RefreshCw`), criação direta no Editor Visual A4 (`/workspace/contratos/novo?leadId=...`) e modal de vinculação do cofre da empresa (`Dialog`).
+  3. **Visual e Governança Tier DocuSign / ClickSign:**
+     - Stepper militar de 5 etapas: 1. Minuta Gerada ➔ 2. Disparado ➔ 3. Visualizado ➔ 4. Validação KYC ➔ 5. Selado SHA-256.
+     - Lista de signatários com papéis (Contratante, Agência, Testemunha), status individual e botões de disparo de WhatsApp individual com URL segura `/assinar/:signing_token` e cópia de link.
+     - Ações de topo: Editor A4 (`/workspace/contratos/:id/editor`), Minuta Pública (`/contrato/:token`), WhatsApp Geral e Copiar Link.
+  4. **Gates Aprovados:**
+     - `design-lint.mjs --ratchet`: 0 violações em 2.399 arquivos (P0: 0, P1: 0, P2: 0, P3: 0).
+     - `check-type-duplications.mjs`: 0 tipos/interfaces concorrentes em 2.984 arquivos.
+     - `check-bff-table-contracts.mjs`: 863 tabelas SQL vs 705 referências BFF (0 tabelas sem declaração local).
+     - Vitest: 20/20 testes unitários e de integração E2E aprovados em `tourism-crm-advanced-dossier-e2e.test.ts`.
+- **Fundamentação Teórica:** `AGENTS.md` (B.1, B.4, B.6, B.7, B.8, B.9, B.14, B.22, B.25, B.28, B.31, B.33), `docs/design/DESIGN.md`, `docs/design/DESIGN-LINT.md` (`DL-02`, `DL-03`, `DL-07`, `DL-15`, `DL-18`, `DL-27`, `DL-28`, `DL-29`, `DL-33`).
+- **Consequências:** Sincronização 100% confiável e imediata de contratos emitidos ou vinculados no Dossiê do Lead; rastreabilidade probatória militar completa com disparos individuais de envelopes para signatários.
+
+
+
+## DEC-523: Vinculação Atômica de Propostas/Orçamentos a Pagamento, Decomposição Multi-Nicho e Sincronização com Contratos Oficiais
+- **Data:** 2026-11-18
+- **Contexto:** Na aba `$ Pagamento` do Dossiê do Lead (`TourismPipeCardDossier.tsx`), os campos de decomposição financeira e modalidades de pagamento operavam de forma estática e desacoplada das propostas e cotações do atendimento, sem detectar se o cliente havia aceito uma proposta no portal público (`travel_proposal_acceptances`) e forçando a estrutura de turismo (Aéreo/Hotel/Seguro/Taxas) mesmo quando o atendimento pertencia a nichos comerciais ou de serviços (B2B, consultoria, produtos).
+- **Decisão Adotada:**
+  1. **Seletor e Card de Proposta Vinculada (`TourismPipeCardDossier.tsx`):** Adicionado card no topo da aba de pagamento com detecção automática de proposta aceita (`status === "accepted" | "approved" | "won"` ou `acceptance_status === "accepted"`), exibição de badge "Proposta Aprovada pelo Cliente", seletor reativo de propostas e de opções multilinha (`linked_option_id`), e botão de 1 clique "Sincronizar Dados da Proposta" com ícone `RefreshCw`.
+  2. **Decomposição Adaptativa Multi-Nicho:** Bifurcação dinâmica entre "Turismo & Viagens" (Aéreo, Hotelaria, Seguro, Taxas de Embarque, Comissão) e "Serviços & B2B" (Serviços/Mão de Obra, Produtos/Peças, Taxas/Impostos, Desconto, Margem/Markup Comercial), com modalidades de faturamento adaptadas para cada segmento (PIX com desconto, Cartão até 12x, Boleto Operadora/PJ, Entrada + Parcelas) e propagação reativa do valor total para o funil (`estimated_value_cents`).
+  3. **Herança Determinística na Emissão de Contratos (`src/services/crm.functions.ts`):** Em `issueLeadContract`, o sistema agora consome diretamente `lead.custom_fields.payment_plan.linked_proposal_id` e `linked_option_id`, vinculando a opção aceita, itinerário, especificações e condições financeiras reais na emissão do contrato oficial para assinatura digital.
+  4. **Gates Aprovados:** Catraca visual `node scripts/design-lint.mjs --ratchet` com 0 violações em 2.399 arquivos (P0: 0, P1: 0, P2: 0, P3: 0), 0 tipos concorrentes em 2.984 arquivos, 0 tabelas BFF sem declaração e 16/16 testes unitários e de integração aprovados em `tourism-crm-advanced-dossier-e2e.test.ts`.
+- **Fundamentação Teórica:** `AGENTS.md` (B.1, B.4, B.6, B.7, B.8, B.9, B.14, B.22, B.25, B.28, B.31, B.33), `docs/design/DESIGN.md`, `docs/design/DESIGN-LINT.md` (`DL-03`, `DL-14`, `DL-23`).
+- **Consequências:** Eliminação total de divergências entre valores orçados, formas de pagamento acordadas e contratos emitidos; suporte nativo e expansivo para qualquer nicho de mercado do ecossistema Waesy.
+
+
+## DEC-522: Edição Rápida de Perfil do Cliente com Upload de Foto, Deduplicação Atômica, Sincronização Bidirecional WhatsApp/CRM e Rebalanceamento Multi-Pane no Dossiê
+- **Data:** 2026-11-18
+- **Contexto:** Ao converter lead em cliente ou selecionar contato já cadastrado no Dossiê do Lead (`TourismPipeCardDossier.tsx`), o botão do cabeçalho continuava exibindo estaticamente "Converter em Cliente", não havia interface para upload rápido de foto/avatar e dados rápidos sem sair da tela, e havia risco de erro por duplicidade caso o contato já existisse em `customers_crm`. Além disso, a distribuição de colunas na aba Geral estava assimétrica (Coluna 1 sobrecarregada com 12 blocos e Coluna 2 com grande vazio vertical).
+- **Decisão Adotada:**
+  1. **Novo Componente de Edição Rápida (`src/components/crm/QuickCustomerProfileModal.tsx`):** Modal de alta acessibilidade com upload de foto diretamente para Supabase Storage (bucket `avatars`), edição ágil de Nome Completo, CPF/Documento, RG, WhatsApp/Telefone, E-mail, Data de Nascimento, Cidade, Estado, Tags de Segmentação (`AdvancedLeadTagsPicker`) e Notas Internas, com link direto para conversa WhatsApp e alternância fluida para a Ficha 360°.
+  2. **Deduplicação Atômica & Auto-Identificação no Backend (`src/services/crm.functions.ts`):** Em `getCustomer360Profile`, se `!lead.customer_id`, realiza busca inteligente por documento, sufixo de 8 dígitos de telefone e e-mail. Se encontrar cliente pré-existente, vincula atomicamente `leads_crm.customer_id`, carrega o histórico completo de contratos e viagens e executa `autoBindLeadToMatchingWhatsAppThreads` para sincronizar as threads de chat do WhatsApp. Em `promoteLeadToCustomer`, retorna o objeto do cliente e status de já cliente, prevenindo qualquer conflito de duplicidade.
+  3. **Alternância Inteligente do Botão no Topo e Sidecar (`TourismPipeCardDossier.tsx`):**
+     - Quando vinculado: Botão "Perfil do Cliente" com UserCheck icon e badge "Vinculado" no header, avatar clicável com imagem real, e botão "Editar Perfil do Cliente" no Sidecar.
+     - Quando não vinculado: Botão "Converter em Cliente", que executa conversão com deduplicação atômica e abre imediatamente o modal de edição rápida para upload de foto e conferência.
+     - Na aba Perfil do Cliente (Customer 360): Adicionado botão "Edição Rápida & Foto".
+  4. **Rebalanceamento das Colunas da Aba Geral (Layout 3-Colunas):**
+     - Coluna 1 (Viagem & Interesse): Destinos, Orçamento, Tipo de Interesse, Período, Quartos & Ocupantes, Alerta de Taxas Regulatórias, Anotações da Abordagem e botão de salvar.
+     - Coluna 2 (Atendimento, Origem, Lembretes & Saúde): Canal/Origem, Atribuição de Anúncio e Pixel, Tags Avançadas, Lembretes & Alarmes de Follow-up, Acessibilidade & Saúde Especial (PCD, Mobilidade, TEA, Restrições/Alergias), Consentimento LGPD e botão de salvar.
+     - Coluna 3 (Sidecar): Funil, Contato, Resumo da Viagem, Carteira de Clientes com avatar e edição rápida, Checklists e Studios.
+     - Cada uma das 3 colunas opera com scroll interno independente (`lg:overflow-y-auto overscroll-contain scrollbar-waesy`).
+  5. **Conformidade Estrita com Gates de Design:** 0 violações no `design-lint.mjs --ratchet` em 2.399 arquivos (P0: 0, P1: 0, P2: 0, P3: 0), 0 tipos duplicados em 2.984 arquivos, e 0 tabelas BFF sem declaração.
+- **Fundamentação Teórica:** `AGENTS.md` (B.1, B.4, B.6, B.7, B.8, B.9, B.14, B.22, B.26, B.27, B.31, B.32, B.33), `docs/design/DESIGN.md`, `docs/design/DESIGN-LINT.md` (`DL-03`, `DL-14`, `DL-27`, `DL-31`, `DL-32`).
+- **Consequências:** Experiência de conversão instantânea com upload de foto e dados essenciais sem perda de contexto; sincronização atômica bidirecional entre CRM e WhatsApp; equilíbrio visual e ergonômico no layout multi-pane.
+
+## DEC-521: Reconciliação Unificada de Assinatura Digital e Rubrica, Resiliência Defensiva do Loader de Configurações da Loja e Isolamento Estrito do App PWA Branded da Empresa
+- **Data:** 2026-11-18
+- **Contexto:** O usuário reportou falha onde a assinatura cadastrada no painel da equipe exibia "Não cadastrada" e "Sem Assinatura Digital", tela vermelha com "Erro ao carregar configurações da loja - Acesso negado" em `/workspace/configuracoes`, e vazamento semântico de links para o marketplace civil em vez do App PWA corporativo e isolado da empresa (`/app/$slug`).
+- **Decisão Adotada:**
+  1. **Vinculação Unificada de Assinatura e Rubrica (`src/services/contracts.functions.ts`):** Em `getUserSavedSignature`, expandida a seleção de colunas para `saved_signature_url, saved_initials_url` e retornado `savedSignature: profile?.saved_signature_url || profile?.saved_initials_url || null`. Agora contratos e envelopes assinados utilizam a rubrica salva caso a assinatura principal não esteja cadastrada separadamente.
+  2. **Resiliência Defensiva do Loader de Configurações (`src/routes/workspace.configuracoes.index.tsx`):** Blindadas as chamadas secundárias (`getWorkingHours`, `getPolicies`, `listManualPaymentMethods`) com `.catch(() => null)` e `.catch(() => [])`. Se o usuário tiver papel restrito ou faltarem métodos manuais de pagamento, a tela não quebra, carregando com sucesso as configurações principais (`getStoreSettings()`).
+  3. **Conversão de Links para o App PWA Branded da Empresa (`src/routes/workspace.marketing.studio.tsx`, `src/routes/workspace.marketing.anuncios.novo.tsx`, `src/routes/workspace.lojas.index.tsx`):** Substituídos links de vitrine civil `/loja/$slug` pela rota isolada e oficial do App PWA `/app/$slug`.
+  4. **Desambiguação de Conformidade (`src/routes/workspace.configuracoes.conformidade.tsx`):** Renomeados cabeçalhos de "Marketplace Oficial" para "Conformidade Fiscal & Operacional" e badges para "Empresa Verificada & Em Conformidade".
+  5. **Saneamento Visual (DL-03):** Corrigidos espaçamentos `gap-2.5` para `gap-2` em `room-occupancy-builder.tsx`, mantendo a catraca `design-lint.mjs --ratchet` com 0 violações em 2396 arquivos.
+- **Fundamentação Teórica:** `AGENTS.md` (B.1, B.2, B.4, B.6, B.7, B.8, B.9, B.25), `docs/design/DESIGN.md`, `docs/design/DESIGN-LINT.md` (`DL-03`, `DL-14`).
+- **Consequências:** Reconciliação robusta de assinaturas sem fricção; eliminação do erro "Acesso negado" em configurações; garantia de isolamento total do App PWA corporativo sem vazamento de rotas de marketplace; aprovação plena de integridade com zero erros TypeScript.
+
+## DEC-520: Arquitetura Multi-Pane com Scroll Interno Independente por Coluna (Layouts de 3 e 2 Grids) e Descompressão de Ocupação no Dossiê de Atendimento
+- **Data:** 2026-11-18
+- **Contexto:** No Dossiê do Lead/Atendimento Comercial (`TourismPipeCardDossier.tsx`), o scroll era posicionado no contêiner pai, fazendo com que a rolagem do formulário arrastasse a coluna lateral de governança (Sidecar) para fora da visão. Além disso, na aba Geral (3 colunas: Viagem & Destino, Acessibilidade & Saúde, e Sidecar), a sub-coluna 2 apresentava grande vazio vertical devido ao alinhamento esticado, enquanto em `RoomOccupancyBuilder` e `TravelPeriodTagsPicker` a divisão em micro-colunas comprimia os contadores de quartos e inputs de data, causando quebras de linha artificiais no texto dos botões.
+- **Decisão Adotada:**
+  1. **Scroll Interno Independente Multi-Pane (`TourismPipeCardDossier.tsx`):** Contêiner externo ajustado para `flex-1 min-h-0 h-full overflow-y-auto lg:overflow-hidden p-4 sm:p-6 bg-background` com `grid grid-cols-1 lg:grid-cols-12 gap-6 h-full min-h-0 items-stretch`.
+  2. **Layout de 3 Colunas na Aba Geral (`activeSection === "form"`):** (a) Sub-coluna 1 (Viagem & Destino) opera com `h-auto lg:h-full min-h-0 lg:overflow-y-auto overscroll-contain pr-0 lg:pr-2 scrollbar-waesy space-y-4 pb-12 lg:pb-16` e botão próprio de salvar; (b) Sub-coluna 2 (Acessibilidade & Saúde Especial) opera com `h-auto lg:h-full min-h-0 lg:overflow-y-auto overscroll-contain pr-0 lg:pr-2 scrollbar-waesy space-y-4 p-5 rounded-xl border border-border/40 bg-muted/10 flex flex-col justify-between pb-12 lg:pb-16` e botão próprio de salvar; (c) Coluna 3 (Sidecar) opera com `lg:col-span-4 h-auto lg:h-full min-h-0 lg:overflow-y-auto overscroll-contain pr-0 lg:pr-1 scrollbar-waesy space-y-5 pb-16 lg:pb-8`. Cada uma das 3 colunas rola de forma totalmente independente sem arrastar as outras.
+  3. **Layout de 2 Colunas nas Demais Abas:** Quando qualquer outra aba está ativa (`anamnese`, `customer360`, `travelers`, `checklists`, `proposals`, `contracts`, `payment`, etc.), a área de conteúdo (`lg:col-span-8`) e o Sidecar (`lg:col-span-4`) operam ambos com scroll interno independente de 100% da altura útil.
+  4. **Responsividade Tátil Mobile:** Em telas < 1024px, as colunas colapsam harmoniosamente para fluxo contínuo com `overflow-y-auto` na casca e `h-auto overflow-visible` nas colunas, preservando ergonomia móvel e aderência estrita a WCAG 2.2 AA.
+  5. **Descompressão de Ocupação e Datas (`RoomOccupancyBuilder.tsx`, `TravelPeriodTagsPicker.tsx`):** Normalizados os contadores de quartos para `grid grid-cols-1 gap-2` e as datas para `grid grid-cols-1 sm:grid-cols-2 gap-3` com tolerância em span total, eliminando a compressão horizontal, alinhando à grade de 4px (DL-03) e mantendo a catraca visual com 0 violações.
+- **Fundamentação Teórica:** `AGENTS.md` (B.1, B.4, B.6, B.7, B.8, B.9, B.14, B.22, B.26, B.28), `docs/design/DESIGN.md`, `docs/design/DESIGN-LINT.md` (`DL-03`, `DL-14`, `DL-31`, `DL-32`).
+- **Consequências:** Ergonomia e usabilidade cirúrgicas no Dossiê CRM; catraca `node scripts/design-lint.mjs --ratchet` aprovada com 0 violações em 2396 arquivos; 13/13 testes de CRM Dossier e 6/6 testes de Kanban aprovados; 0 tipos concorrentes em 2980 arquivos; 0 tabelas BFF sem declaração.
+
+## DEC-519: Propagação Global de Tags Comerciais, Alarmes de Follow-up e Canais de Origem no Kanban Universal, Board Multi-Nicho e Inbox WhatsApp
+- **Data:** 2026-11-18
+- **Contexto:** Após a consolidação dos módulos de tags, anamnese e lembretes no CRM de turismo, era necessário propagar holisticamente para todas as superfícies de CRM da plataforma Waesy a renderização e gestão de tags comerciais, alarmes de follow-up com status de vencimento e identificação clara do canal de origem (WhatsApp, Site, Anúncios, Indicação).
+- **Decisão Adotada:**
+  1. **Kanban Universal (`src/components/workspace/kanban/universal-kanban-card.tsx`):** `UniversalKanbanCard` passa a exibir ativamente `tags` com badges compactos, alertas de lembrete com `Bell` icon e status visual ("Atrasado", "Hoje", "Alarme") e pill do canal de origem (`effectiveSource`) com `Share2` icon.
+  2. **Board Multi-Nicho (`src/components/workspace/kanban/niche-kanban-board.tsx`):** `NicheKanbanBoard` e `NicheKanbanCardData` estendidos para computar `reminderMeta` e `effectiveSource`, garantindo visibilidade imediata de alarmes e canais em todos os nichos de mercado (imobiliária, oficinas, eventos, advocacia, etc.).
+  3. **Central de CRM (`src/routes/workspace.crm.tsx`):** `kanbanItems` mapeado com `followUpAt`, `source` e `tags`. Integrados no Sheet de detalhes do lead os componentes `AdvancedLeadTagsPicker` e `LeadRemindersManager`, permitindo edição de tags e agendamento de follow-ups diretamente no drawer com persistência via `updateLeadDetails`.
+  4. **Inbox de Leads WhatsApp (`src/components/workspace/crm/whatsapp-leads-inbox.tsx`):** Inseridos badges de tags e alertas visuais de follow-up em cada card de contato WhatsApp.
+- **Fundamentação Teórica:** `AGENTS.md` (B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.25), `docs/design/DESIGN.md`, `docs/design/DESIGN-LINT.md`.
+- **Consequências:** Paridade funcional e visual de CRM propagada globalmente; catraca `design-lint.mjs --ratchet` verde com 0 violações em 2396 arquivos; 0 tipos duplicados em 2980 arquivos; 0 erros de TypeScript.
+
+## DEC-518: Resolução Integral do Isolamento de Contexto Workspace vs Civil, Vinculação Bidirecional de Assinaturas e Rubricas, Purga de Menus Civis e Fechamento com Zero Erros de TypeScript (TSC 0)
+- **Data:** 2026-11-18
+- **Contexto:** O usuário reportou e cobrou a resolução end-to-end de três problemas críticos encadeados com imagens anexas: (1) em `/workspace/configuracoes/equipe`, a assinatura desenhada no quadro de Rubrica não vinculava a assinatura digital (badge `"Não cadastrada"` e tabela `"Sem Assinatura Digital"`); (2) em `/workspace/configuracoes`, tela vermelha com `"Erro ao carregar configurações da loja" - "Acesso negado"`; (3) no menu lateral de Ajustes da loja aparecia indevidamente `"Minhas Lojas"` misturando funções civis no Workspace, com vários submódulos apresentando erros de compilação ou permissão.
+- **Decisão Adotada:**
+  1. **Vinculação Bidirecional de Assinatura e Rubrica (`contracts-vault.functions.ts`, `DigitalSignatureCanvas.tsx`, `saved-signature-settings.tsx`, `workspace.configuracoes.equipe.tsx`):** `getUserSignatureProfile` e `listTeamSignatureStatuses` passam a resolver `savedSignature = saved_signature_url || saved_initials_url`. Ao salvar rubrica, espelha para assinatura caso nulo. Canvas isolado como papel claro (`data-builder-canvas-isolated="light"`) com tinta escura. Badges de equipe sincronizados reativamente em tempo real.
+  2. **Isolamento Estrito de Contexto no Servidor (`identity.server.ts`, `identity.server.adversarial.test.ts`):** `isWorkspaceRequest` força incondicionalmente `activeContext = "store"`, impedindo que o cookie residual `waesy_active_context=civil` zere `store_id` e rebaixe a role para `"customer"`, neutralizando completamente o erro `"Acesso negado"`. Teste adversarial ADV-12 adicionado e aprovado.
+  3. **Purga do Menu de Ajustes (`workspace-navigation.ts`):** Removido `{ path: "/workspace/lojas", label: "Minhas Lojas" }` de `GROUP_SETTINGS`.
+  4. **Correção Global de Tipagem TypeScript (TSC 0 Erros):** Corrigidos todos os 11 pontos de quebra em submódulos (`branded-app-shell.tsx`, `branded-app-workspace-editor.tsx`, `workspace.match-time.tsx`, `routes.ts`, `auth.portal-selector.tsx`, `onboarding.empresa.tsx`, `workspace.contratos.index.tsx`, `workspace.configuracoes.pwa.tsx`, `workspace-shell.tsx`, `workspace.captacao.index.tsx`, `customer-360-editable-card.tsx`).
+- **Fundamentação Teórica:** `AGENTS.md` (B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.25), `docs/design/DESIGN.md`, `docs/design/DESIGN-LINT.md`.
+- **Consequências:** Zero erros de compilação TypeScript no projeto inteiro (`tsc --noEmit` aprovado com código 0); 20/20 testes Vitest aprovados; 0 violações no design lint em 2396 arquivos; 0 tabelas BFF sem declaração local; paridade de tokens 100%.
+
+## DEC-517: Refatoração End-to-End de CRM/Kanban de Turismo, Tags Avançadas por Nicho, Anamnese Multimodal (Word/Checklist/Histórico), Lembretes com Alarme e Dossiê do Cliente 360° Editável
+- **Data:** 2026-11-17
+- **Contexto:** Identificou-se que tags comerciais não eram renderizadas no Kanban nem editáveis no dossiê de atendimento de turismo; a anamnese concatenava texto bruto sem estruturação ou histórico; lembretes de follow-up careciam de alarmes com status visual e atalhos de vencimento; contadores de ocupação de quartos apresentavam desalinhamento de layout; e a ficha cadastral do cliente era estática sem edição direta ou inteligência de expiração de documentos e destinos especiais (Bonito, Noronha, Jalapão).
+- **Decisão Adotada:**
+  1. **Seletor Avançado de Tags (`AdvancedLeadTagsPicker`):** Tags categorizadas e sugestões contextuais por nicho ("VIP", "Primeira Viagem", "Lua de Mel", "Passaporte Pendente", "Orçamento Alto"), sem duplicação de case e com alvos táteis em conformidade WCAG 2.2 AA.
+  2. **Gestão de Lembretes & Alarmes de Follow-up (`LeadRemindersManager`):** Suporte a modalidades de alarme (`call`, `whatsapp`, `proposal`, `payment`, `docs`), atalhos de tempo (+2h, +24h, +72h, +168h), badges de status ("Atrasado", "Vence Hoje", "Agendado") e persistência sincronizada.
+  3. **Anamnese Multimodal com Versionamento (`AnamneseDocEditor`):** 3 modos integrados: Tags & Checklist (6 grupos taxonômicos), Ficha Doc A4 estilo Word com realces semânticos e Histórico com restauração de snapshots congelados para auditoria.
+  4. **Dossiê do Cliente 360° Editável (`Customer360EditableCard`):** Edição cadastral inline via `updateCustomer`, atalho para download em PDF, radar de expiração de documentos (passaportes < 6 meses, RGs > 10 anos) e alertas para destinos especiais (Bonito Voucher Único, Fernando de Noronha TPA).
+  5. **Correção Visual no RoomOccupancyBuilder e LeadCard:** Normalizados os contadores de quartos para alvos táteis canônicos 44x44px e sanadas todas as 63 violações no `design-lint.mjs --ratchet`, mantendo 0 violações em 2396 arquivos do repositório.
+- **Fundamentação Teórica:** `AGENTS.md` (B.1, B.4, B.6, B.7, B.8, B.9, B.22, B.25), `docs/design/DESIGN.md`, `docs/design/DESIGN-LINT.md`.
+- **Consequências:** Kanban e Dossiê 100% integrados; 13/13 novos testes Vitest aprovados; 0 tipos duplicados em 2980 arquivos; 0 tabelas BFF sem declaração; catraca de design lint aprovada com 0 violações.
+
+## DEC-516: Acesso Direto de Funcionários ao Workspace Sem Conta Civil, Manifesto PWA Exclusivo da Empresa e Blindagem Anti-Vazamento de Marketplace (SPEC-STAFF-DIRECT-WORKSPACE-ACCESS)
+- **Data:** 2026-11-17
+- **Contexto:** Funcionários cadastrados no Workspace precisavam entrar diretamente no painel operacional (`/workspace`) com suas funções (`seller`, `cashier`, `finance`, `stock`, `content`, `support`, `manager`, `admin`) sem depender de conta civil ou vitrine pública, e o Workspace precisava operar como PWA corporativo isolado sem vazamento de atalhos de marketplace.
+- **Decisão Adotada:**
+  1. **Provisionamento Direto e Senha Gerenciada pelo Gestor (`src/services/admin-team.functions.ts`, `src/routes/workspace.configuracoes.equipe.tsx`):** Adicionado suporte a `initialPassword` no convite (`_inviteTeamMember`) e `newPassword` na edição de vínculos (`_updateTeamMemberProfile`) com trava Zero-Trust cross-tenant (`canMutateGlobalProfile`), `approval_status: "approved"` automático em `profiles`, além de botão **Link de Acesso** (`/painel?email=<email>&returnUrl=/workspace`) e envio direto via WhatsApp na gaveta **Vínculos do Colaborador**.
+  2. **Ponte Automática RH ↔ Equipe (`src/services/hr.functions.ts`):** `upsertStoreEmployee` sincroniza automaticamente colaboradores cadastrados com e-mail válido na Folha/RH com `workspace_members`.
+  3. **Unificação de Papéis Staff e Resolução Determinística (`src/lib/identity-core.ts`, `src/lib/identity.server.ts`, `src/services/auth.functions.ts`, `src/routes/api.auth.callback.ts`, `src/routes/painel.tsx`, `src/routes/workspace.tsx`):** Inclusão de `cashier`, `waiter`, `driver` e `collaborator` em `STAFF_ROLES` e nas guardas de `/painel` e `/workspace`; prioridade para o `role` da loja em `getUserSession` sobre o default `"customer"` de `profiles`; e ativação automática do contexto `"store"` no callback OAuth e quando não há cookie civil explícito.
+  4. **PWA Corporativo Isolado da Empresa Sem Acesso a Marketplace (`src/routes/api.pwa.manifest[.]json.ts`, `src/routes/__root.tsx`, `src/components/workspace/workspace-shell.tsx`, `src/routes/_store.tsx`):** Criado manifesto `mode=workspace` (`/api/pwa/manifest.json?mode=workspace&storeId=<id>`) com `start_url: "/workspace?pwa=workspace"`, removidos `<WaesyHubLauncher />` e o botão `"Marketplace"` do `WorkspaceShell`, redirecionado o logout corporativo para `/painel` e bloqueada a gravação indevida de `waesy_active_context=civil` em rotas de autenticação e PWAs corporativos.
+- **Fundamentação Teórica:** `AGENTS.md` (B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.25), `docs/design/DESIGN.md`, `docs/specs/SPEC-STAFF-DIRECT-WORKSPACE-ACCESS.md`.
+- **Consequências:** Funcionários entram direto no `/workspace` com link pré-preenchido e senha definida pelo gestor; Workspace instala como app PWA corporativo isolado sem links para o marketplace civil; 26/26 testes Vitest e `design-lint --changed` aprovados com 0 violações.
+
+## DEC-515: Implementação End-to-End do Ecossistema Comercial B2B: App Próprio Gated, Segmentação de Promoções, Modo Campo e Suíte E2E
+- **Data:** 2026-11-17
+- **Contexto:** Conclusão da missão mestra de arquitetura comercial B2B, carteira rotativa, rotas de campo e app próprio (`/app/:slug`). Foi implementada a experiência gated para distribuidoras e catálogos restritos B2B, eliminando vazamento prematuro de preços para visitantes não autenticados, injetando o Modo Representante de Campo para equipe comercial autorizada, implementando a segmentação multi-dimensional de promoções (`target_catalog_ids`, `target_price_table_ids`, `target_seller_ids`) e blindando a conformidade estrita com o piso visual modular de 4px (DL-03).
+- **Decisão Adotada:**
+  1. **Experiência Gated no App Próprio (`src/components/branded-app/branded-app-shell.tsx`, `app-sections-renderer.tsx`):** Quando a loja opera no modelo `distribuidora_b2b_rota` ou possui catálogos com `visibility_scope = 'b2b_restricted'`, visitantes não autenticados visualizam os produtos com badge honesto *"Preços exclusivos para clientes credenciados"* e CTA proeminente *"Ver Preço & Credenciar"*, redirecionando para a área do cliente. Clientes autenticados recebem suas tabelas de preço resolvidas soberanamente pelo servidor via `resolveEffectiveCustomerOfferFn`.
+  2. **Modo Representante de Campo (`field_rep`):** Quando o usuário acessando o `/app/:slug` pertence ao staff comercial da distribuidora (`owner`, `admin`, `manager`, `seller`), uma aba e painel tático "Modo Campo" é disponibilizado com atalhos diretos para o CRM de Rotas GPS, check-in com geofence e emissão de pedidos B2B.
+  3. **Segmentação B2B de Promoções (`src/services/promotions.functions.ts`):** Adicionadas colunas e validações para `target_catalog_ids`, `target_price_table_ids` e `target_seller_ids`. Implementadas as funções puras `isPromotionEligibleForB2B`, `computePromotionDiscount` e a Server Function `evaluatePromotionEligibilityFn`.
+  4. **Suíte Automatizada E2E (`src/services/__tests__/b2b-commercial-lifecycle-e2e.test.ts`):** 12 testes unitários e de integração cobrindo as 5 naturezas de atenção comercial (`presencial_gps_validado`, `presencial_sem_gps_evidencia_chat`, `digital_whatsapp_confirmado`, `marcado_manual_sem_evidencia`, `divergencia_alerta`), cálculo do ciclo de recompra pós-pedido e matriz de elegibilidade de promoções segmentadas.
+  5. **Conformidade Estrita com Catraca Visual (DL-03):** Sanados espaçamentos fracionários fora da grade de 4px (`pt-0.5` -> `pt-1`, `px-2.5` -> `px-2`, `py-0.5` -> `py-1`, `gap-1.5` -> `gap-2`), atingindo 0 violações P0/P1/P2/P3 na catraca `design-lint.mjs --ratchet` em 2387 arquivos inspecionados.
+- **Fundamentação Teórica:** `AGENTS.md` (B.1, B.4, B.6, B.7, B.8, B.9, B.22, B.25), `docs/design/DESIGN.md`, `docs/design/DESIGN-LINT.md` (`DL-03`).
+- **Consequências:** App próprio e catálogo B2B 100% integrados à governança Zero-Trust; 55/55 testes aprovados em 7 suítes centrais; 0 tipos duplicados em 2966 arquivos; catraca de design lint com zero violações.
+
+## DEC-514: Purga Completa do Portfólio Civil do Workspace, Recuperação Resiliente de Papel Corporativo em requireRole e Estabilização dos Submódulos
+- **Data:** 2026-11-17
+- **Contexto:** Auditoria detalhada solicitada pelo usuário para averiguar por que a interface do Workspace ainda apresentava resquícios do catálogo civil ("Minhas Empresas", "Minhas Lojas") e por que múltiplos submódulos de workspace quebravam ou falhavam silenciosamente. O vetor raiz isolado comprovou que: (1) resíduos do cookie civil `waesy_active_context=civil` rebaixavam a identidade do usuário para `role = "customer"`; (2) `requireRole` em `src/lib/auth-guards.server.ts` lançava imediatamente `Forbidden: Insufficient privileges (customer)` sem consultar os vínculos corporativos em `identity.memberships`; (3) rotas e menus do workspace continham links vazando para a área civil (`/conta/curriculo`, `/conta/classificados`, `/criar-negocio`).
+- **Decisão Adotada:**
+  1. **Recuperação Resiliente de Papel Corporativo (`src/lib/auth-guards.server.ts`):** `requireRole` atualizado para que, em caso de identidade com role `"customer"` ou demotada por cookie civil transitório, inspecione os vínculos verificados em `identity.memberships`. Havendo vínculo compatível com `allowedRoles`, restaura soberanamente `role` e `store_id` corporativos, mantendo Zero-Trust e eliminando falsos-positivos de bloqueio nos 88 arquivos de serviço do painel.
+  2. **Imunidade de Tenant no Workspace (`src/lib/identity.server.ts`):** Definido `isExplicitWorkspace = isWorkspaceRequest || (hasTenantCookie && memberships.length > 0)`. Havendo cookie de tenant explícito ou rota de workspace, resíduos civis são estritamente impedidos de anular `activeStoreId`.
+  3. **Purga Radical de "Minhas Empresas / Minhas Lojas" da UI Corporativa:** Títulos e cabeçalhos em `src/routes/workspace.lojas.index.tsx` renomeados de "Minhas Lojas" para "Unidades e Filiais", expurgado o botão "+ Novo Negócio" (`/criar-negocio`), eliminado botão redundante "Trocar Loja" em `src/routes/workspace.index.tsx`, e ajustados rótulos em `utility-cluster.tsx`, `context-switcher.tsx` e `navigation-registry.ts`.
+  4. **Correção de Redirecionamentos e Links Civis:** `src/lib/workspace-navigation.ts` teve o link civil `/conta/curriculo` substituído por `/workspace/empregos/novo`, `/conta/classificados` substituído por `/workspace/catalogo/produtos`, e `workspace.curriculo.editor.tsx` redirecionando para `/workspace/empregos`. Formulários de captação e doações passam explicitamente `storeId: activeStoreId` sem perder o contexto do tenant.
+- **Fundamentação Teórica:** `AGENTS.md` (B.1, B.2, B.4, B.7, B.8, B.9), `docs/design/DESIGN.md`, `skills/waesy-integrity-auditor/SKILL.md`.
+- **Consequências:** Zero vazamentos de "Minhas Empresas" no Workspace; eliminação de falsos erros 403 em todos os 164 loaders e 88 serviços de workspace; 43/43 testes Vitest aprovados; 0 tipos duplicados; catraca de design lint 100% verde com 0 violações em 2387 arquivos.
+
+## DEC-513: Auditoria Forense Sistêmica de RLS, Unicidade de Tipos SSOT e Estabilização Frontend ↔ Backend
+- **Data:** 2026-11-17
+- **Contexto:** Após implementações sequenciais (Hot Ofertas Black, Copilot @oferta, Carteira Rotativa B2B, Rotas GPS, Catálogos/Tabelas e OmniMatch Neural), foi realizada auditoria forense end-to-end para garantir paridade total entre UI e banco de dados, eliminar riscos de vazamento entre leads/tenants, sanar duplicidades de tipo em src/ e blindar o RLS contra qualquer exposição ou injeção anônima em tabelas de painel/workspace.
+- **Decisão Adotada:**
+  1. **Blindagem e Hardening de RLS:** Rastreamento forense em 817 tabelas declaradas e 822 habilitadas no Postgres. Detectadas políticas residuais permissivas em `travel_contract_signers` com `USING (true)`, agora revogadas (`REVOKE ALL FROM anon, public`) e dropadas em `20270609000000_b2b_rotary_crm_gps_routes_and_omnimatch_engine.sql`. Todas as tabelas de workspace/painel operam com RLS Deny-by-Default restrito a `is_store_staff(store_id)` e BFF server-side com autenticação soberana.
+  2. **Unicidade de Tipos (SSOT Gate Plano 5 — S13):** Eliminada colisão de tipo `RoomOccupancy` entre picker de UI e engine de ofertas, renomeando o seletor para `GuestRoomOccupancy` (`tourism-multi-room-picker.tsx`, `tourism-dynamic-search-panel.tsx`, `travel-quote-modal.tsx`). Resultado: 0 tipos concorrentes em 2965 arquivos no `scripts/check-type-duplications.mjs`.
+  3. **Paridade de Formulários e Validação Defensiva:** Alinhados campos de `HotOfferPublisherDialog` com `promoteProposalOrPackageToHotOfferFn` e tornados defensivos os validadores Zod de `upsertMatchCardFn` e `recordFieldVisitCheckInFn` para campos opcionais/nulos.
+- **Fundamentação Teórica:** `AGENTS.md` (B.1, B.4, B.7, B.8, B.9, B.25), `docs/design/DESIGN.md`, `docs/audits/LEDGER_FORENSIC_RLS_AND_FRONTEND_BACKEND_STABILIZATION_2026-11-17.md`.
+- **Consequências:** Zero tabelas de workspace expostas publicamente; 24/24 testes Vitest aprovados; 0 tipos duplicados; catraca de design lint mantida com 0 violações em 2387 arquivos.
+
+## DEC-512: Isolamento Estrito de Workspace vs Contexto Civil (Anti-Rebaixamento Zero-Trust) e Purga de "Minhas Lojas" da Navegação de Ajustes da Loja (SPEC-WORKSPACE-CIVIL-ISOLATION-CLOSURE)
+- **Data:** 2026-11-17
+- **Contexto:** Identificou-se que quando o usuário navegava por rotas civis (vitrines, feed, `/conta/*`), o cookie `waesy_active_context=civil` ficava gravado no navegador com escopo global `path=/`. Ao retornar ao `/workspace/*`, `src/lib/identity.server.ts` anulava incondicionalmente `activeStoreId = null` e rebaixava o papel do usuário para `"customer"`, fazendo com que loaders e Server Functions (`getPolicies`, `listManualPaymentMethods`, etc.) lançassem `"Acesso negado"` ou `Unauthorized` em `/workspace/configuracoes` e em vários submódulos operacionais. Adicionalmente, o grupo de Ajustes (`GROUP_SETTINGS`) em `workspace-navigation.ts` incluía indevidamente o link `Minhas Lojas` (`/workspace/lojas`), misturando o catálogo pessoal de múltiplas empresas da pessoa física dentro do menu de configurações da empresa ativa.
+- **Decisão Adotada:**
+  1. **Isolamento de Contexto no Servidor (`src/lib/identity.server.ts`):** Adicionada detecção estrita de `isWorkspaceRequest` (via referer, url e header de contexto). Quando a requisição é do Workspace, o contexto é forçado como `"store"`, neutralizando cookies residuais civis (`waesy_active_context=civil`), preservando a loja ativa do usuário (`activeStoreId`) e sua role real de staff (`owner`/`admin`), com chave de cache isolada `ws:${isWorkspace}`.
+  2. **Purga da Navegação de Ajustes (`src/lib/workspace-navigation.ts`):** Removido o item `Minhas Lojas` de `GROUP_SETTINGS`. A alternância e gestão de empresas no Workspace é atribuída exclusivamente ao seletor soberano de cabeçalho (`WorkspaceAccountSwitcher`) e à área civil `/conta/lojas`.
+  3. **Correção de Tipos e Submódulos:** Tipados `PwaSearchParams` em `pwa.tsx`, corrigidos chamadores em `canonical-store-profile-view.tsx` e `workspace.marketing.vitrine.tsx`, `orders` em `app-client-portal-chat-and-tickets.tsx`, `productData` em `branded-app-shell.tsx`, `captureRequestTelemetry` em `pixels.functions.ts` e anotações explícitas de asserção `ServerIdentity` em `travel-pre-boarding-and-commissions.functions.ts`.
+- **Fundamentação Teórica:** `AGENTS.md` (B.1, B.4, B.7, B.8, B.9, B.25), `docs/design/DESIGN.md`.
+- **Consequências:** Zero vazamento de contexto civil no Workspace; eliminação definitiva do erro `"Acesso negado"` em `/workspace/configuracoes`; 22/22 testes unitários aprovados no Vitest (incluindo teste adversarial ADV-12); 2387 arquivos auditados com 0 violações no `design-lint --ratchet`.
+
+## DEC-511: Blindagem RLS B2B, Carteira Rotativa Dia a Dia, Rotas GPS e OmniMatch Neural Engine (SPEC-B2B-ROTARY-CRM-GPS-ROUTES-AND-OMNIMATCH-ENGINE)
+- **Data:** 2026-11-17
+- **Contexto:** Auditoria forense do ecossistema identificou: (1) vulnerabilidade RLS crítica em `20260825220000_multi_price_tables_b2b_erp.sql` onde `price_tables_public_read` e `price_table_items_public_read` concediam leitura pública irrestrita a tabelas ativas (`USING (active = true)`); (2) CRM carecia de fila operacional semanal "Dia a Dia" orientada por ciclo médio de recompra (`avg_repurchase_days`) e roteirização com telemetria GPS e geofence Haversine; (3) motor `match-time` operava com regras legadas com cupom estático de 50% sem suporte paramétrico multi-nicho, sem cartas de trade-off e sem studio de curadoria no Workspace.
+- **Decisão Adotada:**
+  1. **SQL / RLS / Vetores (`supabase/migrations/20270609000000_b2b_rotary_crm_gps_routes_and_omnimatch_engine.sql`):** Adicionada coluna `visibility_scope` em `public.price_tables`, dropadas políticas públicas genéricas e substituídas por políticas restritas baseadas em `customer_price_table_assignments` e `is_store_staff`. Criadas tabelas para catálogo e carteira (`sales_catalogs`, `sales_catalog_items`, `seller_portfolio_assignments`), rotas de campo (`sales_routes`, `sales_route_stops`, `sales_visit_logs` com geofence Haversine) e motor OmniMatch (`match_deck_templates`, `match_cards` com vetor 1536, `match_visitor_brains` com `axis_scores` e `preference_embedding`).
+  2. **BFF Soberano (`b2b-portfolio-routes.functions.ts` e `match-engine.functions.ts`):** Criados `resolveEffectiveCustomerOfferFn`, `listSellerPortfolioRotaryQueueFn`, `computeNextAttentionCycle`, `calculateHaversineDistanceMeters` (piso 200m), `recordFieldVisitCheckInFn`, `getMatchDeckBatchFn`, `recordMatchSwipeAndAnalyzeFn`, `stitchMatchBrainToCustomerOrLeadFn` (costura com sanitização sem duplicar leads no CRM) e CRUD de estúdio.
+  3. **UI Workspace & Catraca Design Lint:** Integradas abas "Dia a Dia (Carteira)" e "Rotas GPS" em `workspace.crm.tsx` (`RotaryQueueView` e `FieldRoutesView`) e criada rota Studio `/workspace/match-time`. Sanadas todas as violações residuais de design lint nos 8 arquivos afetados, alcançando aprovação plena na catraca `node scripts/design-lint.mjs --ratchet` (0 violações P0-P3 em todos os 2387 arquivos inspecionados).
+- **Fundamentação Teórica:** `docs/specs/SPEC-B2B-ROTARY-CRM-GPS-ROUTES-AND-OMNIMATCH-ENGINE.md`, `AGENTS.md` (B.4, B.7, B.8, B.9, B.25).
+- **Consequências:** 14/14 testes unitários e de integração aprovados no Vitest (`hot-offers-and-copilot-e2e.test.ts` e `b2b-portfolio-and-omnimatch-e2e.test.ts`); 0 tabelas sem declaração local no BFF; catraca de design lint com 0 violações; integridade B2B e OmniMatch totalmente comprovadas.
+
+## DEC-510: Vinculação Bidirecional de Assinatura/Rubrica na Equipe e Isolamento de Papel Claro no Canvas de Assinatura (SPEC-SIGNATURE-LINK-FIX)
+- **Data:** 2026-11-17
+- **Contexto:** Em `/workspace/configuracoes/equipe`, ao desenhar a assinatura dentro do quadro de Rubrica (cujo botão exibia `"Salvar Assinatura"`), `saveUserSignatureAndInitials` gravava apenas `saved_initials_url`, mantendo `saved_signature_url` nulo e exibindo `"Não cadastrada"` no card e `"Sem Assinatura Digital"` na linha do membro em `Membros Ativos`. Adicionalmente, `DigitalSignatureCanvas` utilizava `ctx.strokeStyle = "currentColor"` sobre `bg-card`, gerando tinta branca no modo escuro (invisível sobre o papel claro de contrato).
+- **Decisão Adotada:**
+  1. **BFF (`src/services/contracts-vault.functions.ts`):** `getUserSignatureProfile` e `listTeamSignatureStatuses` passam a resolver `savedSignature = saved_signature_url || saved_initials_url`; `saveUserSignatureAndInitials` espelha automaticamente `initialsImageBase64` em `saved_signature_url` quando o perfil ainda não possui assinatura principal cadastrada.
+  2. **Canvas & Card (`src/components/workspace/DigitalSignatureCanvas.tsx`, `src/components/contracts/saved-signature-settings.tsx`):** Superfície do canvas isolada como papel claro (`data-builder-canvas-isolated="light"`, `TOKEN_HEX.white`) com tinta documental escura (`TOKEN_HEX.slate900`), suporte a `saveLabel="Salvar Rubrica"` e callback `onProfileChange`.
+  3. **Rota de Equipe (`src/routes/workspace.configuracoes.equipe.tsx`):** Sincronização imediata via `liveUserSigProfile` entre `SavedSignatureSettingsCard` e os badges da tabela `Membros Ativos`.
+- **Fundamentação Teórica:** `docs/specs/SPEC-SIGNATURE-LINK-FIX.md`, `AGENTS.md` (B.4, B.5, B.7, B.9).
+- **Consequências:** Assinaturas desenhadas em qualquer um dos quadros vinculam imediatamente o membro em `Minha Assinatura para Contratos` (`Cadastrada`) e em `Membros Ativos` (`Assinatura Digital Salva`), com traço escuro legível em modo claro e escuro.
+
+## DEC-509: Fechamento de Integridade End-to-End Turismo & Contratos, Hardening RLS/BFF, Edição Pós-Venda e Deploy de Produção (SPEC-TOURISM-E2E-SYNC-CLOSURE)
+- **Data:** 2026-11-16
+- **Contexto:** Auditoria forense e revisão adversarial multi-agente (`tourism-security-reviewer`, `tourism-contract-checker`) no ecossistema de Turismo & Contratos apontaram: (1) exposição cross-tenant em `travel_trip_official_documents_read`, ausência de guarda autenticado/membro em `getTravelerTripPortalDossier`, mutações sem `requireStaff()` em `travel-contract.functions.ts`, `travel-lifecycle.functions.ts`, `group-tours.functions.ts`, `storage.functions.ts` e `apply_operator_voucher_atomic`, além de auto-quitação client-side em `submitAndAutoMatchCustomerReceiptFn`; (2) quebra de conversão e sincronização em `convert_accepted_travel_proposal_staff`, `sign_public_travel_contract`, `signContractAsPayer`, `saveTripFinancialDetails`, `bookGroupTourReservation` e `listClientCarnes`; (3) lacunas de edição pós-venda, documentos oficiais, upload persistente de comprovante/álbum em `workspace.turismo.viagens.$id.tsx` e `viajante.viagem.$id.tsx`, link incorreto `/login` -> `/entrar`, além de violações DL-14/DL-15/DL-16/DL-28/DL-31 e fallbacks sintéticos (`HT-`, `TR-`, `CONFIRMED`, `inst-single`, `05:45`, `No Horário`, `hist-1`/`hist-2`).
+- **Decisão Adotada:**
+  1. **SQL / RLS / RPC (`supabase/migrations/20270530000000_tourism_e2e_rls_contracts_boletos_sync.sql`):** Adicionada coluna `tourism_trips.lead_id` e índices; criado helper `is_trip_member_or_owner(UUID)` com validação estrita de CPF 11 dígitos não-placeholder; fechadas políticas RLS de `travel_trip_official_documents` e `travel_trip_installment_boletos`; corrigidas `convert_accepted_travel_proposal_staff`, `sign_public_travel_contract` e `apply_operator_voucher_atomic` (`REVOKE authenticated`, `auth.uid() = p_actor_profile_id`).
+  2. **BFF Multi-Tenant & Sincronia (`travel-contract.functions.ts`, `travel-continuous-flow.functions.ts`, `travel-lifecycle.functions.ts`, `travel-ecosystem-engines.functions.ts`, `travel-installments.functions.ts`, `tourism-incidents.functions.ts`, `travel-reaccommodation.functions.ts`, `contracts.functions.ts`, `crm.functions.ts`, `group-tours.functions.ts`, `receivables.functions.ts`, `storage.functions.ts`, `proposals.ts`):** Imposição de `requireStaff()`/tenant e posse de viagem, bloqueio de auto-conciliação pelo passageiro (`status = 'receipt_uploaded'`), allowlist/prefixo de bucket em `addTripOfficialDocument` e `storage.functions.ts`, eliminação de `travel_trips` morto, unificação de `travel_trip_installment_boletos` em carnês/financeiro, criação automática de `tourism_trips` em excursões e expurgo de `fetchProposalHistory` sintético.
+  3. **UI Pós-Venda, Contratos & Portal (`trip-post-sale-editors.tsx`, `workspace.turismo.viagens.$id.tsx`, `workspace.turismo.propostas.$id.tsx`, `viajante.viagem.$id.tsx`, `_store.conta.contratos.tsx`):** Adicionados `TripOperationalStructureEditor` e `TripOfficialDocumentsPanel`; unificados status `signed`/`completed`, `aggregate.boletos`, upload real de comprovantes (`payment-proofs`) e álbum coletivo (`post-media`); removidos fallbacks sintéticos e sanados DL-14/DL-15/DL-16/DL-28/DL-31.
+- **Fundamentação Teórica:** `SPEC-TOURISM-E2E-SYNC-CLOSURE.md`, `AGENTS.md` (B.4, B.7, B.8, B.9, B.25, B.31, B.33), `waesy-integrity-auditor/SKILL.md`, `deploy-verifier/SKILL.md` e WCAG 2.2 AA.
+- **Consequências:** 59/59 testes em 7 suítes Vitest (mocks), `check:schema` (`636` migrações), `check:bff` (`0` faltantes), `check:types-ssot`, `check:cycles`, `check:naming`, `audit:buttons`, `contrast-audit`, `token-sync` e `design-lint` (0 achados nos arquivos UI alterados/criados) aprovados; Supabase produção atualizado (`636` migrações, `843` tabelas, Edge Function `infotravel-connector`), build SSR (`_worker.js` `24.47 MB / 25.00 MB`) e deploy Wrangler Cloudflare Pages publicados em `https://22dd4dc2.usewaesy.pages.dev`. Nota honesta: `tsc --noEmit` global completo foi cancelado antes de concluir e possuía erros pré-existentes fora do escopo (`branded-app*`, `ChatQuickComposerModals.tsx`, `TourismPipeCardDossier.tsx`, `components/tourism/index.ts`); no browser dev local (`127.0.0.1:4177`), `/viajante/viagem/TEST_CODE_123` foi verificado em desktop e mobile, enquanto `/conta/contratos` e `/proposta/token-invalido-teste` sofreram stall no servidor dev durante recarregamento paralelo em disco (não re-verificados em produção pós-deploy).
+
 ## DEC-508: Isolamento Pleno de Sistemas Verticais, Landings Editáveis com Mídia CMS e Conexão Auth/Planos por Nicho (SPEC-20261116)
 - **Data:** 2026-11-16
 - **Contexto:** Subdomínios verticais (`turis`, `wowbook`, `tableway`, `lexcloud`, `passhub`, `talentlink`, `signflow`, `omnipage`, `autocenter`, `imobiliaria`, `varejo`, `pro`, `talk`, `studio`) careciam de páginas landing nichadas 100% editáveis com upload de mídia, possuíam dessincronia com o catálogo SQL (`platform_vertical_subsystems`) e apresentavam falha de mapeamento de plano (`professional` -> `pro` e `canAccessWorkspaceGroup`) no Workspace.
@@ -9875,3 +10281,385 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
   5. **Saneamento de Produção em Rotas Workspace (`workspace.pedidos.gestor.tsx`, `workspace.pedidos.index.tsx`, `workspace.configuracoes.equipe.tsx`, `contract-variable-picker.tsx`):** `KDSPage` desacoplado de `Route.useLoaderData()` (eliminando `Invariant failed` em `/workspace/pedidos`); aba `Salão Parceiro` restrita a nichos de beleza/estética; removido banner verboso e badges ruidosos em Equipe; abas de variáveis contratuais em flex-wrap sem corte de texto.
 - **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.20, B.26, B.31, DESIGN.md e Design Lint DL-01..DL-32.
 - **Consequências:** Coesão visual dos Workspace rails, edição responsiva fiel no Builder em todas as janelas sem vazamentos nem aprisionamento de controles, e recuperação imediata de `/workspace/pedidos`.
+
+---
+
+### DEC-501: Refatoração End-to-End do Studio de Propostas, OCR Combinado B2B e Página Web Editorial (2026-11-16)
+- **Data (ISO):** 2026-11-16
+- **ID da Decisão:** DEC-501
+- **Contexto:** Diagnóstico completo (`docs/specs/SPEC-PROPOSAL-STUDIO-V2.md`) sobre o fluxo real com cotações de operadoras (`Orcamento.pdf`, InfoTravel, FRT, Azul/LATAM) identificou duplicação de hotéis em múltiplas "opções de pacote" no topo da página web (`D1`/`D2`), descarte e falha de nomes/preços em múltiplos transfers (`D3`), passeios combinados ("+ Passeio City Tour") perdidos fora de `tours[]` (`D4`), exibição única de foto nos hotéis/templates com crop travado (`D5`), falha do botão "Gerar Roteiro" quando não há catálogo prévio (`D6`), visualização editorial acoplada ao template de classificados (`D7`) e ausência de entidade persistida para construção visual da Página Web (`D8`).
+- **Decisão Adotada:**
+  1. **Persistência & Contrato Multi-Mídia (`20270523000000_proposal_media_transfers_and_web_pages.sql`, `proposal-normalization.ts`, `travel-proposal.functions.ts`):** Criação da tabela `public.proposal_web_pages` (`UNIQUE(proposal_id)`, RLS `is_store_staff(store_id)`, leitura pública sanitizada via join em `getPublicTravelProposalByToken` stripping `notes` em transfers); introdução de `ProposalMediaItem` (imagens, `.mp4`/`.webm`/`.mov`, links YouTube/Vimeo, `aspectPreset` destravado), `normalizeHotelsList`, `normalizeTransfersList`, `normalizeToursList` e auto-cura `normalizeProposalOptionsAndHotels` colapsando opções erroneamente clonadas de hotéis enquanto preserva cotações comparativas reais (`source_proposal_id` ou preços distintos).
+  2. **Extração OCR B2B & Gerador Híbrido de Roteiro (`quote-ocr-normalizer.ts`, `travel-operator-ocr.functions.ts`, `generateProposalItineraryAI`):** Correção do bug `<= 50000` na conversão de valores em centavos, desmembramento determinístico de `+ Passeio ...` sem falsos positivos em `Transfer In+Out`, extração múltipla de hotéis/transfers/passeios com bandeiras `review_flags` (< 0.6) e gerador híbrido de roteiro (linhas OCR → enriquecimento IA → agenda determinística em dias editáveis).
+  3. **Upload Multi-Mídia, Templates PDF e Editor Completo (`MediaGalleryField`, `ImageUpload`, `UnifiedProposalWorkspace`, `StudioSidebarEditor`, `blocks/UI.tsx` + 7 templates):** Upload múltiplo direto via signed PUT no bucket `cms-media` com `ImageCropperDialog` em modo livre (`Auto`, `16:9`, `4:3`, `1:1`, `4:5`, `9:16`, `Livre`), seleção individual por transfer no orçamento/editor rodoviário, renderização de `ProposalHotelMediaGallery` (até 6 fotos abaixo de cada hotel em todos os 7 templates PDF) e toggle `"Criar página web também"`.
+  4. **Construtor & Vitrine Web Editorial Dedicada (`ProposalWebPageBuilder`, `ProposalWebShowcase`, `workspace.turismo.propostas.$id.tsx`, `_store.proposta.$token.tsx`, `ProposalQuickPreviewSheet.tsx`):** Aba `"Página Web"` integrada ao Studio com alternância `Lâmina PDF` / `Página Web` (Desktop/Mobile), blocos ordenáveis e customizáveis (Hero vídeo/carrossel, galerias, textos livres, CTAs, tema e visibilidade por seção) e exibição condicional estrita de tabs de comparação apenas quando existirem 2+ pacotes reais.
+- **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.25, B.31, B.33, DESIGN.md e Zero-Trust Multi-Tenant RLS.
+- **Consequências:** Fidelidade estrita entre cotações de operadoras, orçamento multi-trecho, lâminas PDF com galerias completas e páginas web editoriais editáveis sem dados sintéticos ou tabs enganosas.
+
+### DEC-502: Auditoria End-to-End e Refatoração WhatsApp Real-Time, Delta Sync & Atendimento Ao Vivo (2026-11-16)
+- **Data (ISO):** 2026-11-16
+- **ID da Decisão:** DEC-502
+- **Contexto:** Diagnóstico completo nas 4 camadas (`docs/specs/SPEC-20261116-WHATSAPP-REALTIME-SYNC-E2E.md`) comprovou que canais Evolution exibiam status conectado sem sincronização automática nem atualização ao vivo devido a: (1) deriva de origem `DEFAULT_WEBHOOK_ORIGIN` (`pages.dev` vs `waesy.com.br`), `webhookBase64: true` derrubando mídias `>1 MB` com HTTP 413 e omissão de eventos `MESSAGES_SET`/`CHATS_*`/`CONTACTS_*`/`GROUPS_*` + `chats.update` confundido com `isDelivery`; (2) loops N+1 sem limite estourando Cloudflare Worker e deixando `whatsapp_history_sync_jobs` eternamente em `running`, além de 158 webhooks presos em `received` e leitura de `process.env` sem `getEnvVar`/cofre encriptado em `chat.functions.ts` e rotas de cron; (3) ausência de jobs WhatsApp no `pg_cron` (`0` crons); (4) RLS `deny_client (false)` em `whatsapp_channel_instances` e `whatsapp_outbox` anulando WebSockets do Supabase Realtime e ausência de `REPLICA IDENTITY FULL` nas tabelas auxiliares; (5) lacunas de atualização ao vivo, filtro `channel_instance_id`, hidratação de imagens/figurinhas e sobrescrita stale de `departments` em telas de Atendimento e Admin Master.
+- **Decisão Adotada:**
+  1. **Gateway, Webhooks & Auto-Recuperação (`whatsapp-evolution-config.server.ts`, `whatsapp-channel-instances.functions.ts`, `whatsapp-provider-webhook.server.ts`, `whatsapp-media.server.ts`):** Resolução de origem webhook em runtime via `getEnvVar`, registro completo `/webhook/set` com `enabled: true`, `base64: false` e 14 eventos canônicos (incluindo `MESSAGES_SET`, `CHATS_*`, `CONTACTS_*`, `GROUPS_*`), desambiguação de eventos de metadados vs `delivery`, heartbeat throttled (`last_webhook_at`) e self-healing de `status = 'connected'`, replay de eventos presos em `received` e trava de segurança `<= 5.5 MB` evitando gravação de blobs JSONB gigantes em `chat_messages.attachments`.
+  2. **Motor de Delta Sync Limitado & Cron Autônomo (`whatsapp-evolution-sync.server.ts`, `api.cron.whatsapp-sync.ts`, `api.internal.whatsapp-outbox-worker.ts`, `worker-auth.ts`, `whatsapp-outbox.worker.ts`):** Batching de lookup de `chat_threads`/`chat_messages` (eliminando N+1), reaper automático (>3 min em `running`), finalização determinística `completed`/`failed`, filtragem rigorosa `@lid`/`altPhone` sem `+` sintético, reatribuição segura apenas de `channel_instance_id` nulo/inativo, atualização imediata de `chat_threads.last_message_at` na entrega da outbox e endpoint cron `/api/cron/whatsapp-sync` autenticado via `getEnvVar`.
+  3. **Postgres Realtime Zero-Trust & pg_cron (`20270524000000_whatsapp_realtime_sync_rls_and_crons.sql`):** Tabela de projeção sem segredos `public.whatsapp_channel_live_state` sincronizada via trigger, hardening de `is_store_staff` e políticas `SELECT` tenant-scoped, `REPLICA IDENTITY FULL` + `supabase_realtime` para 13 tabelas operacionais (incluindo `chat_threads`, `chat_messages`, `whatsapp_channel_live_state`, `whatsapp_outbox`, `whatsapp_history_sync_jobs`, `whatsapp_groups_directory`, `whatsapp_scheduled_messages`, `chat_departments`, `workspace_members`, `store_quick_answers`, `store_workflows`, `whatsapp_campaigns`) e cron SQL de 1 minuto (`waesy_whatsapp_realtime_sync_1m`).
+  4. **Paridade 100% Ao Vivo na UI (`AtendimentoChatWorkspace.tsx`, `AtendimentoOverviewView.tsx`, `whatsapp-operations-metrics-panel.tsx`, `whatsapp-qr-connect-modal.tsx`, rotas `/workspace/atendimento/*`, `/workspace/whatsapp/automacoes`, `/admin-master/integracoes`, `realtime-channel.ts`, `chat.functions.ts`):** Autenticação JWT Realtime centralizada via `syncRealtimeJwtAuth`, catch-up automático (socket reconnect/focus/online/intervalo + cooldown 25s), preservação de `channel_instance_id` em `reloadThreads`, hidratação proativa de áudio/imagem/figurinha em `getChatMessages`, eliminação de sobrescrita stale de `departments` em `horarios.tsx`, atualização ao vivo em todas as telas de Atendimento, Automações e Admin Master e shim SSR em `vite.config.ts`/`server-client-noop-shim.ts` mantendo `_worker.js < 25 MiB`.
+- **Fundamentação Teórica:** AGENTS.md Regras B.4, B.5, B.7, B.8, B.9, B.25, B.31, SPEC-20261116-WHATSAPP-REALTIME-SYNC-E2E e Zero-Trust Multi-Tenant RLS.
+- **Consequências:** Todas as conversas, status de conexão, filas, atendentes, agendamentos, automações e telemetria operam em tempo real com tolerância a falhas de webhook e recuperação automática em background; requer apenas aplicação confirmada da migration remota `20270524000000` + configuração dos segredos no Supabase Vault e Cloudflare Pages (`WAESY_CRON_TOKEN`, `EVOLUTION_API_URL`, `EVOLUTION_API_KEY`).
+
+---
+
+### DEC-503: Auditoria Forense E2E do Ecossistema Turismo, Fechamento de Ciclo Pós-Proposta & Blindagem Multi-Tenant (2026-11-16)
+- **Data (ISO):** 2026-11-16
+- **ID da Decisão:** DEC-503
+- **Contexto:** Auditoria forense em 8 camadas sobre o pipeline completo de Turismo (Corpus OCR B2B `Downloads/orçamento` com 29 arquivos -> Editor Workspace/Studio -> 7 Templates PDF -> Vitrine Web & Comparativo `_store.orcamentos.$bundleSlug` -> Conversão SQL/Contratos -> `tourism_trips` -> `_store.conta.viagens` & `viajante.viagem.$id`) identificou: (1) código paralelo morto (`ProposalStudio.tsx`, 20 `Section*.tsx`); (2) RPC `convert_accepted_travel_proposal_staff` e `create_staff_travel_contract_from_proposal` copiando campos de topo sem resolver `selected_option_id` nem propagar `portal_content`; (3) falha P0 de isolamento multi-tenant (`getTripAggregate` sem `requireStaff()` + check `store_id`) e resolução incompleta de `contracts` por `source_proposal_id`; (4) duplicação do preço total do pacote por linha de hotel e omissão de `transfers`/`tours`/`children_ages` em `contract-compiler.functions.ts`; (5) falha crítica de runtime (`hotel.name` null-deref) + 3 links WhatsApp hardcoded `5549999991372` em `viajante.viagem.$id.tsx`; (6) rota `_store.orcamentos.$bundleSlug.tsx` exibindo `EditorialShowcaseView` com erros de importação/props TS e link `/classificados`; (7) ausência de flags `"Revisar"` (< 0.6) no Workspace, corte `.slice(0, 2)` de fotos de roteiro em `TemplateVerticalPremium.tsx` e omissão de editor pós-venda `Portal do Viajante` em `workspace.turismo.viagens.$id.tsx`.
+- **Decisão Adotada:**
+  1. **Conversão SQL & Portal Customizável (`supabase/migrations/20270528000000_fix_proposal_conversion_and_contract_options.sql`):** Adicionada coluna `tourism_trips.portal_content JSONB` e atualizadas `convert_accepted_travel_proposal_staff` e `create_staff_travel_contract_from_proposal` para resolver o snapshot integral de `selected_option_id` (`hotels`, `flights`, `transfers`, `tours`, `itinerary`, `rooms`, `includes`, `excludes`, `portal_content`).
+  2. **Segurança P0 & Contratos (`travel-lifecycle.functions.ts`, `contract-compiler.functions.ts`, `travel-proposal.functions.ts`):** Bloqueio multi-tenant `requireStaff()` + `trip.store_id === identity.store_id` em `getTripAggregate`, leitura canônica de `public.contracts` via `source_proposal_id`, remoção de telefone hardcoded (`-> null`), nova server function `updateTripPortalCustomization` conforme Regra B.25, compilação contratual sem duplicar `total_value_cents` em múltiplos hotéis e correção de tipagem `PricingBreakdownDTO` no radar de oportunidades (`travel-proposal.functions.ts`).
+  3. **Editores, PDF, Comparativo & Pós-Compra (`unified-proposal-workspace.tsx`, `studio-sidebar-editor.tsx`, `TemplateVerticalPremium.tsx`, `_store.orcamentos.$bundleSlug.tsx`, `viajante.viagem.$id.tsx`, `workspace.turismo.viagens.$id.tsx`, `_store.conta.viagens.tsx`):** Adicionadas flags `"Revisar"` e soma real de `transfers`/`tours` (`add_to_quote`), `ProposalItineraryMediaGrid` sem truncamento, migração de `_store.orcamentos.$bundleSlug.tsx` para `mapQuoteBundleToTravelProposal` + `ProposalWebShowcase`, correção de crash `hotel?.hotel_name || hotel?.name` + WhatsApp dinâmico + galeria multi-hotel/vídeos/dicas em `viajante.viagem.$id.tsx`, aba `"Portal do Viajante"` no Workspace de Viagens e miniatura de capa em `_store.conta.viagens.tsx`.
+  4. **Saneamento de Silos Mortos:** Aposentados `ProposalStudio.tsx` (x2) e 20 arquivos legados `Section*.tsx`, extraindo `flight-connections.ts`; mapeadas explicitamente para Onda 2 de convergência as unificações remanescentes de Excursões/Pacotes (`SPEC-TOURISM-UNIFIED-PIPELINE.md` Fases T1–T5).
+- **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.25, B.31, B.33, SPEC-PROPOSAL-STUDIO-V2 e Zero-Trust Multi-Tenant RLS.
+- **Consequências:** 19/19 suítes Vitest de Turismo/Propostas (`143/143` testes), 20 arquivos críticos do pipeline com 0 erros TS sintáticos/semânticos (`0` erros ESLint), 0 violações de Design Lint no escopo de Turismo e contrato schema/BFF/tokens 100% íntegro; bloqueios globais pré-existentes fora de escopo (`branded-app.functions.ts`, `C360LeadAndCommerceView.tsx`, runner webview `OP_TIMEOUT`) documentados sem mascaramento no ledger forense.
+
+---
+
+### DEC-505: Sincronização Integral em Linha Única de Turismo — Pacotes, Excursões, Ponte CMS & Vitrines Web Unificadas (2026-11-16)
+- **Data (ISO):** 2026-11-16
+- **ID da Decisão:** DEC-505
+- **Contexto:** Execução completa das fases `T0–T6` da especificação `docs/specs/SPEC-TOURISM-UNIFIED-PIPELINE.md` para eliminar silos estruturais entre CRUD de Pacotes/Roteiros (`TravelPackageForm`), Excursões Terrestres (`tourism_experiences`), Orçamentos/Propostas (`UnifiedProposalWorkspace` + `workspace.orcamentos.novo.tsx`), Vitrines Web Públicas (`_store.produto.$slug.tsx` + `_store.turismo.$id.tsx`) e Vouchers/Reservas Pós-Compra (`_store.conta.viagens.tsx`).
+- **Decisão Adotada:**
+  1. **Schema Estruturado (`20270529000000_tourism_unified_experiences_fields.sql`):** Adicionadas colunas JSONB/texto canônicas em `public.tourism_experiences` (`hotels`, `transfers`, `tours`, `itinerary`, `media`, `boarding_points`, `pricing_tiers`, `extra_options`, `web_page_config`, `payment_conditions`, `vehicle_layout_name`) com backfill automático a partir de JSON legado em `description`.
+  2. **Núcleo SSOT Acíclico (`src/lib/tourism/travel-blueprint.ts` + `src/types/travel-package.ts`):** Criação do `CanonicalTravelBlueprint` e adaptadores estruturais puros (`blueprintFromPackage`, `blueprintFromGroupTour`, `blueprintToTravelProposalDTO`, `parseExperienceMetaDescription`, `sanitizePublicBusSeats`), mantendo o grafo 100% livre de ciclos (`0` ciclos em `check-circular-deps.mjs`).
+  3. **Consolidação de Excursões & Exposição Segura (`group-tours.functions.ts`, `tourism.functions.ts`, `group-tour-content-editor.tsx`, `workspace.turismo.grupos.$id.tsx`):** Remoção do criador morto `NewGroupTourSheet`, nova server function `updateGroupTourContent` com isolamento multi-tenant (`requireStaff` + verificação `store_id`) e conformidade B.25, aba pós-criação `"Conteúdo & Web"` com `MediaGalleryField` + `ProposalWebPageBuilder`, e sanitização pública Zero-Trust em `getPublicTourismById` / `listPublicTourism`.
+  4. **Paridade 1:1 & Ponte Bidirecional (`travel-package-unified-extensions.tsx`, `travel-package-form.tsx`, `unified-field-bridge.ts`, `listStoreCatalogItemsForProposal`, `UnifiedProposalWorkspace`, `workspace.orcamentos.novo.tsx`):** Pacotes ganham múltiplas hospedagens com galerias, trechos múltiplos, traslados, passeios, embarques e construtor Web sincronizado (`web_page_config`); `listStoreCatalogItemsForProposal` passa a listar também `tourism_experiences` (`origin: "experience"`) hidratando ambos os editores de orçamento/proposta sem perdas.
+  5. **Vitrines Unificadas & Pós-Venda (`excursion-and-package-blocks.tsx`, `ProposalWebShowcase`, `_store.turismo.$id.tsx`, `TravelPackageDetailView`, `_store.conta.viagens.tsx`, `travel-lifecycle.functions.ts`):** Excursões e Pacotes passam a compartilhar o `ProposalWebShowcase` + blocos modulares de poltronas sem PII, pontos de embarque, saídas selecionáveis e tarifas; vouchers em `_store.conta.viagens.tsx` recebem acesso direto ao roteiro (`/turismo/$id`) e suporte a `portal_content.cover_image_url`.
+- **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.25, B.31, B.33, SPEC-TOURISM-UNIFIED-PIPELINE e Zero-Trust Multi-Tenant RLS.
+- **Consequências:** Toda criação, edição, importação em proposta e exibição pública/pós-compra de Pacotes, Excursões e Propostas opera sobre contrato único sincronizado (`21/21` suítes Vitest / `166/166` testes aprovados, `35` arquivos de Turismo com `0` erros TS sintáticos/semânticos, `0` erros ESLint, `0` ciclos, `0` violações de Design Lint em todos os `2359` arquivos do repositório — `CATRACA APROVADA`).
+
+---
+
+### DEC-506: Motor Unificado de Oportunidades, Cadastro Estruturado Zero-Loss, Parser IA & Simulação CHD (2026-11-16)
+- **Data (ISO):** 2026-11-16
+- **ID da Decisão:** DEC-506
+- **Contexto:** `SPEC-20261116-OPPORTUNITY-RADAR-AND-STRUCTURED-LEADS-E2E` mapeou 3 motores fragmentados, fallbacks aleatórios (`F-OPP-01`/`F-OPP-02`), falsos positivos por falta de hard-gate de destino/data (`F-OPP-03`/`F-OPP-05`), campos soltos de destino/período/idade (`F-OPP-07`) e ausência de disparo bidirecional em propostas (`F-OPP-04`).
+- **Decisão Adotada:** (1) Criado SSOT determinístico `src/lib/travel/opportunity-matching-engine.ts` + parser puro `src/lib/travel/travel-intent-parser.ts` com hard-gates de destino/gateway, datas/meses/temporadas/flexibilidade, simulação infantil (`0–1` colo, `2–11` CHD aéreo+transfer, `12–17` adulto) e benchmark histórico; (2) Migration aditiva zero-loss `20270526000000_unified_opportunity_radar_and_structured_leads.sql` + BFF unificada `opportunity-radar.functions.ts` (preservando status `dismissed`/`contacted`) + gatilhos bidirecionais em propostas/cotações/leads/capturas/omnichannel com retry `42703`/`PGRST204`; (3) Criados componentes canônicos `DestinationTagsPicker`, `TravelPeriodTagsPicker`, `RoomOccupancyBuilder`, `TravelIntentAiImporter` e propagados no Funil Turismo, Comercial, Dossiê, UnifiedProposalWorkspace, Radar (`/workspace/turismo/oportunidades`), Cotações e Cliente 360.
+- **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.25, B.31, DESIGN.md, WCAG 2.2 AA e revisões do Conselho (Red Team Segurança/Dados + Auditoria UI/Design Lint).
+- **Consequências:** Zero erros TS/ESLint nos 23 arquivos do escopo, `design-lint --ratchet` global com 0 violações em 2.359 arquivos, 6 suítes Vitest (`36/36`), `check:types-ssot`/`check:cycles`/`check:naming`/`check:schema` (`635` migrations)/`check:bff`/`audit:buttons`/`client-leak` aprovados; aplicar `20270526000000` via `supabase db push` no ambiente remoto com autoridade apropriada (e sanar `branded-app.functions.ts:8` pré-existente antes do deploy SSR completo).
+
+---
+
+### DEC-507: Auditoria Forense, Separação App Oficial vs Marketplace, Conexão Bidirecional & Pipeline de Upload PWA (2026-11-16)
+- **Data (ISO):** 2026-11-16
+- **ID da Decisão:** DEC-507
+- **Contexto:** Auditoria forense ponta a ponta do App Oficial Padronizado (`/app/$slug`) versus Perfil no Marketplace Waesy (`/loja/$slug`, opt-in) e Omni Builder (`/workspace/builder`) identificou 10 lacunas reais entre código e schema SQL: (1) ausência de `'classifieds'` no `CHECK` de `store_page_sections.source_type` e ausência de `INSERT INTO storage.buckets` para `'store-assets'` em `20270525000000`; (2) colunas inexistentes consultadas no PostgreSQL (`stores.avatar_url`, `categories.image_url`, `jobs.slug`/`jobs.job_type`, `deal_reviews.author_name`, `tourism_trips.client_id`, `profiles.email`); (3) `getPublicStoreProfile` não retornava `waesy_marketplace_enabled` para ocultar `/loja/$slug` quando desativado; (4) `FastRegisterCompanySchema` não aceitava `corporateAppUrl` e `resolveDefaultTemplate` não cobria `hospedagem`/`oficina`/`contabilidade`/`advocacia`; (5) `ImageUpload`/`ImageCropperDialog`/`crop-image.ts` sofriam descasamento MIME (`.jpg` vs `image/png`), risco de canvas taint em re-recorte de URLs remotas, zoom mínimo `0.8` em `appLogoMode` e falta de UI de importação por URL externa; (6) `getBrandedAppInfiniteCatalogFn` para eventos omitia `ticket_lots`, `AppProductDetailDrawer` não selecionava variantes (`product_variants`) nem redefinia estado entre produtos, e `addToCart` não validava retorno `{ status: "error" }`.
+- **Decisão Adotada:**
+  1. **Schema & Storage SQL (`20270525000000_branded_app_catalog_and_pwa_sync.sql`):** Recriação idempotente de `store_page_sections_layout_mode_check` e `store_page_sections_source_type_check` (incluindo `'classifieds'`) + criação idempotente do bucket público `'store-assets'` + `supabase_realtime` estendido para 15 tabelas operacionais e trigger `bump_store_pwa_cache_version`.
+  2. **Integridade BFF, Manifesto PWA & Marketplace Opt-In (`branded-app.functions.ts`, `api.pwa.manifest[.]json.ts`, `catalog.functions.ts`, `company-mvp.functions.ts`, `c.$storeSlug.tsx`):** Remoção de todas as colunas SQL inexistentes, junção de `product_variants` + `ticket_lots` no catálogo infinito, `waesy_marketplace_enabled` propagado no DTO público de `/loja/$slug`, escopo por `store.id` em `/c/$storeSlug`, tipografia `headingFont`/`bodyFont` do Brand Kit + Base de Conhecimento (`ProductAiSdrChat`) + fluxo completo para Produtos, Serviços (`BookingDrawerSheet`), Turismo (`storeId` dinâmico + API quoter + Corporativo), Eventos (`ticket_lots`), Portfólio e Área do Cliente (`AppClientPortalTab`).
+  3. **Upload, Crop & UX do Editor (`/workspace/configuracoes/pwa`, `branded-app-workspace-editor.tsx`, `image-upload.tsx`, `image-cropper-dialog.tsx`, `crop-image.ts`):** Fetch CORS `no-store` no `createImage`, normalização PNG no recorte, prevenção de upload duplicado no bundle 192/512/maskable, zoom `0.5`–`5` em `appLogoMode`, painel de Conexões Bidirecionais (Brand Kit + Base IA + contadores reais por nicho) e prévia interativa ao vivo (`<BrandedAppShell isPreview />`) em Celular/Desktop.
+- **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.20, B.31, B.33, B.34 e WCAG 2.2 AA.
+- **Consequências:** Zero violações nos módulos alterados, unicidade de tipos, contrato BFF validado e testes `branded-app.test.ts` + suítes relacionadas aprovados; requer execução de `supabase db push` em produção para aplicar a migration `20270525000000` e validação de instalação PWA em dispositivos iOS/Android.
+
+### DEC-508: Isolamento Request-Scoped de Promises no Cloudflare Worker, Persistência Idempotente WhatsApp & Sync Incremental End-to-End (2026-11-16)
+- **Data (ISO):** 2026-11-16
+- **ID da Decisão:** DEC-508
+- **Contexto:** Em produção (`waesy.com.br/workspace/atendimento/chat` em Cloudflare Workers com `compatibility_date = "2026-06-18"`), mapas globais de `Promise` em memória (`IDENTITY_INFLIGHT_MAP`, `micro-cache`, `ai-core-gateway`, `infotravel`, `copilot-execution-persistence`, `serverEntryPromise`) provocavam `handle_cross_request_promise_resolution`. Simultaneamente, o chat sofria perda silenciosa de lotes em `chat_messages` por colisão global de índice único sem fallback item-a-item, truncamento de previews em `listChatThreads` (`.limit(400)` sem fallback em `last_message_text`), bump indevido de `updated_at` via trigger em metadados de sync, loop bloqueante de 4s no `getChatMessages`, escrita em `GET` no `getCustomer360Context`, ausência de cache incremental no cliente e polling duplicado.
+- **Decisão Adotada:**
+  1. **Isolamento Request-Scoped no Worker (`src/lib/request-inflight.ts`, `identity.server.ts`, `micro-cache.ts`, `server.ts`, `ai-core-gateway.functions.ts`, `infotravel.ts`, `copilot-execution-persistence.ts`):** Criação de `getRequestScopedInflightMap` indexado via `WeakMap` pelo objeto HTTP ativo (retornando `null` fora de requisição no runtime Workers) e cache de objeto resolvido em `src/server.ts`.
+  2. **Schema, Trigger Não-Invasivo & Persistência Idempotente (`20270531000000_chat_incremental_persistence_and_cursors.sql`, `whatsapp-message-persistence.server.ts`, `whatsapp-evolution-sync.server.ts`, `whatsapp-provider-webhook.server.ts`):** Adição de `history_bootstrap_done`, `sync_cursor_at`, RPC `get_threads_latest_public_messages(uuid[])` (`DISTINCT ON`), trigger `set_chat_threads_updated_at()` preservando `updated_at` em updates técnicos, e deduplicação global cross-thread com fallback automático item-a-item em `23505`/`42703`/`PGRST204`.
+  3. **Leitura DB-First & Cache Persistente no Cliente (`chat.functions.ts`, `chat-client-cache.ts`, `AtendimentoChatWorkspace.tsx`, `customer-360-sidebar.tsx`):** `getChatMessages` incremental (`afterCreatedAt`) com bootstrap único; `listChatThreads` via RPC + `last_message_text`; `getCustomer360Context` livre de side-effects em `GET`; cache em memória + `sessionStorage` por `(storeId, threadId)` e remoção de resets/polling duplicado sob Realtime ativo.
+- **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.9, B.25, B.31; Spec `docs/specs/SPEC-20261116-CHAT-PERSISTENCE-INCREMENTAL-SYNC.md`; Cloudflare Workers `handle_cross_request_promise_resolution`.
+- **Consequências:** Isolamento completo entre requisições HTTP no Worker e sync estritamente incremental no chat; requer execução de `npx supabase db push` (migration `20270531000000`) e `npm run deploy` para publicação em produção.
+
+---
+
+### DEC-509: Omnichannel E2E — Deduplicação CRM, Supressão Interna, Fontes & Multi-Pixel CAPI, Meta Ads MCP, Storage Privado + Whisper/Vision, Copiloto SDR Multi-Nicho & SLA (2026-11-16)
+- **Data (ISO):** 2026-11-16
+- **ID da Decisão:** DEC-509
+- **Contexto:** Execução integral dos 9 requisitos EARS (`docs/specs/SPEC-20261116-OMNICHANNEL-CRM-MULTIPIXEL-SDR-SLA.md`): canais/respostas poluindo `leads_crm.notes`, duplicação de cards no WhatsApp por variações `+55`/9º dígito/estágios customizados, disparo de CRM/CAPI em conversas de equipe/stakeholders, limitação single-pixel & single-account `accounts[0]` no Meta Ads, descarte de mídias >5.5MB e transcrição manual apenas, Copiloto IA limitado a turismo e filtro `"waiting"` sem métricas reais de SLA/esquecidos.
+- **Decisão Adotada:**
+  1. **Schema & Storage Privado (`20270601000000_omnichannel_crm_sources_multipixel_sla.sql`):** Adicionados `leads_crm.phone_normalized_digits` + trigger/backfill/índice, `whatsapp_contact_identities` (`contact_scope`, `suppress_lead_capture`, `internal_role_label`, `muted_at`), tabelas RLS `marketing_sources` & `marketing_source_pixels` (`get_store_public_pixels` seguro sem segredos), enriquecimento em `store_ad_campaigns`/`ad_campaigns`, bucket privado `chat-media-private` (RLS por pasta `store_id`) e timestamps SLA em `chat_threads` (`last_customer_message_at`, `last_staff_reply_at`).
+  2. **Deduplicação, Canal Limpo & Supressão Zero-Trust (`unified-field-bridge.ts`, `omnichannel-lead-ingestion.ts`, `crm.functions.ts`, `classifieds.functions.ts`, `classifieds-events.functions.ts`, `tourism.functions.ts`, `chat.functions.ts`, `whatsapp-contact-scope.ts`, `whatsapp-contact-suppression.server.ts`, `whatsapp-contact-identity.functions.ts`, `TourismPipeCardDossier.tsx`, `customer-360-sidebar.tsx`):** `LEAD_SOURCES` com `meta_ads`/`lead_form`/`tiktok_ads`; exportação de `INTERNAL_CUSTOM_FIELD_KEYS` separando tracking técnico de respostas humanas e sincronizando `formData` por `[lead.id]`; deduplicação BR (com matching pré-backfill tolerante a hifens) estendida a formulários, vagas, eventos, cotações manuais e `convertChatThreadToCrmLead`, agregando `custom_fields.interests`; supressão centralizada de equipe/stakeholders com badge na lista de conversas, sincronia instantânea em tela (`onContactScopeChanged`) e arquivamento retroativo de todos os cards abertos do contato silenciado sem excluir logs.
+  3. **Fontes, Multi-Pixel CAPI & Meta Ads MCP (`pixel-routing.ts`, `meta-ad-enrichment.server.ts`, `pixels.functions.ts`, `omnichannel-attribution.server.ts`, `ads.functions.ts`, `mcp-tool-registry.ts`, `api.webhooks.meta-ads.ts`, `StoreAnalyticsInjector.tsx`, `MarketingSourcesMultiPixelPanel.tsx`, `workspace.marketing.*`):** Roteamento dinâmico CAPI e Pixel DOM por campanha/anúncio/formulário/nicho/rota e pixel padrão (com guarda null-safe em `pixelConfig?.ga4_measurement_id`); descoberta multi-conta até 15 ad accounts + Páginas; enriquecimento automático via Meta Graph API; tools MCP completas (`meta_ads_diagnose_tracking`, `meta_ads_enrich_ad_metadata`, `meta_ads_discover_accounts_and_pixels`, `meta_ads_get_closed_loop_roas`, `crm_sync_qualified_lead_conversion`).
+  4. **Storage Privado, Whisper & Base Contínua (`whatsapp-media.server.ts`, `whatsapp-media-intelligence.server.ts`, `whatsapp-voice-ai.functions.ts`, `whatsapp-provider-webhook.server.ts`, `whatsapp-evolution-sync.server.ts`, `api.webhooks.whatsapp.ts`, `chat.functions.ts`):** Upload direto em `chat-media-private` (suporte >5.5MB) com renovação de Signed URLs na leitura, núcleo único Whisper (`groq`/`openai`, zero texto fabricado sem chave/mídia) acionado no ingresso, Visão/OCR multimodal (`executeUnifiedAiCall`) e indexação contínua redigida contra PII (`appendVerifiedFactToContinuousKnowledgeBase` -> `stores.settings.continuous_knowledge_entries`).
+  5. **Copiloto SDR Multi-Nicho, Auto-Fill & SLA Real (`omnichannel-ai-copilot.server.ts`, `whatsapp-automation-runtime.server.ts`, `sla-metrics.ts`, `AtendimentoChatWorkspace.tsx`, `workspace.atendimento.chat.tsx`, `TourismPipeCardDossier.tsx`):** Copiloto conectado à SSOT multi-nicho (`getUnifiedNicheSpec`) + Base Contínua lendo histórico, transcrições e prints, com chips de objeção/catálogo e Auto-Preenchimento 1-clique com prévia e criação/atualização no CRM; filtro `"waiting"`/`"forgotten"`, tick SLA ao vivo (60s) e gaveta rápida de `"Contatos Esquecidos Hoje"`.
+- **Fundamentação Teórica:** AGENTS.md B.4, B.7, B.8, B.9, B.25, B.31, B.33, Spec `docs/specs/SPEC-20261116-OMNICHANNEL-CRM-MULTIPIXEL-SDR-SLA.md`, WCAG 2.2 AA.
+- **Consequências:** Todos os 9 fluxos EARS cobertos ponta a ponta com testes automatizados; requer execução de `npx supabase db push` (`20270531000000` e `20270601000000`) e posterior autorização explícita do usuário para `typecheck`, `build` e `deploy`.
+
+---
+
+### DEC-510: Desacoplamento Integral do App do Cliente Waesy Pro (/app/:slug) vs Marketplace (/conta) & Acesso via Magic Link / Código do Cliente (2026-11-16)
+- **Data (ISO):** 2026-11-16
+- **ID da Decisão:** DEC-510
+- **Contexto:** No painel lateral C360 (`Customer360Sidebar`), em `C360ProfileAndDocsView` e em lembretes de cobrança (`receivables.functions.ts`), o atalho "App do Cliente" apontava para `${origin}/conta?loja=${slug}` (Waesy Marketplace genérico), e `AppClientPortalTab` dentro de `/app/$slug` redirecionava usuários de volta para `/conta` e `/entrar?redirect=...`, sem suporte a Código do Cliente (`#CLI-XXXX`) ou Magic Link da empresa.
+- **Decisão Adotada:**
+  1. **Schema & Tabela Escopada (`20270602000000_store_app_client_magic_access.sql`):** Criada `public.store_app_client_tokens` com RLS (`is_store_staff(store_id)` / `service_role`, zero acesso direto `anon`), armazenando `client_code` (`CLI-...`), `magic_token` (`wca_...`), vínculo multi-identidade (`customer_id`, `crm_customer_id`, `lead_id`, telefone normalizado, CPF, e-mail) e expiração/revogação por loja.
+  2. **Construtor Canônico & BFF Magic Access (`src/lib/branded-app-links.ts`, `branded-app.functions.ts`, `chat.functions.ts`, `receivables.functions.ts`):** Links da empresa apontam exclusivamente para `/app/${slug}?tab=minha_area` (respeitando `custom_domain` apenas quando ativo/verificado, ignorando `pending_dns`); núcleo compartilhado `issueOrReuseCustomerAppTokenInternal`, `generateCustomerAppMagicAccessFn`, `revokeCustomerAppMagicAccessFn` (`POST`), `unlockClientStorePortalByCodeFn` (`POST`, token direto `wca_...` ou 2 fatores Código + WhatsApp/CPF/e-mail anti-enumeração), `getClientStorePortalSummaryFn` enriquecido com `proposals`, `appointments` por `guest_phone`, `signature_envelopes` por `signer_email`/`signer_phone`, e `submitInstallmentProof` compatível com `accessToken` + fallback de telefone.
+  3. **UX C360 & Portal Standalone (`customer-360-sidebar.tsx`, `C360ProfileAndDocsView.tsx`, `order-message-card.tsx`, `branded-app-shell.tsx`, `app-client-portal-tab.tsx`, `c.$storeSlug.tsx`, `workspace.clientes.$id.tsx`):** Geração/cópia/revogação/telemetria (`access_count`, `last_accessed_at`) e envio WhatsApp do Código do Cliente + Magic Link, detecção automática `?token=`/`?codigo=` no `/app/$slug` e `/c/$storeSlug`, modais inline para pedidos/viagens/QR ingressos, seção Propostas e roteamento staff em `/workspace/pedidos` sem fuga para `/conta*`.
+- **Fundamentação Teórica:** AGENTS.md B.4, B.7, B.8, B.25, B.31, B.36; Spec `docs/specs/SPEC-20261116-WAESY-PRO-CLIENT-APP-MAGIC-ACCESS.md`; Zero-Trust Multi-Tenant.
+- **Consequências:** Fluxo do App Oficial da empresa 100% independente do Marketplace `/conta`; requer `npx supabase db push` (`20270602000000`) e posterior autorização explícita do usuário para `typecheck`, `build` e `deploy`.
+
+---
+
+### DEC-511: Blindagem Estrutural DM vs Grupo WhatsApp, Multi-Touch / LTV / CAC Closed-Loop, Higiene Anti-Fake & Refatoração Enxuta (2026-11-16)
+- **Data (ISO):** 2026-11-16
+- **ID da Decisão:** DEC-511
+- **Contexto:** Conclusão end-to-end da missão de estabilização operacional e refatoração enxuta (`docs/specs/SPEC-20261116-MASTER-WAESY-E2E-STABILIZATION-MULTITOUCH-REFACTOR.md`): isolamento DM ⇄ Grupo no webhook/Evolution Sync, fim de `"Sem mensagens"` em conversas já hidratadas, eliminação de updates no-op e tempestades Realtime, higiene total de `@sem-email.waesy.local`/`@whatsapp.waesy`, rastreio de jornada Multi-Touch (`1º Toque`, `Último Toque`, frequência de cliques), cálculo LTV/CAC/Recompra/ROAS cross-tabelas e suporte seguro a Markdown WhatsApp.
+- **Decisão Adotada:**
+  1. **Schema & Data-Healing (`20270603000000_whatsapp_dm_group_isolation_and_healing.sql`):** Normalização idempotente de `thread_type` (`group`/`channel`), limpeza de `guest_name` por `group_subject`, desanexação e reatribuição de mensagens `@g.us` / `is_group=true` gravadas em threads DM para threads de grupo canônicas (`healed_from_dm_leak`), além de índices `(store_id, thread_type, entity_id)` e `(store_id, phone_digits, created_at DESC)`.
+  2. **Isolamento DM vs Grupo, Preview & Sync Sem Loop (`whatsapp-provider-webhook.server.ts`, `whatsapp-evolution-sync.server.ts`, `chat.functions.ts`, `chat-thread-realtime.ts`, `AtendimentoChatWorkspace.tsx`):** `persistInboundMessage` segrega identidades e lookups entre `isGroupJid` (somente `groupJid` + `.eq("thread_type", "group")`, nunca misturando `senderPhone`) e DMs (excluindo grupo/canal), resolvendo assunto via `/group/findGroupInfos` quando ausente (`resolveEvolutionCredentialsForInstance` devidamente importado); `runEvolutionDeltaSyncForInstance` separa mapas `groupThreadBy*` vs `dmThreadBy*`, consulta `/group/fetchAllGroups`, protege `guest_name` contra `pushName` de participantes e suprime updates no-op; `listChatThreads` honra `rpcSummary` com `total_messages > 0` e tipo de mídia; `AtendimentoChatWorkspace` coalesce `reloadThreads` (`>= 1500ms`) via `createCoalescedController`, extrai `patchThreadListOnMessageInsert`/`patchThreadListOnThreadUpdate` e mantém fallback gentil (`45s` somente se Realtime offline).
+  3. **Higiene Anti-Fake, Multi-Touch & LTV/CAC Closed-Loop (`contact-sanitize.ts`, `attribution-journey.ts`, `omnichannel-lead-ingestion.ts`, `omnichannel-attribution.server.ts`, `crm.functions.ts`, `ads.functions.ts`, `pixels.functions.ts`, `C360AttributionJourneyCard.tsx`, `Customer360Sidebar`, `TourismPipeCardDossier.tsx`, `new-travel-contract-sheet.tsx`, `workspace.marketing.pixels.tsx`, `MarketingSourcesMultiPixelPanel.tsx`, `workspace.marketing.telemetria.tsx`, `workspace.marketing.anuncios.tsx`):** Remoção total de e-mails sintéticos na leitura/exibição CRM, Dossiê, Contratos, Telemetria de Pixels, Chat e CAPI (`sanitizeCustomerEmail`/`isSyntheticPlaceholderEmail`); preservação de cliques repetidos com `click_count` e `computeCustomerTouchpointJourney` (`totalTouchpointsCount`, `uniqueCampaignsCount`, `uniqueAdsCount`, `firstTouch`, `lastTouch`, timeline); upgrade de `calculateStoreLtvAndAdSpend` e `getMarketingRoiClosedLoopMetrics` para `orders` + `tourism_trips` + `travel_proposals` (deduplicadas) + `commercial_invoices`, `ad_campaigns` + `store_ad_campaigns`, `repeatPurchaseRate`, `attributedCacCents`, `costPerClickCents`, `breakdownByCampaign`/`Source`/`Pixel`; sync reativo `[initialSources]` no `MarketingSourcesMultiPixelPanel`.
+  4. **Markdown Seguro & Design Lint (`WhatsAppMarkdownText.tsx`, `AtendimentoChatWorkspace.tsx`):** Renderização em nós React puros (`*negrito*`, `_itálico_`, `~tachado~`, código e links `https?://`) envolvendo `SmartPhoneText`, zero HTML bruto injetado e alvos móveis `min-h-11` aplicados nos chips e ações rápidas.
+- **Fundamentação Teórica:** AGENTS.md B.4, B.6, B.7, B.8, B.25, B.31, B.33; WCAG 2.2 AA; Spec `docs/specs/SPEC-20261116-MASTER-WAESY-E2E-STABILIZATION-MULTITOUCH-REFACTOR.md`.
+- **Consequências:** Cobertura validada via suítes Vitest (`94/94` nos 10 arquivos omnichannel/sync/UI) e checagem estática Design Lint; requer aplicação das migrations pendentes no Supabase quando autorizado (`supabase db push`) e validação explícita de `typecheck`/`build` sob comando futuro do usuário.
+
+---
+
+### DEC-512: Arquitetura E2E de Branded App Multi-Tenant, Domínio Próprio Edge/SSR, Studio Unificado c/ Iframe Preview, Omni-Builder Híbrido, Cotador GDS InfoTravel+Wooba, Portal 9 Dimensões, SW Incremental & Atribuição IP/GeoIP/GPS (2026-11-17)
+- **Data (ISO):** 2026-11-17
+- **ID da Decisão:** DEC-512
+- **Contexto:** Execução integral das 7 ondas de `docs/specs/SPEC-BRANDED-APP-ISOLATION-AND-STUDIO-E2E.md` e `docs/audits/LEDGER_BRANDED_APP_STUDIO_E2E_2026-11-17.md`: domínios próprios caindo no Marketplace global, links de fuga para rotas globais (`/turismo/$id`, `/classificados/$id`, `/evento/$id`, `/produto/$slug`, `/entrar`, `/proposta/*`, `/assinar/*`), dois editores PWA concorrentes em `/workspace/configuracoes/pwa`, preview inline sem isolamento de viewport, cotador de turismo sem `AirportCombobox`/multi-quartos/Wooba, falta de chat isolado/chamados/avaliação verificada/vagas no App, SW sem particionamento por tenant e ausência de `<StoreAnalyticsInjector />` + IP/GeoIP/GPS em `/app/:slug`.
+- **Decisão Adotada:**
+  1. **Edge/SSR Custom Domain & Isolamento (`20270606000000_branded_app_omni_chat_reviews_and_domains.sql`, `custom-domain-routing.ts`, `custom-domain-routing.server.ts`, `server.ts`, `api.pwa.manifest[.]json.ts`, `app.$slug.tsx`, `app-item-detail-drawer.tsx`, `app-contextual-auth-card.tsx`, `EventHorizontalCard.tsx`, `app-product-detail-drawer.tsx`, `app-sections-renderer.tsx`, `branded-app-shell.tsx`, `app-client-portal-tab.tsx`):** Resolução automática de `stores.custom_domain` / `store_pwa_configs.custom_domain` na raiz `/` sem exibir Chrome Waesy, manifesto PWA adaptativo (`start_url: "/?source=pwa"`, `scope: "/"`), drawers/modais inline eliminando fugas para o Marketplace e login/autocadastro contextual dentro do App.
+  2. **Studio Unificado, Iframe `postMessage` & Omni-Builder Híbrido (`workspace.configuracoes.pwa.tsx`, `branded-app-workspace-editor.tsx`, `app.preview.$slug.tsx`, `branded-app-device-stage.tsx`, `branded-app-telemetry-panel.tsx`, `branded-app-identity-domain-panel.tsx`, `branded-app.functions.ts`, `branded-app.ts`):** Consolidação em um único Studio canônico com palco `<iframe>` (`WAESY_APP_PREVIEW_READY`/`STATE`), carregamento sob demanda (`React.lazy`) de `<OmniPageRenderer />` (`omni_block`, `omni_document`), mural de vagas (`jobs_board`), avaliações (`reviews_showcase`), filtro georreferenciado `city_filter` (`doesSectionMatchCity`), assistente DNS (`HostingDomainConnectContent`) e kit QR Code (`generateQrCodeDataUri`).
+  3. **Cotador Multi-Modal CVC/Decolar, Portal 9 Dimensões, SW v6 Incremental & Atribuição (`tourism-multi-room-picker.tsx`, `tourism-dynamic-search-panel.tsx`, `travel-quote-modal.tsx`, `infotravel.ts`, `branded-app-portal-actions.functions.ts`, `app-client-portal-chat-and-tickets.tsx`, `app-company-info-tab.tsx`, `public/sw.js`, `app-install-drawer.tsx`, `attribution-collector.ts`, `pixels.functions.ts`, `omnichannel-attribution.server.ts`, `tourism.functions.ts`):** Autocomplete IATA (`AirportCombobox`), ocupação multi-quarto com idades individuais (`0-17`), canais Wooba (`searchWoobaFlights`, `searchWoobaBusRoutes`, `searchWoobaCars`) + InfoTravel em tempo real, Chat Direto Isolado e Chamados SAC escopados por `storeId`, avaliação verificada por compra/viagem real, candidatura a vagas no App, cache SW particionado (`waesy-app-runtime-<slug>`) preservando IndexedDB/localStorage/auth e persistência de IP real/GeoIP/GPS consensual em `ad_attribution_touchpoints` + Meta CAPI.
+- **Fundamentação Teórica:** AGENTS.md B.4, B.7, B.8, B.25, B.31, B.33, B.34; DESIGN.md; DESIGN-LINT.md (`DL-01..DL-32 = 0`); Spec `docs/specs/SPEC-BRANDED-APP-ISOLATION-AND-STUDIO-E2E.md`.
+- **Consequências:** `design-lint --ratchet` = 0 violações em 2376 arquivos, `contrast-audit` aprovado, `check-circular-deps` = 0 ciclos em 2952 arquivos, `644` migrations e `694` tabelas BFF validadas, e `36/36` testes nas suítes Branded App (`branded-app-isolation-e2e.test.ts` + `branded-app.test.ts`).
+
+---
+
+### DEC-516: OmniMatch / MatchTravel Multi-Nicho, Hardening Zero-Trust RLS, Desacoplamento Civil vs Workspace & Restauração dos 24 Submódulos de Rotas (2026-11-17)
+- **Data (ISO):** 2026-11-17
+- **ID da Decisão:** DEC-516
+- **Contexto:** Estabilização arquitetural, erradicação de vazamentos de contexto civil dentro do Workspace e construção BigTech do motor de descoberta tátil multi-nicho OmniMatch / MatchTravel integrado ao App Próprio (`/app/:slug`), Workspace (`/workspace/match-time`), CRM e Vitrine.
+- **Decisão Adotada:**
+  1. **Desacoplamento Rigoroso Civil vs Workspace:**
+     - Eliminada a opção de alternar para "Perfil Pessoal (Física)" (`store_id = null`) de dentro do `TenantSwitcher` do Workspace (`src/components/admin/tenant-switcher.tsx`), que corrompia o contexto multi-tenant do lojista e quebrava consultas operacionais.
+     - Substituído mini-painel legado civil concorrente em `_store.conta.empresa.tsx` por redirecionamento canônico automático para `/workspace`, unificando a gestão de negócios sob uma única casca soberana.
+     - Removida a seção "Empresas" da página de conta civil (`_store.conta.index.tsx`), substituindo por "Documentos & Identidade" e direcionando ações comerciais para o Workspace via switcher contextual.
+  2. **Restauração e Registro de 24 Submódulos de Rotas (`src/lib/routes.ts`):**
+     - Registradas no `WORKSPACE_ROUTES` todas as 24 rotas operacionais que estavam ausentes no catálogo (incluindo `/workspace/match-time`, `/workspace/b2b`, `/workspace/copilot`, `/workspace/atendimento/whatsapp`, `/workspace/atendimento/chat`, `/workspace/builder`, `/workspace/turismo/corporativo`), restaurando o acesso baseado em roles em 100% da navegação lateral (`ADMIN_SIDEBAR_NAV`).
+  3. **OmniMatch / MatchTravel Multi-Nicho Engine:**
+     - **Schema Postgres & Zero-Trust RLS (`20270609000000_b2b_rotary_crm_gps_routes_and_omnimatch_engine.sql`):** Adicionada coluna `hesitation_ms` em `match_time_swipes`, `rules_discount_config JSONB` em `match_deck_templates`, RPC de re-ranking `match_next_cards_batch` e `REVOKE ALL FROM anon` estrito sobre tabelas operacionais B2B (`customer_price_table_assignments`, `seller_portfolio_assignments`, `sales_routes`, `sales_route_stops`, `sales_visit_logs`, `match_visitor_brains`).
+     - **Backend Engine Neural (`src/services/match-engine.functions.ts`):** Implementados `getMatchDeckBatchFn`, `recordMatchSwipeAndAnalyzeFn` com decaimento exponencial e embedding L2 ponderado, `stitchMatchBrainToCustomerOrLeadFn` para merge determinístico de identidade sem duplicar leads CRM, `generateMatchDeckAiBatchFn` para geração de dilemas por nicho (Turismo, Imóveis, Automotivo) e `deleteMatchCardFn`.
+     - **Física 60fps & UI Nativa (`src/components/branded-app/omni-match-deck-view.tsx`):** Unificação de mouse e toque via `PointerEvents` (`translate3d` + rotação fluida), botões táteis mínimos de 44x44px (WCAG AA), suporte a cartas de trade-off e ofertas reais com badge de afinidade, tela de perfil descoberto e captação de lead para roteiro personalizado no WhatsApp.
+     - **Integração no BrandedAppShell & Vitrine:** Integrada aba `omni_match` no `BrandedAppShell` e no `AppNavTabKind`, e modernizada rota `_store.match-time.tsx`.
+- **Fundamentação Teórica:** AGENTS.md B.1, B.4, B.7, B.8, B.25, B.31; WCAG 2.2 AA; Zero-Trust Multi-Tenant.
+- **Consequências:** Zero regressões na catraca de design (`node scripts/design-lint.mjs --ratchet` = 0 violações em 2388 arquivos), zero tipos duplicados (`2968` inspecionados), 100% dos testes aprovados (`36/36` nas suítes E2E de OmniMatch, B2B e isolamento multi-tenant).
+
+---
+
+### DEC-517: Fechamento Canônico do Hub B2B, Seletor Interativo de Abas no Branded App PWA & Ratchet de Design Lint Zerado (2026-11-17)
+- **Data (ISO):** 2026-11-17
+- **ID da Decisão:** DEC-517
+- **Contexto:** Estabilização do hub comercial B2B (`/workspace/b2b`), fechamento de fragment JSX e consolidação da gestão de abas customizadas no editor do app próprio (`/workspace/configuracoes/pwa`).
+- **Decisão Adotada:**
+  1. **Fechamento Canônico do Hub B2B (`src/routes/workspace.b2b.index.tsx`):**
+     - Corrigida a delimitação de fragment JSX na renderização condicional entre o catálogo de compras por atacado e as rotas GPS de campo (`FieldRoutesView`), mantendo o modal de cotação `RequestQuoteModal` acessível em ambas as sub-abas sem quebras de árvore React.
+  2. **Configurador Dinâmico de Abas PWA (`src/components/branded-app/branded-app-workspace-editor.tsx`):**
+     - Substituído badge estático por componente `Select` interativo com alvos táteis de 44px (`h-11 min-h-11`), permitindo ao lojista alternar o tipo de qualquer aba para `omni_match`, `quoter`, `corporate`, `forms`, etc.
+     - Inclusão da aba `omni_match` no starter kit com ícone `Flame` e suporte nativo ao reordenamento via botões táteis.
+  3. **Validação Arquitetural & Qualidade:**
+     - `node scripts/design-lint.mjs --ratchet`: 2.388 arquivos inspecionados, 0 violações P0/P1/P2/P3.
+     - `node scripts/check-type-duplications.mjs`: 2.968 arquivos inspecionados, 0 tipos concorrentes.
+     - `node scripts/check-bff-table-contracts.mjs`: 863 tabelas declaradas, 705 referenciadas pelo BFF, 0 tabelas sem declaração local.
+     - Vitest: 5 suítes centrais de testes E2E executadas, 36/36 testes aprovados (100%).
+- **Fundamentação Teórica:** AGENTS.md B.4, B.6, B.7, B.8, B.9, B.25, B.26; WCAG 2.2 AA.
+- **Consequências:** Zero regressões na árvore de componentes e zero pendências estruturais nos módulos do ecossistema.
+
+---
+
+### DEC-518: Seletor de Espaços de Trabalho Pós-Login, Onboarding Corporativo Autônomo & Desacoplamento Radical Civil vs Workspace (2026-11-17)
+- **Data (ISO):** 2026-11-17
+- **ID da Decisão:** DEC-518
+- **Contexto:** Atendimento integral à missão soberana de auditoria e estabilização dos 50 prompts: eliminação do redirecionamento cego de empresários/lojistas para o portal civil de compras, criação do Seletor de Portais pós-login (padrão iFood Parceiro / Google Workspace) e fluxo autônomo de credenciamento B2B sem dependência de conta civil prévia.
+- **Decisão Adotada:**
+  1. **Seletor de Espaços de Trabalho Canônico (`src/routes/auth.portal-selector.tsx`):**
+     - Rota soberana `/auth/portal-selector` que lista todas as empresas com membership ativo do usuário, exibindo cards com logo, razão social, nicho, cargo (`Proprietário`, `Gerente`, `Vendedor`) e CTA direto para `/workspace` com chaveamento atômico de cookies via `setTenantContext`.
+     - Suporte a múltiplos workspaces por e-mail, card especial para Admin Master Global e botão de transição honesta para o Portal do Consumidor (`/_store`), sem forçar o lojista a consumir vitrine ao operar seu negócio.
+  2. **Onboarding Corporativo Desacoplado (`src/routes/onboarding.empresa.tsx` e `src/services/enterprise-onboarding.functions.ts`):**
+     - Fluxo de criação de empresa B2B autônomo, permitindo o credenciamento de titular (Nome Completo, CPF validado Mod11, Data de Nascimento com maioridade legal >= 18 anos, WhatsApp com máscara, E-mail corporativo e senha) e negócio (Nome Fantasia, Razão Social, CNPJ opcional/validado, Nicho/Vertical e Cidade/UF).
+     - Provisionamento atômico de Organização, Loja e vínculo Owner em `workspace_members`, ativando o Workspace de imediato com 0% de atrito civil.
+  3. **Integração de Roteamento & Tenant Switcher:**
+     - `_store.entrar.tsx`, `painel.tsx` e `api.auth.callback.ts` atualizados para direcionar usuários corporativos ao Portal Selector.
+     - `TenantSwitcher` no Workspace enriquecido com ação de acesso rápido a "Ver Todas as Empresas (Portal)".
+     - Rotas registradas no catálogo SSOT `ROUTES` em `src/lib/routes.ts`.
+  4. **Validação Mecânica & Qualidade:**
+     - `node scripts/design-lint.mjs --ratchet`: 2.391 arquivos inspecionados, 0 violações (P0=0, P1=0, P2=0, P3=0).
+     - `node scripts/check-type-duplications.mjs`: 2.971 arquivos inspecionados, 0 tipos concorrentes.
+     - `node scripts/check-bff-table-contracts.mjs`: 863 tabelas declaradas, 705 referenciadas pelo BFF, 0 sem declaração local.
+     - Suíte Vitest com 30/30 testes aprovados em 5 arquivos de teste e2e.
+- **Fundamentação Teórica:** AGENTS.md B.1, B.2, B.4, B.6, B.7, B.8, B.9, B.25, B.26, B.31; WCAG 2.2 AA.
+- **Consequências:** Separação definitiva entre contextos civil e corporativo, eliminando vazamentos de tenant e proporcionando experiência nativa multi-empresa.
+
+---
+
+### DEC-519: Refatoração Soberana do Sistema de Contratos, Assinaturas Multimodais, Studio A4 In-Page & Cofre Criptográfico Tier DocuSign (2026-11-17)
+- **Data (ISO):** 2026-11-17
+- **ID da Decisão:** DEC-519
+- **Contexto:** Auditoria, refatoração e reconstrução de ponta a ponta do Módulo de Contratos e Assinaturas Digitais do Waesy (`/workspace/contratos`, `/workspace/contratos/:id/editor` e `/assinar/:token`), elevando o produto ao padrão global DocuSign / ClickSign com editor in-page A4 estilo Word, esteira guiada de 4 etapas, dashboard Cards ⇄ Tabela Densa corporativa, disparo público WhatsApp por nicho, modalidades multimodais de assinatura (desenho, digitação cursiva, upload de arquivo, 1-touch perfil e GOV.BR oficial) e biometria KYC com selagem SHA-256 imutável.
+- **Decisão Adotada:**
+  1. **Dashboard do Cofre (`src/routes/workspace.contratos.index.tsx`):**
+     - Alternador nativo Cards ⇄ Tabela Densa Corporativa (estilo Linear/Stripe) com colunas Documento, Categoria, Signatários & Progresso (chips com iniciais e status de cada parte), Valor sob contrato, Pasta do Cofre, Status e Ações Rápidas de 1 toque.
+     - Botões de ação visíveis de 1 toque no rodapé dos cards e linhas da tabela (Copiar Link de Assinatura, WhatsApp, Baixar PDF) sem dependência exclusiva de kebab menu oculto.
+     - Correção cirúrgica de geração de URLs públicas de assinatura (`/assinar/:token`, `/contrato/:code`, `/verify/document/:code`), eliminando o vazamento de rotas privadas de workspace (`/workspace/contratos/:id/editor`) para signatários externos.
+     - Modal de compartilhamento contextual via WhatsApp com seletor individual de signatário e mensagens personalizadas por nicho (Turismo, Imóveis, Veículos, B2B Geral).
+  2. **Studio de Contratos & Canvas A4 (`src/components/contracts/contract-workspace-studio.tsx` e `src/components/contracts/signature-positioner-canvas.tsx`):**
+     - Stepper linear superior de 4 etapas: Etapa 1 (Documento & Redação In-Page), Etapa 2 (Signatários & Canais), Etapa 3 (Posicionamento de Assinaturas e Campos) e Etapa 4 (Cofre, Resumo e Selagem).
+     - Redação in-page diretamente sobre a folha A4 com barra de formatação flutuante (Cláusulas, Negrito, Itálico, Tabela) e sincronização bidirecional em tempo real com `content_markdown`.
+     - Painel lateral dedicado de posicionamento de campos de assinatura com auto-posicionamento inteligente (`handleAutoPosition`) e paleta de inserção de tags dinâmicas.
+  3. **Página Pública de Assinatura Multimodal & KYC (`src/routes/assinar.$token.tsx`):**
+     - Seletor tátil de modalidades de assinatura: Desenhar (pad tátil), Digitar Nome (renderização de caligrafia cursiva suave via Canvas API em 3 estilos), Subir Imagem (upload de foto da assinatura manuscrita com prévia instantânea e limite de 2MB), Assinatura Salva no Perfil (1 toque) e GOV.BR Oficial (nível Prata/Ouro com presunção legal da Lei 14.063/2020).
+     - Autenticação avançada OTP de 6 dígitos com reenviar e cooldown.
+     - Biometria facial via webcam/selfie com cálculo do hash SHA-256 imutável e comprovação na folha de rosto.
+     - Folha de conclusão pós-assinatura com download do comprovante em PDF e atalho para o Certificado Público de Autenticidade (`/verify/document/:code`).
+  4. **Validação Mecânica & Qualidade:**
+     - `node scripts/design-lint.mjs --ratchet`: 2.391 arquivos inspecionados, 0 violações (P0=0, P1=0, P2=0, P3=0).
+     - `node scripts/check-type-duplications.mjs`: 2.971 arquivos inspecionados, 0 tipos concorrentes.
+     - `node scripts/check-bff-table-contracts.mjs`: 863 tabelas declaradas, 705 referenciadas pelo BFF, 0 tabelas sem declaração local.
+     - Suíte Vitest E2E `contracts-lifecycle-multimodal-e2e.test.ts` com 9/9 testes aprovados (100%) e 29/29 testes aprovados no conjunto de segurança e ciclo de vida de contratos.
+- **Fundamentação Teórica:** AGENTS.md B.1, B.2, B.4, B.6, B.7, B.8, B.9, B.25, B.26, B.28; Lei Federal 14.063/2020; MP 2.200-2/2001; WCAG 2.2 AA.
+- **Consequências:** Paridade tecnológica completa com plataformas globais de assinatura (DocuSign, ClickSign), isolamento total de links públicos e integridade forense comprovada por testes automatizados.
+
+---
+
+### DEC-520: Isolamento Radical de Tenants, Desacoplamento Total PWA Branded App vs Marketplace & Blindagem Anti-Vazamento (2026-11-17)
+- **Data (ISO):** 2026-11-17
+- **ID da Decisão:** DEC-520
+- **Contexto:** Auditoria forense e saneamento sistêmico de isolamento multi-tenant: erradicação definitiva do vazamento de empresas de terceiros no seletor de lojas de administradores e lojistas, isolamento hermético do PWA de marca própria (`/app/:slug`) sem rotas de escape para o marketplace público, checkout standalone focado e contenção estrita de carrinhos segregados por empresa.
+- **Decisão Adotada:**
+  1. **Blindagem de Tenants na Identidade & BFF (`src/services/store.functions.ts` e `src/lib/identity.server.ts`):**
+     - Saneada a função `getMyStoresList`: eliminada a listagem cega de 50 lojas aleatórias para usuários com perfil de admin. A lista restringe-se estritamente aos vínculos legítimos do usuário em `workspace_members`. Para administradores globais sem vínculo lojista, retorna exclusivamente a loja matriz institucional (`is_platform_root = true`), eliminando o bug de exibir empresas de terceiros.
+     - Saneado o fallback em `identity.server.ts`: proibido fallback arbitrário para a última loja criada por terceiros (`order by created_at desc limit 1`). O fallback restringe-se estritamente à matriz institucional (`is_platform_root = true`).
+  2. **Isolamento Standalone do Checkout para Apps PWA (`src/components/shell/app-shell.tsx` e `src/routes/_store.checkout.tsx`):**
+     - `AppShell` enriquecido com detecção de checkout de app (`isAppScopedCheckout = location.pathname.startsWith("/checkout") && (search.app || search.store)`), ativando modo standalone que omite completamente o TopBar global, chips de categorias e BottomNav do marketplace.
+     - `_store.checkout.tsx` atualizado para suprimir o seletor multi-loja quando `appSlug` estiver presente, garantindo que o cliente finalize exclusivamente com a empresa dona do app.
+  3. **Contenção e Blindagem de Sacola (`src/components/commerce/cart-sheet.tsx` e `src/components/branded-app/branded-app-shell.tsx`):**
+     - `CartSheet` enriquecido com props soberanas de isolamento (`storeId`, `appSlug`, `onNavigateToCatalog`), filtrando estritamente os itens da loja ativa, bloqueando redirecionamentos para `/mercado` em sacola vazia e direcionando a finalização com parâmetros preservados (`search: { store, app }`).
+     - `BrandedAppShell` conecta o drawer de cart com `storeId` e `appSlug` e sanitiza ações da aba `field_rep`.
+  4. **Validação Mecânica & Qualidade:**
+     - `node scripts/design-lint.mjs --ratchet`: 2.392 arquivos inspecionados, 0 violações (P0=0, P1=0, P2=0, P3=0).
+     - `node scripts/check-type-duplications.mjs`: 2.975 arquivos inspecionados, 0 tipos concorrentes.
+     - `node scripts/check-bff-table-contracts.mjs`: 863 tabelas declaradas, 705 referenciadas pelo BFF, 0 tabelas sem declaração local.
+     - Suíte Vitest `branded-app-isolation-e2e.test.ts`: 22/22 testes aprovados (100% de sucesso).
+- **Fundamentação Teórica:** AGENTS.md B.1, B.2, B.4, B.6, B.7, B.8, B.9, B.20, B.25, B.31; Zero-Trust Architecture; WCAG 2.2 AA.
+- **Consequências:** Isolamento 100% estrito entre o marketplace civil e os aplicativos PWA corporativos de cada empresa, garantindo privacidade, soberania de marca e zero vazamento de dados inter-tenant.
+
+---
+
+### DEC-521: Isolamento Hermético do Fluxo de Pedidos PWA e Confirmação Sem Fuga para o Marketplace (2026-11-17)
+- **Data (ISO):** 2026-11-17
+- **ID da Decisão:** DEC-521
+- **Contexto:** Auditoria forense e refinamento do ciclo de pedidos dentro dos aplicativos PWA de marca própria (`/app/:slug`). Identificou-se que após a finalização da compra no checkout, a tela de confirmação (`/pedido/:publicToken/confirmacao`) continha o botão padrão "Continuar Comprando" apontando para a vitrine pública (`/mercado`), e a tela de sacola vazia em `/checkout` apontava para a home civil (`/`), permitindo que clientes do PWA da empresa fossem inadvertidamente ejetados para o marketplace concorrente. Adicionalmente, quando múltiplos pedidos de outras lojas existiam na sessão global, o checkout convidava o cliente do PWA a pagar por lojas terceiras.
+- **Decisão Adotada:**
+  1. **Isolamento de Confirmação de Pedido (`src/routes/_store.pedido.$publicToken.confirmacao.tsx`):**
+     - Adicionado validador de busca `validateSearch: { app?: string }`.
+     - Resolução dinâmica de destino `targetAppSlug = search.app || order.stores?.slug`.
+     - Quando `targetAppSlug` está presente, substitui os botões civis ("Acompanhar Pedido" / "Continuar Comprando -> /mercado") pelo botão exclusivo "Voltar ao Aplicativo" (`/app/$slug`), preservando o cliente 100% dentro do aplicativo da empresa.
+  2. **Isolamento de Checkout e Empty-State (`src/routes/_store.checkout.tsx`):**
+     - Quando `appSlug` está definido, a rota omite notificações de pedidos pendentes de lojas de terceiros e navega para `/pedido/$publicToken/confirmacao` propagando `search: { app: appSlug }`.
+     - Em sacola vazia com `appSlug`, o botão "Explorar Produtos" é substituído por "Voltar ao Aplicativo" apontando para `/app/$slug`.
+  3. **AppShell Standalone para Confirmação de Pedidos de App (`src/components/shell/app-shell.tsx`):**
+     - Expandido `isAppScopedOrderFlow` para cobrir `/checkout` e `/pedido/` na presença de parâmetros `app` ou `store`, ativando o layout standalone (sem TopBar de busca global, chips de categorias e BottomNav civil).
+  4. **Suíte Automatizada e Validação Mecânica:**
+     - `src/services/branded-app-isolation-e2e.test.ts`: Expandida para 24 testes (W7-01 a W7-07), 100% aprovados com 0 falhas.
+     - `node scripts/design-lint.mjs --ratchet`: 2.392 arquivos inspecionados, 0 violações P0/P1/P2/P3.
+     - `node scripts/check-type-duplications.mjs`: 2.975 arquivos inspecionados, 0 tipos duplicados.
+     - `node scripts/check-bff-table-contracts.mjs`: 863 tabelas declaradas, 705 referenciadas, 0 sem declaração local.
+- **Fundamentação Teórica:** AGENTS.md B.1, B.2, B.4, B.6, B.7, B.8, B.9, B.20, B.25, B.31.
+- **Consequências:** Ciclo de compra, checkout, empty-state e tela de confirmação de pedido 100% blindados e isolados dentro do ecossistema de marca da empresa, com zero vazamento para o marketplace.
+
+---
+
+### DEC-522: Propagação Global de Tags Avançadas, Lembretes com Alarme e Motor de Inteligência Regulatória de Destinos (2026-11-18)
+- **Data (ISO):** 2026-11-18
+- **ID da Decisão:** DEC-522
+- **Contexto:** Refinamento E2E e propagação global de tags avançadas contextuais, agendamento de lembretes/follow-up imediatos na criação de oportunidades no CRM (Turismo e Comercial Geral), motor de inteligência regulatória de taxas de destino (Bonito, Noronha, Jeri, Cancún, EUA, Europa) e radar visual de documentos de passageiros a vencer.
+- **Decisão Adotada:**
+  1. **BFF e Schemas (`src/services/crm.functions.ts`):** `createLeadSchema` e `createLead` atualizados com suporte a `followUpAt` e `reminders`, com persistência em `follow_up_at` e em `custom_fields` (`reminders` e `next_followup_at`), além de inclusão de `follow_up_at` no array de fallback defensivo para erro Postgres 42703.
+  2. **Nova Oportunidade em Turismo (`src/routes/workspace.turismo.index.tsx`):** Drawer de criação enriquecido com `AdvancedLeadTagsPicker` e `LeadRemindersManager`, sincronizados com o estado local e persistidos no submit.
+  3. **Novo Lead no Comercial Geral (`src/routes/workspace.comercial.tsx`):** Substituída lista de botões estáticos `POPULAR_TAGS` por `AdvancedLeadTagsPicker` e integrado `LeadRemindersManager` para agendamento de follow-ups e alarmes.
+  4. **Motor de Inteligência Regulatória de Destinos (`src/lib/travel/destination-regulatory-intelligence.ts`):** Mapeamento sistemático de taxas obrigatórias (Voucher Único Digital em Bonito/MS, TPA e ICMBio em Fernando de Noronha, TTS em Jericoacoara, Visitax e taxa de saneamento em Cancún, Visto/Resort Fees nos EUA, Seguro Viagem € 30k no Espaço Schengen, RG < 10 anos no Mercosul com aviso de nulidade de CNH aérea).
+  5. **Widget Visual de Requisitos de Destino (`src/components/tourism/crm/DestinationRegulatoryAlertWidget.tsx`):** Componente acessível com badges de severidade, botão de cópia de texto de aviso para Proposta/WhatsApp e inclusão de taxas estimadas no orçamento, integrado no Dossiê (Sub-coluna 1 e Cotações/Propostas) e na Ficha do Cliente 360° (`customer-360-editable-card.tsx`).
+  6. **Validação Mecânica & Qualidade:**
+     - `node scripts/design-lint.mjs --ratchet`: 2.398 arquivos inspecionados, 0 violações (P0=0, P1=0, P2=0, P3=0).
+     - `node scripts/check-type-duplications.mjs`: 2.983 arquivos inspecionados, 0 tipos concorrentes.
+     - `node scripts/check-bff-table-contracts.mjs`: 863 tabelas declaradas, 705 referenciadas pelo BFF, 0 sem declaração local.
+     - Suíte Vitest: 25/25 testes aprovados (100% de sucesso).
+- **Fundamentação Teórica:** AGENTS.md B.1, B.2, B.4, B.6, B.7, B.8, B.9, B.12, B.25, B.33; WCAG 2.2 AA.
+- **Consequências:** Onboarding e criação de leads em Turismo e Comercial unificados com tags avançadas e lembretes; consultores alertados deterministicamente sobre exigências e taxas regulatórias dos destinos cotados.
+
+---
+
+### DEC-523: Isolamento Hermético Workspace/PWA, Remoção de Vazamentos Civis, Worker Budget SSR & Diagnóstico PostgREST/Supabase (2026-11-18)
+- **Data (ISO):** 2026-11-18
+- **ID da Decisão:** DEC-523
+- **Contexto:** Continuação do endurecimento multi-tenant entre Workspace/Painel (`/workspace`, `/painel`), Apps PWA de marca própria (`/app/$slug`) e Marketplace público (`_store.*`), erradicando atalhos para `/conta/*`, listagens multi-empresa dentro do ERP ativo e divergências de manifest PWA; redução do bundle `_worker.js` abaixo de 25,00 MB; e investigação forense da instabilidade de produção (`503 PGRST002` / timeouts REST) no projeto Supabase `jfuebqmltksyznovhlwa`.
+- **Decisão Adotada:**
+  1. **Isolamento PWA & Metadata (`src/routes/api.pwa.manifest[.]json.ts`, `src/routes/__root.tsx`):**
+     - Separada detecção `isWorkspaceSubdomain` de `rawMode === "workspace"`, fixando `workspaceScope = isWorkspaceSubdomain ? "/" : "/workspace"` em ambos `workspaceGenericManifest` e `workspaceStoreManifest`.
+     - Em `__root.tsx`, `workspaceStoreId` resolve estritamente por `workspaceSession` sem fallback para loja do marketplace e suprime tags de verificação pública em rotas `/workspace` e `/painel`.
+  2. **Erradicação de Vazamentos Civis, Multi-Empresa e Rotas de Escape (`workspace-shell.tsx`, `workspace-account-switcher.tsx`, `workspace-all-tools-dialog.tsx`, `navigation-registry.ts`, `workspace-navigation.ts`, `workspace.lojas.index.tsx`, `workspace.captacao.index.tsx`, `workspace.doacoes.index.tsx`, `app.$slug.tsx`, `_store.entrar.tsx`, `onboarding.empresa.tsx`, `painel.tsx`, `workspace.tsx`):**
+     - Removidos switches pessoais (`/conta`), busca/listagem de outras empresas do tenant ativo e links externos em `/app/$slug`; unificadas capturas de classificados via `WorkspaceClassifiedEditorDialog` inline e redirecionamento multi-empresa exclusivo para `/auth/portal-selector`.
+     - Corrigidos rótulos compostos no turismo (`Cotações`, `Financeiro`, `Equipe`) e persistência anônima OmniMatch em `match_time_swipes` (`src/services/match-engine.functions.ts`, migration `20270610000000`).
+  3. **Orçamento Worker SSR & Qualidade (`vite.config.ts`, `src/lib/server-client-noop-shim.ts`, `LeadCard.tsx`, `datetime.ts`, `CommissionAwardReceiptModal.tsx`):**
+     - Adicionados módulos pesados exclusivamente client (`WorkspaceClassifiedEditorDialog`, `CommissionAwardReceiptModal`, `TourismPipeCardDossier`, `BuilderWixStudioPanels`, `TravelPackageForm`, `WorkspaceAllToolsDialog`) a `SSR_CLIENT_ONLY_COMPONENTS`, reduzindo `_worker.js` para **24,77 MB / 25,00 MB**.
+     - Unificado `escapeHtml` de `@/lib/sanitize`, removido ícone decorativo não utilizado, normalizado fuso em `formatCompactDateTime`, e ampliado `afterAll` timeout de `store-onboarding-integrity.test.ts` para 60s.
+  4. **Estabilização Supabase PostgREST (`supabase/migrations/20270611000000`, `20270612000000`) & Diagnóstico Forense de Infraestrutura:**
+     - Aplicado `ALTER ROLE authenticator SET statement_timeout = '5min'` e `work_mem = '32MB'` (mantendo `anon=3s` e `authenticated=8s`). Contudo, diagnóstico forense em produção confirmou que o projeto `jfuebqmltksyznovhlwa` opera em plano **Free (Nano 0,5 GB RAM, sem compute addon)** com **849 tabelas / 13.191 colunas / 442 MB de 500 MB** (`chat_messages` TOAST = 229 MB / 232 MB total com RPC `get_threads_latest_public_messages` em média 6,1s), saturando IO WAL (`WALWrite`/`WALInsert`) e mantendo `rest`/`db` em estado intermitente/unhealthy até upgrade de compute ou alívio de carga.
+  5. **Evidências Verificadas Pós-Edição:**
+     - `npm run typecheck`: Exit Code 0.
+     - `npm run lint`: 0 erros (`15.907` avisos).
+     - `npm run build` + `npm run check:route-budget`: Exit Code 0 (`694` boot chunks OK; `_worker.js = 24,77 MB / 25,00 MB`).
+     - Gates estáticos: `design-lint --ratchet` (`2.399` arquivos, P0=0, P1=0, P2=0, P3=0), `contrast-audit` (APROVADO), `audit:buttons` (`10.102` controles, P0=0, P1=0, P2=0), `audit:buttons:test` (`19/19`), `lint:design:test` (`61/61`), `check:schema` (`653` migrations, `849` tabelas), `check:bff` (`705` refs, `0` faltantes), `check:tokens` (`173` tokens), `check:naming`, `check:cycles` (`0` ciclos), `check:types-ssot` (`0` duplicações), `check:duplication:warn`, `check:migration-inventory` (`653` SQL únicas), `audit:secrets` (`6.714` arquivos OK).
+     - `npm test` (`vitest run` completo): `591/593` arquivos aprovados (`4.118/4.123` testes aprovados, `4` skipped por timeout de `beforeAll` em `tenant-context-zero-trust.test.ts`, `1` falha por timeout REST em `cross-tenant-rls-isolation.test.ts` linha 121 devido à saturação do banco remoto).
+- **Fundamentação Teórica:** AGENTS.md B.1, B.2, B.4, B.7, B.8, B.9, B.25, B.31; Zero-Trust Multi-Tenant Isolation; Cloudflare 25 MB Worker Cap.
+- **Consequências:** Isolamento completo Workspace/Branded-App validado nos testes unitários e de contrato (`workspace-pwa-and-tenant-isolation`, `workspace-navigation-pillars`, `branded-app`, `branded-app-isolation-e2e`) e empacotado dentro do orçamento Cloudflare; saúde transacional completa em produção requer upgrade do compute Free Nano para instância dedicada e otimização/expurgo do TOAST de `chat_messages`.
+
+---
+
+### DEC-524: Saneamento Forense de Redirect Traps AST, Unificação de Scroll Multicoluna no Dossiê e Largura Responsiva Dossier Sheet (2026-11-18)
+- **Data (ISO):** 2026-11-18
+- **ID da Decisão:** DEC-524
+- **Contexto:** Auditoria forense de AST detectou `routeRedirectTrapsCount: 1` em `src/routes/workspace.lojas.index.tsx` (que possuía `beforeLoad` redirecionando incondicionalmente para `/auth/portal-selector`, mantendo 350+ LOC de interface morta inacessível); o usuário solicitou auditoria completa end-to-end, eliminação de gaps e garantia de scroll interno independente nas colunas do Dossiê (`TourismPipeCardDossier.tsx`), prevenindo compressão de campos e garantindo que abas com 3 colunas (Viagem, Atendimento, Lateral) e 2 colunas (Anamnese, Pagamento, Perfil, etc.) rolem suavemente e de forma isolada.
+- **Decisão Adotada:**
+  1. **Saneamento de Redirect Trap AST (`src/routes/workspace.lojas.index.tsx`):**
+     - Removido o bloco contíguo de código morto de 350 linhas pós-redirect incondicional, convertendo o arquivo em redirect shim canônico e conciso de 11 linhas com TanStack Router.
+     - Re-execução da auditoria forense do repositório (`scripts/audit/forensic-repo-audit.mjs`) comprovando `routeRedirectTrapsCount: 0`, `brokenImportsCount: 0` e `quarantineFilesCount: 0`.
+  2. **Largura Responsiva de Dossiê & Descompressão de Colunas (`src/styles.css`, `src/routes/workspace.turismo.index.tsx`):**
+     - Atualizada a utilidade `@utility sheet-page-dossier` para largura adaptativa fluida: `78vw` em `lg` (1024px), `84vw` em `xl` (1280px) e `88vw` em `2xl` (1536px), preservando o peek-through do Kanban e garantindo espaço generoso para a distribuição multicoluna.
+     - Em `workspace.turismo.index.tsx`, substituído `lg:sheet-page-70` por `lg:sheet-page-dossier` no `SheetContent`.
+  3. **Scroll Interno Independente de 3 e 2 Colunas (`TourismPipeCardDossier.tsx`):**
+     - Assegurado que na aba `Geral` (`activeSection === "form"`), as 3 colunas (Viagem & Interesse, Atendimento & Procedência, Lateral Direita) possuam scroll vertical interno independente (`overflow-y-auto min-h-0 h-full scrollbar-waesy`) sem vazamentos horizontais.
+     - Assegurado que em todas as demais abas individuais (`anamnese`, `payment`, `travelers`, `customer360`, `proposals`, `contracts`, `checklists`), as 2 colunas operem com scroll interno dedicado e altura travada no viewport desktop.
+  4. **Evidências e Gates de CI Aprovados:**
+     - `node scripts/design-lint.mjs --ratchet`: 2.399 arquivos inspecionados, 0 violações (P0=0, P1=0, P2=0, P3=0).
+     - `node scripts/check-type-duplications.mjs`: 2.984 arquivos inspecionados, 0 tipos concorrentes.
+     - `node scripts/check-bff-table-contracts.mjs`: 863 tabelas declaradas, 705 referenciadas pelo BFF, 0 sem declaração local.
+     - `vitest run src/services/__tests__/tourism-crm-advanced-dossier-e2e.test.ts`: 16/16 testes aprovados (100%).
+- **Fundamentação Teórica:** AGENTS.md Regras B.1, B.2, B.4, B.6, B.7, B.8, B.9, B.12, B.14, B.31; WCAG 2.2 AA.
+- **Consequências:** Zero armadilhas de redirecionamento ou código morto em rotas de workspace; dossiê multi-nicho e de turismo fluído com scroll interno independente em 3 ou 2 colunas e 100% dos gates de CI estritamente aprovados.
+
+---
+
+### DEC-525: Reengenharia Master do RH/DP, Navegação de Gente & Gestão e Arquitetura de Scroll Multicoluna Isolado no Dossiê CRM (2026-11-18)
+- **Data (ISO):** 2026-11-18
+- **ID da Decisão:** DEC-525
+- **Contexto:** Demanda do usuário para elevação do RH/DP a um subsistema corporativo completo (Waesy Gente & Gestão), com cockpit executivo 360°, gestão horizontal de setores corporativos da empresa, ficha 360° do colaborador com 6 abas (Pessoal, Comercial com carteira de clientes, Ponto com PIN MTE 671, Benefícios, Documentos/ASO e Nicho), reestruturação do menu lateral (`src/lib/workspace-navigation.ts` em `GROUP_TEAM_RH`), e saneamento definitivo da arquitetura de scroll interno por coluna no CRM Dossier (`TourismPipeCardDossier.tsx`), eliminando o anti-pattern de altura `flex-1 h-full` concorrente que causava truncamento vertical das 3 colunas e 2 colunas.
+- **Decisão Adotada:**
+  1. **Arquitetura de Scroll Independente por Coluna no CRM Dossier (`TourismPipeCardDossier.tsx`):**
+     - Removido o anti-pattern `h-full` concorrente com `flex-1 min-h-0` no contêiner do formulário e na grade interna de 2 colunas, permitindo que a altura de cada coluna seja estritamente delimitada pela área visível disponível do viewport.
+     - Aplicação de `h-auto lg:h-full min-h-0 lg:overflow-y-auto overscroll-contain pr-1 sm:pr-2 scrollbar-waesy pb-16 lg:pb-24` nas colunas internas (Coluna 1: Viagem & Destino; Coluna 2: Atendimento & Procedência; Coluna 3: Sidecar de Governança), viabilizando rolagem vertical suave e 100% independente nas 3 colunas simultâneas no modo `form` ("Geral").
+     - Nas abas de 2 colunas (`travelers`, `payment`, `contracts`, `proposals`, `opportunities`, `anamnese`, `customer360`, `lgpd`, `meeting`, `checklists`, `attachments`, `comments`, `all`), garantia de scroll isolado entre a casca da aba (`lg:col-span-8`) e o sidecar lateral (`lg:col-span-4`) com folga inferior de `pb-16 lg:pb-24`, prevenindo oclusão de botões e cartões informativos.
+  2. **Suíte Corporativa de Gente & Gestão (RH/DP) e Navegação Canônica:**
+     - Criada a rota mestra centralizada `/workspace/rh` (`src/routes/workspace.rh.index.tsx`) com Cockpit Executivo 360°, cartões de métricas (Headcount, Folha Base, Ponto Hoje, ASO a Vencer, Atestados Pendentes), abas (`overview`, `colaboradores`, `setores`), filtros avançados de busca e tabela completa de colaboradores.
+     - Criados os componentes modulares `src/components/hr/DepartmentManagerPanel.tsx` e `src/components/hr/EmployeeFullProfileModal.tsx` com 6 abas de governança.
+     - Atualizado `GROUP_TEAM_RH` em `src/lib/workspace-navigation.ts` com o selo "Gente & Gestão (RH/DP)" e rota raiz `/workspace/rh`.
+     - Corrigida a consulta de atestados médicos pendentes em `src/services/hr.functions.ts` para a tabela canônica `employee_requests` (`request_type = 'leave_absence'`), assegurando 0 tabelas sem declaração no BFF.
+  3. **Evidências e Gates de CI Aprovados:**
+     - `node scripts/design-lint.mjs --ratchet`: 2.403 arquivos inspecionados, 0 violações (P0=0, P1=0, P2=0, P3=0).
+     - `node scripts/check-type-duplications.mjs`: 2.988 arquivos inspecionados, 0 tipos concorrentes.
+     - `node scripts/check-bff-table-contracts.mjs`: 863 tabelas declaradas, 705 referenciadas pelo BFF, 0 sem declaração local.
+     - `vitest run src/services/__tests__/tourism-crm-multipane-scroll-and-hr-suite-e2e.test.ts`: 4/4 testes aprovados (100%).
+- **Fundamentação Teórica:** AGENTS.md Regras B.1, B.2, B.4, B.6, B.7, B.8, B.9, B.12, B.14, B.31; WCAG 2.2 AA.
+- **Consequências:** Zero violações visuais ou de tipagem; dossiê multi-nicho e CRM com navegação e scroll perfeitamente desacoplados por coluna (3 colunas em Geral, 2 colunas nas abas e sidecar); subsistema de Gente & Gestão (RH/DP) 100% operacional no Workspace com governança horizontal de setores e ficha 360° do colaborador.

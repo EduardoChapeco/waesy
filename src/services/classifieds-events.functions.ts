@@ -2,64 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { signTicketPayload } from "@/lib/ticket-crypto";
+import { buildEmvPixCopyPaste } from "@/lib/pix-payload";
 import { getIdentity } from "./identity.functions";
-
-function buildEmvPixCopyPaste(params: {
-  pixKey: string;
-  merchantName: string;
-  merchantCity: string;
-  amountCents: number;
-  txid: string;
-}): string {
-  const formatField = (id: string, value: string) =>
-    `${id}${String(value.length).padStart(2, "0")}${value}`;
-
-  const cleanName = params.merchantName
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9 ]/g, "")
-    .slice(0, 25)
-    .toUpperCase() || "WAESY EVENTOS";
-  const cleanCity = params.merchantCity
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9 ]/g, "")
-    .slice(0, 15)
-    .toUpperCase() || "CHAPECO";
-  const cleanTxid = params.txid.replace(/[^a-zA-Z0-9]/g, "").slice(0, 25) || "WAESYTKT";
-  const amountStr = (Math.max(0, params.amountCents) / 100).toFixed(2);
-
-  const gui = formatField("00", "br.gov.bcb.pix");
-  const key = formatField("01", params.pixKey.trim());
-  const merchantAccount = formatField("26", `${gui}${key}`);
-
-  const payloadWithoutCrc = [
-    formatField("00", "01"),
-    merchantAccount,
-    formatField("52", "0000"),
-    formatField("53", "986"),
-    ...(params.amountCents > 0 ? [formatField("54", amountStr)] : []),
-    formatField("58", "BR"),
-    formatField("59", cleanName),
-    formatField("60", cleanCity),
-    formatField("62", formatField("05", cleanTxid)),
-    "6304",
-  ].join("");
-
-  let crc = 0xffff;
-  for (let i = 0; i < payloadWithoutCrc.length; i++) {
-    crc ^= payloadWithoutCrc.charCodeAt(i) << 8;
-    for (let j = 0; j < 8; j++) {
-      if ((crc & 0x8000) !== 0) {
-        crc = ((crc << 1) ^ 0x1021) & 0xffff;
-      } else {
-        crc = (crc << 1) & 0xffff;
-      }
-    }
-  }
-  const crcHex = crc.toString(16).toUpperCase().padStart(4, "0");
-  return `${payloadWithoutCrc}${crcHex}`;
-}
 
 /**
  * classifieds-events.functions.ts — Camada BFF para Gestão de Eventos em Classificados
@@ -70,6 +14,42 @@ function buildEmvPixCopyPaste(params: {
  * 3. Enquetes e Interatividade em Tempo Real (votação e contagem de votos)
  * 4. Contagem e Sumário de Participantes Confirmados
  */
+
+function resolveAuthoritativeTicketPriceCents(
+  classified: { price_cents?: number | null; attributes?: any },
+  requestedTierId?: string | null,
+  requestedTierName?: string | null,
+): {
+  priceCents: number;
+  resolvedTierName: string;
+  matchedTier: Record<string, any> | null;
+} {
+  const attrs = ((classified?.attributes || {}) as Record<string, any>) || {};
+  const tiers = Array.isArray(attrs.ticket_tiers) ? attrs.ticket_tiers : [];
+  if (tiers.length > 0) {
+    const matched = tiers.find(
+      (t: any) =>
+        (requestedTierId && String(t?.id || "") === String(requestedTierId)) ||
+        (requestedTierName && String(t?.name || "").trim().toLowerCase() === String(requestedTierName).trim().toLowerCase()),
+    );
+    if (!matched) {
+      throw new Error("Lote ou modalidade de ingresso inválido ou indisponível.");
+    }
+    const tierPrice = Number(matched.price_cents ?? matched.priceCents ?? 0);
+    return {
+      priceCents: Number.isFinite(tierPrice) && tierPrice >= 0 ? Math.round(tierPrice) : 0,
+      resolvedTierName: String(matched.name || requestedTierName || "Ingresso"),
+      matchedTier: matched,
+    };
+  }
+
+  const listingPrice = Number(classified?.price_cents ?? attrs.ticket_price_cents ?? 0);
+  return {
+    priceCents: Number.isFinite(listingPrice) && listingPrice > 0 ? Math.round(listingPrice) : 0,
+    resolvedTierName: requestedTierName || "Ingresso Geral",
+    matchedTier: null,
+  };
+}
 
 export const registerClassifiedEventLead = createServerFn({ method: "POST" })
   .validator(
@@ -88,31 +68,35 @@ export const registerClassifiedEventLead = createServerFn({ method: "POST" })
     const supabase = getServerClient();
     const identity = await getIdentity().catch(() => null);
 
-    // 1. Busca o anúncio para verificar integridade e store_id
+    // 1. Busca o anúncio para verificar integridade, preço autoritativo e store_id
     const { data: classified, error: classifiedErr } = await supabase
       .from("classifieds")
-      .select("id, title, store_id, author_profile_id, category, attributes")
+      .select("id, title, store_id, author_profile_id, category, price_cents, attributes, status")
       .eq("id", input.classifiedId)
       .maybeSingle();
 
-    if (classifiedErr || !classified) {
+    if (classifiedErr || !classified || ["archived", "removed"].includes(String(classified.status))) {
       throw new Error("Evento não encontrado ou inativo.");
     }
 
-    const roleLabel = input.ticketTierName
-      ? `Ingresso: ${input.ticketTierName}`
-      : "Inscrição no Evento";
+    const authoritativeTier = resolveAuthoritativeTicketPriceCents(
+      classified,
+      input.ticketTierId,
+      input.ticketTierName,
+    );
+    const priceCents = authoritativeTier.priceCents;
+    const resolvedTierLabel = input.ticketTierName || authoritativeTier.resolvedTierName;
+    const roleLabel = resolvedTierLabel ? `Ingresso: ${resolvedTierLabel}` : "Inscrição no Evento";
 
     const provisionalTicketId = crypto.randomUUID();
     const ownerProfileId = identity?.id || classified.author_profile_id;
     const signedTicket = signTicketPayload({
       ticketId: provisionalTicketId,
       eventId: input.classifiedId,
-      lotId: input.ticketTierId || "classified-default-lot",
+      lotId: input.ticketTierId || authoritativeTier.matchedTier?.id || "classified-default-lot",
       ownerProfileId,
     });
 
-    const priceCents = Number(input.ticketTierPriceCents || 0);
     const attrs = (classified.attributes || {}) as Record<string, any>;
     const pixKey = String(attrs.pix_key || attrs.organizer_pix || "eventos@waesy.com.br");
     const pixCopyPaste =
@@ -151,24 +135,31 @@ export const registerClassifiedEventLead = createServerFn({ method: "POST" })
       .single();
 
     if (appErr) {
-      console.warn("[classifieds-events] classified_applications insert notice:", appErr);
+      throw new Error("Não foi possível registrar a inscrição no evento.");
     }
 
-    // 3. Se o evento possui Loja / Empresa vinculada, sincroniza com o Funil de Vendas leads_crm
+    // 3. Se o evento possui Loja / Empresa vinculada, sincroniza sem duplicação via motor unificado leads_crm
     if (classified.store_id) {
       try {
-        await supabase.from("leads_crm").insert({
-          store_id: classified.store_id,
-          full_name: input.name.trim(),
+        const { ingestOmnichannelLead } = await import("./omnichannel-lead-ingestion");
+        await ingestOmnichannelLead(supabase, {
+          storeId: classified.store_id,
+          source: "lead_form",
+          sourceDetail: "Classificados / Eventos",
+          fullName: input.name.trim(),
           phone: input.whatsapp.trim(),
           email: input.email?.trim() || null,
           title: `Inscrição Evento: ${classified.title}`,
           destination: `Evento: ${classified.title}`,
-          source: "site",
-          lead_source_detail: "Classificados / Eventos",
-          status: "new",
-          tags: ["Classificados", "Evento", input.ticketTierName || "Geral", signedTicket.humanCode],
+          estimatedValueCents: priceCents,
+          sourceListingId: classified.id,
+          sourceListingOrigin: "classified",
+          sourceListingTitle: classified.title,
           notes: `Participante inscrito no evento ${classified.title}. Lote: ${input.ticketTierName || "Padrão"}. Bilhete: ${signedTicket.humanCode}. Preço: ${priceCents > 0 ? `R$ ${(priceCents / 100).toFixed(2)}` : "Gratuito"}.`,
+          customFields: {
+            ticket_tier_name: input.ticketTierName || "Padrão",
+            ticket_code: signedTicket.humanCode,
+          },
         });
       } catch (crmErr: any) {
         console.warn("[classifieds-events] leads_crm sync fallback:", crmErr);
@@ -483,16 +474,43 @@ export const checkoutClassifiedEventTicket = createServerFn({ method: "POST" })
     const supabase = getServerClient();
     const identity = await getIdentity().catch(() => null);
 
-    const { data: classified } = await supabase
+    const { data: classified, error: classifiedErr } = await supabase
       .from("classifieds")
-      .select("id, title, store_id, author_profile_id, attributes")
+      .select("id, title, store_id, author_profile_id, price_cents, attributes, status")
       .eq("id", input.classifiedId)
       .maybeSingle();
 
-    const ownerProfileId =
-      identity?.id || classified?.author_profile_id || "00000000-0000-0000-0000-000000000000";
-    const attrs = ((classified?.attributes || {}) as Record<string, any>) || {};
-    const totalAmountCents = Math.max(0, input.unitPriceCents * input.quantity);
+    if (classifiedErr || !classified || ["archived", "removed"].includes(String(classified.status))) {
+      throw new Error("Evento não encontrado ou encerrado.");
+    }
+
+    const ownerProfileId = identity?.id || classified.author_profile_id;
+    if (!ownerProfileId) {
+      throw new Error("Autenticação ou organizador válido obrigatório para emitir ingressos.");
+    }
+
+    const attrs = ((classified.attributes || {}) as Record<string, any>) || {};
+    const authoritativeTier = resolveAuthoritativeTicketPriceCents(
+      classified,
+      input.tierId,
+      input.tierName,
+    );
+
+    if (authoritativeTier.matchedTier) {
+      const cap = Number(
+        authoritativeTier.matchedTier.capacity ?? authoritativeTier.matchedTier.quantity ?? 0,
+      );
+      const sold = Number(authoritativeTier.matchedTier.sold_count || 0);
+      if (
+        authoritativeTier.matchedTier.status === "sold_out" ||
+        (cap > 0 && sold + input.quantity > cap)
+      ) {
+        throw new Error("Lote esgotado ou sem ingressos suficientes disponíveis.");
+      }
+    }
+
+    const authoritativeUnitPriceCents = authoritativeTier.priceCents;
+    const totalAmountCents = Math.max(0, authoritativeUnitPriceCents * input.quantity);
 
     const issuedTickets: Array<{ id: string; code: string; qrPayload: string }> = [];
     for (let i = 0; i < input.quantity; i++) {
@@ -500,7 +518,7 @@ export const checkoutClassifiedEventTicket = createServerFn({ method: "POST" })
       const signed = signTicketPayload({
         ticketId,
         eventId: input.classifiedId,
-        lotId: input.tierId,
+        lotId: authoritativeTier.matchedTier?.id || input.tierId,
         ownerProfileId,
       });
       issuedTickets.push({
@@ -509,31 +527,33 @@ export const checkoutClassifiedEventTicket = createServerFn({ method: "POST" })
         qrPayload: signed.qrPayload,
       });
 
-      if (classified) {
-        await supabase
-          .from("classified_applications")
-          .insert({
-            id: ticketId,
-            classified_id: input.classifiedId,
-            applicant_id: ownerProfileId,
-            name: input.buyerName.trim(),
-            phone: input.buyerWhatsapp.trim(),
-            email: input.buyerEmail?.trim() || null,
-            feedback_notes: `Ingresso: ${input.tierName}`,
-            cover_letter: `Código WCTS-1: ${signed.humanCode} | QR: ${signed.qrPayload}`,
-            status: totalAmountCents > 0 ? "pending_payment" : "confirmed",
-          })
-          .then(
-            () => null,
-            () => null
-          );
+      const { error: insertTicketErr } = await supabase
+        .from("classified_applications")
+        .insert({
+          id: ticketId,
+          classified_id: input.classifiedId,
+          applicant_id: ownerProfileId,
+          name: input.buyerName.trim(),
+          phone: input.buyerWhatsapp.trim(),
+          email: input.buyerEmail?.trim() || null,
+          feedback_notes: `Ingresso: ${authoritativeTier.resolvedTierName}`,
+          cover_letter: `Código WCTS-1: ${signed.humanCode} | QR: ${signed.qrPayload}`,
+          status: totalAmountCents > 0 ? "pending_payment" : "confirmed",
+        });
+
+      if (insertTicketErr) {
+        throw new Error("Não foi possível emitir o ingresso no banco de dados.");
       }
     }
 
     // Increment sold_count on the tier in attributes.ticket_tiers and check automatic rollover
-    if (classified && Array.isArray(attrs.ticket_tiers)) {
+    if (Array.isArray(attrs.ticket_tiers)) {
       const updatedTiers = attrs.ticket_tiers.map((t: any) => {
-        if (String(t.id) === String(input.tierId) || String(t.name) === String(input.tierName)) {
+        if (
+          (authoritativeTier.matchedTier?.id && String(t.id) === String(authoritativeTier.matchedTier.id)) ||
+          String(t.id) === String(input.tierId) ||
+          String(t.name) === String(input.tierName)
+        ) {
           const nextSold = Number(t.sold_count || 0) + input.quantity;
           const cap = Number(t.capacity ?? t.quantity ?? 100);
           return {
@@ -544,7 +564,7 @@ export const checkoutClassifiedEventTicket = createServerFn({ method: "POST" })
         }
         return t;
       });
-      await supabase
+      const { error: tierUpdateErr } = await supabase
         .from("classifieds")
         .update({
           attributes: {
@@ -552,11 +572,10 @@ export const checkoutClassifiedEventTicket = createServerFn({ method: "POST" })
             ticket_tiers: updatedTiers,
           },
         })
-        .eq("id", classified.id)
-        .then(
-          () => null,
-          () => null
-        );
+        .eq("id", classified.id);
+      if (tierUpdateErr) {
+        console.error("[classifieds-events] Erro ao atualizar sold_count do lote:", tierUpdateErr);
+      }
     }
 
     const pixKey = String(attrs.pix_key || attrs.organizer_pix || "eventos@waesy.com.br");

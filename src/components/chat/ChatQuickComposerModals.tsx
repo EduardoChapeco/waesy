@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   Camera,
   FileSpreadsheet,
   ShoppingCart,
   ClipboardList,
   Calendar,
+  CalendarClock,
   Smile,
   MapPin,
   AlertTriangle,
@@ -28,6 +29,16 @@ import {
   Award,
   Flame,
   PackageCheck,
+  Target,
+  FileText,
+  FileSignature,
+  ShoppingBag,
+  ArrowRightLeft,
+  Volume2,
+  Search,
+  Loader2,
+  Check,
+  Link2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +59,17 @@ import {
 } from "@/components/ui/sheet";
 import { ArtifactInteractiveTable } from "@/components/chat/artifacts/ArtifactInteractiveTable";
 import { createCommercialInvoice, getStoreCommercialPaymentConfig } from "@/services/commercial-invoices.functions";
+import {
+  getChatQuickActionsCatalog,
+  searchStoreCrmLeads,
+  type ChatQuickActionsCatalogDTO,
+} from "@/services/chat-quick-actions.functions";
+import {
+  convertChatThreadToCrmLead,
+  createLinkedCustomerTask,
+  linkThreadToCrmOpportunity,
+  registerCrmCommercialActivity,
+} from "@/services/chat.functions";
 import { generatePixBrCode } from "@/lib/pix-payload";
 import { useCart } from "@/lib/cart-context";
 import { formatMoney } from "@/lib/money";
@@ -57,7 +79,6 @@ import { toast } from "sonner";
 function parseBrlAmountToCents(raw: string): number {
   const cleaned = String(raw || "").replace(/R\$\s*/gi, "").trim();
   if (!cleaned) return 0;
-  // Formatos: "1.290,50" -> 1290.50 ou "290.50" -> 290.50
   const normalized = cleaned.includes(",")
     ? cleaned.replace(/\./g, "").replace(",", ".")
     : cleaned;
@@ -65,6 +86,22 @@ function parseBrlAmountToCents(raw: string): number {
   if (!Number.isFinite(num) || num <= 0) return 0;
   return Math.round(num * 100);
 }
+
+export type QuickComposerModalKind =
+  | "form"
+  | "event"
+  | "sticker"
+  | "spreadsheet"
+  | "invoice"
+  | "boleto"
+  | "contract"
+  | "quote"
+  | "image_card"
+  | "lead"
+  | "proposal"
+  | "product"
+  | "task"
+  | "location";
 
 export interface StructuredDispatchPayload {
   message: string;
@@ -78,45 +115,24 @@ export interface ChatQuickComposerModalsProps {
   onTrayOpenChange: (open: boolean) => void;
   onDispatchMessage: (data: StructuredDispatchPayload) => Promise<void> | void;
   onOpenRmaModal?: () => void;
+  onOpenSchedule?: () => void;
+  onOpenTransfer?: () => void;
+  onOpenVoiceStudio?: () => void;
   storeId?: string;
   storeName?: string;
   storeSlug?: string;
+  storeAddress?: string | null;
   threadId?: string | null;
   customerId?: string | null;
   customerName?: string | null;
   customerPhone?: string | null;
   customerEmail?: string | null;
-  activeModalOverride?: "form" | "event" | "sticker" | "spreadsheet" | "invoice" | "boleto" | "contract" | "quote" | "image_card" | null;
+  leadId?: string | null;
+  leadTitle?: string | null;
+  onLeadLinked?: (lead: any) => void;
+  activeModalOverride?: QuickComposerModalKind | null;
   onClearModalOverride?: () => void;
 }
-
-const DEFAULT_SPREADSHEET_PRESETS = [
-  {
-    id: "sales-q3",
-    title: "Relatório Comercial & Pedidos",
-    headers: ["ID", "Cliente", "Categoria", "Status", "Valor (R$)", "Data"],
-    rows: [
-      ["ITEM-01", "Serviço / Produto Principal", "Comercial", "Ativo", 0, "Atual"],
-      ["ITEM-02", "Atendimento Complementar", "Operacional", "Ativo", 0, "Atual"],
-      ["ITEM-03", "Taxa / Entrega", "Logística", "Ativo", 0, "Atual"],
-      ["ITEM-04", "Garantia / Suporte", "Pós-Venda", "Ativo", 0, "Atual"],
-      ["ITEM-05", "Condição Especial", "Comercial", "Ativo", 0, "Atual"],
-    ],
-    summary: { total_pedidos: 5, receita_acumulada: 7190 },
-  },
-  {
-    id: "inventory-live",
-    title: "Controle de Estoque & Giro",
-    headers: ["SKU", "Produto", "Unidades", "Giro Semanal", "Preço Unitário"],
-    rows: [
-      ["SKU-101", "Kit Executivo Premium", 42, "Alto", "R$ 129,90"],
-      ["SKU-104", "Combo Família Especial", 18, "Muito Alto", "R$ 89,90"],
-      ["SKU-209", "Assinatura Mensal Pro", 95, "Recorrente", "R$ 49,90"],
-      ["SKU-312", "Caixa Organizadora Modular", 14, "Médio", "R$ 64,00"],
-    ],
-    summary: { skus_ativos: 4, unidades_totais: 169 },
-  },
-];
 
 const VISUAL_STICKERS = [
   { id: "st-confirm", label: "Pedido Confirmado", sub: "Já estamos preparando", icon: PackageCheck },
@@ -132,19 +148,25 @@ export function ChatQuickComposerModals({
   onTrayOpenChange,
   onDispatchMessage,
   onOpenRmaModal,
+  onOpenSchedule,
+  onOpenTransfer,
+  onOpenVoiceStudio,
   storeId,
   storeName = "Loja Parceira",
   storeSlug,
+  storeAddress,
+  threadId,
   customerId,
   customerName,
   customerPhone,
   customerEmail,
+  leadId,
+  leadTitle,
+  onLeadLinked,
   activeModalOverride,
   onClearModalOverride,
 }: ChatQuickComposerModalsProps) {
-  const [activeModal, setActiveModal] = useState<
-    "form" | "event" | "sticker" | "spreadsheet" | "invoice" | "boleto" | "contract" | "quote" | "image_card" | null
-  >(null);
+  const [activeModal, setActiveModal] = useState<QuickComposerModalKind | null>(null);
   const [isSubmittingTx, setIsSubmittingTx] = useState(false);
 
   const currentModal = activeModalOverride || activeModal;
@@ -152,6 +174,77 @@ export function ChatQuickComposerModals({
     setActiveModal(null);
     onClearModalOverride?.();
   };
+
+  // Catalogo real carregado sob demanda (propostas, faturas, contratos, formularios, produtos)
+  const [catalog, setCatalog] = useState<ChatQuickActionsCatalogDTO | null>(null);
+  const [loadingCatalog, setLoadingCatalog] = useState(false);
+  const loadQuickCatalog = useCallback(async () => {
+    if (!storeId) return;
+    setLoadingCatalog(true);
+    try {
+      const res = await getChatQuickActionsCatalog({
+        data: { storeId, customerId: customerId || null, leadId: leadId || null },
+      });
+      setCatalog(res);
+    } catch {
+      // Fallback silencioso mantem ultimo catalogo valido
+    } finally {
+      setLoadingCatalog(false);
+    }
+  }, [storeId, customerId, leadId]);
+
+  useEffect(() => {
+    if ((trayOpen || currentModal) && storeId) {
+      void loadQuickCatalog();
+    }
+  }, [trayOpen, currentModal, storeId, loadQuickCatalog]);
+
+  // Estado Modal Lead CRM (Busca + Vinculacao + Criacao)
+  const [leadQuery, setLeadQuery] = useState("");
+  const [leadResults, setLeadResults] = useState<any[]>([]);
+  const [searchingLeads, setSearchingLeads] = useState(false);
+  const [newLeadTitleInput, setNewLeadTitleInput] = useState("");
+  const [newLeadBudgetInput, setNewLeadBudgetInput] = useState("");
+  const [newLeadNotesInput, setNewLeadNotesInput] = useState("");
+  const [isSavingLeadAction, setIsSavingLeadAction] = useState(false);
+
+  const runLeadSearch = useCallback(async (q: string) => {
+    if (!storeId) return;
+    setSearchingLeads(true);
+    try {
+      const rows = await searchStoreCrmLeads({
+        data: { storeId, query: q.trim() || undefined, limit: 20 },
+      });
+      setLeadResults(rows || []);
+    } catch {
+      setLeadResults([]);
+    } finally {
+      setSearchingLeads(false);
+    }
+  }, [storeId]);
+
+  useEffect(() => {
+    if (currentModal === "lead" && storeId) {
+      void runLeadSearch(leadQuery);
+    }
+  }, [currentModal, leadQuery, storeId, runLeadSearch]);
+
+  // Estado Modal Tarefa CRM / Follow-up
+  const [taskTitle, setTaskTitle] = useState("");
+  const [taskPriority, setTaskPriority] = useState<"low" | "medium" | "high" | "urgent">("high");
+  const [taskDueDate, setTaskDueDate] = useState(() => new Date(Date.now() + 86400_000).toISOString().slice(0, 10));
+
+  // Estado Modal Produto / Catalogo & Planilha Real
+  const [productSearch, setProductSearch] = useState("");
+  const [spreadsheetSource, setSpreadsheetSource] = useState<"products" | "invoices" | "custom">("products");
+  const [customSheetTitle, setCustomSheetTitle] = useState("Resumo de Condicoes");
+  const [customSheetRows, setCustomSheetRows] = useState<Array<{ item: string; detalhe: string; valor: string }>>([
+    { item: "", detalhe: "", valor: "" },
+  ]);
+
+  // Estado Aba Form Publico vs Intranet
+  const [formTab, setFormTab] = useState<"public" | "intranet">("public");
+  const [customMessageNote, setCustomMessageNote] = useState("");
 
   // Estado Modal 5: Gerador de Imagem / Card Visual para o Cliente
   const [imgTemplate, setImgTemplate] = useState<"offer_quote" | "travel_voucher" | "pix_invoice" | "status_notice">("offer_quote");
@@ -306,8 +399,7 @@ export function ChatQuickComposerModals({
   const [eventLocation, setEventLocation] = useState("");
   const [eventAddCalendar, setEventAddCalendar] = useState(true);
 
-  // Estado Modal 4: Planilha
-  const [selectedPresetIdx, setSelectedPresetIdx] = useState(0);
+  // Estados auxiliares Modal Planilha/Tabela & Pagamentos
   const [txTitle, setTxTitle] = useState("");
   const [txAmount, setTxAmount] = useState("");
   const [txDueDate, setTxDueDate] = useState("");
@@ -331,6 +423,7 @@ export function ChatQuickComposerModals({
           data: {
             storeId,
             customerId: customerId || null,
+            leadId: leadId || null,
             documentType: kind === "invoice" ? "invoice" : "budget",
             customer: {
               name: customerName && customerName.trim().length >= 2 ? customerName.trim() : "Cliente Atendimento",
@@ -421,9 +514,20 @@ export function ChatQuickComposerModals({
           invoice_code: generatedInvoiceCode,
           invoice_url: generatedLink,
           pix_code: generatedPixCode || undefined,
+          ...(leadId ? { lead_id: leadId } : {}),
           blocks,
         },
       });
+      if (leadId) {
+        void registerCrmCommercialActivity({
+          data: {
+            leadId,
+            threadId: threadId || null,
+            activityText: `${labelMap[kind]}: ${codePrefix}${cleanTitle} (R$ ${cleanAmount})`,
+            activityType: kind === "quote" ? "proposal_sent" : "whatsapp_followup",
+          },
+        }).catch(() => {});
+      }
       toast.success(`${cleanTitle} enviado na conversa!`);
       setTxTitle(""); setTxAmount(""); setTxDueDate(""); setTxCodeOrLink(""); setTxNotes("");
       closeAllModals();
@@ -569,33 +673,114 @@ export function ChatQuickComposerModals({
     closeAllModals();
   };
 
+  const realSpreadsheetData = useMemo((): {
+    title: string;
+    headers: string[];
+    rows: string[][];
+    summary: Record<string, number>;
+  } => {
+    if (spreadsheetSource === "products") {
+      const items = catalog?.products || [];
+      return {
+        title: `Catalogo de Produtos — ${storeName}`,
+        headers: ["Produto", "Slug", "Preco", "Link"],
+        rows: items.slice(0, 15).map((p) => [
+          p.title,
+          p.slug,
+          formatMoney(p.priceCents / 100),
+          `/produto/${p.slug}`,
+        ]),
+        summary: {
+          itens_publicados: items.length,
+        },
+      };
+    }
+    if (spreadsheetSource === "invoices") {
+      const invs = catalog?.invoices || [];
+      return {
+        title: `Faturas e Orcamentos — ${storeName}`,
+        headers: ["Codigo", "Tipo", "Status", "Valor"],
+        rows: invs.slice(0, 15).map((i) => [
+          i.invoiceCode,
+          i.documentType === "budget" ? "Orcamento" : "Fatura",
+          i.status,
+          formatMoney(i.totalCents / 100),
+        ]),
+        summary: {
+          registros: invs.length,
+        },
+      };
+    }
+    const validCustom = customSheetRows.filter((r) => r.item.trim() || r.detalhe.trim() || r.valor.trim());
+    return {
+      title: customSheetTitle.trim() || `Tabela — ${storeName}`,
+      headers: ["Item", "Detalhes", "Valor / Condicao"],
+      rows: validCustom.map((r) => [r.item.trim() || "-", r.detalhe.trim() || "-", r.valor.trim() || "-"]),
+      summary: { linhas: validCustom.length },
+    };
+  }, [spreadsheetSource, catalog, storeName, customSheetTitle, customSheetRows]);
+
   const handleDispatchSpreadsheet = async () => {
-    const preset = DEFAULT_SPREADSHEET_PRESETS[selectedPresetIdx] || DEFAULT_SPREADSHEET_PRESETS[0];
+    if (realSpreadsheetData.rows.length === 0) {
+      toast.error("Adicione ao menos uma linha valida ou selecione um catalogo com registros reais.");
+      return;
+    }
+    const linesText = realSpreadsheetData.rows
+      .slice(0, 10)
+      .map((r) => `• ${r.join(" | ")}`)
+      .join("\n");
     await onDispatchMessage({
-      message: `Planilha compartilhada: ${preset.title}`,
+      message: `${realSpreadsheetData.title}\n${linesText}`,
       message_type: "structured_blocks",
       payload: {
-        text: `Planilha interativa compartilhada (${preset.rows.length} registros):`,
+        text: `${realSpreadsheetData.title} (${realSpreadsheetData.rows.length} registros):`,
         blocks: [
           {
             type: "table",
             data: {
-              title: preset.title,
-              headers: preset.headers,
-              rows: preset.rows,
+              title: realSpreadsheetData.title,
+              headers: realSpreadsheetData.headers,
+              rows: realSpreadsheetData.rows,
             },
           },
         ],
       },
     });
-    toast.success("Planilha enviada na conversa!");
+    toast.success("Tabela enviada na conversa!");
+    closeAllModals();
+  };
+
+  const handleDispatchStoreAddress = async () => {
+    const resolvedAddress = catalog?.store?.addressLine || storeAddress || "";
+    if (!resolvedAddress.trim()) {
+      toast.error("Cadastre o endereco da loja nas configuracoes para enviar em 1 clique.");
+      return;
+    }
+    const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(resolvedAddress)}`;
+    await onDispatchMessage({
+      message: `Endereco oficial ${storeName}:\n${resolvedAddress}\nMapa: ${mapsUrl}`,
+      message_type: "structured_blocks",
+      payload: {
+        blocks: [
+          {
+            type: "summary_card",
+            data: {
+              title: `Localizacao ${storeName}`,
+              subtitle: resolvedAddress,
+              badge: "ENDERECO OFICIAL",
+              action_url: mapsUrl,
+            },
+          },
+        ],
+      },
+    });
+    toast.success("Endereco da loja enviado na conversa!");
     closeAllModals();
   };
 
   const handleDispatchLocation = async () => {
-    onTrayOpenChange(false);
     if (typeof navigator === "undefined" || !("geolocation" in navigator)) {
-      toast.error("Geolocalização não disponível neste navegador. Envie o endereço por escrito ou utilize o mapa da entrega.");
+      toast.error("Geolocalizacao indisponivel neste navegador. Envie o endereco da loja.");
       return;
     }
 
@@ -613,343 +798,607 @@ export function ChatQuickComposerModals({
       const mapsLink = `https://maps.google.com/?q=${currentLat},${currentLng}`;
 
       await onDispatchMessage({
-        message: `Localização compartilhada (${currentLat}, ${currentLng}) • Mapa: ${mapsLink}`,
+        message: `Localizacao compartilhada (${currentLat}, ${currentLng}) • Mapa: ${mapsLink}`,
         message_type: "structured_blocks",
         payload: {
           blocks: [
             {
-              type: "order_tracker",
+              type: "summary_card",
               data: {
-                order_id: `LOC-${Date.now().toString().slice(-4)}`,
-                current_stage: "dispatched",
-                delivery_address: `${storeName} • Coordenadas verificadas (${currentLat}, ${currentLng})`,
-                store_name: storeName,
-                store_slug: storeSlug,
-                current_lat: currentLat,
-                current_lng: currentLng,
-                maps_url: mapsLink,
+                title: `Localizacao em Tempo Real • ${storeName}`,
+                subtitle: `Coordenadas (${currentLat}, ${currentLng})`,
+                badge: "GPS VERIFICADO",
+                action_url: mapsLink,
               },
             },
           ],
         },
       });
-      toast.success("Localização real enviada na conversa!");
+      toast.success("Localizacao real enviada na conversa!");
+      closeAllModals();
     } catch {
-      toast.error("Permita o acesso à localização no navegador para compartilhar coordenadas reais.");
+      toast.error("Permita o acesso a localizacao no navegador ou envie o endereco oficial da loja.");
     }
   };
 
+  const handleBindExistingLead = async (selectedLead: any) => {
+    if (!threadId || !selectedLead?.id) return;
+    setIsSavingLeadAction(true);
+    try {
+      const res = await linkThreadToCrmOpportunity({
+        data: { threadId, leadId: selectedLead.id },
+      });
+      onLeadLinked?.(res?.linkedLead || selectedLead);
+      toast.success(`Lead "${selectedLead.title || selectedLead.full_name}" vinculado a conversa!`);
+      closeAllModals();
+    } catch (err: any) {
+      toast.error(err?.message || "Nao foi possivel vincular o lead.");
+    } finally {
+      setIsSavingLeadAction(false);
+    }
+  };
+
+  const handleUnbindLead = async () => {
+    if (!threadId) return;
+    setIsSavingLeadAction(true);
+    try {
+      await linkThreadToCrmOpportunity({ data: { threadId, leadId: null } });
+      onLeadLinked?.(null);
+      toast.success("Vinculo de lead removido desta conversa.");
+      closeAllModals();
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao desvincular lead.");
+    } finally {
+      setIsSavingLeadAction(false);
+    }
+  };
+
+  const handleQuickCreateLead = async () => {
+    if (!threadId || !newLeadTitleInput.trim()) {
+      toast.error("Informe um titulo para criar o lead no CRM.");
+      return;
+    }
+    setIsSavingLeadAction(true);
+    try {
+      const created = await convertChatThreadToCrmLead({
+        data: {
+          threadId,
+          leadTitle: newLeadTitleInput.trim(),
+          estimatedBudget: newLeadBudgetInput ? Number(newLeadBudgetInput) : undefined,
+          notes: newLeadNotesInput.trim() || undefined,
+        },
+      });
+      onLeadLinked?.(created?.lead || { id: created?.leadId, title: newLeadTitleInput.trim() });
+      setNewLeadTitleInput("");
+      setNewLeadBudgetInput("");
+      setNewLeadNotesInput("");
+      toast.success("Lead criado no CRM e vinculado a esta conversa!");
+      closeAllModals();
+    } catch (err: any) {
+      toast.error(err?.message || "Nao foi possivel criar o lead.");
+    } finally {
+      setIsSavingLeadAction(false);
+    }
+  };
+
+  const handleDispatchProposal = async (proposal: ChatQuickActionsCatalogDTO["proposals"][number]) => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://waesy.com.br";
+    const url = `${origin}/proposta/${proposal.publicToken}`;
+    const amountLabel = proposal.totalCents > 0 ? ` • Valor: ${formatMoney(proposal.totalCents / 100)}` : "";
+    const noteLine = customMessageNote.trim() ? `\n${customMessageNote.trim()}` : "";
+    await onDispatchMessage({
+      message: `Proposta Comercial: ${proposal.title}${amountLabel}${noteLine}\nAcesse e aprove online: ${url}`,
+      message_type: "structured_blocks",
+      payload: {
+        proposal_id: proposal.id,
+        public_token: proposal.publicToken,
+        ...(leadId ? { lead_id: leadId } : {}),
+        blocks: [
+          {
+            type: "summary_card",
+            data: {
+              title: proposal.title,
+              subtitle: `${proposal.destination || storeName}${amountLabel} • Link: ${url}`,
+              badge: "PROPOSTA OFICIAL",
+              action_url: url,
+            },
+          },
+        ],
+      },
+    });
+    if (leadId) {
+      void registerCrmCommercialActivity({
+        data: {
+          leadId,
+          threadId: threadId || null,
+          activityText: `Proposta enviada via WhatsApp: ${proposal.title}`,
+          activityType: "proposal_sent",
+        },
+      }).catch(() => {});
+    }
+    setCustomMessageNote("");
+    toast.success("Proposta enviada na conversa!");
+    closeAllModals();
+  };
+
+  const handleDispatchProduct = async (product: ChatQuickActionsCatalogDTO["products"][number]) => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://waesy.com.br";
+    const url = `${origin}/produto/${product.slug}`;
+    const priceLabel = formatMoney(product.priceCents / 100);
+    await onDispatchMessage({
+      message: `${product.title} — ${priceLabel}\nConfira detalhes e compre online: ${url}`,
+      message_type: "structured_blocks",
+      payload: {
+        product_id: product.id,
+        product_slug: product.slug,
+        blocks: [
+          {
+            type: "summary_card",
+            data: {
+              title: product.title,
+              subtitle: `Valor: ${priceLabel} • ${url}`,
+              badge: "CATALOGO DA LOJA",
+              action_url: url,
+            },
+          },
+        ],
+      },
+    });
+    toast.success("Produto enviado na conversa!");
+    closeAllModals();
+  };
+
+  const handleDispatchPublicForm = async (form: ChatQuickActionsCatalogDTO["forms"][number]) => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://waesy.com.br";
+    const params = new URLSearchParams();
+    if (leadId) params.set("leadId", leadId);
+    if (customerName) params.set("nome", customerName);
+    if (customerPhone) params.set("tel", String(customerPhone).replace(/\D/g, ""));
+    if (customerEmail) params.set("email", customerEmail);
+    const qs = params.toString();
+    const url = `${origin}/f/${form.slug}${qs ? `?${qs}` : ""}`;
+    await onDispatchMessage({
+      message: `Por favor, preencha o formulario "${form.title}" pelo link seguro:\n${url}`,
+      message_type: "structured_blocks",
+      payload: {
+        form_id: form.id,
+        form_slug: form.slug,
+        blocks: [
+          {
+            type: "summary_card",
+            data: {
+              title: form.title,
+              subtitle: form.description || `Preencha e envie seus dados em segundos • ${url}`,
+              badge: "FORMULARIO OFICIAL",
+              action_url: url,
+            },
+          },
+        ],
+      },
+    });
+    if (leadId) {
+      void registerCrmCommercialActivity({
+        data: {
+          leadId,
+          threadId: threadId || null,
+          activityText: `Formulario enviado ao cliente: ${form.title}`,
+          activityType: "whatsapp_followup",
+        },
+      }).catch(() => {});
+    }
+    toast.success("Link do formulario enviado na conversa!");
+    closeAllModals();
+  };
+
+  const handleCreateFollowupTask = async () => {
+    if (!storeId || !taskTitle.trim()) {
+      toast.error("Informe o titulo da tarefa de follow-up.");
+      return;
+    }
+    setIsSavingLeadAction(true);
+    try {
+      await createLinkedCustomerTask({
+        data: {
+          storeId,
+          customerId: customerId || null,
+          customerName: (customerName || "Cliente").trim(),
+          threadId: threadId || null,
+          entityType: "customer",
+          entityId: leadId || customerId || null,
+          title: taskTitle.trim(),
+          priority: taskPriority,
+          dueDate: taskDueDate ? `${taskDueDate}T18:00:00.000Z` : undefined,
+        },
+      });
+      if (leadId) {
+        void registerCrmCommercialActivity({
+          data: {
+            leadId,
+            threadId: threadId || null,
+            activityText: `Follow-up agendado: ${taskTitle.trim()} (${taskDueDate})`,
+            activityType: "whatsapp_followup",
+          },
+        }).catch(() => {});
+      }
+      setTaskTitle("");
+      toast.success("Tarefa vinculada criada em Tarefas & CRM!");
+      closeAllModals();
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao criar tarefa vinculada.");
+    } finally {
+      setIsSavingLeadAction(false);
+    }
+  };
+
+  const filteredProducts = useMemo(() => {
+    const list = catalog?.products || [];
+    const q = productSearch.trim().toLowerCase();
+    if (!q) return list;
+    return list.filter((p) => p.title.toLowerCase().includes(q) || p.slug.toLowerCase().includes(q));
+  }, [catalog?.products, productSearch]);
+
+  const effectiveStoreAddress = catalog?.store?.addressLine || storeAddress || null;
+
   return (
     <>
-      {/* Bandeja de Anexos estilo WhatsApp iOS 2024 */}
+      {/* Hub Avancado de Acoes Rapidas 2.0 */}
       <Sheet open={trayOpen} onOpenChange={onTrayOpenChange}>
-        <SheetContent side="bottom" className="rounded-t-2xl p-4 sm:p-6 max-w-lg mx-auto">
-          <SheetHeader className="pb-3 border-b border-border/40 text-left">
-            <SheetTitle className="text-sm font-bold text-foreground">
-              Anexos
-            </SheetTitle>
+        <SheetContent side="bottom" className="rounded-t-2xl p-4 sm:p-6 max-w-2xl mx-auto max-h-screen overflow-y-auto no-scrollbar">
+          <SheetHeader className="pb-3 border-b border-border/60 text-left">
+            <div className="flex items-center justify-between gap-2">
+              <SheetTitle className="text-sm font-bold text-foreground">
+                Acoes Rapidas
+              </SheetTitle>
+              {leadId && (
+                <Badge variant="outline" className="text-xs font-medium">
+                  Lead: {leadTitle || "Vinculado"}
+                </Badge>
+              )}
+            </div>
           </SheetHeader>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4">
-            <button type="button" onClick={() => { onTrayOpenChange(false); setActiveModal("invoice"); }} className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-              <div className="size-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center"><QrCode className="size-5" /></div>
-              <span className="text-xs font-semibold text-foreground text-center">Cobrança PIX</span>
-            </button>
-            <button type="button" onClick={() => { onTrayOpenChange(false); setActiveModal("boleto"); }} className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-              <div className="size-12 rounded-2xl bg-foreground text-background flex items-center justify-center"><CreditCard className="size-5" /></div>
-              <span className="text-xs font-semibold text-foreground text-center">Boleto / Fatura</span>
-            </button>
-            <button type="button" onClick={() => { onTrayOpenChange(false); setActiveModal("contract"); }} className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-              <div className="size-12 rounded-2xl bg-muted text-foreground flex items-center justify-center"><Shield className="size-5" /></div>
-              <span className="text-xs font-semibold text-foreground text-center">Contrato</span>
-            </button>
-            <button type="button" onClick={() => { onTrayOpenChange(false); setActiveModal("quote"); }} className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-              <div className="size-12 rounded-2xl bg-muted text-foreground flex items-center justify-center"><ShoppingCart className="size-5" /></div>
-              <span className="text-xs font-semibold text-foreground text-center">Orçamento</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                onTrayOpenChange(false);
-                setActiveModal("form");
-              }}
-              className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
-                <ClipboardList className="size-5" />
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Comercial & CRM
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <button type="button" onClick={() => { onTrayOpenChange(false); setActiveModal("lead"); }} className="min-h-11 flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                  <Target className="size-5 text-primary" />
+                  <span className="text-xs font-semibold text-foreground text-center">{leadId ? "Trocar Lead" : "Vincular Lead"}</span>
+                </button>
+                <button type="button" onClick={() => { onTrayOpenChange(false); setActiveModal("proposal"); }} className="min-h-11 flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                  <FileText className="size-5 text-primary" />
+                  <span className="text-xs font-semibold text-foreground text-center">Enviar Proposta</span>
+                </button>
+                <button type="button" onClick={() => { onTrayOpenChange(false); setActiveModal("product"); }} className="min-h-11 flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                  <ShoppingBag className="size-5 text-primary" />
+                  <span className="text-xs font-semibold text-foreground text-center">Produto / Loja</span>
+                </button>
+                <button type="button" onClick={() => { onTrayOpenChange(false); setActiveModal("form"); }} className="min-h-11 flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                  <ClipboardList className="size-5 text-primary" />
+                  <span className="text-xs font-semibold text-foreground text-center">Formulario</span>
+                </button>
               </div>
-              <span className="text-xs font-semibold text-foreground text-center">
-                Formulário
-              </span>
-            </button>
+            </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                onTrayOpenChange(false);
-                setActiveModal("event");
-              }}
-              className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              <div className="size-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20">
-                <Calendar className="size-5" />
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Financeiro & Contratos
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <button type="button" onClick={() => { onTrayOpenChange(false); setActiveModal("invoice"); }} className="min-h-11 flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                  <QrCode className="size-5 text-primary" />
+                  <span className="text-xs font-semibold text-foreground text-center">Cobranca PIX</span>
+                </button>
+                <button type="button" onClick={() => { onTrayOpenChange(false); setActiveModal("quote"); }} className="min-h-11 flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                  <ShoppingCart className="size-5 text-primary" />
+                  <span className="text-xs font-semibold text-foreground text-center">Orcamento</span>
+                </button>
+                <button type="button" onClick={() => { onTrayOpenChange(false); setActiveModal("contract"); }} className="min-h-11 flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                  <FileSignature className="size-5 text-primary" />
+                  <span className="text-xs font-semibold text-foreground text-center">Contrato Digital</span>
+                </button>
+                <button type="button" onClick={() => { onTrayOpenChange(false); setActiveModal("boleto"); }} className="min-h-11 flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                  <CreditCard className="size-5 text-primary" />
+                  <span className="text-xs font-semibold text-foreground text-center">Boleto / Fatura</span>
+                </button>
               </div>
-              <span className="text-xs font-semibold text-foreground text-center">
-                Evento
-              </span>
-            </button>
+            </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                onTrayOpenChange(false);
-                setActiveModal("spreadsheet");
-              }}
-              className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              <div className="size-12 rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center border border-sky-500/20">
-                <FileSpreadsheet className="size-5" />
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Agenda, Midia & Operacao
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {onOpenSchedule && (
+                  <button type="button" onClick={() => { onTrayOpenChange(false); onOpenSchedule(); }} className="min-h-11 flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <CalendarClock className="size-5 text-warning-strong" />
+                    <span className="text-xs font-semibold text-foreground text-center">Agendar Msg</span>
+                  </button>
+                )}
+                <button type="button" onClick={() => { onTrayOpenChange(false); setActiveModal("task"); }} className="min-h-11 flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                  <CheckCircle2 className="size-5 text-emerald-600" />
+                  <span className="text-xs font-semibold text-foreground text-center">Tarefa CRM</span>
+                </button>
+                {onOpenTransfer && (
+                  <button type="button" onClick={() => { onTrayOpenChange(false); onOpenTransfer(); }} className="min-h-11 flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <ArrowRightLeft className="size-5 text-primary" />
+                    <span className="text-xs font-semibold text-foreground text-center">Transferir</span>
+                  </button>
+                )}
+                {onOpenVoiceStudio && (
+                  <button type="button" onClick={() => { onTrayOpenChange(false); onOpenVoiceStudio(); }} className="min-h-11 flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <Volume2 className="size-5 text-primary" />
+                    <span className="text-xs font-semibold text-foreground text-center">Estudio Voz IA</span>
+                  </button>
+                )}
+                <button type="button" onClick={() => { onTrayOpenChange(false); setActiveModal("image_card"); }} className="min-h-11 flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                  <Camera className="size-5 text-primary" />
+                  <span className="text-xs font-semibold text-foreground text-center">Card Visual</span>
+                </button>
+                <button type="button" onClick={() => { onTrayOpenChange(false); setActiveModal("location"); }} className="min-h-11 flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                  <MapPin className="size-5 text-primary" />
+                  <span className="text-xs font-semibold text-foreground text-center">Localizacao</span>
+                </button>
+                <button type="button" onClick={() => { onTrayOpenChange(false); setActiveModal("spreadsheet"); }} className="min-h-11 flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                  <FileSpreadsheet className="size-5 text-sky-600" />
+                  <span className="text-xs font-semibold text-foreground text-center">Tabela Real</span>
+                </button>
+                <button type="button" onClick={() => { onTrayOpenChange(false); setActiveModal("sticker"); }} className="min-h-11 flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                  <Smile className="size-5 text-warning-strong" />
+                  <span className="text-xs font-semibold text-foreground text-center">Sticker</span>
+                </button>
+                <button type="button" onClick={() => { onTrayOpenChange(false); setActiveModal("event"); }} className="min-h-11 flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                  <Calendar className="size-5 text-emerald-600" />
+                  <span className="text-xs font-semibold text-foreground text-center">Evento</span>
+                </button>
+                {onOpenRmaModal && (
+                  <button type="button" onClick={() => { onTrayOpenChange(false); onOpenRmaModal(); }} className="min-h-11 flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-destructive/40 bg-destructive/5 hover:bg-destructive/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <AlertTriangle className="size-5 text-destructive" />
+                    <span className="text-xs font-semibold text-destructive text-center">Chamado SAC</span>
+                  </button>
+                )}
               </div>
-              <span className="text-xs font-semibold text-foreground text-center">
-                Planilha
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                onTrayOpenChange(false);
-                setActiveModal("sticker");
-              }}
-              className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              <div className="size-12 rounded-2xl bg-warning/10 text-warning-strong  flex items-center justify-center border border-warning/20">
-                <Smile className="size-5" />
-              </div>
-              <span className="text-xs font-semibold text-foreground text-center">
-                Sticker
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleDispatchLocation}
-              className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
-                <MapPin className="size-5" />
-              </div>
-              <span className="text-xs font-semibold text-foreground text-center">
-                Localização
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                onTrayOpenChange(false);
-                setActiveModal("image_card");
-              }}
-              className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
-                <Camera className="size-5" />
-              </div>
-              <span className="text-xs font-semibold text-foreground text-center">
-                Gerar Imagem
-              </span>
-            </button>
-
-            {onOpenRmaModal && (
-              <button
-                type="button"
-                onClick={() => {
-                  onTrayOpenChange(false);
-                  onOpenRmaModal();
-                }}
-                className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                <div className="size-12 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center border border-destructive/20">
-                  <AlertTriangle className="size-5" />
-                </div>
-                <span className="text-xs font-semibold text-foreground text-center">
-                  Suporte
-                </span>
-              </button>
-            )}
+            </div>
           </div>
         </SheetContent>
       </Sheet>
 
-      {/* MODAL 1: CRIAR FORMULÁRIO RÁPIDO / ANÔNIMO / SECRETO */}
+      {/* MODAL 1: FORMULARIO PUBLICO (WHATSAPP / LINK REAL) OU INTRANET */}
       <Dialog
         open={currentModal === "form"}
         onOpenChange={(open) => !open && closeAllModals()}
       >
-        <DialogContent className="sm:max-w-md p-0 overflow-hidden border-border/80 rounded-xl">
-          <DialogHeader className="p-4 border-b border-border/50">
+        <DialogContent className="sm:max-w-lg p-0 overflow-hidden border-border/80 rounded-xl">
+          <DialogHeader className="p-4 border-b border-border/60">
             <DialogTitle className="text-base font-bold text-foreground">
-              Formulário
+              Formularios & Captacao
             </DialogTitle>
           </DialogHeader>
 
           <div className="p-4 space-y-4 max-h-96 overflow-y-auto no-scrollbar">
-            {/* Seletor de Privacidade */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {[
-                { id: "standard", label: "Padrão", icon: Shield },
-                { id: "anonymous", label: "Anônimo", icon: EyeOff },
-                { id: "secret", label: "Secreto", icon: Lock },
-              ].map((m) => {
-                const Icon = m.icon;
-                const active = formMode === m.id;
-                return (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => setFormMode(m.id as any)}
-                    className={cn(
-                      "h-11 min-h-11 px-3 rounded-lg border text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                      active
-                        ? "bg-primary text-primary-foreground border-primary font-bold"
-                        : "bg-muted/40 text-muted-foreground hover:text-foreground border-border/60",
-                    )}
-                  >
-                    <Icon className="size-3.5" />
-                    <span>{m.label}</span>
-                  </button>
-                );
-              })}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setFormTab("public")}
+                className={cn(
+                  "h-11 min-h-11 px-3 rounded-lg border text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  formTab === "public"
+                    ? "bg-primary text-primary-foreground border-primary font-bold"
+                    : "bg-muted/40 text-muted-foreground hover:text-foreground border-border/60",
+                )}
+              >
+                <Link2 className="size-4" />
+                <span>Link Publico (WhatsApp)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormTab("intranet")}
+                className={cn(
+                  "h-11 min-h-11 px-3 rounded-lg border text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  formTab === "intranet"
+                    ? "bg-primary text-primary-foreground border-primary font-bold"
+                    : "bg-muted/40 text-muted-foreground hover:text-foreground border-border/60",
+                )}
+              >
+                <ClipboardList className="size-4" />
+                <span>Bloco Rapido (Intranet)</span>
+              </button>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-foreground block">
-                Título do Formulário
-              </label>
-              <Input
-                value={formTitle}
-                onChange={(e) => setFormTitle(e.target.value)}
-                placeholder="Ex: Avaliação de Atendimento ou Pedido Sob Medida"
-                className="h-11 text-xs"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-foreground block">
-                Descrição ou Finalidade
-              </label>
-              <Input
-                value={formDesc}
-                onChange={(e) => setFormDesc(e.target.value)}
-                placeholder="Opcional: explique como os dados serão utilizados"
-                className="h-11 text-xs"
-              />
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground uppercase tracking-wider">
-                  Perguntas ({formFields.length})
-                </span>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAddFormField}
-                  className="h-11 min-h-11 px-3 text-xs font-semibold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  <Plus className="size-3.5" />
-                  <span>Pergunta</span>
-                </Button>
-              </div>
-
-              {formFields.map((field, idx) => (
-                <div
-                  key={field.id}
-                  className="p-3 rounded-lg bg-muted/30 border border-border/60 space-y-2"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-mono font-bold text-muted-foreground">
-                      #{idx + 1}
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <button
+            {formTab === "public" ? (
+              <div className="space-y-2">
+                {loadingCatalog ? (
+                  <div className="py-8 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+                    <span>Carregando formularios ativos da loja...</span>
+                  </div>
+                ) : !catalog?.forms || catalog.forms.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-border p-4 text-center space-y-2">
+                    <p className="text-xs font-semibold text-foreground">Nenhum formulario publico ativo</p>
+                    <p className="text-xs text-muted-foreground">Crie um formulario em CRM / Marketing ou use o bloco rapido na aba ao lado.</p>
+                  </div>
+                ) : (
+                  catalog.forms.map((f) => (
+                    <div key={f.id} className="p-3 rounded-xl border border-border/70 bg-card flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-foreground truncate">{f.title}</p>
+                        <p className="text-xs text-muted-foreground truncate">/f/{f.slug}</p>
+                      </div>
+                      <Button
                         type="button"
-                        onClick={() =>
+                        onClick={() => void handleDispatchPublicForm(f)}
+                        className="h-11 min-h-11 px-4 text-xs font-bold gap-2 shrink-0 cursor-pointer"
+                      >
+                        <Send className="size-4" />
+                        <span>Enviar Link</span>
+                      </Button>
+                    </div>
+                  ))
+                )}
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {[
+                    { id: "standard", label: "Padrao", icon: Shield },
+                    { id: "anonymous", label: "Anonimo", icon: EyeOff },
+                    { id: "secret", label: "Secreto", icon: Lock },
+                  ].map((m) => {
+                    const Icon = m.icon;
+                    const active = formMode === m.id;
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => setFormMode(m.id as any)}
+                        className={cn(
+                          "h-11 min-h-11 px-3 rounded-lg border text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                          active
+                            ? "bg-primary text-primary-foreground border-primary font-bold"
+                            : "bg-muted/40 text-muted-foreground hover:text-foreground border-border/60",
+                        )}
+                      >
+                        <Icon className="size-3.5" />
+                        <span>{m.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-foreground block">
+                    Titulo do Formulario
+                  </label>
+                  <Input
+                    value={formTitle}
+                    onChange={(e) => setFormTitle(e.target.value)}
+                    placeholder="Ex: Avaliacao de Atendimento ou Pedido Sob Medida"
+                    className="h-11 text-xs"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-foreground block">
+                    Descricao ou Finalidade
+                  </label>
+                  <Input
+                    value={formDesc}
+                    onChange={(e) => setFormDesc(e.target.value)}
+                    placeholder="Opcional: explique como os dados serao utilizados"
+                    className="h-11 text-xs"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-foreground uppercase tracking-wider">
+                      Perguntas ({formFields.length})
+                    </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddFormField}
+                      className="h-11 min-h-11 px-3 text-xs font-semibold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <Plus className="size-3.5" />
+                      <span>Pergunta</span>
+                    </Button>
+                  </div>
+
+                  {formFields.map((field, idx) => (
+                    <div
+                      key={field.id}
+                      className="p-3 rounded-lg bg-muted/30 border border-border/60 space-y-2"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-mono font-bold text-muted-foreground">
+                          #{idx + 1}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormFields((prev) =>
+                                prev.map((f) =>
+                                  f.id === field.id
+                                    ? { ...f, type: f.type === "text" ? "choice" : "text" }
+                                    : f,
+                                ),
+                              )
+                            }
+                            className="h-11 min-h-11 px-3 rounded-md text-xs font-semibold bg-background border border-border/60 text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            {field.type === "choice" ? "Multipla Escolha" : "Texto Livre"}
+                          </button>
+                          {formFields.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveFormField(field.id)}
+                              className="size-11 rounded-md flex items-center justify-center text-destructive hover:bg-destructive/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                              aria-label="Remover pergunta"
+                            >
+                              <Trash2 className="size-4" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <Input
+                        value={field.label}
+                        onChange={(e) =>
                           setFormFields((prev) =>
                             prev.map((f) =>
-                              f.id === field.id
-                                ? { ...f, type: f.type === "text" ? "choice" : "text" }
-                                : f,
+                              f.id === field.id ? { ...f, label: e.target.value } : f,
                             ),
                           )
                         }
-                        className="h-11 min-h-11 px-3 rounded-md text-xs font-semibold bg-background border border-border/60 text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        {field.type === "choice" ? "Múltipla Escolha" : "Texto Livre"}
-                      </button>
-                      {formFields.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveFormField(field.id)}
-                          className="size-11 rounded-md flex items-center justify-center text-destructive hover:bg-destructive/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
-                          aria-label="Remover pergunta"
-                        >
-                          <Trash2 className="size-4" />
-                        </button>
+                        placeholder="Digite a pergunta..."
+                        className="h-11 text-xs bg-background"
+                      />
+
+                      {field.type === "choice" && (
+                        <Input
+                          value={field.optionsText}
+                          onChange={(e) =>
+                            setFormFields((prev) =>
+                              prev.map((f) =>
+                                f.id === field.id ? { ...f, optionsText: e.target.value } : f,
+                              ),
+                            )
+                          }
+                          placeholder="Opcoes separadas por virgula (Ex: Sim, Nao, Talvez)"
+                          className="h-11 text-xs bg-background"
+                        />
                       )}
                     </div>
-                  </div>
-
-                  <Input
-                    value={field.label}
-                    onChange={(e) =>
-                      setFormFields((prev) =>
-                        prev.map((f) =>
-                          f.id === field.id ? { ...f, label: e.target.value } : f,
-                        ),
-                      )
-                    }
-                    placeholder="Digite a pergunta..."
-                    className="h-11 text-xs bg-background"
-                  />
-
-                  {field.type === "choice" && (
-                    <Input
-                      value={field.optionsText}
-                      onChange={(e) =>
-                        setFormFields((prev) =>
-                          prev.map((f) =>
-                            f.id === field.id ? { ...f, optionsText: e.target.value } : f,
-                          ),
-                        )
-                      }
-                      placeholder="Opções separadas por vírgula (Ex: Sim, Não, Talvez)"
-                      className="h-11 text-xs bg-background"
-                    />
-                  )}
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            )}
           </div>
 
-          <div className="p-4 border-t border-border/50 flex items-center justify-end gap-2 bg-muted/20">
+          <div className="p-4 border-t border-border/60 flex items-center justify-end gap-2 bg-muted/20">
             <Button
               type="button"
               variant="outline"
               onClick={closeAllModals}
               className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
             >
-              Cancelar
+              Fechar
             </Button>
-            <Button
-              type="button"
-              onClick={handleDispatchForm}
-              className="h-11 min-h-11 px-5 text-xs font-bold gap-2 cursor-pointer"
-            >
-              <Send className="size-3.5" />
-              <span>Publicar no Chat</span>
-            </Button>
+            {formTab === "intranet" && (
+              <Button
+                type="button"
+                onClick={handleDispatchForm}
+                className="h-11 min-h-11 px-5 text-xs font-bold gap-2 cursor-pointer"
+              >
+                <Send className="size-4" />
+                <span>Publicar na Intranet</span>
+              </Button>
+            )}
           </div>
         </DialogContent>
       </Dialog>
@@ -1117,18 +1566,69 @@ export function ChatQuickComposerModals({
         </DialogContent>
       </Dialog>
 
-      {/* MODAL 4: PREVIEW INTERATIVO DE PLANILHA / DOCUMENTO */}
+      {/* MODAL 4: COBRANCA PIX / BOLETO / CONTRATO DIGITAL / ORCAMENTO COM SELECAO REAL */}
       <Dialog open={currentModal === "invoice" || currentModal === "boleto" || currentModal === "contract" || currentModal === "quote"} onOpenChange={(open) => !open && closeAllModals()}>
-        <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-xl">
+        <DialogContent className="sm:max-w-lg p-0 overflow-hidden rounded-xl">
           <DialogHeader className="p-4 border-b border-border/50">
             <DialogTitle className="text-base font-bold text-foreground">
-              {currentModal === "invoice" ? "Enviar Cobrança PIX / Fatura" : currentModal === "boleto" ? "Enviar Boleto / 2ª Via" : currentModal === "contract" ? "Enviar Contrato p/ Assinatura" : "Enviar Orçamento Comercial"}
+              {currentModal === "invoice" ? "Enviar Cobranca PIX / Fatura" : currentModal === "boleto" ? "Enviar Boleto / 2a Via" : currentModal === "contract" ? "Enviar Contrato p/ Assinatura" : "Enviar Orcamento Comercial"}
             </DialogTitle>
           </DialogHeader>
-          <div className="p-4 space-y-3">
+          <div className="p-4 space-y-3 max-h-96 overflow-y-auto no-scrollbar">
+            {currentModal === "contract" && catalog?.contracts && catalog.contracts.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground">Selecionar Contrato Existente</p>
+                <div className="flex flex-wrap gap-2">
+                  {catalog.contracts.slice(0, 6).map((c) => {
+                    const origin = typeof window !== "undefined" ? window.location.origin : "https://waesy.com.br";
+                    const link = `${origin}/contrato/${c.publicToken}`;
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => {
+                          setTxTitle(c.title);
+                          setTxCodeOrLink(link);
+                        }}
+                        className="h-11 sm:h-9 min-h-11 sm:min-h-9 px-3 rounded-lg border border-border/70 bg-muted/40 hover:bg-primary/10 text-xs font-semibold text-foreground truncate max-w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        {c.title}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {(currentModal === "invoice" || currentModal === "boleto" || currentModal === "quote") && catalog?.invoices && catalog.invoices.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground">Preencher a partir de Fatura/Orcamento Existente</p>
+                <div className="flex flex-wrap gap-2">
+                  {catalog.invoices.slice(0, 6).map((inv) => {
+                    const origin = typeof window !== "undefined" ? window.location.origin : "https://waesy.com.br";
+                    return (
+                      <button
+                        key={inv.id}
+                        type="button"
+                        onClick={() => {
+                          setTxTitle(`${inv.invoiceCode}`);
+                          setTxAmount((inv.totalCents / 100).toFixed(2).replace(".", ","));
+                          setTxDueDate(inv.validUntil || "");
+                          setTxCodeOrLink(`${origin}/fatura/${inv.publicToken}`);
+                        }}
+                        className="h-11 sm:h-9 min-h-11 sm:min-h-9 px-3 rounded-lg border border-border/70 bg-muted/40 hover:bg-primary/10 text-xs font-semibold text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        {inv.invoiceCode} · {formatMoney(inv.totalCents / 100)}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-foreground block">Título / Referência</label>
-              <Input value={txTitle} onChange={(e) => setTxTitle(e.target.value)} placeholder={currentModal === "contract" ? "Ex: Contrato de Prestação de Serviços" : "Ex: Fatura Mensal ou Pedido 104"} className="h-11 text-xs" />
+              <label className="text-xs font-semibold text-foreground block">Titulo / Referencia</label>
+              <Input value={txTitle} onChange={(e) => setTxTitle(e.target.value)} placeholder={currentModal === "contract" ? "Ex: Contrato de Prestacao de Servicos" : "Ex: Fatura Mensal ou Pedido 104"} className="h-11 text-xs" />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
@@ -1142,13 +1642,13 @@ export function ChatQuickComposerModals({
             </div>
             <div className="space-y-1">
               <label className="text-xs font-semibold text-foreground block">
-                {currentModal === "boleto" ? "Linha Digitável ou Link do Boleto" : currentModal === "contract" ? "Link Público de Assinatura Digital" : "Chave PIX Copia e Cola ou Link de Pagamento"}
+                {currentModal === "boleto" ? "Linha Digitavel ou Link do Boleto" : currentModal === "contract" ? "Link Publico de Assinatura Digital" : "Link de Pagamento (vazio gera Fatura + PIX automatico)"}
               </label>
-              <Input value={txCodeOrLink} onChange={(e) => setTxCodeOrLink(e.target.value)} placeholder="Cole aqui o link, linha digitável ou chave PIX..." className="h-11 text-xs font-mono" />
+              <Input value={txCodeOrLink} onChange={(e) => setTxCodeOrLink(e.target.value)} placeholder="Opcional p/ PIX automatico, ou cole link / linha digitavel..." className="h-11 text-xs font-mono" />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-foreground block">Condições / Observações</label>
-              <Textarea value={txNotes} onChange={(e) => setTxNotes(e.target.value)} placeholder="Instruções opcionais para o cliente..." rows={2} className="text-xs resize-none" />
+              <label className="text-xs font-semibold text-foreground block">Condicoes / Observacoes</label>
+              <Textarea value={txNotes} onChange={(e) => setTxNotes(e.target.value)} placeholder="Instrucoes opcionais para o cliente..." rows={2} className="text-xs resize-none" />
             </div>
           </div>
           <div className="p-4 border-t border-border/50 flex items-center justify-end gap-2 bg-muted/20">
@@ -1160,41 +1660,108 @@ export function ChatQuickComposerModals({
           </div>
         </DialogContent>
       </Dialog>
+
       <Dialog
         open={currentModal === "spreadsheet"}
         onOpenChange={(open) => !open && closeAllModals()}
       >
         <DialogContent className="sm:max-w-2xl p-0 overflow-hidden border-border/80 rounded-xl">
-          <DialogHeader className="p-4 border-b border-border/50 flex flex-row items-center justify-between">
+          <DialogHeader className="p-4 border-b border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <DialogTitle className="text-base font-bold text-foreground">
-              Planilha
+              Enviar Tabela Real
             </DialogTitle>
             <div className="flex items-center gap-2 pr-6">
-              {DEFAULT_SPREADSHEET_PRESETS.map((preset, idx) => (
+              {(
+                [
+                  { id: "products", label: "Catalogo" },
+                  { id: "invoices", label: "Faturas" },
+                  { id: "custom", label: "Personalizada" },
+                ] as const
+              ).map((tab) => (
                 <button
-                  key={preset.id}
+                  key={tab.id}
                   type="button"
-                  onClick={() => setSelectedPresetIdx(idx)}
+                  onClick={() => setSpreadsheetSource(tab.id)}
                   className={cn(
                     "h-11 min-h-11 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                    selectedPresetIdx === idx
+                    spreadsheetSource === tab.id
                       ? "bg-primary text-primary-foreground font-bold"
                       : "bg-muted text-muted-foreground hover:text-foreground",
                   )}
                 >
-                  {idx === 0 ? "Pedidos" : "Estoque"}
+                  {tab.label}
                 </button>
               ))}
             </div>
           </DialogHeader>
 
-          <div className="p-4 max-h-96 overflow-y-auto no-scrollbar">
-            <ArtifactInteractiveTable
-              title={DEFAULT_SPREADSHEET_PRESETS[selectedPresetIdx].title}
-              headers={DEFAULT_SPREADSHEET_PRESETS[selectedPresetIdx].headers}
-              rows={DEFAULT_SPREADSHEET_PRESETS[selectedPresetIdx].rows}
-              summary={DEFAULT_SPREADSHEET_PRESETS[selectedPresetIdx].summary as unknown as Record<string, number>}
-            />
+          <div className="p-4 space-y-3 max-h-96 overflow-y-auto no-scrollbar">
+            {spreadsheetSource === "custom" && (
+              <div className="space-y-2 p-3 rounded-xl border border-border/70 bg-muted/20">
+                <Input
+                  value={customSheetTitle}
+                  onChange={(e) => setCustomSheetTitle(e.target.value)}
+                  placeholder="Titulo da tabela"
+                  className="h-11 text-xs font-semibold"
+                />
+                {customSheetRows.map((row, idx) => (
+                  <div key={idx} className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <Input
+                      value={row.item}
+                      onChange={(e) =>
+                        setCustomSheetRows((prev) =>
+                          prev.map((r, rIdx) => (rIdx === idx ? { ...r, item: e.target.value } : r)),
+                        )
+                      }
+                      placeholder="Item / Servico"
+                      className="h-11 text-xs"
+                    />
+                    <Input
+                      value={row.detalhe}
+                      onChange={(e) =>
+                        setCustomSheetRows((prev) =>
+                          prev.map((r, rIdx) => (rIdx === idx ? { ...r, detalhe: e.target.value } : r)),
+                        )
+                      }
+                      placeholder="Descricao / Prazo"
+                      className="h-11 text-xs"
+                    />
+                    <Input
+                      value={row.valor}
+                      onChange={(e) =>
+                        setCustomSheetRows((prev) =>
+                          prev.map((r, rIdx) => (rIdx === idx ? { ...r, valor: e.target.value } : r)),
+                        )
+                      }
+                      placeholder="Valor / Condicao"
+                      className="h-11 text-xs"
+                    />
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setCustomSheetRows((prev) => [...prev, { item: "", detalhe: "", valor: "" }])}
+                  className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 cursor-pointer"
+                >
+                  <Plus className="size-4" />
+                  <span>Adicionar Linha</span>
+                </Button>
+              </div>
+            )}
+
+            {realSpreadsheetData.rows.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
+                Nenhum registro encontrado nessa fonte. Cadastre itens no painel ou use a aba Personalizada.
+              </div>
+            ) : (
+              <ArtifactInteractiveTable
+                title={realSpreadsheetData.title}
+                headers={realSpreadsheetData.headers}
+                rows={realSpreadsheetData.rows}
+                summary={realSpreadsheetData.summary}
+              />
+            )}
           </div>
 
           <div className="p-4 border-t border-border/50 flex items-center justify-end gap-2 bg-muted/20">
@@ -1209,10 +1776,11 @@ export function ChatQuickComposerModals({
             <Button
               type="button"
               onClick={handleDispatchSpreadsheet}
+              disabled={realSpreadsheetData.rows.length === 0}
               className="h-11 min-h-11 px-5 text-xs font-bold gap-2 cursor-pointer"
             >
               <Send className="size-3.5" />
-              <span>Enviar Planilha no Chat</span>
+              <span>Enviar Tabela no Chat</span>
             </Button>
           </div>
         </DialogContent>
@@ -1335,18 +1903,337 @@ export function ChatQuickComposerModals({
             <button
               type="button"
               onClick={closeAllModals}
-              className="px-4 py-2 rounded-lg border border-border/70 bg-background text-xs font-semibold text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="h-11 min-h-11 px-4 py-2 rounded-lg border border-border/70 bg-background text-xs font-semibold text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               Cancelar
             </button>
             <button
               type="button"
               onClick={handleDispatchImageCard}
-              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold inline-flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="h-11 min-h-11 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold inline-flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Camera className="size-3.5" />
               <span>Gerar e Enviar Imagem</span>
             </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL 6: BUSCAR, VINCULAR OU CRIAR LEAD NO CRM */}
+      <Dialog open={currentModal === "lead"} onOpenChange={(open) => !open && closeAllModals()}>
+        <DialogContent className="sm:max-w-lg p-0 overflow-hidden rounded-xl">
+          <DialogHeader className="p-4 border-b border-border/60">
+            <div className="flex items-center justify-between gap-2">
+              <DialogTitle className="text-base font-bold text-foreground">
+                Vincular ou Criar Lead CRM
+              </DialogTitle>
+              {leadId && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={isSavingLeadAction}
+                  onClick={() => void handleUnbindLead()}
+                  className="h-11 sm:h-9 px-3 text-xs text-destructive hover:bg-destructive/10 cursor-pointer"
+                >
+                  Desvincular
+                </Button>
+              )}
+            </div>
+          </DialogHeader>
+          <div className="p-4 space-y-4 max-h-96 overflow-y-auto no-scrollbar">
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-foreground block">
+                Buscar Lead Existente na Loja
+              </label>
+              <div className="relative">
+                <Search className="size-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Input
+                  value={leadQuery}
+                  onChange={(e) => setLeadQuery(e.target.value)}
+                  placeholder="Busque por nome, telefone, destino ou titulo..."
+                  className="h-11 pl-9 text-xs"
+                />
+              </div>
+              <div className="max-h-44 overflow-y-auto space-y-2">
+                {searchingLeads ? (
+                  <div className="py-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+                    <span>Buscando leads...</span>
+                  </div>
+                ) : leadResults.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-3">
+                    Nenhum lead encontrado com essa busca. Crie um novo abaixo.
+                  </p>
+                ) : (
+                  leadResults.map((row) => (
+                    <button
+                      key={row.id}
+                      type="button"
+                      disabled={isSavingLeadAction}
+                      onClick={() => void handleBindExistingLead(row)}
+                      className={cn(
+                        "w-full min-h-11 p-3 rounded-xl border text-left flex items-center justify-between gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                        leadId === row.id
+                          ? "border-primary bg-primary/10"
+                          : "border-border/70 bg-card hover:bg-muted/50",
+                      )}
+                    >
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-foreground truncate">
+                          {row.title || row.full_name}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {row.full_name}{row.phone ? ` · ${row.phone}` : ""} · {row.status}
+                        </p>
+                      </div>
+                      <Badge variant={leadId === row.id ? "default" : "outline"} className="text-2xs shrink-0">
+                        {leadId === row.id ? "Vinculado" : "Vincular"}
+                      </Badge>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-border/60 space-y-2">
+              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Ou Criar Novo Lead a partir desta Conversa
+              </p>
+              <Input
+                value={newLeadTitleInput}
+                onChange={(e) => setNewLeadTitleInput(e.target.value)}
+                placeholder={`Ex: Oportunidade ${customerName || "Cliente"}`}
+                className="h-11 text-xs"
+              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <Input
+                  type="number"
+                  value={newLeadBudgetInput}
+                  onChange={(e) => setNewLeadBudgetInput(e.target.value)}
+                  placeholder="Valor estimado (R$)"
+                  className="h-11 text-xs"
+                />
+                <Input
+                  value={newLeadNotesInput}
+                  onChange={(e) => setNewLeadNotesInput(e.target.value)}
+                  placeholder="Observacao inicial..."
+                  className="h-11 text-xs"
+                />
+              </div>
+              <Button
+                type="button"
+                disabled={isSavingLeadAction || !newLeadTitleInput.trim()}
+                onClick={() => void handleQuickCreateLead()}
+                className="w-full h-11 min-h-11 text-xs font-bold gap-2 cursor-pointer"
+              >
+                <Plus className="size-4" />
+                <span>Criar e Vincular Novo Lead</span>
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL 7: ENVIAR PROPOSTA COMERCIAL SALVA */}
+      <Dialog open={currentModal === "proposal"} onOpenChange={(open) => !open && closeAllModals()}>
+        <DialogContent className="sm:max-w-lg p-0 overflow-hidden rounded-xl">
+          <DialogHeader className="p-4 border-b border-border/60">
+            <DialogTitle className="text-base font-bold text-foreground">
+              Enviar Proposta Oficial
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-4 space-y-3 max-h-96 overflow-y-auto no-scrollbar">
+            <Input
+              value={customMessageNote}
+              onChange={(e) => setCustomMessageNote(e.target.value)}
+              placeholder="Mensagem opcional de acompanhamento..."
+              className="h-11 text-xs"
+            />
+            {loadingCatalog ? (
+              <div className="py-8 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+                <span>Carregando propostas da loja...</span>
+              </div>
+            ) : !catalog?.proposals || catalog.proposals.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
+                Nenhuma proposta publicada encontrada nesta loja.
+              </div>
+            ) : (
+              catalog.proposals.map((p) => (
+                <div key={p.id} className="p-3 rounded-xl border border-border/70 bg-card flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs font-bold text-foreground truncate">{p.title}</p>
+                      {leadId && p.leadId === leadId && (
+                        <Badge variant="default" className="text-2xs shrink-0">Do Lead</Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {p.destination || storeName}{p.totalCents > 0 ? ` · ${formatMoney(p.totalCents / 100)}` : ""}
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={() => void handleDispatchProposal(p)}
+                    className="h-11 min-h-11 px-4 text-xs font-bold gap-2 shrink-0 cursor-pointer"
+                  >
+                    <Send className="size-4" />
+                    <span>Enviar</span>
+                  </Button>
+                </div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL 8: ENVIAR PRODUTO DO CATALOGO */}
+      <Dialog open={currentModal === "product"} onOpenChange={(open) => !open && closeAllModals()}>
+        <DialogContent className="sm:max-w-lg p-0 overflow-hidden rounded-xl">
+          <DialogHeader className="p-4 border-b border-border/60">
+            <DialogTitle className="text-base font-bold text-foreground">
+              Enviar Produto do Catalogo
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-4 space-y-3 max-h-96 overflow-y-auto no-scrollbar">
+            <div className="relative">
+              <Search className="size-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Input
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
+                placeholder="Filtrar produto publicado..."
+                className="h-11 pl-9 text-xs"
+              />
+            </div>
+            {loadingCatalog ? (
+              <div className="py-8 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+                <span>Carregando catalogo...</span>
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
+                Nenhum produto publicado encontrado.
+              </div>
+            ) : (
+              filteredProducts.map((prod) => (
+                <div key={prod.id} className="p-3 rounded-xl border border-border/70 bg-card flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-foreground truncate">{prod.title}</p>
+                    <p className="text-xs font-mono text-primary font-semibold">{formatMoney(prod.priceCents / 100)}</p>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={() => void handleDispatchProduct(prod)}
+                    className="h-11 min-h-11 px-4 text-xs font-bold gap-2 shrink-0 cursor-pointer"
+                  >
+                    <Send className="size-4" />
+                    <span>Enviar</span>
+                  </Button>
+                </div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL 9: CRIAR TAREFA / FOLLOW-UP CRM */}
+      <Dialog open={currentModal === "task"} onOpenChange={(open) => !open && closeAllModals()}>
+        <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-xl">
+          <DialogHeader className="p-4 border-b border-border/60">
+            <DialogTitle className="text-base font-bold text-foreground">
+              Novo Follow-up / Tarefa CRM
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-4 space-y-3">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-foreground block">O que precisa ser feito?</label>
+              <Input
+                value={taskTitle}
+                onChange={(e) => setTaskTitle(e.target.value)}
+                placeholder={`Ex: Retornar cotacao para ${customerName || "cliente"}`}
+                className="h-11 text-xs"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-foreground block">Prioridade</label>
+                <select
+                  value={taskPriority}
+                  onChange={(e) => setTaskPriority(e.target.value as any)}
+                  className="w-full h-11 min-h-11 px-3 rounded-lg border border-border/70 bg-background text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <option value="medium">Normal</option>
+                  <option value="high">Alta</option>
+                  <option value="urgent">Urgente</option>
+                  <option value="low">Baixa</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-foreground block">Prazo</label>
+                <Input
+                  type="date"
+                  value={taskDueDate}
+                  onChange={(e) => setTaskDueDate(e.target.value)}
+                  className="h-11 text-xs"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="p-4 border-t border-border/60 flex items-center justify-end gap-2 bg-muted/20">
+            <Button type="button" variant="outline" onClick={closeAllModals} className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer">
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              disabled={isSavingLeadAction || !taskTitle.trim()}
+              onClick={() => void handleCreateFollowupTask()}
+              className="h-11 min-h-11 px-5 text-xs font-bold gap-2 cursor-pointer"
+            >
+              <Check className="size-4" />
+              <span>Criar Tarefa</span>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL 10: LOCALIZACAO DA LOJA OU GPS */}
+      <Dialog open={currentModal === "location"} onOpenChange={(open) => !open && closeAllModals()}>
+        <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-xl">
+          <DialogHeader className="p-4 border-b border-border/60">
+            <DialogTitle className="text-base font-bold text-foreground">
+              Compartilhar Localizacao
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-4 space-y-3">
+            <div className="p-3 rounded-xl border border-border/70 bg-card space-y-2">
+              <p className="text-xs font-bold text-foreground">Endereco Oficial da Empresa</p>
+              <p className="text-xs text-muted-foreground">
+                {effectiveStoreAddress || "Nenhum endereco cadastrado nas configuracoes da loja."}
+              </p>
+              <Button
+                type="button"
+                disabled={!effectiveStoreAddress}
+                onClick={() => void handleDispatchStoreAddress()}
+                className="w-full h-11 min-h-11 text-xs font-bold gap-2 cursor-pointer"
+              >
+                <MapPin className="size-4" />
+                <span>Enviar Endereco da Loja</span>
+              </Button>
+            </div>
+            <div className="p-3 rounded-xl border border-border/70 bg-card space-y-2">
+              <p className="text-xs font-bold text-foreground">Coordenadas GPS do Dispositivo</p>
+              <p className="text-xs text-muted-foreground">Captura sua posicao atual e envia link direto no mapa.</p>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => void handleDispatchLocation()}
+                className="w-full h-11 min-h-11 text-xs font-semibold gap-2 cursor-pointer"
+              >
+                <MapPin className="size-4" />
+                <span>Enviar Minha Localizacao GPS</span>
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -1366,6 +2253,7 @@ export function InChatStoreCartBanner({
   customerName,
   customerPhone,
   customerEmail,
+  leadId,
   onDispatchMessage,
 }: {
   storeId?: string;
@@ -1375,6 +2263,7 @@ export function InChatStoreCartBanner({
   customerName?: string | null;
   customerPhone?: string | null;
   customerEmail?: string | null;
+  leadId?: string | null;
   onDispatchMessage: (data: StructuredDispatchPayload) => Promise<void> | void;
 }) {
   const { cart, globalCarts, updateQty } = useCart();
@@ -1469,6 +2358,7 @@ export function InChatStoreCartBanner({
         data: {
           storeId,
           customerId: customerId || null,
+          leadId: leadId || null,
           documentType: "invoice",
           customer: {
             name: customerName && customerName.trim().length >= 2 ? customerName.trim() : "Cliente Atendimento",

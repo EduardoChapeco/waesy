@@ -42,6 +42,26 @@ export interface BarcodeScannerModalProps {
   acceptTypes?: ScanResultType[];
 }
 
+export type ReaderType = "usb_hid" | "camera" | "bluetooth" | "embedded";
+
+export interface ScannerConfig {
+  readerType: ReaderType;
+  autoAddProduct: boolean;
+  autoIncrementDuplicate: boolean;
+  soundEnabled: boolean;
+  vibrateEnabled: boolean;
+  continuousMode: boolean;
+}
+
+export const DEFAULT_SCANNER_CONFIG: ScannerConfig = {
+  readerType: "usb_hid",
+  autoAddProduct: true,
+  autoIncrementDuplicate: true,
+  soundEnabled: true,
+  vibrateEnabled: true,
+  continuousMode: false,
+};
+
 /**
  * Classificador semântico puro de códigos escaneados.
  */
@@ -379,4 +399,62 @@ export function BarcodeScannerModal({
       </DialogContent>
     </Dialog>
   );
+}
+
+/**
+ * Hook nativo para leitores de código de barras USB HID em modo teclado (keyboard wedge).
+ * Nativizado de legacy_quarantine/classificados/scanner/BarcodeScanner.tsx.
+ */
+export function useUSBScanner(options: {
+  enabled: boolean;
+  onScan: (result: ScanResult) => void;
+  debounceMs?: number;
+}) {
+  const { enabled, onScan, debounceMs = 50 } = options;
+  const bufferRef = useRef("");
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    const handler = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+
+      if (e.key === "Enter" && bufferRef.current.length >= 4) {
+        e.preventDefault();
+        const raw = bufferRef.current.trim();
+        bufferRef.current = "";
+        if (timerRef.current) clearTimeout(timerRef.current);
+
+        const classified = classifyScannedCode(raw);
+        const result: ScanResult = {
+          raw,
+          type: classified.type,
+          format: "usb_hid",
+          timestamp: new Date().toISOString(),
+        };
+
+        if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+          navigator.vibrate(50);
+        }
+        onScan(result);
+        return;
+      }
+
+      if (e.key.length === 1) {
+        bufferRef.current += e.key;
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => {
+          bufferRef.current = "";
+        }, debounceMs);
+      }
+    };
+
+    window.addEventListener("keydown", handler, { capture: true });
+    return () => {
+      window.removeEventListener("keydown", handler, { capture: true });
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [enabled, onScan, debounceMs]);
 }

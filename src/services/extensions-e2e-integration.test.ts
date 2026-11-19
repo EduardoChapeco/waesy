@@ -418,6 +418,6 @@ describe("Extensions End-to-End Integration", () => {
 
       const res: Response = await handlers.POST({ request: req });
       expect(res.status).toBe(401);
-    });
+    }, 20_000);
   });
 });

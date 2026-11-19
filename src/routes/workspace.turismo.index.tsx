@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Compass,
@@ -105,7 +105,7 @@ import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
-import { UnifiedProposalWorkspace, type UnifiedProposalWorkspaceLead, sanitizeDestinationString } from "@/components/tourism/unified-proposal-workspace";
+import { UnifiedProposalWorkspace, type UnifiedProposalWorkspaceLead } from "@/components/tourism/unified-proposal-workspace";
 import { LeadCard } from "@/components/tourism/crm/LeadCard";
 import { LeadImportModal } from "@/components/commercial/lead-import-modal";
 import { LeadCommissionCalculatorSheet } from "@/components/commercial/lead-commission-calculator-sheet";
@@ -113,6 +113,17 @@ import { LeadFlightGridSheet } from "@/components/commercial/lead-flight-grid-sh
 import { KanbanColumnCustomizerModal } from "@/components/workspace/kanban/kanban-column-customizer-modal";
 import { TourismProposalsManager } from "@/components/tourism/proposals/TourismProposalsManager";
 import { Customer360PrintableDossier } from "@/components/dossier/customer-360-printable-dossier";
+import { DestinationTagsPicker } from "@/components/tourism/shared/destination-tags-picker";
+import { TravelPeriodTagsPicker } from "@/components/tourism/shared/travel-period-tags-picker";
+import { RoomOccupancyBuilder } from "@/components/tourism/shared/room-occupancy-builder";
+import { TravelIntentAiImporter } from "@/components/tourism/shared/travel-intent-ai-importer";
+import { AdvancedLeadTagsPicker } from "@/components/tourism/crm/advanced-lead-tags-picker";
+import { LeadRemindersManager, type LeadReminderItem } from "@/components/tourism/crm/lead-reminders-manager";
+import type {
+  StructuredDestinationTag,
+  StructuredPeriodSpec,
+  StructuredRoomOccupancy,
+} from "@/lib/travel/opportunity-matching-engine";
 import { EmptyState } from "@/components/state/states";
 import { listKanbanStages, type KanbanStageDTO } from "@/services/kanban-config.functions";
 import {
@@ -126,6 +137,10 @@ import {
 export const Route = createFileRoute("/workspace/turismo/")({
   head: () => ({
     meta: [{ title: "Turismo & Viagens | Cockpit Operacional Workspace" }],
+  }),
+  validateSearch: (search: Record<string, unknown>): { leadId?: string; createProposal?: string } => ({
+    leadId: typeof search.leadId === "string" ? search.leadId : undefined,
+    createProposal: typeof search.createProposal === "string" ? search.createProposal : undefined,
   }),
   loader: async () => {
     try {
@@ -256,6 +271,8 @@ export default function WorkspaceTurismoCockpitPage() {
     kanbanStages = [],
   } = Route.useLoaderData();
   const router = useRouter();
+  const routeSearch = Route.useSearch();
+  const handledDeepLinkRef = useRef<string>("");
   const queryClient = useQueryClient();
   const storeId = store?.id || "";
 
@@ -291,7 +308,7 @@ export default function WorkspaceTurismoCockpitPage() {
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
   const [calculatorLead, setCalculatorLead] = useState<any | null>(null);
   const [flightLead, setFlightLead] = useState<any | null>(null);
-  const [activeViewTab, setActiveViewTab] = useState<"dashboard" | "kanban" | "viagens" | "propostas">("kanban");
+  const [activeViewTab, setActiveViewTab] = useState<"dashboard" | "kanban" | "viagens" | "propostas" | "comissoes">("kanban");
   const [leadDrawerTab, setLeadDrawerTab] = useState<
     "viagem" | "cliente360" | "contratos" | "onboarding" | "checklist" | "anamnese" | "reuniao" | "lgpd" | "pagamento"
   >("viagem");
@@ -301,88 +318,21 @@ export default function WorkspaceTurismoCockpitPage() {
   const [isNewLeadOpen, setIsNewLeadOpen] = useState(false);
   const [newLeadTargetStage, setNewLeadTargetStage] = useState<string>("new");
   const [newLeadForm, setNewLeadForm] = useState(initialNewLeadState);
-  const [isSubmittingNew, setIsSubmittingNew] = useState(false);
-
-  // Edição do Lead
-  const [isUpdatingLead, setIsUpdatingLead] = useState(false);
-  const [editLeadForm, setEditLeadForm] = useState<any>({
-    name: "",
-    phone: "",
-    email: "",
-    destination: "",
-    interest_type: "",
-    interest_period: "",
-    travel_start: "",
-    travel_end: "",
-    pax_adults: 1,
-    pax_children: 0,
-    pax_infants: 0,
-    pax_ages_str: "",
-    estimated_value_cents: 0,
-    notes: "",
-    status: "new",
-    source: "whatsapp",
-    lead_source_detail: "",
-    assigned_to: "",
-    tags: [] as string[],
-    checklist: [] as any[],
-    pax_list: [] as any[],
-    payment_plan: {
-      flight_cents: 0,
-      hotel_cents: 0,
-      insurance_cents: 0,
-      boarding_tax_cents: 0,
-      other_services_cents: 0,
-      commission_cents: 0,
-      operatorName: "",
-      enableBoleto: false,
-      boletoInstallments: 1,
-      hasBoletoDownpayment: false,
-      downpaymentType: "percentage" as "percentage" | "fixed_cents",
-      downpaymentPct: 0,
-      downpaymentFixedCents: 0,
-      firstBoletoDue: "",
-      firstBoletoCondition: "",
-      enableCard: false,
-      cardInstallments: 1,
-      enablePixDiscount: false,
-      pixDiscountPct: 0,
-      notes: "",
-      isTermsCustomized: false,
-    },
-    lost_reason: "",
-    pcd: false,
-    reduced_mobility: false,
-    autism_spectrum: false,
-    health_notes: "",
-    lgpd_consent: true,
+  const [newLeadDestTags, setNewLeadDestTags] = useState<StructuredDestinationTag[]>([]);
+  const [newLeadPeriodSpec, setNewLeadPeriodSpec] = useState<StructuredPeriodSpec>({
+    mode: "unspecified",
+    flexibilityDays: 3,
+    targetMonths: [],
+    seasonTags: [],
+    flexibleAnytime: false,
   });
-  const [newChecklistItemText, setNewChecklistItemText] = useState("");
-  const [newTagInput, setNewTagInput] = useState("");
-
-  const handleAddTag = () => {
-    if (!newTagInput.trim()) return;
-    const tagToAdd = newTagInput.trim();
-    if (!editLeadForm.tags?.includes(tagToAdd)) {
-      setEditLeadForm((prev: any) => ({ ...prev, tags: [...(prev.tags || []), tagToAdd] }));
-    }
-    setNewTagInput("");
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setEditLeadForm((prev: any) => ({
-      ...prev,
-      tags: (prev.tags || []).filter((t: string) => t !== tagToRemove),
-    }));
-  };
-
-  const handleTogglePopularTag = (tagName: string) => {
-    if (editLeadForm.tags?.includes(tagName)) {
-      handleRemoveTag(tagName);
-    } else {
-      setEditLeadForm((prev: any) => ({ ...prev, tags: [...(prev.tags || []), tagName] }));
-    }
-  };
+  const [newLeadRooms, setNewLeadRooms] = useState<StructuredRoomOccupancy[]>([
+    { roomNumber: 1, roomLabel: "Quarto 1", adultsCount: 2, childrenCount: 0, childrenAges: [] },
+  ]);
+  const [newLeadRawMarkdown, setNewLeadRawMarkdown] = useState("");
+  const [newLeadReminders, setNewLeadReminders] = useState<LeadReminderItem[]>([]);
+  const [newLeadFollowUpAt, setNewLeadFollowUpAt] = useState<string | null>(null);
+  const [isSubmittingNew, setIsSubmittingNew] = useState(false);
 
   // Reunião
   const [meetingTitle, setMeetingTitle] = useState("");
@@ -496,8 +446,12 @@ export default function WorkspaceTurismoCockpitPage() {
 
   const handlePublishProposal = async (proposalId: string) => {
     try {
-      await updateTravelProposal({ data: { id: proposalId, patch: { status: "sent" } } });
+      const res = await updateTravelProposal({ data: { id: proposalId, patch: { status: "sent" } } });
       toast.success("Proposta publicada! O cliente já pode visualizar e aceitar online.");
+      if ((res?.matchedLeadsCount || 0) > 0) {
+        toast.info(`Radar encontrou ${res.matchedLeadsCount} outro(s) lead(s) compatível(is) com esta proposta!`);
+        queryClient.invalidateQueries({ queryKey: ["unified-radar-opportunities"] });
+      }
       await syncProposalCaches();
     } catch (err: any) {
       toast.error(err?.message || "Erro ao publicar proposta.");
@@ -653,21 +607,28 @@ export default function WorkspaceTurismoCockpitPage() {
   const handlePromoteToCustomer = async (leadId: string) => {
     try {
       const res = await promoteLeadToCustomer({ data: { leadId } });
-      toast.success("Lead promovido com sucesso para a Carteira de Clientes!");
+      toast.success(
+        res.isAlreadyCustomer
+          ? "Lead vinculado com sucesso ao cliente existente!"
+          : "Lead promovido com sucesso para a Carteira de Clientes!"
+      );
       await refetchLeads();
       queryClient.invalidateQueries({ queryKey: ["tourism-cockpit-leads"] });
       queryClient.invalidateQueries({ queryKey: ["crm-customers-list"] });
+      let profile360: any = null;
       if (selectedLead?.id === leadId) {
         setSelectedLead((prev: any) => (prev ? { ...prev, customer_id: res.customerId } : null));
         try {
-          const profile360 = await getCustomer360Profile({ data: { leadId } });
+          profile360 = await getCustomer360Profile({ data: { leadId } });
           setCustomer360Data(profile360);
         } catch {
           // fallback silencioso
         }
       }
+      return { ...res, profile360 };
     } catch (err: any) {
       toast.error(err?.message || "Erro ao converter lead.");
+      throw err;
     }
   };
 
@@ -680,30 +641,49 @@ export default function WorkspaceTurismoCockpitPage() {
     }
     setIsSubmittingNew(true);
     try {
-      const paxAges = (newLeadForm.paxAgesStr || "")
-        .split(",")
-        .map((s) => parseInt(s.trim()))
-        .filter((n) => !isNaN(n));
+      const roomAdults = newLeadRooms.reduce((sum, r) => sum + (r.adultsCount || 1), 0);
+      const roomAges = newLeadRooms.flatMap((r) => r.childrenAges || []);
+      const paxAges =
+        roomAges.length > 0
+          ? roomAges
+          : (newLeadForm.paxAgesStr || "")
+              .split(",")
+              .map((s) => parseInt(s.trim()))
+              .filter((n) => !isNaN(n) && n >= 0 && n <= 17);
+
+      const destText =
+        newLeadDestTags.length > 0
+          ? newLeadDestTags.map((d) => d.label).join(", ")
+          : newLeadForm.destination.trim() || null;
 
       await createLead({
         data: {
           fullName: newLeadForm.name.trim(),
           email: newLeadForm.email.trim() || null,
           phone: newLeadForm.phone.trim() || null,
-          destination: newLeadForm.destination.trim() || null,
+          destination: destText,
+          destinationTags: newLeadDestTags,
           interestType: newLeadForm.interestType || null,
-          interestPeriod: newLeadForm.interestPeriod.trim() || null,
-          travelStart: newLeadForm.travelStart || null,
-          travelEnd: newLeadForm.travelEnd || null,
-          paxAdults: Number(newLeadForm.paxAdults) || 1,
-          paxChildren: Number(newLeadForm.paxChildren) || 0,
-          paxInfants: Number(newLeadForm.paxInfants) || 0,
+          interestPeriod: newLeadPeriodSpec.displayLabel || newLeadForm.interestPeriod.trim() || null,
+          periodTags: newLeadPeriodSpec.seasonTags,
+          targetMonths: newLeadPeriodSpec.targetMonths,
+          flexibilityDays: newLeadPeriodSpec.flexibilityDays,
+          dateFlexibilityMode: newLeadPeriodSpec.mode,
+          travelStart: newLeadPeriodSpec.startDate || newLeadForm.travelStart || null,
+          travelEnd: newLeadPeriodSpec.endDate || newLeadForm.travelEnd || null,
+          roomOccupancies: newLeadRooms,
+          paxAdults: roomAdults || Number(newLeadForm.paxAdults) || 1,
+          paxChildren: paxAges.length || Number(newLeadForm.paxChildren) || 0,
+          paxInfants: paxAges.filter((a) => a <= 1).length || Number(newLeadForm.paxInfants) || 0,
           paxAges,
+          rawIntentMarkdown: newLeadRawMarkdown.trim() || null,
           estimatedValueCents: newLeadForm.estimatedValueCents || 0,
           source: newLeadForm.source,
           leadSourceDetail: newLeadForm.leadSourceDetail.trim() || null,
           status: newLeadTargetStage as any,
           assignedTo: newLeadForm.assignedTo || null,
+          followUpAt: newLeadFollowUpAt,
+          reminders: newLeadReminders,
           tags: newLeadForm.tags,
           checklist: newLeadForm.customChecklist,
           notes: newLeadForm.notes.trim() || null,
@@ -713,6 +693,20 @@ export default function WorkspaceTurismoCockpitPage() {
       toast.success("Oportunidade adicionada com sucesso ao funil comercial!");
       setIsNewLeadOpen(false);
       setNewLeadForm(initialNewLeadState);
+      setNewLeadDestTags([]);
+      setNewLeadReminders([]);
+      setNewLeadFollowUpAt(null);
+      setNewLeadPeriodSpec({
+        mode: "unspecified",
+        flexibilityDays: 3,
+        targetMonths: [],
+        seasonTags: [],
+        flexibleAnytime: false,
+      });
+      setNewLeadRooms([
+        { roomNumber: 1, roomLabel: "Quarto 1", adultsCount: 2, childrenCount: 0, childrenAges: [] },
+      ]);
+      setNewLeadRawMarkdown("");
       await refetchLeads();
       queryClient.invalidateQueries({ queryKey: ["tourism-cockpit-leads"] });
     } catch (err: any) {
@@ -722,85 +716,44 @@ export default function WorkspaceTurismoCockpitPage() {
     }
   };
 
+  const buildProposalPayloadFromLead = (lead: any): UnifiedProposalWorkspaceLead => {
+    const cf = lead.custom_fields && typeof lead.custom_fields === "object" ? lead.custom_fields : {};
+    return {
+      id: lead.id,
+      fullName: lead.full_name,
+      phone: lead.phone,
+      email: lead.email,
+      clientDocument: String(lead.document || lead.cpf_cnpj || cf.document || ""),
+      destination: lead.destination,
+      estimated_value_cents: lead.estimated_value_cents,
+      passenger_count: (lead.pax_adults || 2) + (lead.pax_children || 0),
+      departureDate: lead.travel_start,
+      returnDate: lead.travel_end,
+      adultsCount: lead.pax_adults || 2,
+      childrenCount: lead.pax_children || 0,
+      childrenAges: Array.isArray(lead.pax_ages)
+        ? lead.pax_ages
+        : Array.isArray(cf.children_ages)
+          ? cf.children_ages
+          : undefined,
+      roomOccupancies: Array.isArray(lead.room_occupancies)
+        ? lead.room_occupancies
+        : Array.isArray(cf.room_occupancies)
+          ? cf.room_occupancies
+          : undefined,
+      notes: lead.notes || "",
+      customFields: cf,
+      sourceListingId: lead.source_listing_id || cf.source_listing_id || "",
+      sourceListingOrigin: lead.source_listing_origin || cf.source_listing_origin || "",
+      paxList: Array.isArray(lead.pax_list) ? lead.pax_list : undefined,
+      boardingPoint: cf.boarding_point ? String(cf.boarding_point) : undefined,
+      departureOption: cf.departure_option || undefined,
+    };
+  };
+
   // Abertura do Drawer com Carregamento Completo
   const openLeadDetails = (lead: any) => {
     setSelectedLead(lead);
-    const paxAgesStr = Array.isArray(lead.pax_ages) ? lead.pax_ages.join(", ") : "";
-    const totalPaxCount = Math.max(1, (lead.pax_adults || 1) + (lead.pax_children || 0) + (lead.pax_infants || 0));
-    const existingPaxList = Array.isArray(lead.pax_list) && lead.pax_list.length > 0
-      ? lead.pax_list
-      : Array.from({ length: totalPaxCount }).map((_, idx) => ({
-          id: `pax-${idx + 1}`,
-          role: idx === 0 ? "Titular" : `Passageiro ${idx + 1}`,
-          full_name: idx === 0 ? (lead.full_name || "") : "",
-          document: idx === 0 ? (lead.document || "") : "",
-          passport_number: "",
-          passport_expiry: "",
-          visa_status: "dispensado",
-        }));
-    const savedPaymentPlan = lead.custom_fields?.payment_plan || {};
-    const estTotal = lead.estimated_value_cents || 0;
-
-    const cleanCity = sanitizeDestinationString(lead.destination);
-    const rawExtraNotes = lead.destination && lead.destination.includes(" - ")
-      ? lead.destination.split(" - ").slice(1).join(" - ").trim()
-      : "";
-    const combinedNotes = lead.notes || lead.message
-      ? `${lead.notes || lead.message}${rawExtraNotes ? `\nObs Destino: ${rawExtraNotes}` : ""}`
-      : rawExtraNotes;
-
-    setEditLeadForm({
-      name: lead.full_name || "",
-      phone: lead.phone || "",
-      email: lead.email || "",
-      destination: cleanCity,
-      interest_type: lead.interest_type || "",
-      interest_period: lead.interest_period || "",
-      travel_start: lead.travel_start || "",
-      travel_end: lead.travel_end || "",
-      pax_adults: lead.pax_adults || 1,
-      pax_children: lead.pax_children || 0,
-      pax_infants: lead.pax_infants || 0,
-      pax_ages_str: paxAgesStr,
-      estimated_value_cents: estTotal,
-      notes: combinedNotes,
-      status: lead.status || "new",
-      source: lead.source || "whatsapp",
-      lead_source_detail: lead.lead_source_detail || "",
-      assigned_to: lead.assigned_to || "",
-      tags: Array.isArray(lead.tags) ? lead.tags : [],
-      checklist: Array.isArray(lead.checklist) ? lead.checklist : DEFAULT_CHECKLIST_TEMPLATE,
-      pax_list: existingPaxList,
-      payment_plan: {
-        flight_cents: savedPaymentPlan.flight_cents ?? 0,
-        hotel_cents: savedPaymentPlan.hotel_cents ?? 0,
-        insurance_cents: savedPaymentPlan.insurance_cents ?? 0,
-        boarding_tax_cents: savedPaymentPlan.boarding_tax_cents ?? 0,
-        other_services_cents: savedPaymentPlan.other_services_cents ?? 0,
-        commission_cents: savedPaymentPlan.commission_cents ?? 0,
-        operatorName: savedPaymentPlan.operatorName ?? "",
-        enableBoleto: savedPaymentPlan.enableBoleto ?? true,
-        boletoInstallments: savedPaymentPlan.boletoInstallments ?? 12,
-        hasBoletoDownpayment: savedPaymentPlan.hasBoletoDownpayment ?? false,
-        downpaymentType: savedPaymentPlan.downpaymentType ?? "percentage",
-        downpaymentPct: savedPaymentPlan.downpaymentPct ?? 20,
-        downpaymentFixedCents: savedPaymentPlan.downpaymentFixedCents ?? 0,
-        firstBoletoDue: savedPaymentPlan.firstBoletoDue ?? "Primeiro boleto para 30 dias",
-        firstBoletoCondition: savedPaymentPlan.firstBoletoCondition ?? "Sem juros operadora",
-        enableCard: savedPaymentPlan.enableCard ?? true,
-        cardInstallments: savedPaymentPlan.cardInstallments ?? 10,
-        enablePixDiscount: savedPaymentPlan.enablePixDiscount ?? true,
-        pixDiscountPct: savedPaymentPlan.pixDiscountPct ?? 5,
-        notes: savedPaymentPlan.notes || "",
-        isTermsCustomized: savedPaymentPlan.isTermsCustomized ?? Boolean(savedPaymentPlan.notes),
-      },
-      lost_reason: lead.lost_reason || "",
-      pcd: Boolean(lead.custom_fields?.pcd),
-      reduced_mobility: Boolean(lead.custom_fields?.reduced_mobility),
-      autism_spectrum: Boolean(lead.custom_fields?.autism_spectrum),
-      health_notes: lead.custom_fields?.health_notes || "",
-      lgpd_consent: lead.custom_fields?.lgpd_consent ?? true,
-    });
     setContractForm({
       title: lead.destination
         ? `Contrato de Viagem - ${lead.destination}`
@@ -819,6 +772,22 @@ export default function WorkspaceTurismoCockpitPage() {
       .finally(() => setIsLoading360(false));
   };
 
+  useEffect(() => {
+    const targetLeadId = routeSearch.leadId;
+    if (!targetLeadId) return;
+    const deepKey = `${targetLeadId}:${routeSearch.createProposal || ""}`;
+    if (handledDeepLinkRef.current === deepKey || leads.length === 0) return;
+
+    const matched = leads.find((l: any) => l.id === targetLeadId);
+    if (matched) {
+      handledDeepLinkRef.current = deepKey;
+      openLeadDetails(matched);
+      if (routeSearch.createProposal === "1") {
+        setProposalLead(buildProposalPayloadFromLead(matched));
+      }
+    }
+  }, [routeSearch.leadId, routeSearch.createProposal, leads]);
+
   // Salvar Alterações do Perfil do Cliente no Lead
   const handleSaveLeadFromDossier = async (updatedData: any) => {
     if (!selectedLead) return;
@@ -830,12 +799,21 @@ export default function WorkspaceTurismoCockpitPage() {
           phone: updatedData.phone?.trim() || undefined,
           email: updatedData.email?.trim() || undefined,
           destination: updatedData.destination || null,
+          destinationTags: updatedData.destination_tags,
           interestType: updatedData.interest_type || null,
+          interestPeriod: updatedData.interest_period || undefined,
+          periodTags: updatedData.period_tags,
+          targetMonths: updatedData.target_months,
+          flexibilityDays: updatedData.flexibility_days,
+          dateFlexibilityMode: updatedData.date_flexibility_mode,
           travelStart: updatedData.travel_start || null,
           travelEnd: updatedData.travel_end || null,
+          roomOccupancies: updatedData.room_occupancies,
           paxAdults: Number(updatedData.pax_adults) || 1,
           paxChildren: Number(updatedData.pax_children) || 0,
           paxInfants: Number(updatedData.pax_infants) || 0,
+          paxAges: updatedData.pax_ages,
+          rawIntentMarkdown: updatedData.raw_intent_markdown,
           source: updatedData.source || null,
           lead_source_detail: updatedData.lead_source_detail || null,
           estimated_value_cents: updatedData.estimated_value_cents,
@@ -856,64 +834,6 @@ export default function WorkspaceTurismoCockpitPage() {
     }
   };
 
-  const handleSaveLeadDetails = async () => {
-    if (!selectedLead) return;
-    setIsUpdatingLead(true);
-    try {
-      const paxAges = (editLeadForm.pax_ages_str || "")
-        .split(",")
-        .map((s: string) => parseInt(s.trim()))
-        .filter((n: number) => !isNaN(n));
-
-      const mergedCustomFields = {
-        ...(selectedLead.custom_fields || {}),
-        payment_plan: editLeadForm.payment_plan,
-        pcd: editLeadForm.pcd,
-        reduced_mobility: editLeadForm.reduced_mobility,
-        autism_spectrum: editLeadForm.autism_spectrum,
-        health_notes: editLeadForm.health_notes,
-        lgpd_consent: editLeadForm.lgpd_consent,
-      };
-
-      await updateLeadDetails({
-        data: {
-          leadId: selectedLead.id,
-          fullName: editLeadForm.name.trim() || undefined,
-          phone: editLeadForm.phone.trim() || undefined,
-          email: editLeadForm.email.trim() || undefined,
-          destination: editLeadForm.destination || null,
-          interestType: editLeadForm.interest_type || null,
-          interestPeriod: editLeadForm.interest_period || null,
-          travelStart: editLeadForm.travel_start || null,
-          travelEnd: editLeadForm.travel_end || null,
-          paxAdults: Number(editLeadForm.pax_adults) || 1,
-          paxChildren: Number(editLeadForm.pax_children) || 0,
-          paxInfants: Number(editLeadForm.pax_infants) || 0,
-          paxAges,
-          estimated_value_cents: editLeadForm.estimated_value_cents,
-          notes: editLeadForm.notes,
-          status: editLeadForm.status as any,
-          source: editLeadForm.source,
-          lead_source_detail: editLeadForm.lead_source_detail || null,
-          assigned_to: editLeadForm.assigned_to || null,
-          tags: editLeadForm.tags,
-          checklist: editLeadForm.checklist,
-          pax_list: editLeadForm.pax_list,
-          custom_fields: mergedCustomFields,
-          lost_reason: editLeadForm.lost_reason || null,
-        },
-      });
-      toast.success("Ficha do passageiro atualizada com sucesso!");
-      await refetchLeads();
-      queryClient.invalidateQueries({ queryKey: ["tourism-cockpit-leads"] });
-      setSelectedLead((prev: any) => (prev ? { ...prev, ...editLeadForm, custom_fields: mergedCustomFields } : null));
-    } catch (err: any) {
-      toast.error(err?.message || "Erro ao salvar alterações da oportunidade.");
-    } finally {
-      setIsUpdatingLead(false);
-    }
-  };
-
   // Checklist do Lead
   const handleToggleChecklist = async (itemId: string) => {
     if (!selectedLead) return;
@@ -925,7 +845,6 @@ export default function WorkspaceTurismoCockpitPage() {
         },
       });
       if (res.checklist) {
-        setEditLeadForm((prev: any) => ({ ...prev, checklist: res.checklist }));
         setSelectedLead((prev: any) => (prev ? { ...prev, checklist: res.checklist } : null));
       }
       await refetchLeads();
@@ -933,20 +852,6 @@ export default function WorkspaceTurismoCockpitPage() {
     } catch (err: any) {
       toast.error(err?.message || "Erro ao atualizar checklist.");
     }
-  };
-
-  const handleAddChecklistItem = () => {
-    if (!newChecklistItemText.trim()) return;
-    const newItem = {
-      id: `custom-${Date.now()}`,
-      text: newChecklistItemText.trim(),
-      done: false,
-    };
-    setEditLeadForm((prev: any) => ({
-      ...prev,
-      checklist: [...(prev.checklist || []), newItem],
-    }));
-    setNewChecklistItemText("");
   };
 
   // Emissão de Contrato Digital
@@ -982,6 +887,7 @@ export default function WorkspaceTurismoCockpitPage() {
       toast.success(`Contrato gerado com sucesso! Token: ${res.publicToken}`);
       const updated360 = await getCustomer360Profile({ data: { leadId: selectedLead.id } });
       setCustomer360Data(updated360);
+      await refetchLeads();
       return res;
     } catch (err: any) {
       toast.error(err?.message || "Erro ao emitir contrato.");
@@ -1248,6 +1154,7 @@ export default function WorkspaceTurismoCockpitPage() {
       <WorkspaceCanonicalToolbar
         tabs={[
           { id: "kanban", label: "Kanban", icon: Kanban, count: filteredLeads.length },
+          { id: "comissoes", label: "Vendas & Comissões", icon: DollarSign, count: sheets.length },
           { id: "dashboard", label: "Painel & Alertas", icon: Compass },
           { id: "propostas", label: "Propostas", icon: FileText, count: proposals.length },
           { id: "viagens", label: "Viagens", icon: Plane, count: trips.length },
@@ -1299,9 +1206,21 @@ export default function WorkspaceTurismoCockpitPage() {
         onColumnsClick={() => setIsCustomizerOpen(true)}
         secondaryActions={[
           {
-            label: "Planilha de Comissões",
+            label: "Minhas Vendas & Ranking",
+            icon: TrendingUp,
+            onClick: () => router.navigate({ to: "/workspace/turismo/minhas-vendas" }),
+            variant: "outline",
+          },
+          {
+            label: "Comissões & Operadoras",
             icon: Receipt,
             onClick: () => router.navigate({ to: "/workspace/turismo/comissoes" }),
+            variant: "outline",
+          },
+          {
+            label: "Metas & IA",
+            icon: Compass,
+            onClick: () => router.navigate({ to: "/workspace/relatorios/metas" }),
             variant: "outline",
           },
           {
@@ -1334,6 +1253,134 @@ export default function WorkspaceTurismoCockpitPage() {
       />
 
       {/* ── CONTEÚDO DA VISÃO ATIVA ── */}
+
+      {/* ABA DE DESTAQUE: VENDAS DO MÊS, COMISSÕES, PREMIAÇÕES POR FORA & OPERADORAS */}
+      {activeViewTab === "comissoes" && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="p-4 rounded-2xl border border-border bg-card space-y-1">
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span className="text-xs font-semibold">Vendas Lançadas</span>
+                <DollarSign className="size-4 text-primary" />
+              </div>
+              <div className="text-xl font-bold font-mono tabular-nums text-foreground">
+                {formatMoney(
+                  sheets.reduce((acc: number, s: any) => acc + Number(s.gross_sale_cents || 0), 0),
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">{sheets.length} operação(ões) registradas</p>
+            </div>
+
+            <div className="p-4 rounded-2xl border border-primary/30 bg-primary/5 space-y-1">
+              <div className="flex items-center justify-between text-primary">
+                <span className="text-xs font-semibold">Receita Agência (Comissão + Over)</span>
+                <TrendingUp className="size-4 text-primary" />
+              </div>
+              <div className="text-xl font-bold font-mono tabular-nums text-primary">
+                {formatMoney(
+                  sheets.reduce((acc: number, s: any) => acc + Number(s.agency_revenue_cents || 0), 0),
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">Base tributável e margem líquida</p>
+            </div>
+
+            <div className="p-4 rounded-2xl border border-border bg-card space-y-1">
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span className="text-xs font-semibold">Premiação Variável (Por Fora)</span>
+                <ShieldCheck className="size-4 text-emerald-600" />
+              </div>
+              <div className="text-xl font-bold font-mono tabular-nums text-emerald-700 dark:text-emerald-300">
+                {formatMoney(
+                  sheets.reduce(
+                    (acc: number, s: any) => acc + Number(s.agent_commission_total_cents || 0),
+                    0,
+                  ),
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">Separado do holerite CLT com recibo</p>
+            </div>
+
+            <div className="p-4 rounded-2xl border border-border bg-card space-y-1">
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span className="text-xs font-semibold">A Receber de Operadoras</span>
+                <Receipt className="size-4 text-warning-strong" />
+              </div>
+              <div className="text-xl font-bold font-mono tabular-nums text-warning-strong">
+                {formatMoney(totalPendingReceivablesCents)}
+              </div>
+              <p className="text-xs text-muted-foreground">Borderôs e conciliação bancária</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+            <div className="p-4 rounded-2xl border border-border bg-card flex flex-col justify-between gap-3">
+              <div className="space-y-1">
+                <Badge variant="secondary" className="text-xs">Produção Individual & Geral</Badge>
+                <h3 className="text-sm font-bold text-foreground">
+                  Minhas Vendas, Ranking Agente a Agente & Recibos Por Fora
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Cada consultor acompanha suas vendas, crescimento mensal e assina seus recibos; a gerência vê a agência inteira e liquida premiações por fora.
+                </p>
+              </div>
+              <Button
+                asChild
+                variant="outline"
+                className="h-11 min-h-11 w-full justify-between focus-visible:ring-2"
+              >
+                <Link to="/workspace/turismo/minhas-vendas">
+                  <span>Abrir Painel de Vendas & Recibos</span>
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+            </div>
+
+            <div className="p-4 rounded-2xl border border-border bg-card flex flex-col justify-between gap-3">
+              <div className="space-y-1">
+                <Badge variant="outline" className="text-xs">Backoffice & Operadoras</Badge>
+                <h3 className="text-sm font-bold text-foreground">
+                  Comissões, Over (PIX 0% vs Financiado) & Borderôs de Operadoras
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Planilha de faixas progressivas, 8 blocos auditáveis, baixa real de operadoras e emissão de NFS-e sobre a receita da agência.
+                </p>
+              </div>
+              <Button
+                asChild
+                variant="outline"
+                className="h-11 min-h-11 w-full justify-between focus-visible:ring-2"
+              >
+                <Link to="/workspace/turismo/comissoes">
+                  <span>Abrir Gestão de Comissões & Operadoras</span>
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+            </div>
+
+            <div className="p-4 rounded-2xl border border-border bg-card flex flex-col justify-between gap-3">
+              <div className="space-y-1">
+                <Badge variant="outline" className="text-xs">Estatística P10/P50/P90 & IA</Badge>
+                <h3 className="text-sm font-bold text-foreground">
+                  Metas Comerciais, Sazonalidade & Previsão por IA
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Projeção real de fechamento baseada em velocidade EWMA, índice sazonal empírico e pipeline ponderado.
+                </p>
+              </div>
+              <Button
+                asChild
+                variant="outline"
+                className="h-11 min-h-11 w-full justify-between focus-visible:ring-2"
+              >
+                <Link to="/workspace/relatorios/metas">
+                  <span>Abrir Metas & Projeção IA</span>
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 0. PAINEL EXECUTIVO DO PROPRIETÁRIO / GERENTE (DASHBOARD GERAL) */}
       {activeViewTab === "dashboard" && (
@@ -1760,30 +1807,7 @@ export default function WorkspaceTurismoCockpitPage() {
                           stages={visibleStages.map((s: any) => ({ id: s.id, title: s.title }))}
                           team={team}
                           onOpenDetails={openLeadDetails}
-                          onGenerateProposal={(lead) => {
-                            const cf = lead.custom_fields && typeof lead.custom_fields === "object" ? lead.custom_fields : {};
-                            setProposalLead({
-                              id: lead.id,
-                              fullName: lead.full_name,
-                              phone: lead.phone,
-                              email: lead.email,
-                              clientDocument: String(lead.document || lead.cpf_cnpj || cf.document || ""),
-                              destination: lead.destination,
-                              estimated_value_cents: lead.estimated_value_cents,
-                              passenger_count: (lead.pax_adults || 2) + (lead.pax_children || 0),
-                              departureDate: lead.travel_start,
-                              returnDate: lead.travel_end,
-                              adultsCount: lead.pax_adults || 2,
-                              childrenCount: lead.pax_children || 0,
-                              notes: lead.notes || "",
-                              customFields: cf,
-                              sourceListingId: lead.source_listing_id || cf.source_listing_id || "",
-                              sourceListingOrigin: lead.source_listing_origin || cf.source_listing_origin || "",
-                              paxList: Array.isArray(lead.pax_list) ? lead.pax_list : undefined,
-                              boardingPoint: cf.boarding_point ? String(cf.boarding_point) : undefined,
-                              departureOption: cf.departure_option || undefined,
-                            });
-                          }}
+                          onGenerateProposal={(lead) => setProposalLead(buildProposalPayloadFromLead(lead))}
                           onOpenFlightGrid={setFlightLead}
                           onStageChange={(leadId, newStage) => handleMoveStage(leadId, newStage)}
                           onPromote={handlePromoteToCustomer}
@@ -1871,7 +1895,7 @@ export default function WorkspaceTurismoCockpitPage() {
           <SheetContent
             side="right"
             size="dossier"
-            className="p-0 flex flex-col h-full bg-background border-l border-border/60 overflow-hidden w-full max-sm:inset-0 sm:max-w-4xl md:max-w-5xl lg:sheet-page-70"
+            className="p-0 flex flex-col h-full bg-background border-l border-border/60 overflow-hidden w-full max-sm:inset-0 sm:max-w-4xl md:max-w-5xl lg:sheet-page-dossier"
           >
             <TourismPipeCardDossier
               lead={selectedLead}
@@ -1974,119 +1998,110 @@ export default function WorkspaceTurismoCockpitPage() {
                   <MapPin className="size-3.5 text-primary" />
                   <span>Detalhes da Viagem</span>
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label className="text-2xs text-muted-foreground font-semibold">Destino Principal</Label>
-                    <Input
-                      value={newLeadForm.destination}
-                      onChange={(e) => setNewLeadForm((prev) => ({ ...prev, destination: e.target.value }))}
-                      placeholder="Ex: Orlando, Maceió, Paris"
-                      className="h-10 text-xs rounded-lg"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-2xs text-muted-foreground font-semibold">Período Flexível</Label>
-                    <Input
-                      value={newLeadForm.interestPeriod}
-                      onChange={(e) => setNewLeadForm((prev) => ({ ...prev, interestPeriod: e.target.value }))}
-                      placeholder="Ex: Julho/2026, Réveillon"
-                      className="h-10 text-xs rounded-lg"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-2xs text-muted-foreground font-semibold">Data Ida Estimada</Label>
-                    <Input
-                      type="date"
-                      value={newLeadForm.travelStart}
-                      onChange={(e) => setNewLeadForm((prev) => ({ ...prev, travelStart: e.target.value }))}
-                      className="h-10 text-xs rounded-lg font-mono"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-2xs text-muted-foreground font-semibold">Data Volta Estimada</Label>
-                    <Input
-                      type="date"
-                      value={newLeadForm.travelEnd}
-                      onChange={(e) => setNewLeadForm((prev) => ({ ...prev, travelEnd: e.target.value }))}
-                      className="h-10 text-xs rounded-lg font-mono"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-2xs text-muted-foreground font-semibold">Tipo de Pacote / Interesse</Label>
-                    <Select
-                      value={newLeadForm.interestType}
-                      onValueChange={(val) => setNewLeadForm((prev) => ({ ...prev, interestType: val }))}
-                    >
-                      <SelectTrigger className="h-10 text-xs rounded-lg">
-                        <SelectValue placeholder="Selecione o tipo..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {INTEREST_TYPES.map((t) => (
-                          <SelectItem key={t.value} value={t.value}>
-                            {t.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-2xs text-muted-foreground font-semibold">Orçamento Estimado (R$)</Label>
-                    <CurrencyField
-                      value={newLeadForm.estimatedValueCents}
-                      onChange={(val: any) => setNewLeadForm((prev) => ({ ...prev, estimatedValueCents: val || 0 }))}
-                      className="h-10 text-xs rounded-lg font-mono"
-                    />
+                <div className="space-y-4">
+                  <TravelIntentAiImporter
+                    mode="lead_intent"
+                    onApply={(parsed) => {
+                      if (parsed.destinations.length > 0) setNewLeadDestTags(parsed.destinations);
+                      if (parsed.period.mode !== "unspecified") setNewLeadPeriodSpec(parsed.period);
+                      if (parsed.rooms.length > 0) setNewLeadRooms(parsed.rooms);
+                      setNewLeadRawMarkdown(parsed.rawMarkdownPreserved);
+                      setNewLeadForm((prev) => ({
+                        ...prev,
+                        name: parsed.contact.fullName || prev.name,
+                        phone: parsed.contact.whatsapp || prev.phone,
+                        email: parsed.contact.email || prev.email,
+                        destination:
+                          parsed.destinations.length > 0
+                            ? parsed.destinations.map((d) => d.label).join(", ")
+                            : prev.destination,
+                        interestPeriod: parsed.period.displayLabel || prev.interestPeriod,
+                        travelStart: parsed.period.startDate || prev.travelStart,
+                        travelEnd: parsed.period.endDate || prev.travelEnd,
+                        paxAdults: parsed.adultsCount,
+                        paxChildren: parsed.childrenAges.length,
+                        paxInfants: parsed.childrenAges.filter((a) => a <= 1).length,
+                        paxAgesStr: parsed.childrenAges.join(", "),
+                        estimatedValueCents: parsed.budget.maxTotalBudgetCents || prev.estimatedValueCents,
+                        notes: prev.notes || parsed.rawMarkdownPreserved,
+                      }));
+                      toast.success("Dados da intenção do lead extraídos para revisão!");
+                    }}
+                  />
+
+                  <DestinationTagsPicker
+                    value={newLeadDestTags}
+                    legacyText={newLeadForm.destination}
+                    onChange={(tags) => {
+                      setNewLeadDestTags(tags);
+                      setNewLeadForm((prev) => ({
+                        ...prev,
+                        destination: tags.map((t) => t.label).join(", "),
+                      }));
+                    }}
+                  />
+
+                  <TravelPeriodTagsPicker
+                    value={newLeadPeriodSpec}
+                    onChange={(nextPeriod) => {
+                      setNewLeadPeriodSpec(nextPeriod);
+                      setNewLeadForm((prev) => ({
+                        ...prev,
+                        travelStart: nextPeriod.startDate || "",
+                        travelEnd: nextPeriod.endDate || "",
+                        interestPeriod: nextPeriod.displayLabel || "",
+                      }));
+                    }}
+                  />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-2xs text-muted-foreground font-semibold">Tipo de Pacote / Interesse</Label>
+                      <Select
+                        value={newLeadForm.interestType}
+                        onValueChange={(val) => setNewLeadForm((prev) => ({ ...prev, interestType: val }))}
+                      >
+                        <SelectTrigger className="h-11 min-h-11 text-xs rounded-lg">
+                          <SelectValue placeholder="Selecione o tipo..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {INTEREST_TYPES.map((t) => (
+                            <SelectItem key={t.value} value={t.value}>
+                              {t.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-2xs text-muted-foreground font-semibold">Orçamento Estimado (R$)</Label>
+                      <CurrencyField
+                        value={newLeadForm.estimatedValueCents}
+                        onChange={(val: any) => setNewLeadForm((prev) => ({ ...prev, estimatedValueCents: val || 0 }))}
+                        className="h-11 min-h-11 text-xs rounded-lg font-mono"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Bloco 3: Passageiros */}
+              {/* Bloco 3: Quartos & Idades (0 a 17 anos) */}
               <div className="space-y-3 p-4 rounded-lg border border-border/60 bg-muted/20">
-                <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
-                  <Plane className="size-3.5 text-primary" />
-                  <span>Passageiros</span>
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="space-y-1">
-                    <Label className="text-2xs text-muted-foreground font-semibold">Adultos</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      value={newLeadForm.paxAdults}
-                      onChange={(e) => setNewLeadForm((prev) => ({ ...prev, paxAdults: parseInt(e.target.value) || 1 }))}
-                      className="h-10 text-xs rounded-lg font-mono text-center"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-2xs text-muted-foreground font-semibold">Crianças (2 a 11 anos)</Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={newLeadForm.paxChildren}
-                      onChange={(e) => setNewLeadForm((prev) => ({ ...prev, paxChildren: parseInt(e.target.value) || 0 }))}
-                      className="h-10 text-xs rounded-lg font-mono text-center"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-2xs text-muted-foreground font-semibold">Bebês (até 2 anos)</Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={newLeadForm.paxInfants}
-                      onChange={(e) => setNewLeadForm((prev) => ({ ...prev, paxInfants: parseInt(e.target.value) || 0 }))}
-                      className="h-10 text-xs rounded-lg font-mono text-center"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-2xs text-muted-foreground font-semibold">Idades das Crianças</Label>
-                  <Input
-                    value={newLeadForm.paxAgesStr}
-                    onChange={(e) => setNewLeadForm((prev) => ({ ...prev, paxAgesStr: e.target.value }))}
-                    placeholder="Ex: 5, 9"
-                    className="h-10 text-xs rounded-lg font-mono"
-                  />
-                </div>
+                <RoomOccupancyBuilder
+                  value={newLeadRooms}
+                  onChange={(nextRooms) => {
+                    setNewLeadRooms(nextRooms);
+                    const totalAdt = nextRooms.reduce((sum, r) => sum + (r.adultsCount || 1), 0);
+                    const allAges = nextRooms.flatMap((r) => r.childrenAges || []);
+                    setNewLeadForm((prev) => ({
+                      ...prev,
+                      paxAdults: totalAdt,
+                      paxChildren: allAges.length,
+                      paxInfants: allAges.filter((a) => a <= 1).length,
+                      paxAgesStr: allAges.join(", "),
+                    }));
+                  }}
+                />
               </div>
 
               {/* Bloco 4: Consultor, Tags & Anotações */}
@@ -2129,6 +2144,28 @@ export default function WorkspaceTurismoCockpitPage() {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+
+                {/* Tags Avançadas de Segmentação */}
+                <div className="space-y-1 pt-1">
+                  <Label className="text-2xs text-muted-foreground font-semibold">Tags de Atendimento & Interesses</Label>
+                  <AdvancedLeadTagsPicker
+                    tags={newLeadForm.tags}
+                    onChange={(nextTags) => setNewLeadForm((prev) => ({ ...prev, tags: nextTags }))}
+                  />
+                </div>
+
+                {/* Lembretes, Alarmes & Follow-up Imediato */}
+                <div className="space-y-1 pt-1">
+                  <LeadRemindersManager
+                    reminders={newLeadReminders}
+                    onChange={(nextReminders, nextFollowUp) => {
+                      setNewLeadReminders(nextReminders);
+                      if (nextFollowUp !== undefined) {
+                        setNewLeadFollowUpAt(nextFollowUp);
+                      }
+                    }}
+                  />
                 </div>
 
                 {/* Anotações Iniciais */}

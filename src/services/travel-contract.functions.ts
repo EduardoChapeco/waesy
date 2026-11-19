@@ -212,15 +212,16 @@ export const saveAgencyTourismClauses = createServerFn({ method: "POST" })
  )
  .handler(async ({ data }): Promise<{ success: boolean }> => {
  const supabase = getServerClient();
- const identity = await getServerIdentity();
+ const identity = await requireStaff();
 
  if (!identity?.store_id) throw new Error("Loja não encontrada na sessão.");
 
- const { data: store } = await supabase
+ const { data: store, error: fetchStoreErr } = await supabase
  .from("stores")
  .select("settings")
  .eq("id", identity.store_id)
  .maybeSingle();
+ if (fetchStoreErr) throw new Error("Erro ao carregar configurações da agência: " + fetchStoreErr.message);
 
  const currentSettings = (store?.settings as Record<string, any>) || {};
  const { error } = await supabase
@@ -235,15 +236,16 @@ export const saveAgencyTourismClauses = createServerFn({ method: "POST" })
 export const resetAgencyTourismClauses = createServerFn({ method: "POST" }).handler(
  async (): Promise<{ success: boolean }> => {
  const supabase = getServerClient();
- const identity = await getServerIdentity();
+ const identity = await requireStaff();
 
  if (!identity?.store_id) throw new Error("Loja não encontrada na sessão.");
 
- const { data: store } = await supabase
+ const { data: store, error: fetchStoreErr } = await supabase
  .from("stores")
  .select("settings")
  .eq("id", identity.store_id)
  .maybeSingle();
+ if (fetchStoreErr) throw new Error("Erro ao carregar configurações da agência: " + fetchStoreErr.message);
 
  const currentSettings = (store?.settings as Record<string, any>) || {};
  delete currentSettings.tourism_contract_clauses;
@@ -274,18 +276,26 @@ export const updateContractClauses = createServerFn({ method: "POST" })
  )
  .handler(async ({ data: { contractId, clauses } }): Promise<{ success: boolean }> => {
  const supabase = getServerClient();
- const identity = await getServerIdentity();
- if (!identity?.id) throw new Error("Não autorizado.");
+ const identity = await requireStaff();
+ if (!identity?.id || !identity.store_id) throw new Error("Sessão staff sem loja ativa.");
 
- // Verifica status no contrato canônico
+ // Verifica status e posse de tenant no contrato canônico
  const { data: contract, error: findErr } = await supabase
  .from("contracts")
- .select("status, current_version")
+ .select("id, store_id, metadata, status, current_version")
  .eq("id", contractId)
- .single();
+ .maybeSingle();
 
  if (findErr || !contract) throw new Error("Contrato não encontrado.");
- if (contract.status === "signed") {
+ const meta = (contract.metadata as Record<string, any>) || {};
+ const contractStoreId = contract.store_id || meta.store_id || null;
+ if (
+ contractStoreId !== identity.store_id &&
+ identity.role !== "platform_admin"
+ ) {
+ throw new Error("Acesso não autorizado para alterar cláusulas deste contrato.");
+ }
+ if (contract.status === "signed" || contract.status === "completed") {
  throw new Error("Contrato já assinado digitalmente não pode ter suas cláusulas alteradas.");
  }
 
@@ -375,9 +385,9 @@ export const getTravelContractById = createServerFn({ method: "GET" })
  .validator(z.object({ id: z.string().min(1) }))
  .handler(async ({ data }): Promise<TravelContractDTO | null> => {
  const supabase = getServerClient();
- const identity = await getServerIdentity();
+ const identity = await requireStaff();
 
- if (!identity?.id) throw new Error("Não autorizado.");
+ if (!identity?.id || !identity.store_id) throw new Error("Não autorizado.");
 
  const { data: contract, error: cErr } = await supabase
  .from("contracts")
@@ -387,6 +397,16 @@ export const getTravelContractById = createServerFn({ method: "GET" })
 
  if (cErr || !contract) return null;
 
+ const meta = (contract.metadata as Record<string, any>) || {};
+ const contractStoreId = contract.store_id || meta.store_id || null;
+ if (
+ contractStoreId !== identity.store_id &&
+ contract.creator_id !== identity.id &&
+ identity.role !== "platform_admin"
+ ) {
+ throw new Error("Acesso não autorizado a contrato de outra loja.");
+ }
+
  // Busca a versão atual
  const { data: version } = await supabase
  .from("contract_versions")
@@ -395,7 +415,6 @@ export const getTravelContractById = createServerFn({ method: "GET" })
  .eq("version_number", contract.current_version)
  .maybeSingle();
 
- const meta = contract.metadata as Record<string, any> || {};
  let storeRow: any = null;
  if (meta.store_id) {
  const { data: s } = await supabase
@@ -483,20 +502,17 @@ export const listAgencyTravelContracts = createServerFn({ method: "GET" })
  )
  .handler(async ({ data }): Promise<TravelContractDTO[]> => {
  const supabase = getServerClient();
- const identity = await getServerIdentity();
+ const identity = await requireStaff();
 
- if (!identity?.id) return [];
+ if (!identity?.id || !identity.store_id) return [];
 
  let query = supabase
  .from("contracts")
  .select("*")
+ .eq("category", "tourism")
  .order("created_at", { ascending: false });
 
- if (identity.store_id) {
  query = query.or(`store_id.eq.${identity.store_id},metadata->>store_id.eq.${identity.store_id}`);
- } else {
- query = query.eq("creator_id", identity.id);
- }
 
  if (data?.status && data.status !== "all") {
  query = query.eq("status", data.status);
@@ -543,14 +559,36 @@ export const deleteTravelContract = createServerFn({ method: "POST" })
  .validator(z.object({ id: z.string().uuid() }))
  .handler(async ({ data }): Promise<{ success: boolean }> => {
  const supabase = getServerClient();
- const identity = await getServerIdentity();
+ const identity = await requireStaff();
 
- if (!identity?.id) throw new Error("Não autorizado.");
+ if (!identity?.id || !identity.store_id) throw new Error("Sessão staff sem loja ativa.");
+
+ const { data: existingContract, error: lookupErr } = await supabase
+ .from("contracts")
+ .select("id, store_id, metadata, status")
+ .eq("id", data.id)
+ .maybeSingle();
+
+ if (lookupErr || !existingContract) {
+ throw new Error("Contrato não encontrado.");
+ }
+ const meta = (existingContract.metadata as Record<string, any>) || {};
+ const contractStoreId = existingContract.store_id || meta.store_id || null;
+ if (
+ contractStoreId !== identity.store_id &&
+ identity.role !== "platform_admin"
+ ) {
+ throw new Error("Acesso negado: contrato pertence a outra loja.");
+ }
+ if (existingContract.status === "signed" || existingContract.status === "completed") {
+ throw new Error("Contratos já assinados possuem fé pública e não podem ser excluídos.");
+ }
 
  // Remove versões associadas primeiro
- await supabase.from("contract_versions").delete().eq("contract_id", data.id);
+ const { error: verErr } = await supabase.from("contract_versions").delete().eq("contract_id", data.id);
+ if (verErr) throw new Error(`Erro ao remover versões do contrato: ${verErr.message}`);
 
- // Remove o contrato
+ // Remove o contrato com trava de tenant
  const { error } = await supabase
  .from("contracts")
  .delete()
@@ -707,7 +745,22 @@ export const createContractAddendum = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const supabase = getServerClient();
-    const identity = await getServerIdentity();
+    const identity = await requireStaff();
+
+    const { data: contractRow, error: contractErr } = await supabase
+      .from("contracts")
+      .select("id, store_id, metadata")
+      .eq("id", data.contractId)
+      .maybeSingle();
+
+    if (contractErr || !contractRow) {
+      throw new Error("Contrato não encontrado.");
+    }
+    const meta = (contractRow.metadata as Record<string, any>) || {};
+    const contractStoreId = contractRow.store_id || meta.store_id || null;
+    if (contractStoreId !== identity.store_id && identity.role !== "platform_admin") {
+      throw new Error("Acesso não autorizado para adicionar aditivo neste contrato.");
+    }
 
     const { data: addendum, error } = await supabase
       .from("contract_addendums")
@@ -722,13 +775,55 @@ export const createContractAddendum = createServerFn({ method: "POST" })
 
     if (error) throw new Error("Erro ao criar aditivo: " + error.message);
 
-    await supabase.from("contract_audit_chain").insert({
+    const { error: auditErr } = await supabase.from("contract_audit_chain").insert({
       contract_id: data.contractId,
       action: "ADDENDUM_CREATED",
-      metadata: { addendum_id: addendum.id, title: data.title, user_id: identity?.id },
+      metadata: { addendum_id: addendum.id, title: data.title, user_id: identity.id },
     });
+    if (auditErr) {
+      throw new Error("Aditivo criado, mas falha ao registrar trilha de auditoria: " + auditErr.message);
+    }
 
     return addendum;
+  });
+
+export const listContractAddendums = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      contractId: z.string().uuid(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const { contractId } = data;
+    const supabase = getServerClient();
+    const identity = await requireStaff();
+
+    const { data: contractRow, error: contractErr } = await supabase
+      .from("contracts")
+      .select("id, store_id, metadata")
+      .eq("id", contractId)
+      .maybeSingle();
+
+    if (contractErr || !contractRow) {
+      throw new Error("Contrato não encontrado.");
+    }
+    const meta = (contractRow.metadata as Record<string, any>) || {};
+    const contractStoreId = contractRow.store_id || meta.store_id || null;
+    if (contractStoreId !== identity.store_id && identity.role !== "platform_admin") {
+      throw new Error("Acesso não autorizado aos aditivos deste contrato.");
+    }
+
+    const { data: rows, error } = await supabase
+      .from("contract_addendums")
+      .select("*")
+      .eq("contract_id", contractId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw new Error(`Erro ao carregar aditivos do contrato: ${error.message}`);
+    }
+
+    return rows || [];
   });
 
 export const GenerateTravelReservationCheckoutSchema = z.object({
@@ -799,61 +894,50 @@ export const generateTravelReservationCheckout = createServerFn({ method: "POST"
       });
     }
 
-    let actorProfileId = identity?.id;
-    if (!actorProfileId && storeId) {
-      const { data: member } = await supabase
-        .from("workspace_members")
-        .select("profile_id")
-        .eq("store_id", storeId)
-        .limit(1)
-        .maybeSingle();
-      actorProfileId = member?.profile_id;
-    }
-
+    let actorProfileId: string | null = identity?.id || null;
     let contractId: string | null = null;
     let publicToken: string | null = null;
 
     if (storeId && actorProfileId) {
-      try {
-        const { data: contractResult, error: contractErr } = await supabase.rpc(
-          "create_staff_travel_contract",
-          {
-            p_contract_data: {
-              contractTitle: `Contrato de Viagem - ${input.destination}`,
-              proposalId: input.proposalId || undefined,
-              leadId: input.leadId || undefined,
-              clientName: input.clientName,
-              clientPhone: input.clientPhone,
-              clientEmail: input.clientEmail || undefined,
-              clientDocument: input.clientDocument || "00000000000",
-              destination: input.destination,
-              packageSummary: input.packageSummary,
-              totalValueCents: input.totalValueCents,
-              paymentConditions: input.generatePix && input.totalValueCents > 0
-                ? `À vista via Pix no valor de ${formatMoney(input.totalValueCents)}`
-                : "A combinar com a agência",
-              travelStartDate: input.travelStartDate || undefined,
-              travelEndDate: input.travelEndDate || undefined,
-              passengers: input.passengers,
-              ...(input.customFields ? { customFields: input.customFields } : {}),
-              ...(input.itinerary ? { itinerary: input.itinerary } : {}),
-            },
-            p_store_id: storeId,
-            p_actor_profile_id: actorProfileId,
+      const { data: contractResult, error: contractErr } = await supabase.rpc(
+        "create_staff_travel_contract",
+        {
+          p_contract_data: {
+            contractTitle: `Contrato de Viagem - ${input.destination}`,
+            proposalId: input.proposalId || undefined,
+            leadId: input.leadId || undefined,
+            clientName: input.clientName,
+            clientPhone: input.clientPhone,
+            clientEmail: input.clientEmail || undefined,
+            clientDocument: input.clientDocument || "00000000000",
+            destination: input.destination,
+            packageSummary: input.packageSummary,
+            totalValueCents: input.totalValueCents,
+            paymentConditions: input.generatePix && input.totalValueCents > 0
+              ? `À vista via Pix no valor de ${formatMoney(input.totalValueCents)}`
+              : "A combinar com a agência",
+            travelStartDate: input.travelStartDate || undefined,
+            travelEndDate: input.travelEndDate || undefined,
+            passengers: input.passengers,
+            ...(input.customFields ? { customFields: input.customFields } : {}),
+            ...(input.itinerary ? { itinerary: input.itinerary } : {}),
           },
-        );
+          p_store_id: storeId,
+          p_actor_profile_id: actorProfileId,
+        },
+      );
 
-        if (!contractErr && contractResult?.success) {
-          contractId = contractResult.contract_id;
-          publicToken = contractResult.public_token;
-        }
-      } catch (err: any) {
-        console.warn("[generateTravelReservationCheckout] Contrato automático:", err?.message);
+      if (contractErr || !contractResult?.success) {
+        throw new Error(
+          `Erro ao gerar contrato de reserva: ${contractErr?.message || contractResult?.error || "falha no RPC"}`,
+        );
       }
+      contractId = contractResult.contract_id;
+      publicToken = contractResult.public_token;
     }
 
     const appOrigin = process.env.VITE_APP_URL || "https://waesy.com";
-    const contractUrl = publicToken ? `${appOrigin}/assinar/${publicToken}` : null;
+    const contractUrl = publicToken ? `${appOrigin}/contrato/${publicToken}` : null;
 
     let whatsappMessage = `*Reserva de Viagem - ${input.destination}*\n` +
       `*Pacote:* ${input.packageSummary}\n` +
@@ -953,12 +1037,28 @@ export const saveAgencyContractTemplate = createServerFn({ method: "POST" })
     const identity = await requireStaff();
     const supabase = getServerClient();
 
+    if (data.id) {
+      const { data: existingTpl, error: lookupErr } = await supabase
+        .from("travel_contract_templates")
+        .select("id, store_id")
+        .eq("id", data.id)
+        .maybeSingle();
+      if (lookupErr) {
+        throw new Error("Erro ao validar template existente: " + lookupErr.message);
+      }
+      if (existingTpl && existingTpl.store_id !== identity.store_id && identity.role !== "platform_admin") {
+        throw new Error("Acesso negado: template pertence a outra agência.");
+      }
+    }
+
     if (data.isDefault) {
-      // Desmarca outros defaults da agência
-      await supabase
+      const { error: resetErr } = await supabase
         .from("travel_contract_templates")
         .update({ is_default: false })
         .eq("store_id", identity.store_id);
+      if (resetErr) {
+        throw new Error("Erro ao atualizar template padrão anterior: " + resetErr.message);
+      }
     }
 
     const { data: row, error } = await supabase

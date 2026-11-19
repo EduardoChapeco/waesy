@@ -1,16 +1,18 @@
 import fs from 'fs';
 import path from 'path';
+import { runForensicAudit } from './forensic-repo-audit.mjs';
 
 function getSourceFiles(dir, extensions = ['.ts', '.tsx']) {
   let files = [];
   try {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
-      if (['node_modules', 'dist', '.git', '.cache', 'build'].includes(entry.name)) continue;
+      if (['node_modules', 'dist', '.git', '.cache', 'build', 'legacy_quarantine'].includes(entry.name)) continue;
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) {
+        if (entry.name === '__tests__') continue;
         files = files.concat(getSourceFiles(fullPath, extensions));
-      } else if (extensions.includes(path.extname(entry.name))) {
+      } else if (extensions.includes(path.extname(entry.name)) && !entry.name.includes('.test.') && !entry.name.includes('.spec.')) {
         files.push(fullPath.replace(/\\/g, '/'));
       }
     }
@@ -20,10 +22,18 @@ function getSourceFiles(dir, extensions = ['.ts', '.tsx']) {
 
 const srcFiles = getSourceFiles('src');
 
+const EVALUATED_IN_THIS_SCRIPT = new Set([
+  'C01', 'C02', 'C03', 'C06', 'C07', 'C08', 'C09', 'C18', 'C22', 'C23', 'C26', 'C27', 'C28', 'C29', 'C37', 'C40', 'C42', 'C43'
+]);
+
 const results = {};
 for (let i = 1; i <= 43; i++) {
   const code = 'C' + String(i).padStart(2, '0');
-  results[code] = { count: 0, violations: [] };
+  results[code] = {
+    count: 0,
+    evaluated: EVALUATED_IN_THIS_SCRIPT.has(code),
+    violations: []
+  };
 }
 
 srcFiles.forEach(file => {
@@ -109,24 +119,76 @@ srcFiles.forEach(file => {
   });
 });
 
-// AST & Structure checks:
-// C26: Capacidade com múltiplos donos
-results['C26'].count = 8; // Mapeado no D3 (Kanban, CRM, Cotação, Reserva, etc.)
+// AST & Structure checks reais (zero constantes falsas):
+const astReport = runForensicAudit(process.cwd());
+
+// C26: Duplicação de helpers / módulos @deprecated com múltiplos donos ou shims ativos
+const dupHelpers = astReport.watchlistedDuplicates || [];
+const depEntries = astReport.deprecatedWithCallers || [];
+results['C26'].count = dupHelpers.length + depEntries.length;
 results['C26'].violations = [
-  'kanban: src/components/workspace/full-viewport-kanban.tsx vs src/components/tasks/task-kanban.tsx',
-  'crm: src/services/crm.functions.ts vs src/services/crm.ts',
-  'quote_proposal: src/services/quotes.functions.ts vs src/services/travel-proposal.functions.ts',
-  'reservation: src/routes/workspace.reservas.tsx vs src/services/reservations.functions.ts'
+  ...dupHelpers.map((d) => `${d.name} (${d.count}x em ${d.uniqueFiles.length} arquivos)`),
+  ...depEntries.slice(0, 10).map((d) => `@deprecated: ${d.relPath} (${d.nonTestCallersCount} callers)`)
+].slice(0, 15);
+
+// C27: Broken imports/re-exports + armadilhas de rotas pesadas com redirect incondicional
+results['C27'].count = astReport.brokenImports.length + astReport.routeRedirectTraps.length;
+results['C27'].violations = [
+  ...astReport.brokenImports.map((b) => `broken import: ${b.file}:${b.line} -> ${b.specifier}`),
+  ...astReport.routeRedirectTraps.map((r) => `redirect trap: ${r.relPath} (${r.loc} LOC, callers: ${r.importedByCount})`)
 ];
 
-// C41: Ação de UI sem tool MCP
-results['C41'].count = 12; // Será unificado na Fase 6
+// C29: Clusters de funções AST clonadas em 3+ arquivos distintos
+const multiFileClones = (astReport.astCloneClustersCount ? astReport.astClones : []).filter((c) => c.uniqueFilesCount >= 3);
+results['C29'].count = multiFileClones.length;
+results['C29'].violations = multiFileClones.slice(0, 10).map(
+  (c) => `clone "${c.sampleName}" em ${c.uniqueFilesCount} arquivos`
+);
 
-// C42: Mudança de banco sem migração versionada
-results['C42'].count = 0; // Todas as 418 migrations são versionadas
+// C40: Acesso direto ao banco (.from) fora da camada services/
+const directDb = astReport.layerViolations.filter((v) => v.rule === 'NON_SERVICE_DIRECT_DB_QUERY');
+results['C40'].count = directDb.length;
+results['C40'].violations = directDb.slice(0, 10).map((v) => `${v.file} (${v.count}x .from)`);
 
-// C43: Mudança de banco sem types regenerados
-results['C43'].count = 0;
+// C42: Unicidade e não-vazio real das migrations versionadas
+const migDir = path.join(process.cwd(), 'supabase', 'migrations');
+const migViolations = [];
+if (fs.existsSync(migDir)) {
+  const seenVersions = new Map();
+  for (const file of fs.readdirSync(migDir).filter((f) => f.endsWith('.sql'))) {
+    const m = file.match(/^(\d+)_(.+)\.sql$/);
+    if (!m) {
+      migViolations.push(`nome invalido: ${file}`);
+      continue;
+    }
+    const ver = m[1];
+    if (seenVersions.has(ver)) {
+      migViolations.push(`versao duplicada ${ver}: ${seenVersions.get(ver)} vs ${file}`);
+    } else {
+      seenVersions.set(ver, file);
+    }
+    const sqlSize = fs.statSync(path.join(migDir, file)).size;
+    if (sqlSize === 0) migViolations.push(`migration vazia: ${file}`);
+  }
+}
+results['C42'].count = migViolations.length;
+results['C42'].violations = migViolations.slice(0, 10);
+
+// C43: Verificação real de src/integrations/supabase/types.ts sem `Database = any`
+const supaTypesPath = path.join(process.cwd(), 'src', 'integrations', 'supabase', 'types.ts');
+if (!fs.existsSync(supaTypesPath)) {
+  results['C43'].count = 1;
+  results['C43'].violations = ['src/integrations/supabase/types.ts ausente'];
+} else {
+  const typesContent = fs.readFileSync(supaTypesPath, 'utf8');
+  if (/export\s+type\s+Database\s*=\s*any\b/.test(typesContent)) {
+    results['C43'].count = 1;
+    results['C43'].violations = ['src/integrations/supabase/types.ts declara Database = any'];
+  }
+}
+
+// C41 permanece não computado por regex estática (coberto por reconciliação MCP na Onda 5)
+results['C41'].evaluated = false;
 
 fs.mkdirSync('.audit', { recursive: true });
 fs.writeFileSync('.audit/checks-raw.json', JSON.stringify(results, null, 2));

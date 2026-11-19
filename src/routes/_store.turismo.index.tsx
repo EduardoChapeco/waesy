@@ -16,6 +16,7 @@ import {
   Star,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import { RouteErrorFallback } from "@/components/state/route-error-fallback";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import { DiscoveryControlBar, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { BusTicketResultsRail } from "@/components/tourism/BusTicketResultsRail";
@@ -77,26 +78,17 @@ export const Route = createFileRoute("/_store/turismo/")({
       return { banners: [], hotpages: [], tourismItems: [], surfaceFeed: null };
     }
   },
-  errorComponent: TourismErrorComponent,
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorFallback
+      error={error}
+      reset={reset}
+      icon={AirplaneTilt}
+      title="Instabilidade ao carregar viagens e turismo"
+      description="Não foi possível carregar os pacotes e destinos no momento."
+    />
+  ),
   component: TourismMasterPage,
 });
-
-function TourismErrorComponent({ error, reset }: { error: any; reset: () => void }) {
-  return (
-    <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
-        <AirplaneTilt size={32} />
-      </div>
-      <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar viagens e turismo</h2>
-      <p className="text-sm text-muted-foreground max-w-md mx-auto">
-        {error?.message || "Não foi possível carregar os pacotes e destinos no momento."}
-      </p>
-      <Button onClick={reset} className="rounded-lg font-bold min-h-11 h-11 px-6">
-        Tentar Novamente
-      </Button>
-    </div>
-  );
-}
 
 export type TourismLayoutMode = "cards" | "compact" | "rails";
 
@@ -114,6 +106,7 @@ const CATEGORY_CHIPS: FilterChipOption[] = [
 ];
 
 function TourismMasterPage() {
+  const { isCompact } = useEffectiveViewport();
   const { banners = [], hotpages = [], tourismItems: initialItems = [], surfaceFeed = null, surfaceExperience = null } =
     ((Route.useLoaderData() as any) || {});
 
@@ -250,8 +243,6 @@ function TourismMasterPage() {
     );
   }
 
-  const { isCompact } = useEffectiveViewport();
-
   return (
     <div className="w-full max-w-5xl mx-auto space-y-6 pb-24 px-0 sm:px-4">
       {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
@@ -293,6 +284,8 @@ function TourismMasterPage() {
       <TourismHeroBanner
         banner={primaryBanner}
         onOpenQuote={handleOpenQuote}
+        storeName="Excelência Tour"
+        badgeLabel="GDS & Wooba"
       />
 
       {/* ── Stories Contextuais do Nicho de Turismo (Desktop) ── */}
@@ -313,13 +306,14 @@ function TourismMasterPage() {
           activeChannel={selectedCategory === "todos" ? "pacotes" : selectedCategory}
           onChannelChange={(ch) => setSelectedCategory(ch)}
           onOpenQuote={handleOpenQuote}
+          agencyName="Excelência Tour"
         />
       </section>
 
       {/* ── 4. Visão Corporativa VOLL (se a aba 'corporativo' estiver selecionada) ── */}
       {selectedCategory === "corporativo" && (
         <section aria-label="Painel Corporativo VOLL" className="w-full">
-          <CorporateVollConciergeView whatsappNumber={agencyWhatsapp} />
+          <CorporateVollConciergeView whatsappNumber={agencyWhatsapp} agencyName="Excelência Tour" />
         </section>
       )}
 

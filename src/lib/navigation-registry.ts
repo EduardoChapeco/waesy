@@ -582,19 +582,19 @@ export function resolveContextNavigation(pathname: string, session?: any): Conte
  if (pathname.startsWith("/criar-negocio") || pathname.startsWith("/conta/lojas")) {
  return {
  moduleId: "business-onboarding",
- title: "Lojas",
- subtitle: "Gestão e abertura de novos negócios",
- groups: [
- {
- id: "business-nav",
- title: "Espaços",
- items: [
- { to: "/workspace/lojas", label: "Minhas Lojas", icon: Store },
- { to: "/criar-negocio", label: "Cadastrar Nova Loja", icon: Plus },
- { to: "/workspace", label: "Painel Operacional", icon: LayoutDashboard },
- ],
- },
- ],
+    title: "Unidades",
+    subtitle: "Gestão de filiais e unidades corporativas",
+    groups: [
+      {
+        id: "business-nav",
+        title: "Espaços",
+        items: [
+          { to: "/auth/portal-selector", label: "Portal de Empresas", icon: Store },
+          { to: "/onboarding/empresa", label: "Cadastrar Nova Loja", icon: Plus },
+          { to: "/workspace", label: "Painel Operacional", icon: LayoutDashboard },
+        ],
+      },
+    ],
  widthMode: "workspace",
  showContextSidebar: true,
  };

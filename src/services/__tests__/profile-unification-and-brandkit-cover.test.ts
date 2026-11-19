@@ -112,11 +112,16 @@ describe("SPEC-20261028: Unificação de Perfis e Centralização da Capa no Bra
       path.resolve("src/services/social.functions.ts"),
       "utf8"
     );
+    const employerReviewsHelper = fs.readFileSync(
+      path.resolve("src/lib/careers/employer-reviews.server.ts"),
+      "utf8"
+    );
 
-    // Schema parity com a tabela employer_reviews
-    expect(socialFunctions).toContain("user_id: userId");
-    expect(socialFunctions).toContain('job_title: exp.title || "Colaborador"');
-    expect(socialFunctions).toContain('status: "published"');
+    // Schema parity com a tabela employer_reviews (centralizado no helper canônico SSOT)
+    expect(socialFunctions).toContain("syncEmployerReviewsForUser");
+    expect(employerReviewsHelper).toContain("user_id: userId");
+    expect(employerReviewsHelper).toContain('job_title: (exp.title || "Colaborador").trim()');
+    expect(employerReviewsHelper).toContain('status: "published"');
 
     // Anti-hijacking de perfil desconhecido
     expect(socialFunctions).toContain('(decodedId === "eu" || decodedId === "me" || decodedId === "minha-conta") && currentUserId');

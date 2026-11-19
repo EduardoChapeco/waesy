@@ -202,6 +202,34 @@ export const logSystemError = createServerFn({ method: "POST" })
     try {
       const supabase = getServerClient();
       const identity = await getServerIdentity().catch(() => null);
+      const payload = (data.error_payload || {}) as Record<string, any>;
+
+      // Registra no canal canônico de telemetria de erros (`system_error_logs`)
+      try {
+        const { logSystemError: recordCanonicalError } = await import("@/lib/logger");
+        const mappedSeverity =
+          data.severity === "CRITICAL" || data.severity === "SEV-1"
+            ? "critical"
+            : data.severity === "WARN" || data.severity === "INFO"
+              ? "warn"
+              : "error";
+
+        recordCanonicalError({
+          route: data.route || data.subsystem,
+          operation: data.subsystem,
+          errorMessage: data.message,
+          severity: mappedSeverity,
+          userId: identity?.id || undefined,
+          pageUrl: typeof payload.page_url === "string" ? payload.page_url : undefined,
+          schemaName: typeof payload.schema_name === "string" ? payload.schema_name : undefined,
+          tableName: typeof payload.table_name === "string" ? payload.table_name : undefined,
+          columnName: typeof payload.column_name === "string" ? payload.column_name : undefined,
+          contractName: typeof payload.contract_name === "string" ? payload.contract_name : undefined,
+          payload,
+        });
+      } catch {
+        // segue para gravação primária em system_audit_logs
+      }
 
       const { data: inserted, error } = await supabase
         .from("system_audit_logs")
@@ -210,7 +238,7 @@ export const logSystemError = createServerFn({ method: "POST" })
           subsystem: data.subsystem,
           route: data.route || null,
           message: data.message,
-          error_payload: data.error_payload || {},
+          error_payload: payload,
           user_id: identity?.id || null,
         })
         .select("id")
@@ -248,31 +276,55 @@ export const dispatchPixelConversionEvent = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try {
       const supabase = getServerClient();
-      const { data: pixelConfig } = await supabase
-        .from("store_pixel_configs")
-        .select("meta_pixel_id, meta_capi_token")
-        .eq("store_id", data.store_id)
-        .maybeSingle();
+      const { dispatchServerSidePixelConversion } = await import("./omnichannel-attribution.server");
+      let reqUrl: string | null = null;
+      let reqIp: string | null = data.user_data?.client_ip_address || null;
+      let reqUa: string | null = data.user_data?.client_user_agent || null;
+      try {
+        const req = getRequest();
+        reqUrl = req?.url || null;
+        if (!reqIp && req) reqIp = getRealClientIP(req) || null;
+        if (!reqUa && req) reqUa = req.headers.get("user-agent") || null;
+      } catch {
+        // ambiente sem request HTTP explícito
+      }
 
-      const { data: integration } = pixelConfig
-        ? { data: { config: { pixel_id: pixelConfig.meta_pixel_id, capi_token: pixelConfig.meta_capi_token }, status: pixelConfig.meta_pixel_id ? "active" : "inactive" } }
-        : await supabase
-            .from("integration_credentials")
-            .select("token_payload, is_active")
-            .eq("store_id", data.store_id)
-            .eq("provider", "meta_pixel")
-            .maybeSingle()
-            .then(res => ({
-              data: res.data ? { config: res.data.token_payload, status: res.data.is_active ? "active" : "inactive" } : null
-            }));
-
-      console.info(`[PIXEL TELEMETRY] Dispatched ${data.event_name} for store ${data.store_id}`, {
-        hasConfig: !!integration,
-        event_id: data.event_id,
+      const eventId = data.event_id || `px_${data.store_id.slice(0, 8)}_${crypto.randomUUID()}`;
+      const result = await dispatchServerSidePixelConversion(supabase as any, {
+        storeId: data.store_id,
+        eventName: data.event_name,
+        eventId,
+        eventSource: "waesy_telemetry_capi",
+        phone: data.user_data?.phone || null,
+        email: data.user_data?.email || null,
+        sourceUrl: reqUrl,
+        clientIpAddress: reqIp,
+        clientUserAgent: reqUa,
+        customData: {
+          ...(data.custom_data || {}),
+          ...(data.user_data?.external_id ? { external_id: data.user_data.external_id } : {}),
+        },
       });
 
-      return { success: true, event_name: data.event_name };
-    } catch (e) {
-      return { success: false };
+      return {
+        success: result.sent,
+        dispatched: result.sent,
+        reason: result.reason || (result.sent ? "delivered" : "not_dispatched"),
+        matched_pixels: result.matchedPixelsCount ?? 0,
+        event_name: data.event_name,
+        event_id: eventId,
+      };
+    } catch (e: any) {
+      try {
+        const { logSystemError: recordCanonicalError } = await import("@/lib/logger");
+        recordCanonicalError({
+          route: "telemetry.dispatchPixelConversionEvent",
+          contractName: "dispatchPixelConversionEvent",
+          tableName: "lead_conversion_telemetry",
+          error: e,
+          payload: { store_id: data.store_id, event_name: data.event_name },
+        });
+      } catch {}
+      return { success: false, dispatched: false, reason: e?.message || "dispatch_error", event_name: data.event_name };
     }
   });

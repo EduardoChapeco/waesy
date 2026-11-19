@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { MessageCircle, MessageSquare, UserCheck, Search, Clock, ExternalLink, RefreshCw, Phone, CheckCircle2, Kanban } from "lucide-react";
+import { MessageCircle, MessageSquare, UserCheck, Search, Clock, ExternalLink, RefreshCw, Phone, CheckCircle2, Kanban, Bell, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -128,6 +128,35 @@ export function WhatsAppLeadsInbox() {
                   <Phone className="size-3 shrink-0" />
                   <span className="font-mono">{lead.phone}</span>
                 </div>
+
+                {/* Tags do Lead WhatsApp */}
+                {Array.isArray(lead.tags) && lead.tags.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1 pt-1">
+                    {lead.tags.slice(0, 3).map((t: string) => (
+                      <span
+                        key={t}
+                        className="text-3xs font-semibold px-2 py-1 rounded-md bg-muted/60 border border-border/70 text-muted-foreground"
+                      >
+                        {t}
+                      </span>
+                    ))}
+                    {lead.tags.length > 3 && (
+                      <span className="text-3xs font-bold px-2 py-1 rounded-md bg-muted text-muted-foreground">
+                        +{lead.tags.length - 3}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* Alerta de Follow-up se agendado */}
+                {lead.follow_up_at && (
+                  <div className="pt-1">
+                    <span className="text-3xs font-mono font-bold px-2 py-1 rounded-md bg-warning/10 text-warning border border-warning/30 inline-flex items-center gap-1">
+                      <Bell className="size-3 shrink-0" />
+                      <span>Agendado: {new Date(lead.follow_up_at).toLocaleDateString("pt-BR")}</span>
+                    </span>
+                  </div>
+                )}
 
                 {lead.notes && (
                   <p className="text-xs text-muted-foreground/90 line-clamp-2 bg-muted/40 p-2 rounded-md mt-1 font-sans">

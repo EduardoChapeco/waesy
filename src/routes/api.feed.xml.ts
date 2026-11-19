@@ -1,25 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getServerClient } from "@/lib/supabase";
+import { escapeXml } from "@/lib/sanitize";
+import { isUuid as checkUuid } from "@/lib/utils";
 
 import type {} from "@tanstack/react-start";
-function escapeXml(unsafe: string): string {
- if (!unsafe) return "";
- return unsafe.replace(/[<>&'"]/g, (c) => {
- switch (c) {
- case "<":
- return "&lt;";
- case ">":
- return "&gt;";
- case "&":
- return "&amp;";
- case "'":
- return "&apos;";
- case '"':
- return "&quot;";
- }
- return c;
- });
-}
 
 export const Route = createFileRoute("/api/feed/xml")({
  server: {
@@ -39,7 +23,7 @@ export const Route = createFileRoute("/api/feed/xml")({
  return new Response("Missing store parameter", { status: 400 });
  }
 
- const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(storeParam);
+ const isUuid = checkUuid(storeParam);
 
  // Fetch store info by UUID or slug
  let storeQuery = db.from("stores").select("id, name, slug");

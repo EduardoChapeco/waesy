@@ -13,6 +13,8 @@ import {
   ShoppingCart,
   ChevronRight,
   Flame,
+  Bell,
+  Share2,
 } from "lucide-react";
 import { type KanbanCardVariant } from "@/services/kanban-config.functions";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +37,8 @@ export interface UniversalKanbanCardProps {
   checklistTotal?: number;
   checklistDone?: number;
   tags?: string[];
+  followUpAt?: string | null;
+  source?: string | null;
   metadata?: Record<string, any>;
   onSelect?: () => void;
   onAdvance?: () => void;
@@ -55,6 +59,8 @@ export function UniversalKanbanCard({
   checklistTotal,
   checklistDone,
   tags = [],
+  followUpAt,
+  source,
   metadata = {},
   onSelect,
   onAdvance,
@@ -64,6 +70,27 @@ export function UniversalKanbanCard({
   const isOverdue = slaMinutes && elapsedMinutes && elapsedMinutes > slaMinutes;
   const isWarningSla =
     slaMinutes && elapsedMinutes && elapsedMinutes > slaMinutes * 0.75 && !isOverdue;
+
+  const reminderMeta = React.useMemo(() => {
+    const raw = followUpAt || metadata.follow_up_at;
+    if (!raw) return null;
+    const due = new Date(raw);
+    const now = new Date();
+    const isPastDue = due < now;
+    const isToday =
+      due.getFullYear() === now.getFullYear() &&
+      due.getMonth() === now.getMonth() &&
+      due.getDate() === now.getDate();
+    return {
+      isOverdue: isPastDue,
+      isToday,
+      label: isToday
+        ? due.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+        : due.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+    };
+  }, [followUpAt, metadata.follow_up_at]);
+
+  const effectiveSource = source || metadata.source || metadata.channel;
 
   return (
     <div
@@ -207,6 +234,55 @@ export function UniversalKanbanCard({
         <p className="text-2xs text-muted-foreground line-clamp-2 leading-relaxed">
           {description}
         </p>
+      )}
+
+      {/* Tags Avançadas do Card */}
+      {tags.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1 pt-1">
+          {tags.slice(0, 3).map((tag: string) => (
+            <span
+              key={tag}
+              className="text-3xs font-semibold px-2 py-1 rounded-md bg-muted/60 border border-border/70 text-muted-foreground truncate max-w-28"
+            >
+              {tag}
+            </span>
+          ))}
+          {tags.length > 3 && (
+            <span className="text-3xs font-bold px-2 py-1 rounded-md bg-muted text-muted-foreground">
+              +{tags.length - 3}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Avisos de Lembrete / Alarme de Follow-up */}
+      {reminderMeta && (
+        <div
+          className={cn(
+            "text-3xs font-mono font-bold px-2 py-1 rounded-md inline-flex items-center gap-2",
+            reminderMeta.isOverdue
+              ? "bg-rose-500/10 text-rose-600 border border-rose-500/30"
+              : reminderMeta.isToday
+                ? "bg-warning/10 text-warning border border-warning/30"
+                : "bg-muted text-muted-foreground border border-border/60",
+          )}
+        >
+          <Bell className="size-3 shrink-0" />
+          <span className="truncate">
+            {reminderMeta.isOverdue ? "Atrasado: " : reminderMeta.isToday ? "Hoje: " : "Alarme: "}
+            {reminderMeta.label}
+          </span>
+        </div>
+      )}
+
+      {/* Canal de Origem do Lead */}
+      {effectiveSource && (
+        <div className="pt-1">
+          <span className="text-3xs font-mono font-semibold px-2 py-1 rounded-md bg-muted/50 border border-border/60 text-muted-foreground inline-flex items-center gap-1">
+            <Share2 className="size-3 shrink-0 text-primary" />
+            <span className="capitalize">{effectiveSource}</span>
+          </span>
+        </div>
       )}
 
       {/* ── 3. METADADOS INFERIORES: VALOR, CHECKLIST E RESPONSÁVEL ── */}

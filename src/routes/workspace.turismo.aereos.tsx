@@ -16,7 +16,6 @@ import { CrudActionsMenu } from '@/components/ui/crud-actions-menu';
 import { listCustomers } from '@/services/crm.functions';
 import { listTravelSuppliers } from '@/services/travel-suppliers.functions';
 import type { TravelFlightItinerary, FlightCabin, FlightItineraryType } from '@/types/travel-flights';
-import { GLOBAL_AIRPORTS_CATALOG } from '@/lib/data/airports-catalog';
 import { AirportCombobox } from '@/components/ui/airport-combobox';
 import { formatMoney } from '@/lib/money';
 
@@ -89,28 +88,6 @@ export default function FlightsPage() {
 
 
   const [cabin, setCabin] = useState<FlightCabin>('economy');
-
-
-
-  const handleSelectOrigin = (code: string) => {
-    const clean = code.trim().toUpperCase();
-    setOriginIata(clean);
-    const airport = GLOBAL_AIRPORTS_CATALOG.find((a) => a.iata_code === clean);
-    if (airport) {
-      const loc = airport.country_code === "BR" ? (airport.state_province || "BR") : airport.country;
-      setOriginCity(`${airport.city} (${loc})`);
-    }
-  };
-
-  const handleSelectDestination = (code: string) => {
-    const clean = code.trim().toUpperCase();
-    setDestinationIata(clean);
-    const airport = GLOBAL_AIRPORTS_CATALOG.find((a) => a.iata_code === clean);
-    if (airport) {
-      const loc = airport.country_code === "BR" ? (airport.state_province || "BR") : airport.country;
-      setDestinationCity(`${airport.city} (${loc})`);
-    }
-  };
 
   // Financeiro da Emissão (Custo, Fee, RAV e Comissão da Agência)
   const [fareAmount, setFareAmount] = useState('3500.00');

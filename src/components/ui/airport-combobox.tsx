@@ -1,14 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Plane, Check, ChevronsUpDown, Search, X, ExternalLink } from "lucide-react";
+import { Plane, Check, ChevronsUpDown, Search, X, ExternalLink, Loader2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  type AirportRecord,
-  getAirportByIata,
-  searchAirportsCatalog,
-} from "@/lib/data/airports-catalog";
-import { searchGlobalAirports } from "@/services/tourism-airports.functions";
+import type { AirportRecord } from "@/types/airports";
+import { getAirportsByIatasFn, searchGlobalAirports } from "@/services/tourism-airports.functions";
+
+const airportRecordCache = new Map<string, AirportRecord>();
+function cacheAirports(list: AirportRecord[]) {
+  for (const ap of list) {
+    if (ap.iata_code) airportRecordCache.set(ap.iata_code.toUpperCase(), ap);
+  }
+}
 
 // ── Vaul Drawer primitives (mobile) ─────────────────────────────────────────
 import { Drawer as DrawerPrimitive } from "vaul";
@@ -118,43 +121,83 @@ function AirportPickerPanel({
   countryFilter?: string;
 }) {
   const isSearchEmpty = !searchQuery.trim();
+  const [defaultAirports, setDefaultAirports] = useState<AirportRecord[]>(() =>
+    DEFAULT_TOP_AIRPORTS_IATAS.map((i) => airportRecordCache.get(i)).filter((a): a is AirportRecord => Boolean(a)),
+  );
   const [serverAirports, setServerAirports] = useState<AirportRecord[] | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [retrySeq, setRetrySeq] = useState(0);
+
+  useEffect(() => {
+    const missing = DEFAULT_TOP_AIRPORTS_IATAS.filter((i) => !airportRecordCache.has(i));
+    if (missing.length === 0) {
+      setDefaultAirports(
+        DEFAULT_TOP_AIRPORTS_IATAS.map((i) => airportRecordCache.get(i)).filter((a): a is AirportRecord => Boolean(a)),
+      );
+      return;
+    }
+    let cancelled = false;
+    setIsLoading(true);
+    setLoadError(null);
+    getAirportsByIatasFn({ data: { iatas: DEFAULT_TOP_AIRPORTS_IATAS } })
+      .then((res) => {
+        if (cancelled) return;
+        const list = Array.isArray(res?.airports) ? res.airports : [];
+        cacheAirports(list);
+        const filtered = countryFilter
+          ? list.filter((a) => a.country.toLowerCase().includes(countryFilter.toLowerCase()) || a.country_code.toLowerCase() === countryFilter.toLowerCase())
+          : list;
+        setDefaultAirports(filtered);
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err instanceof Error ? err.message : "Erro ao carregar aeroportos.");
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [countryFilter, retrySeq]);
 
   useEffect(() => {
     const trimmed = searchQuery.trim();
     if (!trimmed) {
       setServerAirports(null);
+      setLoadError(null);
       return;
     }
     let cancelled = false;
-    searchGlobalAirports({
-      data: { query: trimmed, country: countryFilter, limit: 30 },
-    })
-      .then((res) => {
-        if (!cancelled && Array.isArray(res?.airports) && res.airports.length > 0) {
-          setServerAirports(res.airports);
-        }
+    setIsLoading(true);
+    setLoadError(null);
+    const timer = setTimeout(() => {
+      searchGlobalAirports({
+        data: { query: trimmed, country: countryFilter, limit: 30 },
       })
-      .catch(() => {});
+        .then((res) => {
+          if (cancelled) return;
+          const list = Array.isArray(res?.airports) ? res.airports : [];
+          cacheAirports(list);
+          setServerAirports(list);
+        })
+        .catch((err) => {
+          if (!cancelled) {
+            setServerAirports([]);
+            setLoadError(err instanceof Error ? err.message : "Erro na busca de aeroportos.");
+          }
+        })
+        .finally(() => {
+          if (!cancelled) setIsLoading(false);
+        });
+    }, 150);
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
-  }, [searchQuery, countryFilter]);
+  }, [searchQuery, countryFilter, retrySeq]);
 
-  // Quando vazio, exibe apenas os aeroportos mais procurados (evita poluição da lista)
-  const defaultAirports = React.useMemo(() => {
-    return DEFAULT_TOP_AIRPORTS_IATAS
-      .map((iata) => getAirportByIata(iata))
-      .filter((a): a is AirportRecord => Boolean(a));
-  }, []);
-
-  const filteredAirports = isSearchEmpty
-    ? defaultAirports
-    : serverAirports ??
-      searchAirportsCatalog(searchQuery, {
-        country: countryFilter,
-        limit: 30,
-      });
+  const filteredAirports = isSearchEmpty ? defaultAirports : serverAirports ?? [];
 
   const queryUpper = searchQuery.trim().toUpperCase();
   const isCustomCode =
@@ -198,11 +241,23 @@ function AirportPickerPanel({
                 <button
                   key={hub.iata}
                   type="button"
-                  onClick={() => {
-                    const found = getAirportByIata(hub.iata);
-                    if (found) {
-                      onSelect(found);
+                  onClick={async () => {
+                    const cached = airportRecordCache.get(hub.iata);
+                    if (cached) {
+                      onSelect(cached);
                       onClose();
+                      return;
+                    }
+                    try {
+                      const res = await getAirportsByIatasFn({ data: { iatas: [hub.iata] } });
+                      const found = res?.airports?.[0];
+                      if (found) {
+                        cacheAirports([found]);
+                        onSelect(found);
+                        onClose();
+                      }
+                    } catch {
+                      setLoadError("Falha ao carregar aeroporto selecionado.");
                     }
                   }}
                   className={cn(
@@ -230,7 +285,24 @@ function AirportPickerPanel({
 
       {/* Lista de Resultados */}
       <div className="overflow-y-auto max-h-80 px-2 space-y-1">
-        {filteredAirports.length > 0 ? (
+        {loadError ? (
+          <div className="py-6 text-center px-4 space-y-2">
+            <AlertCircle className="size-5 text-destructive mx-auto" />
+            <p className="text-xs text-destructive font-medium">{loadError}</p>
+            <button
+              type="button"
+              onClick={() => setRetrySeq((n) => n + 1)}
+              className="h-11 min-h-11 px-4 rounded-lg border border-border text-xs font-semibold hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              Tentar novamente
+            </button>
+          </div>
+        ) : isLoading && filteredAirports.length === 0 ? (
+          <div className="py-8 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+            <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+            <span>Buscando aeroportos...</span>
+          </div>
+        ) : filteredAirports.length > 0 ? (
           filteredAirports.map((airport) => {
             const isSelected = selectedAirport?.iata_code === airport.iata_code;
             const locationStr =
@@ -335,7 +407,35 @@ export function AirportCombobox({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const cleanValue = (value || "").trim().toUpperCase();
-  const selectedAirport = cleanValue ? getAirportByIata(cleanValue) : undefined;
+  const [selectedAirport, setSelectedAirport] = useState<AirportRecord | undefined>(() =>
+    cleanValue ? airportRecordCache.get(cleanValue) : undefined,
+  );
+
+  useEffect(() => {
+    if (!cleanValue) {
+      setSelectedAirport(undefined);
+      return;
+    }
+    const cached = airportRecordCache.get(cleanValue);
+    if (cached) {
+      setSelectedAirport(cached);
+      return;
+    }
+    let cancelled = false;
+    getAirportsByIatasFn({ data: { iatas: [cleanValue] } })
+      .then((res) => {
+        if (cancelled) return;
+        const found = res?.airports?.[0];
+        if (found) {
+          cacheAirports([found]);
+          setSelectedAirport(found);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [cleanValue]);
 
   // Fechar popover ao clicar fora no Desktop
   useEffect(() => {
@@ -423,7 +523,7 @@ export function AirportCombobox({
 
         {/* Popover Desktop (>= 768px) */}
         {desktopOpen && (
-          <div className="hidden md:block absolute left-0 right-0 top-full mt-2 z-50 rounded-lg border border-border/80 bg-background p-2 animate-in fade-in-0 zoom-in-95">
+          <div className="hidden md:block absolute left-0 right-0 top-full mt-2 z-50 rounded-lg border border-border/80 bg-background p-2 animate-in fade-in-0 zoom-in-95 motion-reduce:animate-none">
             <AirportPickerPanel
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}

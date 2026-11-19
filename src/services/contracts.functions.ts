@@ -1295,12 +1295,12 @@ export const listUserEnvelopesAndContracts = createServerFn({ method: "GET" }).h
       .eq("signer_profile_id", identity.id)
       .order("created_at", { ascending: false });
 
-    if (error || !envelopes) {
+    if (error) {
       console.error("[contracts] Erro ao listar contratos do usuário:", error);
       return [];
     }
 
-    return envelopes.map((env: any) => {
+    const items: UserContractVaultItemDTO[] = (envelopes || []).map((env: any) => {
       const contract = env.contract_version?.contract;
       return {
         envelopeId: env.id,
@@ -1318,6 +1318,56 @@ export const listUserEnvelopesAndContracts = createServerFn({ method: "GET" }).h
         createdAt: env.created_at,
       };
     });
+
+    // Complementar com contratos turísticos canônicos (category = 'tourism') reconciliados por CPF/e-mail/customer_id
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("cpf, full_name")
+        .eq("id", identity.id)
+        .maybeSingle();
+
+      const cleanCpf = String(profile?.cpf || "").replace(/\D/g, "");
+      const cleanEmail = String((identity as any)?.email || "").trim().toLowerCase();
+      const orFilters: string[] = [`customer_id.eq.${identity.id}`];
+      if (cleanCpf.length >= 9) orFilters.push(`metadata->>client_document.ilike.%${cleanCpf}%`);
+      if (cleanEmail && cleanEmail.includes("@")) orFilters.push(`metadata->>client_email.ilike.${cleanEmail}`);
+
+      const { data: tourismContracts } = await supabase
+        .from("contracts")
+        .select("id, title, category, status, verification_code, is_settled, metadata, created_at, store:store_id(name)")
+        .eq("category", "tourism")
+        .or(orFilters.join(","))
+        .order("created_at", { ascending: false })
+        .limit(40);
+
+      const knownContractIds = new Set(items.map((it) => it.contractId).filter(Boolean));
+      for (const tc of tourismContracts || []) {
+        if (!tc?.id || knownContractIds.has(tc.id)) continue;
+        knownContractIds.add(tc.id);
+        const meta = (tc.metadata as Record<string, any>) || {};
+        const isSigned = tc.status === "completed" || tc.status === "signed";
+        items.push({
+          envelopeId: tc.id,
+          contractId: tc.id,
+          title: tc.title || "Contrato de Viagem",
+          category: "tourism",
+          status: isSigned ? "signed" : tc.status === "cancelled" ? "rejected" : "pending",
+          signingToken: tc.verification_code || meta.public_token || tc.id,
+          signedAt: meta.signed_at || null,
+          verificationCode: tc.verification_code || "",
+          hashSha256: meta.content_hash || null,
+          storeName: (tc as any).store?.name || meta.agency_name || null,
+          isSettled: Boolean(tc.is_settled),
+          govBrVerified: false,
+          createdAt: tc.created_at,
+        });
+      }
+    } catch (tourismErr) {
+      console.warn("[contracts] Aviso ao reconciliar contratos de turismo do usuário:", tourismErr);
+    }
+
+    return items;
   },
 );
 
@@ -1356,11 +1406,11 @@ export const getUserSavedSignature = createServerFn({ method: "GET" }).handler(a
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("saved_signature_url")
+    .select("saved_signature_url, saved_initials_url")
     .eq("id", identity.id)
     .maybeSingle();
 
-  return { savedSignature: profile?.saved_signature_url || null };
+  return { savedSignature: profile?.saved_signature_url || profile?.saved_initials_url || null };
 });
 
 // ─── Verificação Pública de Ativação do Assinador GOV.BR ───────────────────────

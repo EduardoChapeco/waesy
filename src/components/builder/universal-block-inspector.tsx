@@ -27,13 +27,23 @@ import {
   AlignLeft,
   AlignCenter,
   AlignRight,
+  MapPin,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CANONICAL_CITIES } from "@/lib/constants/cities";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { MarkdownInspectorField } from "@/components/builder/markdown-inspector-field";
 import { MediaUploader } from "@/components/admin/builder/MediaUploader";
 import { ColorPicker } from "@/components/admin/builder/ColorPicker";
 import type {
@@ -302,6 +312,22 @@ export const UniversalBlockInspector: React.FC<UniversalBlockInspectorProps> = (
                       className="text-xs rounded-xl min-h-20"
                     />
                   </div>
+                ) : null}
+
+                {"markdown" in config || "bodyMarkdown" in config || "content" in config || selectedBlock.type.includes("rich_text") ? (
+                  <MarkdownInspectorField
+                    label="Conteúdo Rico (Markdown)"
+                    value={String(config.markdown ?? config.bodyMarkdown ?? config.content ?? "")}
+                    onChange={(val) =>
+                      onUpdateConfig(
+                        "markdown" in config
+                          ? { markdown: val }
+                          : "bodyMarkdown" in config
+                            ? { bodyMarkdown: val }
+                            : { content: val },
+                      )
+                    }
+                  />
                 ) : null}
 
                 {"badge" in config || "promoBadge" in config ? (
@@ -1250,6 +1276,40 @@ export const UniversalBlockInspector: React.FC<UniversalBlockInspectorProps> = (
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Segmentação por Cidade (Localidade Alvo CANONICAL_CITIES) */}
+            <div className="space-y-2 pt-2 border-t border-border/40">
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-xs font-bold text-foreground flex items-center gap-2">
+                  <MapPin className="size-3.5 text-primary" aria-hidden="true" />
+                  Localidade Alvo
+                </Label>
+                <Badge variant="outline" className="text-2xs font-mono">
+                  {config.cityFilter || config.city_filter || binding.cityFilter || "Global"}
+                </Badge>
+              </div>
+              <Select
+                value={String(config.cityFilter || config.city_filter || binding.cityFilter || "all")}
+                onValueChange={(val) =>
+                  onUpdateConfig({
+                    cityFilter: val === "all" ? undefined : val,
+                    city_filter: val === "all" ? undefined : val,
+                  })
+                }
+              >
+                <SelectTrigger className="h-11 min-h-11 rounded-xl text-xs bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                  <SelectValue placeholder="Selecione a cidade" />
+                </SelectTrigger>
+                <SelectContent className="max-h-56">
+                  <SelectItem value="all">Todas as Cidades (Global)</SelectItem>
+                  {CANONICAL_CITIES.map((c) => (
+                    <SelectItem key={c.id} value={c.name} className="text-xs">
+                      {c.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Subestados (ex: Menu/Drawer Aberto ou Fechado) */}

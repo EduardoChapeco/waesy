@@ -21,7 +21,7 @@ import { listDestinations, createDestination, updateDestination, deleteDestinati
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 import { AirportCombobox } from "@/components/ui/airport-combobox";
-import { CANONICAL_DESTINATIONS, BRAZIL_STATES, MAJOR_IATA_AIRPORTS, TOURISM_TAGS_PRESETS, getDestinationsByState, findAirportByIata, searchCanonicalDestinations, type CanonicalDestination } from "@/lib/destinations-catalog";
+import { CANONICAL_DESTINATIONS, BRAZIL_STATES, TOURISM_TAGS_PRESETS, getDestinationsByState, searchCanonicalDestinations, type CanonicalDestination } from "@/lib/tourism/destinations-catalog";
 import { CancellationPenaltyCalculatorDialog } from "@/components/turismo/cancellation-penalty-calculator-dialog";
 
 export const Route = createFileRoute("/workspace/turismo/destinos")({
@@ -273,7 +273,7 @@ export default function WorkspaceDestinationsPage() {
  {
  id: crypto.randomUUID(),
  title: "Qual aeroporto mais próximo devo comprar?",
- description: `O aeroporto gateway recomendado é ${canonical.iata} (${findAirportByIata(canonical.iata)?.name || canonical.iata}), permitindo transfer rápido até os principais hotéis.`,
+ description: `O aeroporto gateway recomendado para ${canonical.name} é ${canonical.iata}, permitindo transfer rápido até os principais hotéis.`,
  },
  {
  id: crypto.randomUUID(),

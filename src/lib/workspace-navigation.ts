@@ -1,4 +1,4 @@
-import { Package, PackageCheck, Tags, Tag, Store, LayoutDashboard, Settings, Calendar, Users, ShoppingBag, Truck, Boxes, Banknote, FileText, FileSignature, LayoutTemplate, Link2, Image as ImageIcon, ClipboardList, ShieldAlert, Megaphone, Share2, Star, Bell, Flame, Kanban, Newspaper, Plus, Sliders, DollarSign, Ticket, ArrowRightLeft, Building2, ShieldCheck, UtensilsCrossed, ChefHat, Coins, Zap, MessageSquare, Scale, Wrench, MapPin, Palette, Target, LayoutGrid, Navigation, Briefcase, Plane, ShoppingCart, Eye, Receipt, AlertTriangle, RefreshCw, ArrowDownUp, Clock, Car, Smartphone, Layers, HeartPulse, GraduationCap, Dog, CarFront, PenTool, Layers2, FileSpreadsheet, Gift, Globe, Bus, Award, Bot, LifeBuoy, Compass, UserCheck, Lock, HandHeart, Database, Calculator, Wallet, BarChart3 } from "lucide-react";
+import { Package, PackageCheck, Tags, Tag, Store, LayoutDashboard, Settings, Calendar, Users, ShoppingBag, Truck, Boxes, Banknote, FileText, FileSignature, LayoutTemplate, Link2, Image as ImageIcon, ClipboardList, ShieldAlert, Megaphone, Share2, Star, Bell, Flame, Kanban, Newspaper, Plus, Sliders, DollarSign, Ticket, ArrowRightLeft, Building2, ShieldCheck, UtensilsCrossed, ChefHat, Coins, Zap, MessageSquare, Scale, Wrench, MapPin, Palette, Target, LayoutGrid, Navigation, Briefcase, Plane, ShoppingCart, Eye, Receipt, AlertTriangle, RefreshCw, ArrowDownUp, Clock, Car, Smartphone, Layers, HeartPulse, GraduationCap, Dog, CarFront, PenTool, Layers2, FileSpreadsheet, Gift, Globe, Bus, Award, Bot, LifeBuoy, Compass, UserCheck, Lock, HandHeart, Database, Calculator, Wallet, BarChart3, TrendingUp } from "lucide-react";
 import { resolveUnifiedNicheId } from "./niches/niche-ssot";
 import { resolveStoreWorkspaceCapabilities } from "./architecture/module-plan-governance";
 
@@ -125,10 +125,8 @@ const GROUP_GASTRO_ORDERS: NavGroup = {
   icon: ClipboardList,
   section: "niche",
   items: [
-    { path: "/workspace/pedidos/gestor", label: "Gestor de Pedidos", icon: ClipboardList },
-    { path: "/workspace/pedidos", label: "Histórico", icon: ShoppingBag },
-    { path: "/workspace/reservas", label: "Reservas", icon: Calendar },
-    { path: "/workspace/pdv/comandas", label: "Mesas", icon: UtensilsCrossed },
+    { path: "/workspace/pedidos", label: "Gestor de Pedidos", icon: ClipboardList },
+    { path: "/workspace/pdv/comandas", label: "Mesas e Reservas", icon: UtensilsCrossed },
     { path: "/workspace/pdv/cozinha", label: "Cozinha", icon: ChefHat },
     { path: "/workspace/pedidos/tempo-preparo", label: "Preparo", icon: Clock },
     { path: "/workspace/pedidos/frota", label: "Despacho", icon: Truck },
@@ -339,14 +337,16 @@ const GROUP_REAL_ESTATE: NavGroup = {
 // 8. Turismo Canônico (4 Pilares Operacionais sem Emojis)
 const GROUP_TURISMO_COMMERCIAL: NavGroup = {
   id: "tourism-commercial",
-  label: "Comercial",
+  label: "Vendas & Comercial",
   icon: Kanban,
   section: "niche",
   items: [
     { path: "/workspace/turismo", label: "Funil de Vendas", icon: Kanban },
-    { path: "/workspace/turismo/oportunidades", label: "Oportunidades", icon: Target },
+    { path: "/workspace/turismo/minhas-vendas", label: "Vendas & Premiações", icon: DollarSign },
+    { path: "/workspace/relatorios/metas", label: "Metas & Projeção IA", icon: Target },
     { path: "/workspace/turismo/propostas", label: "Propostas", icon: FileText },
     { path: "/workspace/turismo/cotacoes", label: "Cotações", icon: Plane },
+    { path: "/workspace/turismo/oportunidades", label: "Oportunidades", icon: Target },
     { path: "/workspace/turismo/aereos", label: "Malha Aérea", icon: Plane },
     { path: "/workspace/turismo/corporativo", label: "Empresas", icon: Building2 },
     { path: "/workspace/empresa/viagens", label: "Viagens Corporativas", icon: Plane },
@@ -404,11 +404,13 @@ const GROUP_TURISMO_CONTRACTS: NavGroup = {
 
 const GROUP_TURISMO_FINANCE: NavGroup = {
   id: "tourism-finance",
-  label: "Comissões",
+  label: "Comissões & Operadoras",
   icon: DollarSign,
   section: "niche",
   items: [
-    { path: "/workspace/turismo/comissoes", label: "Comissões", icon: DollarSign },
+    { path: "/workspace/turismo/comissoes", label: "Comissões, Over & Operadoras", icon: DollarSign },
+    { path: "/workspace/turismo/minhas-vendas", label: "Vendas da Agência (Por Agente)", icon: TrendingUp },
+    { path: "/workspace/relatorios/metas", label: "Metas & Projeção IA", icon: Target },
   ],
 };
 
@@ -426,8 +428,9 @@ const GROUP_TURISMO_MARKETING: NavGroup = {
   icon: Megaphone,
   section: "corporate",
   items: [
-    { path: "/workspace/marketing/vitrine", label: "Vitrine", icon: LayoutGrid },
-    { path: "/workspace/builder", label: "Construtor", icon: LayoutTemplate },
+    { path: "/workspace/configuracoes/pwa", label: "App Oficial & Catálogo", icon: LayoutGrid },
+    { path: "/workspace/marketing/vitrine", label: "Páginas & Vitrines", icon: LayoutTemplate },
+    { path: "/workspace/builder", label: "Construtor Avançado (Omni)", icon: LayoutTemplate },
     { path: "/workspace/estudio", label: "Estúdio Criativo", icon: Palette },
     { path: "/workspace/marketing/brand-kit", label: "Brand Kit", icon: Palette },
     { path: "/workspace/cms/paginas", label: "Páginas", icon: FileText },
@@ -435,6 +438,7 @@ const GROUP_TURISMO_MARKETING: NavGroup = {
     { path: "/workspace/marketing/banners", label: "Banners", icon: ImageIcon },
     { path: "/workspace/marketing/promocoes", label: "Ofertas", icon: Flame },
     { path: "/workspace/marketing/concursos", label: "Sorteios", icon: Ticket },
+    { path: "/workspace/match-time", label: "MatchTime", icon: Flame },
     { path: "/workspace/marketing/anuncios", label: "Anúncios", icon: Megaphone },
     { path: "/workspace/marketing/social", label: "Social", icon: Share2 },
     { path: "/workspace/marketing/canvas-bmc", label: "Modelo BMC", icon: Layers },
@@ -451,8 +455,8 @@ const GROUP_JOBS: NavGroup = {
   section: "niche",
   items: [
     { path: "/workspace/empregos", label: "Vagas", icon: Briefcase },
+    { path: "/workspace/empregos/novo", label: "Nova Vaga", icon: Plus },
     { path: "/workspace/empregos/candidatos", label: "Candidaturas", icon: Users },
-    { path: "/workspace/curriculo/editor", label: "Currículos", icon: FileText },
     { path: "/workspace/clientes", label: "Talentos", icon: Users },
     { path: "/workspace/marketing/vitrine", label: "Carreiras", icon: Eye },
   ],
@@ -596,8 +600,9 @@ const GROUP_MARKETING_VITRINE: NavGroup = {
   icon: Megaphone,
   section: "corporate",
   items: [
-    { path: "/workspace/marketing/vitrine", label: "Vitrine", icon: LayoutGrid },
-    { path: "/workspace/builder", label: "Construtor", icon: LayoutTemplate },
+    { path: "/workspace/configuracoes/pwa", label: "App Oficial & Catálogo", icon: LayoutGrid },
+    { path: "/workspace/marketing/vitrine", label: "Páginas & Vitrines", icon: LayoutTemplate },
+    { path: "/workspace/builder", label: "Construtor Avançado (Omni)", icon: LayoutTemplate },
     { path: "/workspace/estudio", label: "Estúdio Criativo", icon: Palette },
     { path: "/workspace/marketing/brand-kit", label: "Brand Kit", icon: Palette },
     { path: "/workspace/cms/paginas", label: "Páginas", icon: FileText },
@@ -613,6 +618,7 @@ const GROUP_MARKETING_VITRINE: NavGroup = {
     { path: "/workspace/marketing/carrinhos", label: "Abandonos", icon: ShoppingCart },
     { path: "/workspace/marketing/promocoes", label: "Promoções", icon: Flame },
     { path: "/workspace/marketing/concursos", label: "Sorteios", icon: Ticket },
+    { path: "/workspace/match-time", label: "MatchTime", icon: Flame },
     { path: "/workspace/marketing/afiliados", label: "Afiliados", icon: Coins },
     { path: "/workspace/marketing/patrocinadores", label: "Patrocinadores", icon: Megaphone },
     { path: "/workspace/marketing/fidelidade", label: "Fidelidade", icon: Award },
@@ -624,7 +630,7 @@ const GROUP_MARKETING_VITRINE: NavGroup = {
     { path: "/workspace/mural/novo", label: "Novo no Mural", icon: PenTool },
     { path: "/workspace/marketing/briefing", label: "Briefing IA", icon: Bot },
     { path: "/workspace/marketing/anuncios", label: "Anúncios", icon: Megaphone },
-    { path: "/workspace/integracoes/marketplaces", label: "Marketplaces", icon: Globe },
+    { path: "/workspace/integracoes/marketplaces", label: "Canais de Venda Externos", icon: Globe },
     { path: "/workspace/marketing/social", label: "Social", icon: Share2 },
     { path: "/workspace/cms/calendario", label: "Calendário", icon: Calendar },
     { path: "/workspace/marketing/canvas-bmc", label: "Modelo BMC", icon: Layers },
@@ -757,8 +763,7 @@ const GROUP_FINANCE_CLEAN: NavGroup = {
   icon: Banknote,
   section: "corporate",
   items: [
-    { path: "/workspace/financeiro", label: "Visão Financeira", icon: Banknote },
-    { path: "/workspace/financeiro/caixa", label: "Caixa", icon: Banknote },
+    { path: "/workspace/financeiro/caixa", label: "Caixa e Visão Financeira", icon: Banknote },
     { path: "/workspace/financeiro/caixa/lancamentos", label: "Lançamentos", icon: Receipt },
     { path: "/workspace/financeiro/caixa/turnos", label: "Turnos", icon: Clock },
     { path: "/workspace/relatorios/metas", label: "Metas", icon: Target },
@@ -810,17 +815,18 @@ const GROUP_B2B_PROCUREMENT: NavGroup = {
 
 const GROUP_TEAM_RH: NavGroup = {
   id: "team-rh",
-  label: "Equipe",
+  label: "Gente & Gestão (RH/DP)",
   icon: Users,
   section: "corporate",
   items: [
-    { path: "/workspace/configuracoes/equipe", label: "Colaboradores", icon: Users },
+    { path: "/workspace/rh", label: "Painel & Colaboradores", icon: Users },
+    { path: "/workspace/rh/ponto", label: "Ponto Eletrônico", icon: Clock },
     { path: "/workspace/rh/folha", label: "Folha de Pagamento", icon: Wallet },
+    { path: "/workspace/rh/compliance", label: "Compliance & Documentos", icon: FileText },
+    { path: "/workspace/configuracoes/equipe", label: "Acessos & Permissões", icon: ShieldCheck },
     { path: "/workspace/financeiro/funcionarios", label: "Salários & Pagamentos", icon: Users },
-    { path: "/workspace/rh/ponto", label: "Ponto", icon: Clock },
     { path: "/workspace/financeiro/comissoes", label: "Comissões", icon: Target },
-    { path: "/workspace/rh/compliance", label: "Compliance", icon: ShieldCheck },
-    { path: "/workspace/configuracoes/sessoes", label: "Sessões", icon: ShieldCheck },
+    { path: "/workspace/configuracoes/sessoes", label: "Sessões Ativas", icon: ShieldCheck },
   ],
 };
 
@@ -837,7 +843,7 @@ const GROUP_DONATIONS_CAPTACAO: NavGroup = {
   ],
 };
 
-import { getNicheSemantics } from "./niche-semantics";
+import { getNicheSemantics } from "./niches/niche-semantics";
 
 
 const GROUP_SUPPORT_DESK: NavGroup = {
@@ -860,7 +866,7 @@ const GROUP_GOVERNANCE_AUDIT: NavGroup = {
   icon: ShieldCheck,
   section: "corporate",
   items: [
-    { path: "/workspace/configuracoes/conformidade", label: "Marketplace Oficial", icon: ShieldCheck },
+    { path: "/workspace/configuracoes/conformidade", label: "Conformidade Fiscal", icon: ShieldCheck },
     { path: "/workspace/qualidade", label: "Qualidade", icon: Award },
   ],
 };
@@ -876,22 +882,33 @@ export const ADMIN_MASTER_ISOLATED_ROUTES = [
   { path: "/workspace/master/influencers", redirectTo: "/admin-master/curadoria" },
 ] as const;
 
+/**
+ * Rotas legadas de compatibilidade mantidas apenas para redirect de URLs antigas;
+ * menus e catálogos de ferramentas apontam diretamente para os destinos canônicos.
+ */
+export const WORKSPACE_REDIRECT_COMPAT_ROUTES = [
+  { path: "/workspace/pedidos/gestor", redirectTo: "/workspace/pedidos" },
+  { path: "/workspace/reservas", redirectTo: "/workspace/pdv/comandas" },
+  { path: "/workspace/curriculo/editor", redirectTo: "/workspace/empregos" },
+  { path: "/workspace/financeiro", redirectTo: "/workspace/financeiro/caixa" },
+  { path: "/workspace/configuracoes/loja", redirectTo: "/workspace/configuracoes" },
+  { path: "/workspace/lojas", redirectTo: "/auth/portal-selector" },
+] as const;
+
 const GROUP_SETTINGS: NavGroup = {
   id: "settings",
   label: "Ajustes",
   icon: Settings,
   section: "corporate",
   items: [
-    { path: "/workspace/configuracoes", label: "Geral", icon: Settings },
-    { path: "/workspace/configuracoes/loja", label: "Perfil da Loja", icon: Store },
+    { path: "/workspace/configuracoes", label: "Dados da Empresa", icon: Settings },
     { path: "/workspace/configuracoes/planos", label: "Planos e Módulos", icon: Layers },
-    { path: "/workspace/lojas", label: "Minhas Lojas", icon: Building2 },
     { path: "/workspace/configuracoes/conformidade", label: "Conformidade Fiscal", icon: ShieldCheck },
     { path: "/workspace/configuracoes/ai", label: "Chaves IA (BYOK)", icon: Zap },
-    { path: "/workspace/configuracoes/pwa", label: "Aplicativo PWA", icon: Smartphone },
+    { path: "/workspace/configuracoes/pwa", label: "App Oficial & PWA", icon: Smartphone },
     { path: "/workspace/configuracoes/privacidade-loja", label: "Privacidade", icon: Lock },
     { path: "/workspace/configuracoes/sessoes", label: "Sessões e Acessos", icon: ShieldCheck },
-    { path: "/workspace/integracoes/marketplaces", label: "Marketplaces", icon: Globe },
+    { path: "/workspace/integracoes/marketplaces", label: "Canais de Venda Externos", icon: Globe },
     { path: "/workspace/configuracoes/inteligencia-artificial", label: "Governança de IA", icon: Bot },
     { path: "/workspace/configuracoes/integracoes", label: "Integrações", icon: Link2 },
     { path: "/workspace/automacoes", label: "Automações", icon: Zap },
@@ -1099,6 +1116,9 @@ export function resolveWorkspaceNavigation(
         GROUP_OVERVIEW,
         GROUP_MASTER_TASKS,
         GROUP_TURISMO_COMMERCIAL,
+        GROUP_TURISMO_FINANCE,
+        GROUP_FINANCE_CLEAN,
+        GROUP_TEAM_RH,
         GROUP_TURISMO_CRM,
         GROUP_CONTRACTS_GLOBAL,
         GROUP_TURISMO_CONTRACTS,
@@ -1109,10 +1129,7 @@ export function resolveWorkspaceNavigation(
         GROUP_MASTER_INBOX,
         GROUP_WHATSAPP_AUTOMATIONS,
         GROUP_SUPPORT_DESK,
-        GROUP_FINANCE_CLEAN,
-        GROUP_TURISMO_FINANCE,
         GROUP_FISCAL_ACCOUNTING,
-        GROUP_TEAM_RH,
         GROUP_AGENTIC_INTELLIGENCE,
         GROUP_SETTINGS,
       ];
@@ -1513,13 +1530,13 @@ export function resolveWorkspaceNavigation(
           return true;
         });
 
-        // Adiciona Classificados caso habilitado
+        // Adiciona Catálogo & Classificados caso habilitado
         if (enabledModules.includes("classifieds")) {
-          const hasClassifieds = filteredItems.some((i) => i.path.includes("classificados"));
-          if (!hasClassifieds) {
+          const hasCatalog = filteredItems.some((i) => i.path.includes("catalogo") || i.path.includes("anuncios"));
+          if (!hasCatalog) {
             filteredItems.push({
-              path: "/conta/classificados",
-              label: "Classificados Locais",
+              path: "/workspace/catalogo/produtos",
+              label: "Catálogo & Classificados",
               icon: Megaphone,
             });
           }
@@ -1678,19 +1695,42 @@ export function resolveWorkspaceNavigation(
     ];
   }
 
-  // Vendedor(a) / Atendente / Seller: Catálogo, Pedidos, Orçamentos, PDV, Clientes
+  // Vendedor(a) / Atendente / Seller: Catálogo, Pedidos, Orçamentos, PDV, Clientes, Minhas Vendas e Metas pessoais
   if (userRole === "seller" || userRole === "vendedor" || userRole === "atendente") {
+    const blockedGroups = new Set([
+      "settings",
+      "marketing",
+      "tourism-finance",
+      "tourism-marketing",
+      "fiscal-accounting",
+      "accounting",
+      "intelligence-squads",
+      "hr",
+      "team-admin",
+    ]);
     return resolvedGroups
-      .filter((g) => g.id !== "settings" && g.id !== "marketing")
+      .filter((g) => !blockedGroups.has(g.id))
       .map((g) => {
         if (g.id === "finance") {
           return {
             ...g,
-            items: g.items.filter((i) => i.path.includes("caixa") || i.path.includes("pagamentos")),
+            items: g.items.filter(
+              (i) =>
+                i.path.includes("caixa") ||
+                i.path.includes("pagamentos") ||
+                i.path.includes("/relatorios/metas"),
+            ),
+          };
+        }
+        if (g.id === "tourism-catalog") {
+          return {
+            ...g,
+            items: g.items.filter((i) => !i.path.includes("/fornecedores")),
           };
         }
         return g;
-      });
+      })
+      .filter((g) => g.items.length > 0);
   }
 
   // Cozinha / Operador / Estoquista: KDS / Separação de Pedidos e Estoque
@@ -1702,7 +1742,7 @@ export function resolveWorkspaceNavigation(
         label: "Expedição",
         icon: Boxes,
         items: [
-          { path: "/workspace/pedidos/gestor", label: "Monitor KDS", icon: Clock },
+          { path: "/workspace/pdv/cozinha", label: "Monitor KDS", icon: Clock },
           { path: "/workspace/pedidos", label: "Separação", icon: Package },
           { path: "/workspace/estoque", label: "Estoque", icon: Boxes },
         ],
@@ -1736,6 +1776,8 @@ export function resolveWorkspaceNavigation(
           g.id === "finance" ||
           g.id === "fiscal-accounting" ||
           g.id === "billing" ||
+          g.id === "crm-clients" ||
+          g.id === "tourism-crm" ||
           g.id === "customers" ||
           g.id === "contracts-global" ||
           g.id === "tourism-contracts" ||
@@ -1782,6 +1824,8 @@ export function resolveWorkspaceNavigation(
           g.id === "tourism-boarding" ||
           g.id === "tourism-contracts" ||
           g.id === "tourism-catalog" ||
+          g.id === "crm-clients" ||
+          g.id === "tourism-crm" ||
           g.id === "customers" ||
           g.id === "orders"
       )
@@ -1824,8 +1868,8 @@ export function resolveWorkspaceNavigation(
 }
 
 
-import { getNicheTranslation } from "./niche-dictionary";
-import { getNicheManifest, type NicheModuleKey } from "./niche-manifest";
+import { getNicheTranslation } from "./niches/niche-dictionary";
+import { getNicheManifest, type NicheModuleKey } from "./niches/niche-manifest";
 
 const PATH_TO_NICHE_MODULE: Record<string, NicheModuleKey> = {
   "/workspace/pedidos/gestor": "kds",
@@ -1844,6 +1888,7 @@ const PATH_TO_NICHE_MODULE: Record<string, NicheModuleKey> = {
   "/workspace/turismo/embarques": "boarding",
   "/workspace/turismo/frota": "fleet",
   "/workspace/turismo/propostas": "proposals",
+  "/workspace/turismo/minhas-vendas": "proposals",
   "/workspace/turismo/cotacoes": "quotes",
   "/workspace/turismo/contratos": "contracts",
   "/workspace/turismo/aereos": "proposals",
@@ -2107,7 +2152,7 @@ const MASTER_PILLAR_DEFINITIONS: MasterPillarDefinition[] = [
     shortLabel: "Financeiro",
     description: "Fluxo de caixa, recebíveis, DRE e notas fiscais",
     icon: Banknote,
-    groupIds: ["finance", "tourism-finance", "fiscal-accounting", "accounting"],
+    groupIds: ["tourism-finance", "finance", "fiscal-accounting", "accounting"],
   },
   {
     id: "rh",
@@ -2200,10 +2245,10 @@ const NICHE_MASTER_PILLAR_CONFIG: Record<
 
   // Turismo, Agências e Operadoras
   tourism: {
-    order: ["overview", "comercial", "crm", "contratos", "logistica", "catalogo", "marketing", "atendimento", "suporte", "financeiro", "rh", "inteligencia", "configuracoes"],
+    order: ["overview", "comercial", "financeiro", "rh", "crm", "contratos", "logistica", "catalogo", "atendimento", "marketing", "suporte", "inteligencia", "configuracoes"],
     overrides: {
       overview: { label: "Operação", shortLabel: "Painel", description: "Radar executivo, próximas saídas e tarefas da agência" },
-      comercial: { label: "Cotações", shortLabel: "Cotações", description: "Funil comercial, oportunidades, propostas e vouchers", icon: Compass },
+      comercial: { label: "Cotações", shortLabel: "Cotações", description: "Funil comercial, minhas vendas, metas IA, propostas e cotações", icon: Compass },
       crm: { label: "Viajantes", shortLabel: "Viajantes", description: "Base de passageiros, histórico de viagens e preferências", icon: Users },
       contratos: { label: "Contratos", shortLabel: "Contratos", description: "Contratos de viagem, operadoras, minutas digitais e NDAs", icon: FileSignature },
       logistica: { label: "Embarques", shortLabel: "Embarques", description: "Viagens, rooming list, check-in, transfers e frota", icon: Bus },
@@ -2211,8 +2256,8 @@ const NICHE_MASTER_PILLAR_CONFIG: Record<
       marketing: { label: "Vitrine", shortLabel: "Vitrine", description: "Portal da agência, hotpages, banners, ofertas e redes", icon: Megaphone },
       atendimento: { label: "Atendimento", shortLabel: "Atendimento", description: "Caixa de entrada dos viajantes, WhatsApp e automações", icon: MessageSquare },
       suporte: { label: "Reacomodação", shortLabel: "Suporte", description: "Incidentes em viagens, reacomodação e assessoria", icon: LifeBuoy },
-      financeiro: { label: "Financeiro", shortLabel: "Financeiro", description: "Fluxo de caixa, comissões, bilhetagem e fiscal", icon: Banknote },
-      rh: { label: "Guias", shortLabel: "Guias", description: "Agentes de viagem, guias credenciados e equipe", icon: Users },
+      financeiro: { label: "Financeiro", shortLabel: "Financeiro", description: "Comissões, Over, cobrança de operadoras, recibos por fora e caixa", icon: DollarSign },
+      rh: { label: "Equipe", shortLabel: "Equipe", description: "Agentes de viagem, produção individual, recibos por fora e folha CLT", icon: Users },
       inteligencia: { label: "Radar", shortLabel: "Radar", description: "Radar turístico, leitura de passaportes e assistentes", icon: Bot },
     },
   },

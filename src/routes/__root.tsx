@@ -117,20 +117,66 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
  };
  }
  },
- head: ({ loaderData }) => {
+ head: ({ loaderData, matches }) => {
  const storeRaw = (loaderData as any)?.store;
  const store = storeRaw?.data || storeRaw;
  const brand = (loaderData as any)?.brand;
  const theme = (loaderData as any)?.theme;
- const storeName = brand?.platform_name || store?.name || "Waesy";
+ const isWorkspaceOrPainelRoute =
+   Array.isArray(matches) &&
+   matches.some((m: any) => {
+     const rid = String(m?.routeId || "");
+     return rid.startsWith("/workspace") || rid.startsWith("/painel");
+   });
+ const workspaceMatch =
+   Array.isArray(matches)
+     ? matches.find((m: any) => String(m?.routeId || "") === "/workspace")
+     : null;
+ const workspaceSession = (workspaceMatch as any)?.loaderData?.session;
+ const activeWorkspaceMembership = Array.isArray(workspaceSession?.memberships)
+   ? workspaceSession.memberships.find((m: any) => m?.store_id === workspaceSession?.store_id) ||
+     workspaceSession.memberships[0]
+   : null;
+ const workspaceStoreObj =
+   activeWorkspaceMembership?.stores || activeWorkspaceMembership?.store || null;
+ const workspaceStoreId =
+   workspaceSession?.store_id ||
+   activeWorkspaceMembership?.store_id ||
+   null;
+ const workspaceStoreName =
+   workspaceStoreObj?.name ||
+   activeWorkspaceMembership?.name ||
+   activeWorkspaceMembership?.store_name ||
+   null;
+ const workspaceStoreLogo =
+   workspaceStoreObj?.logo_url ||
+   activeWorkspaceMembership?.logo_url ||
+   activeWorkspaceMembership?.store_logo ||
+   null;
 
- const seoTitle = brand?.seo_title || store?.seo_title || storeName;
- const seoDesc =
- brand?.seo_description ||
- store?.seo_description ||
- store?.description ||
- "Explore mercado, farmácia, gastronomia, empregos, eventos culturais, mobilidade e classificados na sua região.";
- const seoKeywords = store?.seo_keywords || "";
+ const storeName = isWorkspaceOrPainelRoute
+   ? workspaceStoreName || "Workspace"
+   : brand?.platform_name || store?.name || "Waesy";
+ const hasRouteSpecificManifest = Array.isArray(matches) && matches.some((m: any) =>
+   String(m?.routeId || "").includes("/app/$slug") ||
+   String(m?.routeId || "").includes("/loja/$slug") ||
+   String(m?.routeId || "").includes("/perfil-da-loja")
+ );
+
+ const seoTitle = isWorkspaceOrPainelRoute
+   ? workspaceStoreName
+     ? `${workspaceStoreName} — Workspace`
+     : "Workspace Pro — Sistema Operacional Empresarial"
+   : brand?.seo_title || store?.seo_title || storeName;
+ const seoDesc = isWorkspaceOrPainelRoute
+   ? workspaceStoreName
+     ? `Sistema operacional empresarial isolado de ${workspaceStoreName}.`
+     : "Ambiente operacional empresarial isolado para gestão de vendas, equipe e atendimento."
+   : brand?.seo_description ||
+     store?.seo_description ||
+     store?.description ||
+     "Explore mercado, farmácia, gastronomia, empregos, eventos culturais, mobilidade e classificados na sua região.";
+ const seoKeywords = isWorkspaceOrPainelRoute ? "" : store?.seo_keywords || "";
 
  const metaTags = [
  { charSet: "utf-8" },
@@ -159,7 +205,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
  content: seoDesc,
  },
  { property: "og:type", content: "website" },
- { property: "og:image", content: brand?.logo_url || store?.logoUrl || "https://waesy.com.br/pwa-512x512.png" },
+ {
+   property: "og:image",
+   content: isWorkspaceOrPainelRoute
+     ? workspaceStoreLogo || "/icons/icon-512x512.png"
+     : brand?.logo_url || store?.logoUrl || "https://waesy.com.br/pwa-512x512.png",
+ },
  { name: "twitter:card", content: "summary_large_image" },
  ];
 
@@ -177,38 +228,46 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
    store?.settings?.meta_domain_verification ||
    null;
 
- if (googleSiteVerification) {
+ if (!isWorkspaceOrPainelRoute && googleSiteVerification) {
    metaTags.push({ name: "google-site-verification", content: String(googleSiteVerification) });
  }
- if (metaDomainVerification) {
+ if (!isWorkspaceOrPainelRoute && metaDomainVerification) {
    metaTags.push({ name: "facebook-domain-verification", content: String(metaDomainVerification) });
  }
 
- const faviconUrl =
- brand?.favicon_url ||
- brand?.faviconUrl ||
- store?.faviconUrl ||
- store?.settings?.faviconUrl ||
- store?.settings?.favicon_url ||
- theme?.favicon_url ||
- theme?.faviconUrl ||
- "/favicon.svg";
+ const faviconUrl = isWorkspaceOrPainelRoute
+   ? workspaceStoreLogo || "/favicon.svg"
+   : brand?.favicon_url ||
+     brand?.faviconUrl ||
+     store?.faviconUrl ||
+     store?.settings?.faviconUrl ||
+     store?.settings?.favicon_url ||
+     theme?.favicon_url ||
+     theme?.faviconUrl ||
+     "/favicon.svg";
 
- const appleTouchIcon =
- brand?.favicon_url ||
- brand?.logo_url ||
- "/icons/apple-touch-icon.png";
+ const appleTouchIcon = isWorkspaceOrPainelRoute
+   ? workspaceStoreLogo || "/icons/icon-192x192.png"
+   : brand?.favicon_url ||
+     brand?.logo_url ||
+     "/icons/apple-touch-icon.png";
 
- const manifestHref = store?.id
- ? `/api/pwa/manifest.json?storeId=${store.id}`
- : "/api/pwa/manifest.json";
+ const manifestHref = isWorkspaceOrPainelRoute
+   ? `/api/pwa/manifest.json?mode=workspace${workspaceStoreId ? `&storeId=${encodeURIComponent(workspaceStoreId)}` : ""}`
+   : store?.id
+     ? `/api/pwa/manifest.json?storeId=${store.id}`
+     : "/api/pwa/manifest.json";
 
  return {
  meta: metaTags,
  links: [
- { rel: "manifest", href: manifestHref },
- { rel: "apple-touch-icon", href: appleTouchIcon },
- { rel: "apple-touch-icon", sizes: "180x180", href: appleTouchIcon },
+ ...(!hasRouteSpecificManifest
+   ? [
+       { rel: "manifest", href: manifestHref },
+       { rel: "apple-touch-icon", href: appleTouchIcon },
+       { rel: "apple-touch-icon", sizes: "180x180", href: appleTouchIcon },
+     ]
+   : []),
  { rel: "stylesheet", href: appCss },
  { rel: "icon", type: "image/svg+xml", href: faviconUrl },
  { rel: "alternate icon", href: "/favicon.ico" },
@@ -385,19 +444,21 @@ function RootComponent() {
  const { queryClient } = Route.useRouteContext();
 
  useEffect(() => {
-  if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-   window.addEventListener("load", () => {
+  if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+
+  const registerServiceWorker = () => {
+    const hadController = Boolean(navigator.serviceWorker.controller);
     navigator.serviceWorker
-     .register("/sw.js")
+     .register("/sw.js", { updateViaCache: "none" })
      .then((registration) => {
-      // Verifica atualizações periodicamente (a cada 5min) apenas se a aba estiver visível
+      registration.update().catch(() => {});
+
       setInterval(() => {
        if (typeof document !== "undefined" && document.visibilityState === "visible") {
         registration.update().catch(() => {});
        }
-      }, 300_000);
+      }, 180_000);
 
-      // Revalida imediatamente quando o usuário retorna à aba
       if (typeof document !== "undefined") {
        document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible") {
@@ -406,17 +467,16 @@ function RootComponent() {
        });
       }
 
-      // NÃO fazemos SKIP_WAITING automático aqui —
-      // o PwaUpdatePrompt aguarda a ação explícita do utilizador (V120 design).
+      window.addEventListener("online", () => {
+       registration.update().catch(() => {});
+      });
+
       registration.addEventListener("updatefound", () => {
-       // O PwaUpdatePrompt escuta o statechange do installing worker
-       // e exibe o toast quando ele entra em "installed" (= waiting).
-       // Nenhuma ação aqui — apenas log para diagnóstico.
        const newWorker = registration.installing;
        if (newWorker) {
         newWorker.addEventListener("statechange", () => {
-         if (process.env.NODE_ENV === "development") {
-          console.info("[SW] New worker state:", newWorker.state);
+         if (newWorker.state === "activated") {
+          queryClient.invalidateQueries().catch(() => {});
          }
         });
        }
@@ -426,18 +486,25 @@ function RootComponent() {
       console.error("ServiceWorker registration failed:", err);
      });
 
-    // Reload quando o novo SW assume controlo (disparado pelo PwaUpdatePrompt
-    // via postMessage SKIP_WAITING → o browser dispara controllerchange).
     let refreshing = false;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
-     if (!refreshing) {
+     if (!hadController) return;
+     const now = Date.now();
+     const lastReload = Number(sessionStorage.getItem("waesy_sw_reloaded_at") || "0");
+     if (!refreshing && now - lastReload > 10_000) {
       refreshing = true;
+      sessionStorage.setItem("waesy_sw_reloaded_at", String(now));
       window.location.reload();
      }
     });
-   });
+  };
+
+  if (document.readyState === "complete") {
+    registerServiceWorker();
+  } else {
+    window.addEventListener("load", registerServiceWorker, { once: true });
   }
- }, []);
+ }, [queryClient]);
 
  // ── Sentinel de Segurança (passivo, não bloqueia UX) & Higienização de Cookies Auth ──
  useEffect(() => {

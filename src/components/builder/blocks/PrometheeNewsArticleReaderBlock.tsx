@@ -23,6 +23,7 @@ import { PrometheeNewsStudioModal } from "@/components/news/promethee-news-studi
 import { EditorialAdSlot } from "@/components/news/editorial-ad-slot";
 import { listArticleComments, submitArticleComment } from "@/services/news.functions";
 import { toast } from "sonner";
+import { isUuid } from "@/lib/utils";
 
 export interface PrometheeNewsArticleReaderBlockProps extends BaseSiteBlockProps {
   data: PrometheeNewsArticleReaderBlockData;
@@ -87,8 +88,7 @@ export function PrometheeNewsArticleReaderBlock({
 
   useEffect(() => {
     if (!article?.id) return;
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(article.id);
-    if (!isUuid) {
+    if (!isUuid(article.id)) {
       setComments([]);
       return;
     }
@@ -149,8 +149,7 @@ export function PrometheeNewsArticleReaderBlock({
     const text = commentInput.trim();
     if (text.length < 3) return;
 
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(article.id);
-    if (!isUuid) {
+    if (!isUuid(article.id)) {
       toast.error("Comentários disponíveis apenas para artigos publicados.");
       return;
     }

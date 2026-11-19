@@ -2,8 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-import { WarningCircle } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
+import { RouteErrorFallback } from "@/components/state/route-error-fallback";
 import { resolveActiveCity } from "@/lib/city-helper";
 import { getPublicEvents, getPublicEventOrganizers, type EventOrganizerDTO } from "@/services/events.functions";
 import { listActiveBanners, type BannerDTO } from "@/services/banner.functions";
@@ -73,26 +72,16 @@ export const Route = createFileRoute("/_store/eventos")({
       };
     }
   },
-  errorComponent: EventosErrorComponent,
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorFallback
+      error={error}
+      reset={reset}
+      title="Instabilidade ao carregar eventos"
+      description="Não foi possível carregar a programação de eventos e ingressos no momento."
+    />
+  ),
   component: EventosPage,
 });
-
-function EventosErrorComponent({ error, reset }: { error: any; reset: () => void }) {
-  return (
-    <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
-        <WarningCircle size={32} />
-      </div>
-      <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar eventos</h2>
-      <p className="text-sm text-muted-foreground max-w-md mx-auto">
-        {error?.message || "Não foi possível carregar a programação de eventos e ingressos no momento."}
-      </p>
-      <Button onClick={reset} className="rounded-xl font-bold h-11 min-h-11 px-6">
-        Tentar Novamente
-      </Button>
-    </div>
-  );
-}
 
 function EventosPage() {
   const loaderData = Route.useLoaderData?.() as any;

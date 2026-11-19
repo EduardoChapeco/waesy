@@ -1,126 +1,126 @@
 {
-  "timestamp": "2026-10-30T12:59:17.733Z",
+  "timestamp": "2026-11-17T13:24:36.865Z",
   "metrics": {
-    "totalSourceFiles": 2557,
-    "componentsCount": 966,
-    "hooksCount": 22,
-    "routesCount": 461,
-    "servicesCount": 628,
-    "totalLinesOfCode": 951300,
-    "totalSizeBytes": 37964137
+    "totalSourceFiles": 2922,
+    "componentsCount": 1070,
+    "hooksCount": 24,
+    "routesCount": 515,
+    "servicesCount": 752,
+    "totalLinesOfCode": 1221377,
+    "totalSizeBytes": 48955192
   },
   "top20LargestFiles": [
     {
       "path": "src/integrations/supabase/types.ts",
-      "sizeBytes": 1477438,
-      "lineCount": 45793
-    },
-    {
-      "path": "src/lib/data/airports-catalog.ts",
-      "sizeBytes": 864676,
-      "lineCount": 7513
-    },
-    {
-      "path": "src/routes/_store.conta.classificados.novo.tsx",
-      "sizeBytes": 630885,
-      "lineCount": 11764
+      "sizeBytes": 1481425,
+      "lineCount": 45901
     },
     {
       "path": "src/routeTree.gen.ts",
-      "sizeBytes": 414185,
-      "lineCount": 9572
+      "sizeBytes": 439517,
+      "lineCount": 10363
+    },
+    {
+      "path": "src/routes/_store.conta.classificados.novo.tsx",
+      "sizeBytes": 407961,
+      "lineCount": 7930
+    },
+    {
+      "path": "src/components/atendimento/AtendimentoChatWorkspace.tsx",
+      "sizeBytes": 308307,
+      "lineCount": 6342
+    },
+    {
+      "path": "src/components/tourism/unified-proposal-workspace.tsx",
+      "sizeBytes": 280765,
+      "lineCount": 5620
+    },
+    {
+      "path": "src/components/tourism/crm/TourismPipeCardDossier.tsx",
+      "sizeBytes": 273090,
+      "lineCount": 5393
+    },
+    {
+      "path": "src/services/chat.functions.ts",
+      "sizeBytes": 267117,
+      "lineCount": 6443
     },
     {
       "path": "src/components/builder/OmniEditor.tsx",
-      "sizeBytes": 194249,
-      "lineCount": 4322
+      "sizeBytes": 231827,
+      "lineCount": 5247
     },
     {
-      "path": "src/components/classifieds/editorial-showcase-view.tsx",
-      "sizeBytes": 180780,
-      "lineCount": 3191
+      "path": "src/generated/extensions-bundle.server.ts",
+      "sizeBytes": 220226,
+      "lineCount": 164
     },
     {
-      "path": "src/services/mining.functions.ts",
-      "sizeBytes": 164515,
-      "lineCount": 4432
-    },
-    {
-      "path": "src/components/commerce/canonical-store-profile-view.tsx",
-      "sizeBytes": 161875,
-      "lineCount": 3191
-    },
-    {
-      "path": "src/services/builder.functions.ts",
-      "sizeBytes": 144442,
-      "lineCount": 4371
-    },
-    {
-      "path": "src/routes/workspace.atendimento.index.tsx",
-      "sizeBytes": 143965,
-      "lineCount": 3137
-    },
-    {
-      "path": "src/services/classifieds.functions.ts",
-      "sizeBytes": 142453,
-      "lineCount": 4087
-    },
-    {
-      "path": "src/services/ai-conversations.functions.ts",
-      "sizeBytes": 140644,
-      "lineCount": 3755
-    },
-    {
-      "path": "src/services/events.functions.ts",
-      "sizeBytes": 133301,
-      "lineCount": 3791
-    },
-    {
-      "path": "src/routes/_store.membro.$id.tsx",
-      "sizeBytes": 131145,
-      "lineCount": 3692
-    },
-    {
-      "path": "src/routes/_store.checkout.tsx",
-      "sizeBytes": 128339,
-      "lineCount": 3011
-    },
-    {
-      "path": "src/components/commerce/travel/travel-package-form.tsx",
-      "sizeBytes": 123583,
-      "lineCount": 2606
+      "path": "src/services/crm.functions.ts",
+      "sizeBytes": 206473,
+      "lineCount": 5459
     },
     {
       "path": "src/lib/builder/omni-templates.ts",
-      "sizeBytes": 120163,
-      "lineCount": 3225
+      "sizeBytes": 194671,
+      "lineCount": 4805
+    },
+    {
+      "path": "src/components/classifieds/editorial-showcase-view.tsx",
+      "sizeBytes": 192903,
+      "lineCount": 3376
+    },
+    {
+      "path": "src/components/commerce/canonical-store-profile-view.tsx",
+      "sizeBytes": 171988,
+      "lineCount": 3364
+    },
+    {
+      "path": "src/components/tourism/studio/studio-sidebar-editor.tsx",
+      "sizeBytes": 168465,
+      "lineCount": 4124
+    },
+    {
+      "path": "src/services/mining.functions.ts",
+      "sizeBytes": 158997,
+      "lineCount": 4287
+    },
+    {
+      "path": "src/components/chat/customer-360-sidebar.tsx",
+      "sizeBytes": 156494,
+      "lineCount": 3222
     },
     {
       "path": "src/components/builder/vitrine-block-inspector.tsx",
-      "sizeBytes": 117164,
-      "lineCount": 2786
+      "sizeBytes": 155771,
+      "lineCount": 3620
     },
     {
-      "path": "src/routes/workspace.comercial.tsx",
-      "sizeBytes": 116605,
-      "lineCount": 2397
+      "path": "src/services/marketplace-hub.functions.ts",
+      "sizeBytes": 153562,
+      "lineCount": 4054
     },
     {
-      "path": "src/services/ads.functions.ts",
-      "sizeBytes": 113631,
-      "lineCount": 2865
+      "path": "src/services/travel-proposal.functions.ts",
+      "sizeBytes": 150398,
+      "lineCount": 3613
+    },
+    {
+      "path": "src/services/builder.functions.ts",
+      "sizeBytes": 146069,
+      "lineCount": 4360
     }
   ],
   "checksSummary": {
-    "C01": 1975,
+    "C01": 1315,
     "C02": 0,
     "C03": 0,
     "C04": 0,
     "C05": 0,
-    "C06": 548,
-    "C07": 487,
+    "C06": 546,
+    "C07": 47,
     "C08": 10,
-    "C09": 237,
+    "C09": 9,
     "C10": 0,
     "C11": 0,
     "C12": 0,
@@ -129,15 +129,15 @@
     "C15": 0,
     "C16": 0,
     "C17": 0,
-    "C18": 109,
+    "C18": 143,
     "C19": 0,
     "C20": 0,
     "C21": 0,
-    "C22": 21,
-    "C23": 7835,
+    "C22": 22,
+    "C23": 10911,
     "C24": 0,
     "C25": 0,
-    "C26": 8,
+    "C26": 4,
     "C27": 0,
     "C28": 2,
     "C29": 0,
@@ -148,11 +148,11 @@
     "C34": 0,
     "C35": 0,
     "C36": 0,
-    "C37": 117,
+    "C37": 154,
     "C38": 0,
     "C39": 0,
-    "C40": 0,
-    "C41": 12,
+    "C40": 35,
+    "C41": 0,
     "C42": 0,
     "C43": 0
   }

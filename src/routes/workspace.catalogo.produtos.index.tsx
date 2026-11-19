@@ -24,8 +24,8 @@ import { CatalogComplementsTab } from "@/components/commerce/catalog-complements
 import { ImportCatalogModal } from "@/components/admin/catalog/import-catalog-modal";
 import { listAdminProducts, duplicateProduct, toggleProductStatus, bulkUpdateProductStatus, updateProduct } from "@/services/admin-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
-import { getNicheSemantics } from "@/lib/niche-semantics";
-import { getNicheCatalogContext } from "@/lib/catalog-niche-context";
+import { getNicheSemantics } from "@/lib/niches/niche-semantics";
+import { getNicheCatalogContext } from "@/lib/niches/catalog-niche-context";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import type { AdminProductRow } from "@/types/catalog";

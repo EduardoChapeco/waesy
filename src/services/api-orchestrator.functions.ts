@@ -1101,11 +1101,19 @@ export async function executeUnifiedAiCall(
     options.expectJson === true ||
     options.jsonMode === true;
   const preferred = options.preferredProvider || options.preferProvider;
-  const images = [...(options.images || [])];
+  const cleanBase64Payload = (raw?: string): string => {
+    if (!raw) return "";
+    const commaIdx = raw.indexOf(",");
+    return commaIdx !== -1 ? raw.substring(commaIdx + 1).trim() : raw.trim();
+  };
+  const images = (options.images || []).map((img) => ({
+    mimeType: img.mimeType || "image/jpeg",
+    base64: cleanBase64Payload(img.base64),
+  }));
   if (options.fileBase64 && images.length === 0) {
     images.push({
       mimeType: options.fileMime || "image/jpeg",
-      base64: options.fileBase64,
+      base64: cleanBase64Payload(options.fileBase64),
     });
   }
 
@@ -1271,12 +1279,18 @@ export async function executeUnifiedAiCall(
       try {
         if (provider === "openrouter") {
           const openRouterModels = isVisionTask
-            ? ["google/gemini-2.5-flash", "qwen/qwen2.5-vl-72b-instruct:free"]
+            ? [
+                "google/gemini-2.0-flash-001",
+                "google/gemini-flash-1.5",
+                "qwen/qwen2.5-vl-72b-instruct:free",
+                "google/gemini-2.5-flash",
+              ]
             : [
                 "meta-llama/llama-3.3-70b-instruct:free",
                 "qwen/qwen3-235b-a22b:free",
                 "deepseek/deepseek-chat-v3-0324:free",
                 "meta-llama/llama-3.3-70b-instruct",
+                "google/gemini-2.0-flash-001",
                 "google/gemini-2.5-flash",
               ];
 
@@ -1297,9 +1311,10 @@ export async function executeUnifiedAiCall(
           if (images.length > 0) {
             const contentParts: any[] = [{ type: "text", text: userPrompt }];
             for (const img of images) {
+              const mime = img.mimeType || "image/jpeg";
               contentParts.push({
                 type: "image_url",
-                image_url: { url: `data:${img.mimeType || "image/jpeg"};base64,${img.base64}` },
+                image_url: { url: `data:${mime};base64,${img.base64}` },
               });
             }
             messages.push({ role: "user", content: contentParts });
@@ -1397,16 +1412,20 @@ export async function executeUnifiedAiCall(
             continue;
           }
 
-          // Higienização e cascata de modelos para o Groq: garante resiliência caso um modelo específico oscile
-          const groqModels = ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"];
+          // Higienização e cascata de modelos para o Groq: modelos canônicos reais em produção
+          const groqModels = [
+            "llama-3.3-70b-versatile",
+            "llama-3.1-8b-instant",
+            "mixtral-8x7b-32768",
+            "gemma2-9b-it",
+          ];
           if (options.modelOverride) {
             const o = options.modelOverride.toLowerCase();
             if (
-              o.includes("qwen") ||
               o.includes("llama") ||
-              o.includes("gpt-oss") ||
               o.includes("mixtral") ||
-              o.includes("gemma")
+              o.includes("gemma") ||
+              o.includes("qwen")
             ) {
               if (!groqModels.includes(options.modelOverride)) {
                 groqModels.unshift(options.modelOverride);
@@ -1525,15 +1544,22 @@ export async function executeUnifiedAiCall(
         }
 
         if (provider === "gemini") {
-          // Higienização de modelo para o Google Gemini
-          let model = "gemini-2.5-flash";
+          // Higienização de modelo para o Google Gemini com failover automático em 404/400
+          const candidateGeminiModels: string[] = [];
           if (options.modelOverride) {
             const o = options.modelOverride.toLowerCase();
             if (o.includes("gemini")) {
-              model = options.modelOverride;
+              candidateGeminiModels.push(options.modelOverride);
             }
           }
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${keyInfo.rawKey}`;
+          for (const m of ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-flash"]) {
+            if (!candidateGeminiModels.includes(m)) candidateGeminiModels.push(m);
+          }
+
+          let res: Response | null = null;
+          let activeGeminiModel = "gemini-2.0-flash";
+          let lastGeminiStatus = 500;
+          let lastGeminiErrText = "";
 
           const parts: any[] = [{ text: userPrompt }];
           for (const img of images) {
@@ -1565,32 +1591,52 @@ export async function executeUnifiedAiCall(
             payload.tools = [{ google_search: {} }];
           }
 
-          let res = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-            signal: AbortSignal.timeout(30000),
-          });
+          for (const candModel of candidateGeminiModels) {
+            activeGeminiModel = candModel;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${candModel}:generateContent?key=${keyInfo.rawKey}`;
 
-          if (!res.ok && res.status === 400 && payload.tools) {
-            const fallbackPayload = { ...payload };
-            delete fallbackPayload.tools;
-            res = await fetch(url, {
+            let attemptRes = await fetch(url, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(fallbackPayload),
+              body: JSON.stringify(payload),
               signal: AbortSignal.timeout(30000),
-            });
+            }).catch(() => null);
+
+            if (attemptRes && !attemptRes.ok && attemptRes.status === 400 && payload.tools) {
+              const fallbackPayload = { ...payload };
+              delete fallbackPayload.tools;
+              attemptRes = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(fallbackPayload),
+                signal: AbortSignal.timeout(30000),
+              }).catch(() => null);
+            }
+
+            if (attemptRes?.ok) {
+              res = attemptRes;
+              break;
+            }
+
+            if (attemptRes) {
+              lastGeminiStatus = attemptRes.status;
+              lastGeminiErrText = await attemptRes.text().catch(() => "");
+              if (attemptRes.status === 404 || (attemptRes.status === 400 && /not found|not supported/i.test(lastGeminiErrText))) {
+                continue;
+              }
+              if (attemptRes.status === 401 || attemptRes.status === 403) {
+                break;
+              }
+            }
           }
 
-          if (!res.ok) {
-            const errText = await res.text().catch(() => "");
+          if (!res || !res.ok) {
             await markKeyError(
               keyInfo.id,
-              `Gemini HTTP ${res.status}: ${errText.slice(0, 300)}`,
-              res.status,
+              `Gemini HTTP ${lastGeminiStatus}: ${lastGeminiErrText.slice(0, 300)}`,
+              lastGeminiStatus,
             );
-            errors.push(`Gemini (${res.status})`);
+            errors.push(`Gemini (${lastGeminiStatus})`);
             continue;
           }
 
@@ -1635,7 +1681,7 @@ export async function executeUnifiedAiCall(
             }
           }
 
-          const finalized = await finalizeSuccess(content, model, parsedJson);
+          const finalized = await finalizeSuccess(content, activeGeminiModel, parsedJson);
           return groundingSources.length > 0 ? { ...finalized, groundingSources } : finalized;
         }
 
@@ -1649,9 +1695,10 @@ export async function executeUnifiedAiCall(
           if (images.length > 0) {
             const contentParts: any[] = [{ type: "text", text: userPrompt }];
             for (const img of images) {
+              const mime = img.mimeType || "image/jpeg";
               contentParts.push({
                 type: "image_url",
-                image_url: { url: `data:${img.mimeType || "image/jpeg"};base64,${img.base64}` },
+                image_url: { url: `data:${mime};base64,${img.base64}` },
               });
             }
             messages.push({ role: "user", content: contentParts });
@@ -1728,14 +1775,26 @@ export async function executeUnifiedAiCall(
           if (images.length > 0) {
             const contentParts: any[] = [];
             for (const img of images) {
-              contentParts.push({
-                type: "image",
-                source: {
-                  type: "base64",
-                  media_type: img.mimeType || "image/jpeg",
-                  data: img.base64,
-                },
-              });
+              const isPdf = img.mimeType === "application/pdf";
+              if (isPdf) {
+                contentParts.push({
+                  type: "document",
+                  source: {
+                    type: "base64",
+                    media_type: "application/pdf",
+                    data: img.base64,
+                  },
+                });
+              } else {
+                contentParts.push({
+                  type: "image",
+                  source: {
+                    type: "base64",
+                    media_type: img.mimeType || "image/jpeg",
+                    data: img.base64,
+                  },
+                });
+              }
             }
             contentParts.push({ type: "text", text: userPrompt || "Analise a imagem enviada." });
             messages.push({ role: "user", content: contentParts });

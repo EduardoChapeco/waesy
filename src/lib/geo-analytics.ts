@@ -6,6 +6,8 @@
  * dimensionamento de mercado TAM/SAM/SOM via Censo IBGE 2022 e Precificação Dinâmica Cortex 360.
  */
 
+import { clamp } from "@/lib/utils";
+
 const EARTH_RADIUS_KM = 6371.0088;
 
 export interface GeoCoordinate {
@@ -300,17 +302,36 @@ function roundTo(val: number, decimals: number): number {
   return Math.round(val * factor) / factor;
 }
 
-function clamp(val: number, min: number, max: number): number {
-  if (!Number.isFinite(val)) return min;
-  return Math.min(max, Math.max(min, val));
-}
-
 export function normalizeCityKey(cityName: string): string {
   return (cityName || "")
     .trim()
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
+}
+
+/**
+ * Lê telemetria geográfica persistida no cliente (`waesy_master_location`).
+ */
+export function getClientGeoTelemetry() {
+  if (typeof window === "undefined") return undefined;
+  try {
+    const raw = localStorage.getItem("waesy_master_location");
+    if (!raw) return undefined;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed.city === "string" && parsed.city !== "Global") {
+      return {
+        city: parsed.city,
+        state: parsed.state,
+        lat: parsed.lat,
+        lng: parsed.lng,
+        source: parsed.source || "gps",
+      };
+    }
+  } catch {
+    return undefined;
+  }
+  return undefined;
 }
 
 export function resolveKnownCityCoordinates(cityName: string): {

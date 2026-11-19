@@ -12,6 +12,7 @@ import {
   Loader2,
   Smartphone,
   ShieldCheck,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,15 @@ interface C360ProfileAndDocsViewProps {
   data: any;
   profile: any;
   portalUrl: string;
+  clientCode?: string | null;
+  hasMagicToken?: boolean;
+  accessCount?: number;
+  lastAccessedAt?: string | null;
+  isGeneratingMagicAccess?: boolean;
+  onGenerateMagicAccess?: () => Promise<void> | void;
+  onRevokeMagicAccess?: () => Promise<void> | void;
+  onCopyMagicLink?: () => Promise<void> | void;
+  onSendMagicWhatsApp?: () => Promise<void> | void;
   onSaveProfile: (payload: {
     fullName: string;
     phone: string;
@@ -40,6 +50,15 @@ export function C360ProfileAndDocsView({
   data,
   profile,
   portalUrl,
+  clientCode,
+  hasMagicToken,
+  accessCount = 0,
+  lastAccessedAt,
+  isGeneratingMagicAccess,
+  onGenerateMagicAccess,
+  onRevokeMagicAccess,
+  onCopyMagicLink,
+  onSendMagicWhatsApp,
   onSaveProfile,
   onQuickSendMessage,
   defaultTab = "profile",
@@ -57,21 +76,42 @@ export function C360ProfileAndDocsView({
   const docs: any[] = Array.isArray(data?.documents) ? data.documents : [];
   const customerId = profile?.id;
 
+  const cleanCodeDisplay = String(clientCode || "").trim().replace(/^#/, "");
+
   const handleCopyPortal = async () => {
+    if (onCopyMagicLink) {
+      await onCopyMagicLink();
+      return;
+    }
     try {
       await navigator.clipboard.writeText(portalUrl);
       toast.success("Link do App do Cliente copiado!");
     } catch {
-      toast.error("NÃ£o foi possÃ­vel copiar o link.");
+      toast.error("Não foi possível copiar o link.");
     }
   };
 
-  const handleSendPortalWhatsApp = () => {
+  const handleCopyClientCode = async () => {
+    if (!cleanCodeDisplay) return;
+    try {
+      await navigator.clipboard.writeText(cleanCodeDisplay);
+      toast.success(`Código ${cleanCodeDisplay} copiado!`);
+    } catch {
+      toast.error("Não foi possível copiar o código.");
+    }
+  };
+
+  const handleSendPortalWhatsApp = async () => {
+    if (onSendMagicWhatsApp) {
+      await onSendMagicWhatsApp();
+      return;
+    }
     if (!onQuickSendMessage) return;
+    const codeLine = cleanCodeDisplay ? `\nCódigo do Cliente: *${cleanCodeDisplay}*` : "";
     onQuickSendMessage(
-      `OlÃ¡ ${profile?.full_name || ""}! Acesse seu painel exclusivo do cliente para acompanhar seus pedidos, contratos, documentos e faturas:\n${portalUrl}`,
+      `Olá ${profile?.full_name || ""}! Acesse seu App Oficial da empresa para acompanhar seus pedidos, contratos, documentos e faturas:\n${portalUrl}${codeLine}`,
     );
-    toast.success("Link do portal enviado no chat!");
+    toast.success("Link do App enviado no chat!");
   };
 
   const handleSubmitProfile = async (e: React.FormEvent) => {
@@ -116,19 +156,52 @@ export function C360ProfileAndDocsView({
 
       {subTab === "profile" ? (
         <div className="space-y-3">
-          {/* App PrÃ³prio / Portal do Cliente */}
+          {/* App Oficial da Empresa / Magic Link do Cliente */}
           <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 space-y-2">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
                 <Smartphone className="size-4 text-primary shrink-0" />
                 <span className="text-xs font-semibold text-foreground truncate">
-                  App PrÃ³prio do Cliente
+                  App Oficial &amp; Magic Link
                 </span>
               </div>
               <Badge variant="outline" className="text-xs shrink-0">
-                Portal Ativo
+                {hasMagicToken ? "Magic Link Ativo" : "Acesso Sob Demanda"}
               </Badge>
             </div>
+            {hasMagicToken && (
+              <div className="flex items-center justify-between gap-2 text-2xs text-muted-foreground">
+                <span>
+                  {accessCount > 0
+                    ? `${accessCount} ${accessCount === 1 ? "acesso registrado" : "acessos registrados"}`
+                    : "Ainda não acessado pelo cliente"}
+                  {lastAccessedAt ? ` · Último: ${formatDate(lastAccessedAt)}` : ""}
+                </span>
+                {onRevokeMagicAccess && (
+                  <button
+                    type="button"
+                    disabled={isGeneratingMagicAccess}
+                    onClick={() => void onRevokeMagicAccess()}
+                    className="min-h-11 sm:min-h-6 px-2 rounded text-destructive hover:underline font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    Revogar
+                  </button>
+                )}
+              </div>
+            )}
+            {cleanCodeDisplay && (
+              <div className="flex items-center justify-between gap-2 rounded-lg border border-border/60 bg-background px-2 py-2">
+                <span className="text-xs text-muted-foreground">Código do Cliente:</span>
+                <button
+                  type="button"
+                  onClick={handleCopyClientCode}
+                  className="inline-flex items-center gap-1 font-mono text-xs font-bold text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded px-1"
+                >
+                  <span>{cleanCodeDisplay}</span>
+                  <Copy className="size-3" />
+                </button>
+              </div>
+            )}
             <p className="text-xs text-muted-foreground break-all font-mono bg-background/80 rounded-md px-2 py-2 border border-border/50">
               {portalUrl}
             </p>
@@ -137,30 +210,47 @@ export function C360ProfileAndDocsView({
                 type="button"
                 size="sm"
                 variant="outline"
+                disabled={isGeneratingMagicAccess}
                 onClick={handleCopyPortal}
-                className="min-h-11 sm:min-h-8 h-8 rounded-lg text-xs flex-1"
+                className="min-h-11 sm:min-h-8 h-8 rounded-lg text-xs flex-1 cursor-pointer"
               >
                 <Copy className="size-3.5 mr-2" />
-                Copiar Link
+                {hasMagicToken ? "Copiar Magic Link" : "Gerar & Copiar Link"}
               </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                asChild
-                className="min-h-11 sm:min-h-8 h-8 rounded-lg text-xs"
-              >
-                <a href={portalUrl} target="_blank" rel="noreferrer">
-                  <ExternalLink className="size-3.5 mr-1" />
-                  Abrir
-                </a>
-              </Button>
-              {onQuickSendMessage && (
+              {onGenerateMagicAccess && (
                 <Button
                   type="button"
                   size="sm"
-                  onClick={handleSendPortalWhatsApp}
+                  variant="outline"
+                  disabled={isGeneratingMagicAccess}
+                  onClick={() => void onGenerateMagicAccess()}
+                  className="min-h-11 sm:min-h-8 h-8 rounded-lg text-xs cursor-pointer"
+                  title="Gerar novo código/token mágico (revoga o anterior)"
+                >
+                  <RefreshCw className={cn("size-3.5", isGeneratingMagicAccess && "animate-spin motion-reduce:animate-none")} />
+                </Button>
+              )}
+              {portalUrl && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  asChild
                   className="min-h-11 sm:min-h-8 h-8 rounded-lg text-xs"
+                >
+                  <a href={portalUrl} target="_blank" rel="noreferrer">
+                    <ExternalLink className="size-3.5 mr-1" />
+                    Abrir
+                  </a>
+                </Button>
+              )}
+              {(onSendMagicWhatsApp || onQuickSendMessage) && (
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={isGeneratingMagicAccess}
+                  onClick={() => void handleSendPortalWhatsApp()}
+                  className="min-h-11 sm:min-h-8 h-8 rounded-lg text-xs cursor-pointer"
                 >
                   <Send className="size-3.5 mr-1" />
                   Enviar

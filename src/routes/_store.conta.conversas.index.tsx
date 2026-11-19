@@ -38,6 +38,7 @@ import {
 } from "@/services/admin-home-cms.functions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { RouteErrorFallback } from "@/components/state/route-error-fallback";
 import { CustomerChatRoom } from "./_store.conta.conversas.$id";
 import {
   Dialog,
@@ -78,31 +79,19 @@ export const Route = createFileRoute("/_store/conta/conversas/")({
       return { threads: [], noorSection: null };
     }
   },
-  errorComponent: CustomerConversationsErrorComponent,
+  errorComponent: ({ error, reset }: { error: unknown; reset?: () => void }) => (
+    <RouteErrorFallback
+      error={error}
+      reset={reset}
+      icon={MessageCircle}
+      title="Instabilidade ao carregar mensagens"
+      description="Não foi possível carregar as conversas no momento."
+      secondaryHref="/conta"
+      secondaryLabel="Voltar"
+    />
+  ),
   component: CustomerConversationsIndexPage,
 } as any);
-
-function CustomerConversationsErrorComponent({ error, reset }: { error: any; reset: () => void }) {
-  return (
-    <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
-        <MessageCircle className="size-8" />
-      </div>
-      <h2 className="text-xl font-bold text-foreground">Instabilidade ao carregar mensagens</h2>
-      <p className="text-xs text-muted-foreground max-w-md mx-auto">
-        {error?.message || "Não foi possível carregar as conversas no momento."}
-      </p>
-      <div className="flex items-center justify-center gap-3">
-        <Button onClick={reset} className="rounded-lg font-bold">
-          Tentar Novamente
-        </Button>
-        <Button asChild variant="outline" className="rounded-lg font-bold">
-          <Link to="/conta">Voltar</Link>
-        </Button>
-      </div>
-    </div>
-  );
-}
 
 const FILTER_TABS = [
   { id: "all", label: "Tudo" },

@@ -1,11 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { Gift, Heart, Plus, ArrowUpRight, Eye, MapPin, Tag, Calendar } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Gift, Heart, Plus, MapPin, Tag, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/commerce/page-header";
 import { ErrorState } from "@/components/state/states";
+import { getClientActiveTenant } from "@/lib/context-auth";
 import { listStoreDonations } from "@/services/classifieds.functions";
+import { WorkspaceClassifiedEditorDialog } from "@/components/workspace/workspace-classified-editor-dialog";
 
 export const Route = createFileRoute("/workspace/doacoes/")({
   head: () => ({ meta: [{ title: "Doações | Workspace Waesy" }] }),
@@ -23,6 +26,15 @@ export const Route = createFileRoute("/workspace/doacoes/")({
 
 function WorkspaceDoacoesHubPage() {
   const loaderData = Route.useLoaderData();
+  const queryClient = useQueryClient();
+  const activeStoreId = typeof window !== "undefined" ? getClientActiveTenant() || undefined : undefined;
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any | null>(null);
+
+  const openNewDonation = () => {
+    setEditingItem(null);
+    setEditorOpen(true);
+  };
 
   const { data: donations = loaderData.donations, isLoading, isError } = useQuery({
     queryKey: ["workspace", "store-donations"],
@@ -44,11 +56,14 @@ function WorkspaceDoacoesHubPage() {
           </p>
         </div>
 
-        <Button asChild size="sm" className="h-9 px-4 gap-2 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 shadow-xs min-h-11 sm:min-h-0">
-          <Link to="/conta/classificados/novo" search={{ tipo: "doacao" }}>
-            <Plus className="size-3.5" />
-            <span>Cadastrar Doação Gratuita</span>
-          </Link>
+        <Button
+          type="button"
+          size="sm"
+          onClick={openNewDonation}
+          className="h-9 px-4 gap-2 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 shadow-xs min-h-11 sm:min-h-0 cursor-pointer"
+        >
+          <Plus className="size-3.5" />
+          <span>Cadastrar Doação Gratuita</span>
         </Button>
       </div>
 
@@ -111,11 +126,14 @@ function WorkspaceDoacoesHubPage() {
                 Ajude famílias e projetos sociais da sua cidade doando itens excedentes, mostruários ou organizando campanhas solidárias.
               </p>
             </div>
-            <Button asChild size="sm" className="h-9 px-4 rounded-lg text-xs font-bold min-h-11 sm:min-h-0">
-              <Link to="/conta/classificados/novo" search={{ tipo: "doacao" }}>
-                <Plus className="size-3.5 mr-2" />
-                <span>Criar Primeira Doação</span>
-              </Link>
+            <Button
+              type="button"
+              size="sm"
+              onClick={openNewDonation}
+              className="h-9 px-4 rounded-lg text-xs font-bold min-h-11 sm:min-h-0 cursor-pointer"
+            >
+              <Plus className="size-3.5 mr-2" />
+              <span>Criar Primeira Doação</span>
             </Button>
           </div>
         ) : (
@@ -163,18 +181,16 @@ function WorkspaceDoacoesHubPage() {
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
-                    <Button asChild variant="outline" size="sm" className="min-h-11 px-4 rounded-lg text-xs font-semibold">
-                      <Link to="/classificados/$id" params={{ id: item.id }}>
-                        <Eye className="size-3.5 mr-2" />
-                        <span>Vitrine</span>
-                        <ArrowUpRight className="size-3 ml-1 opacity-60" />
-                      </Link>
-                    </Button>
-
-                    <Button asChild size="sm" className="min-h-11 px-4 rounded-lg text-xs font-semibold">
-                      <Link to="/conta/classificados/novo" search={{ tipo: "doacao", editId: item.id }}>
-                        <span>Editar</span>
-                      </Link>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => {
+                        setEditingItem(item);
+                        setEditorOpen(true);
+                      }}
+                      className="min-h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer"
+                    >
+                      <span>Editar</span>
                     </Button>
                   </div>
                 </div>
@@ -183,6 +199,17 @@ function WorkspaceDoacoesHubPage() {
           </div>
         )}
       </div>
+
+      <WorkspaceClassifiedEditorDialog
+        open={editorOpen}
+        onOpenChange={setEditorOpen}
+        mode="doacao"
+        storeId={activeStoreId}
+        editItem={editingItem}
+        onSaved={() => {
+          queryClient.invalidateQueries({ queryKey: ["workspace", "store-donations"] });
+        }}
+      />
     </div>
   );
 }

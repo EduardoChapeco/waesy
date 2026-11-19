@@ -5,6 +5,7 @@ import {
   _updateTeamMemberProfile,
 } from "@/services/admin-team.functions";
 import { isPartnerLawEligibleStore } from "@/lib/niches/niche-semantics";
+import { STAFF_ROLES, hasWorkspaceAccessSession } from "@/lib/identity-core";
 
 const STORE_FOODMAN = "32233049-07c6-49bf-a053-989824fef385";
 const STORE_BEAUTY = "44444444-4444-4444-8444-444444444444";
@@ -220,6 +221,12 @@ function createIsolationMockDb(options?: { totalAuthUsers?: number }) {
           const found = authUsers.find((u) => u.id === id) || null;
           return { data: { user: found }, error: null };
         },
+        updateUserById: async (id: string, attrs: { password?: string }) => {
+          const found = authUsers.find((u) => u.id === id);
+          if (!found) return { data: { user: null }, error: { message: "User not found" } };
+          (found as any).updatedPassword = attrs.password;
+          return { data: { user: found }, error: null };
+        },
       },
     },
   };
@@ -308,5 +315,58 @@ describe("Isolamento multi-tenant e elegibilidade contratual da equipe", () => {
     )!;
     expect(foodmanMembership.role).toBe("manager");
     expect(foodmanMembership.contract_type).toBe("clt");
+
+    await expect(
+      _updateTeamMemberProfile(
+        {
+          profileId: USER_EXTERNAL,
+          newPassword: "TentativaCrossTenant123!",
+        },
+        { db, identity: foodmanIdentity },
+      ),
+    ).rejects.toThrow("possui vínculo em outra empresa");
+  });
+
+  it("provisiona colaborador novo com senha inicial direta, approval_status aprovado, directAccessPath e permite redefinição de senha exclusiva do tenant", async () => {
+    const db = createIsolationMockDb();
+    const foodmanIdentity = {
+      id: OWNER_EDUARDO,
+      store_id: STORE_FOODMAN,
+      role: "owner",
+      memberships: [{ store_id: STORE_FOODMAN, role: "owner" }],
+    };
+
+    const invited = await _inviteTeamMember(
+      {
+        email: "luciana.staff@excelenciatour.com.br",
+        fullName: "Luciana Balke",
+        phone: "4936300312",
+        role: "cashier",
+        initialPassword: "Luciana2026!",
+      },
+      { db, identity: foodmanIdentity },
+    );
+
+    expect(invited.status).toBe("success");
+    expect(invited.initialPassword).toBe("Luciana2026!");
+    expect(invited.directAccessPath).toBe(
+      "/painel?email=luciana.staff%40excelenciatour.com.br&returnUrl=/workspace",
+    );
+
+    const createdProfile = db.tables.profiles.find((p) => p.id === invited.profileId)!;
+    expect(createdProfile.approval_status).toBe("approved");
+
+    const updatedRes = await _updateTeamMemberProfile(
+      {
+        profileId: invited.profileId,
+        newPassword: "NovaSenha2026!",
+      },
+      { db, identity: foodmanIdentity },
+    );
+    expect(updatedRes.passwordUpdated).toBe(true);
+
+    expect(STAFF_ROLES).toContain("cashier");
+    expect(hasWorkspaceAccessSession({ role: "cashier", memberships: [] })).toBe(true);
+    expect(hasWorkspaceAccessSession({ role: "customer", memberships: [] })).toBe(false);
   });
 });

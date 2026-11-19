@@ -15,8 +15,10 @@ import {
   infotravelSearchCarRentals,
   infotravelSearchFlights,
   infotravelSearchHotels,
+  normalizeInfoTravelOperatorSlug,
   resolveStoreInfotravelCredentials,
   sanitizeInfotravelSearchText,
+  INFOTRAVEL_OPERATOR_SLUGS,
   type InfoTravelOperatorSlug,
 } from "@/services/infotravel";
 import type {
@@ -57,33 +59,6 @@ export function resolveProviderCodesForSearch(query: Pick<NormalizedSearchQuery,
  * Consulta de ofertas multi-fornecedor com tolerância a falhas parciais.
  * Se um provedor cair ou expirar, os demais continuam e o sistema reporta resultados sem jank.
  */
-const INFOTRAVEL_OPERATOR_SLUGS = new Set<string>([
-  "infotravel",
-  "infotravel_default",
-  "orinter",
-  "frt",
-  "incomum",
-  "cativa",
-  "befly",
-  "confianca",
-]);
-
-function normalizeInfoTravelOperatorSlug(code: string): InfoTravelOperatorSlug {
-  const clean = code.toLowerCase().replace(/^infotravel_/, "");
-  if (
-    clean === "orinter" ||
-    clean === "frt" ||
-    clean === "incomum" ||
-    clean === "cativa" ||
-    clean === "befly" ||
-    clean === "confianca" ||
-    clean === "infotravel_default"
-  ) {
-    return clean;
-  }
-  return "infotravel_default";
-}
-
 export async function executeMultiProviderSearch(
   query: NormalizedSearchQuery
 ): Promise<{ offers: TravelOfferDTO[]; providersResponded: string[]; errors: string[] }> {

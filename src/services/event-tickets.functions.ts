@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { signTicketPayload, verifyTicketPayload } from "@/lib/ticket-crypto";
 import { generateQrCodeDataUri } from "@/lib/qr-code";
+import { buildEmvPixCopyPaste } from "@/lib/pix-payload";
 
 export interface CustomerEventTicketDTO {
   id: string;
@@ -33,63 +34,6 @@ export interface CustomerEventTicketDTO {
   cancellationReason?: string | null;
   transferredAt?: string | null;
   isComplimentary?: boolean;
-}
-
-function buildEmvPixCopyPaste(params: {
-  pixKey: string;
-  merchantName: string;
-  merchantCity: string;
-  amountCents: number;
-  txid: string;
-}): string {
-  const formatField = (id: string, value: string) =>
-    `${id}${String(value.length).padStart(2, "0")}${value}`;
-
-  const cleanName = params.merchantName
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9 ]/g, "")
-    .slice(0, 25)
-    .toUpperCase() || "WAESY EVENTOS";
-  const cleanCity = params.merchantCity
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9 ]/g, "")
-    .slice(0, 15)
-    .toUpperCase() || "CHAPECO";
-  const cleanTxid = params.txid.replace(/[^a-zA-Z0-9]/g, "").slice(0, 25) || "WAESYTKT";
-  const amountStr = (Math.max(0, params.amountCents) / 100).toFixed(2);
-
-  const gui = formatField("00", "br.gov.bcb.pix");
-  const key = formatField("01", params.pixKey.trim());
-  const merchantAccount = formatField("26", `${gui}${key}`);
-
-  const payloadWithoutCrc = [
-    formatField("00", "01"),
-    merchantAccount,
-    formatField("52", "0000"),
-    formatField("53", "986"),
-    ...(params.amountCents > 0 ? [formatField("54", amountStr)] : []),
-    formatField("58", "BR"),
-    formatField("59", cleanName),
-    formatField("60", cleanCity),
-    formatField("62", formatField("05", cleanTxid)),
-    "6304",
-  ].join("");
-
-  let crc = 0xffff;
-  for (let i = 0; i < payloadWithoutCrc.length; i++) {
-    crc ^= payloadWithoutCrc.charCodeAt(i) << 8;
-    for (let j = 0; j < 8; j++) {
-      if ((crc & 0x8000) !== 0) {
-        crc = ((crc << 1) ^ 0x1021) & 0xffff;
-      } else {
-        crc = (crc << 1) & 0xffff;
-      }
-    }
-  }
-  const crcHex = crc.toString(16).toUpperCase().padStart(4, "0");
-  return `${payloadWithoutCrc}${crcHex}`;
 }
 
 /**

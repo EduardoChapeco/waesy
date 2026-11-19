@@ -13,7 +13,7 @@ import type {
   EscamasSlide,
   StudioBrandProfile,
 } from "@/types/studio-machine";
-import { DEFAULT_BRAND_PROFILE } from "@/lib/studio-machine-constants";
+import { DEFAULT_BRAND_PROFILE } from "@/lib/builder/studio-machine-constants";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 
 // ============================================================
@@ -922,15 +922,42 @@ export const generateBrandKitWithAI = createServerFn({ method: "POST" })
         }
       : {};
 
-    const { data: result, error } = await supabase.functions.invoke("sw-brand-generate", {
-      body: {
-        store_id: identity.store_id,
-        briefing_data: { ...briefingContext, context_hint: data?.context_hint },
-      },
+    const aiPrompt = `Gere uma identidade visual completa (paleta harmônica acessível WCAG AA + recomendação tipográfica) em JSON estrito com chaves:
+{
+  "colors": { "primary": "#...", "secondary": "#...", "accent": "#...", "background": "#...", "surface": "#...", "text": "#..." },
+  "typography": { "heading_font": "...", "body_font": "..." },
+  "rationale": "explicação breve das escolhas"
+}
+Contexto da marca: ${JSON.stringify({ ...briefingContext, context_hint: data?.context_hint || "" })}`;
+
+    const aiResult = await executeUnifiedAiCall({
+      prompt: aiPrompt,
+      systemInstruction:
+        "Você é um Diretor de Design especializado em sistemas de marca acessíveis WCAG AA. Retorne estritamente JSON válido.",
+      preferredProvider: "gemini",
+      jsonMode: true,
+      maxTokens: 900,
+      temperature: 0.6,
     });
 
-    if (error) throw new Error("Erro na geração IA: " + error.message);
-    const generated = result?.data ?? result;
+    if (!aiResult.text) {
+      throw new Error("O provedor de IA não retornou uma resposta para geração de paleta.");
+    }
+
+    let generated: any;
+    try {
+      generated = JSON.parse(aiResult.text);
+    } catch (parseErr) {
+      const { logSystemError } = await import("@/lib/logger");
+      logSystemError({
+        route: "studio.generateBrandPaletteAI",
+        contractName: "generateBrandPaletteAI",
+        error: parseErr,
+        payload: { storeId: identity.store_id },
+      });
+      throw new Error("A resposta da IA não continha um JSON válido de paleta.");
+    }
+
     if (
       !generated ||
       typeof generated !== "object" ||
@@ -938,7 +965,7 @@ export const generateBrandKitWithAI = createServerFn({ method: "POST" })
       typeof generated.colors !== "object"
     ) {
       throw new Error(
-        "A Edge Function não retornou uma paleta válida; nenhum valor substituto foi aplicado.",
+        "A geração IA não retornou uma paleta válida; nenhum valor substituto foi aplicado.",
       );
     }
     return generated;
@@ -1060,24 +1087,42 @@ export const generateBrandBriefingWithAI = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
-    const supabase = getServerClient();
 
     if (!identity.store_id) throw new Error("Loja não identificada.");
 
-    const { data: result, error } = await supabase.functions.invoke("sw-briefing-generate", {
-      body: {
-        store_id: identity.store_id,
-        form_data: {
-          company_name: data?.company_name || "",
-          segment: data?.segment || "",
-          target_audience: data?.target_audience || "",
-          main_differentials: data?.main_differentials || "",
-        },
-      },
+    const formContext = {
+      company_name: data?.company_name || "",
+      segment: data?.segment || "",
+      target_audience: data?.target_audience || "",
+      main_differentials: data?.main_differentials || "",
+    };
+
+    const aiResult = await executeUnifiedAiCall({
+      prompt: `Com base nos dados abaixo, gere um Briefing Estratégico completo em JSON com chaves "business_model", "ideal_customer_profile", "tone_of_voice", "value_proposition", "content_pillars" (array de strings) e "competitor_positioning". Dados: ${JSON.stringify(formContext)}`,
+      systemInstruction:
+        "Você é um Estrategista de Marca Sênior. Retorne exclusivamente JSON válido em português do Brasil sem preenchimentos genéricos.",
+      preferredProvider: "gemini",
+      jsonMode: true,
+      maxTokens: 1200,
+      temperature: 0.6,
     });
 
-    if (error) throw new Error("Erro na geração de briefing com IA: " + error.message);
-    return result?.data ?? result ?? null;
+    if (!aiResult.text) {
+      throw new Error("Serviço de IA indisponível para gerar o briefing estratégico.");
+    }
+
+    try {
+      return JSON.parse(aiResult.text);
+    } catch (parseErr) {
+      const { logSystemError } = await import("@/lib/logger");
+      logSystemError({
+        route: "studio.generateBrandBriefingAI",
+        contractName: "generateBrandBriefingAI",
+        error: parseErr,
+        payload: { storeId: identity.store_id },
+      });
+      throw new Error("Erro ao interpretar o briefing retornado pela IA.");
+    }
   });
 
 export interface SocialCardResultDTO {
@@ -1790,48 +1835,21 @@ Retorne APENAS um objeto JSON no seguinte formato:
         return parsed.variants;
       }
     }
-  } catch (err) {
-    console.warn(
-      "[studio.functions] Erro no refinamento de texto via IA, acionando fallback heurístico:",
-      err,
+    throw new Error("A resposta da IA não conteve variações válidas.");
+  } catch (err: any) {
+    try {
+      const { logSystemError } = await import("@/lib/logger");
+      logSystemError({
+        route: "studio.internalRefineSlideTextWithAI",
+        contractName: "internalRefineSlideTextWithAI",
+        error: err,
+        payload: { niche: input.niche, targetTone },
+      });
+    } catch {}
+    throw new Error(
+      `Falha ao refinar slide com IA: ${err?.message || "serviço de IA indisponível no momento."}`,
     );
   }
-
-  // Fallback inteligente garantido caso a IA externa esteja temporariamente inacessível
-  const baseTitle = input.headline.trim();
-  return [
-    {
-      tone: "Impacto & Curto",
-      badge: input.badge || "DESTAQUE",
-      kicker: input.kicker || "URBANO",
-      headline: baseTitle.length > 50 ? `${baseTitle.slice(0, 47)}...` : baseTitle,
-      body: input.body
-        ? `${input.body.slice(0, 120)}...`
-        : "Informações verificadas e atualizadas na rede Waesy.",
-      cta_text: "Saiba Mais",
-      rationale: "Versão condensada para retenção máxima em até 2 segundos de scroll.",
-    },
-    {
-      tone: "Jornalístico & Editorial",
-      badge: input.badge || "ANÁLISE EXCLUSIVA",
-      kicker: input.kicker || "PANORAMA",
-      headline: baseTitle,
-      body:
-        input.body ||
-        "Contexto apurado pelos editores para manter você à frente dos acontecimentos.",
-      cta_text: "Ler Matéria Completa",
-      rationale: "Tom fidedigno e autoritário focado em clareza factual.",
-    },
-    {
-      tone: "Persuasivo & Engajamento",
-      badge: input.badge || "NÃO PERCA",
-      kicker: input.kicker || "OPORTUNIDADE",
-      headline: `${baseTitle} — O que você precisa saber agora`,
-      body: input.body || "Descubra todos os detalhes e compartilhe com sua equipe ou comunidade.",
-      cta_text: "Conferir no Waesy",
-      rationale: "Gatilho de urgência e relevância social para impulsionar compartilhamentos.",
-    },
-  ];
 }
 
 export const refineSlideTextWithAI = createServerFn({ method: "POST" })

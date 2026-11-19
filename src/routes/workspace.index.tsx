@@ -9,7 +9,7 @@ import { getUserSession } from "@/services/auth.functions";
 import { getDashboardData, type DashboardMetrics } from "@/services/dashboard.functions";
 import { toggleStoreOpenStatus } from "@/services/store.functions";
 import { StoreShareQrModal } from "@/components/workspace/store-share-qr-modal";
-import { getNicheSemantics } from "@/lib/niche-semantics";
+import { getNicheSemantics } from "@/lib/niches/niche-semantics";
 import { resolveUnifiedNicheId } from "@/lib/niches/niche-ssot";
 import { formatMoney } from "@/lib/money";
 import { SeasonalMarketingCalendarWidget } from "@/components/admin/marketing/seasonal-marketing-calendar-widget";
@@ -375,12 +375,6 @@ export default function WorkspaceDashboardPage() {
           >
             <QrCode className="size-3.5 text-primary" />
             <span>Divulgar</span>
-          </Button>
-
-          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold border-border/40 hover:bg-muted/50 h-11 min-h-11 shrink-0 whitespace-nowrap">
-            <Link to="/workspace/lojas">
-              Trocar Loja
-            </Link>
           </Button>
 
           {activeStore?.slug && (

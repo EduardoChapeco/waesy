@@ -316,18 +316,10 @@ function BiolinkPage() {
  );
  }
 
- // Bloco Especial: Grade de Especialidades / Serviços de Turismo (8 Cards)
+ // Bloco Especial: Grade de Especialidades / Serviços de Turismo (Configurado pelo Lojista)
  if (block.type === "services_grid") {
- const servicesList = block.services || [
- { icon: "plane", title: "Pacotes nacionais e internacionais", subtitle: "Maceió, Caldas, Portugal e mais." },
- { icon: "passport", title: "Passaporte e vistos", subtitle: "Americano, Mexicano e demais consulados." },
- { icon: "insurance", title: "Seguro viagem", subtitle: "Coberturas para todos os destinos." },
- { icon: "cruise", title: "Cruzeiros marítimos", subtitle: "Saídas nacionais e internacionais." },
- { icon: "school", title: "Viagens escolares", subtitle: "Formaturas e intercâmbios." },
- { icon: "corporate", title: "Viagens corporativas", subtitle: "Logística completa para sua empresa." },
- { icon: "honeymoon", title: "Lua de mel e grupos", subtitle: "Roteiros personalizados." },
- { icon: "premium", title: "Experiências premium", subtitle: "Viagens especiais com curadoria." },
- ];
+ const servicesList = Array.isArray(block.services) ? block.services : [];
+ if (servicesList.length === 0) return null;
 
  return (
  <div key={block.id || index} className="w-full space-y-3 text-center pt-3">

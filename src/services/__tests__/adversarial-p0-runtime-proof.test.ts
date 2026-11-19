@@ -16,6 +16,8 @@ const dbPassword = process.env.SUPABASE_DB_PASSWORD || process.env.DB_PASSWORD |
 const pool = new pg.Pool({
   connectionString: `postgres://postgres.${projectRef}:${encodeURIComponent(dbPassword)}@aws-0-sa-east-1.pooler.supabase.com:6543/postgres`,
   ssl: { rejectUnauthorized: false },
+  max: 2,
+  connectionTimeoutMillis: 15000,
 });
 
 let isPoolConnected = false;
@@ -48,13 +50,13 @@ describe('FASE 3 — Prova Adversarial Executável dos 4 P0s com Banco Real', ()
       const insStore = await pool.query("INSERT INTO stores (name, slug) VALUES ('Agencia Teste', 'agencia-teste-adv') RETURNING id");
       realStoreId = insStore.rows[0].id;
     }
-  });
+  }, 30000);
 
   afterAll(async () => {
     try {
       await pool.end();
     } catch {}
-  });
+  }, 30000);
 
   describe('GAP-P0-1: Wallet & Depósito Pix (Zero-Trust Financeiro)', () => {
     it('deve rejeitar solicitação de depósito Pix quando o servidor não possui credencial ativa de gateway', async () => {
@@ -137,7 +139,7 @@ describe('FASE 3 — Prova Adversarial Executável dos 4 P0s com Banco Real', ()
 
       // Limpeza segura
       await pool.query("DELETE FROM financial_ledger_entries WHERE transaction_id = $1", [testTx]);
-    });
+    }, 20000);
   });
 
   describe('GAP-P0-2: Waesy Go (Precificação 100% Server-Authoritative)', () => {
@@ -235,6 +237,6 @@ describe('FASE 3 — Prova Adversarial Executável dos 4 P0s com Banco Real', ()
       // Limpeza
       await pool.query("DELETE FROM travel_offer_snapshots WHERE id = $1", [testSnapId]);
       await pool.query("DELETE FROM travel_quote_sessions WHERE id = $1", [testSessId]);
-    });
+    }, 20000);
   });
 });

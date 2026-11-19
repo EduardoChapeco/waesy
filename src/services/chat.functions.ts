@@ -9,6 +9,8 @@ import { getServerClient, getAnonServerClient, SupabaseUnconfiguredError } from 
 import { getSSRClient, getServerIdentity, assertStoreAccess, STAFF_ROLES, MANAGER_ROLES } from "@/lib/server-access";
 import { getAllActiveKeysForProvider } from "@/services/api-orchestrator.functions";
 import { isSyntheticMetaLid, isRawLidOrSyntheticName } from "@/lib/chat-media-attachment";
+import { buildBrandedAppBaseUrl, buildBrandedClientPortalUrl } from "@/lib/branded-app-links";
+import { buildBrazilPhoneVariants } from "@/lib/phone-match";
 import {
   isBrokenOrMissingMediaUri,
   normalizeMediaDataUri,
@@ -121,7 +123,7 @@ export const listStaffThreadsSchema = z.object({
  assigned_to: z.string().optional(),
  channel_instance_id: z.string().uuid().optional(),
  channelInstanceId: z.string().uuid().optional(),
- status: z.enum(["open", "closed", "archived", "all"]).default("all"),
+ status: z.enum(["open", "closed", "archived", "waiting", "forgotten", "pending", "all"]).default("all"),
  store_id: z.string().uuid().optional(),
  storeId: z.string().uuid().optional(),
 });
@@ -142,15 +144,23 @@ export const sendStaffMessageSchema = z
     { message: "Informe o texto da mensagem ou anexe um arquivo.", path: ["message"] },
   );
 
-export const sendCustomerMessageSchema = z.object({
- threadId: z.string().uuid(),
- message: z.string().min(1),
- message_type: z
- .enum(["text", "order_card", "rma_ticket", "system_event", "image_attachment", "structured_blocks", "sticker", "image", "video", "audio", "document", "internal_note"])
- .default("text"),
- attachments: z.array(z.string()).default([]),
- payload: z.record(z.any()).default({}),
-});
+export {
+  sendCustomerMessageSchema,
+  createRmaTicketSchema,
+  updateTicketStatusSchema,
+  sendCustomerChatMessage,
+  searchChatContacts,
+  listCustomerChatThreads,
+  startCustomerChatThread,
+  createSupportRmaTicket,
+  updateTicketStatus,
+  createLinkedCustomerTaskSchema,
+  createLinkedCustomerTask,
+  toggleCustomerOnboardingStepSchema,
+  toggleCustomerOnboardingStep,
+  generateOmnichannelCopilotInsight,
+  autoFillLeadDossierFromChatAi,
+} from "./chat/customer-tasks-and-portal.functions";
 
 export const assignThreadSchema = z.object({
  threadId: z.string().uuid(),
@@ -158,30 +168,6 @@ export const assignThreadSchema = z.object({
  assigned_to_profile_id: z.string().uuid().nullable().optional(),
  priority: z.enum(["low", "normal", "high", "urgent"]).optional(),
  internal_notes: z.string().optional(),
-});
-
-export const createRmaTicketSchema = z.object({
- threadId: z.string().uuid(),
- store_id: z.string().uuid(),
- order_id: z.string().uuid().optional(),
- ticket_type: z.enum([
- "return_exchange",
- "missing_item",
- "defect_complaint",
- "delivery_issue",
- "billing_pix",
- "other",
- ]),
- title: z.string().min(3, "Título do chamado muito curto"),
- description: z.string().min(10, "Descreva o problema detalhadamente"),
- photo_urls: z.array(z.string().url()).default([]),
-});
-
-export const updateTicketStatusSchema = z.object({
- ticketId: z.string().uuid(),
- status: z.enum(["open", "under_review", "action_required", "refunded", "resolved", "rejected"]),
- resolution_notes: z.string().optional(),
- refund_amount_cents: z.number().int().nonnegative().optional(),
 });
 
 // ============================================================
@@ -223,41 +209,53 @@ export const listChatThreads = createServerFn({ method: "GET" })
  const isSupervisor = [...MANAGER_ROLES].includes(effectiveRole as any) ||
    (identity.role === "platform_admin" || identity.role === "master");
 
- let query = db
- .from("chat_threads")
- .select(
- `
+ const baseSelectColumns = `
+ id, store_id, customer_id, guest_name, guest_email, status, subject,
+ department, assigned_to_profile_id, channel_instance_id, order_id, priority, satisfaction_rating,
+ internal_notes, first_response_at, closed_at, updated_at, created_at, thread_type, context_type, entity_id, metadata, tags,
+ group_subject, primary_phone_e164, lead_id, attribution,
+ last_message_text, last_message_at, last_customer_message_at, last_staff_reply_at
+ `;
+ const legacySelectColumns = `
  id, store_id, customer_id, guest_name, guest_email, status, subject,
  department, assigned_to_profile_id, channel_instance_id, order_id, priority, satisfaction_rating,
  internal_notes, first_response_at, closed_at, updated_at, created_at, thread_type, context_type, entity_id, metadata, tags,
  group_subject, primary_phone_e164, lead_id, attribution,
  last_message_text, last_message_at
- `,
- )
- .eq("store_id", effectiveStoreId)
-		.not("thread_type", "in", "(ai_assistant,copilot,project)")
- .order("updated_at", { ascending: false })
- .limit(150);
+ `;
 
- // Filtro de status canônico do banco (open, closed, archived, pending)
- const canonicalStatuses = new Set(["open", "closed", "archived", "pending"]);
- if (data?.status === "archived") {
-		query = query.eq("status", "archived");
-	} else if (data?.status && canonicalStatuses.has(data.status)) {
-		query = query.eq("status", data.status);
-	} else {
-		query = query.neq("status", "archived");
-	}
+ const applyListThreadFilters = (q: any) => {
+   let built = q
+     .eq("store_id", effectiveStoreId)
+     .not("thread_type", "in", "(ai_assistant,copilot,project)")
+     .order("last_message_at", { ascending: false, nullsFirst: false })
+     .order("updated_at", { ascending: false })
+     .limit(150);
 
- // Filtro de departamento
- if (data?.department && data.department !== "all") {
- query = query.eq("department", data.department);
- }
+   // Filtro de status canônico + aguardando resposta / esquecidos hoje
+   const canonicalStatuses = new Set(["open", "closed", "archived", "pending"]);
+   if (data?.status === "archived") {
+     built = built.eq("status", "archived");
+   } else if (data?.status === "waiting" || data?.status === "forgotten") {
+     built = built.in("status", ["open", "pending"]);
+   } else if (data?.status && canonicalStatuses.has(data.status)) {
+     built = built.eq("status", data.status);
+   } else {
+     built = built.neq("status", "archived");
+   }
 
- const channelInstanceFilter = data?.channel_instance_id || data?.channelInstanceId;
- if (channelInstanceFilter) {
- query = query.eq("channel_instance_id", channelInstanceFilter);
- }
+   if (data?.department && data.department !== "all") {
+     built = built.eq("department", data.department);
+   }
+
+   const channelInstanceFilter = data?.channel_instance_id || data?.channelInstanceId;
+   if (channelInstanceFilter) {
+     built = built.eq("channel_instance_id", channelInstanceFilter);
+   }
+   return built;
+ };
+
+ let query = applyListThreadFilters(db.from("chat_threads").select(baseSelectColumns));
 
   // Se não for supervisor/gerente, visualiza apenas seus setores atribuídos ou threads atribuídas ao perfil
   const deniedInstanceIds = new Set<string>();
@@ -321,12 +319,19 @@ export const listChatThreads = createServerFn({ method: "GET" })
     query = query.or(allowedClauses.join(","));
   }
 
- const { data: rawThreads, error } = await query;
+ let { data: rawThreads, error } = await query;
+ if (error && (String(error.code || "") === "42703" || String(error.message || "").includes("last_customer_message_at"))) {
+   const fallbackQuery = applyListThreadFilters(db.from("chat_threads").select(legacySelectColumns));
+   const retryRes = await fallbackQuery;
+   rawThreads = retryRes.data;
+   error = retryRes.error;
+ }
  if (error) {
  console.warn("[chat.functions] Erro ao consultar chat_threads:", error.message);
  return {
  threads: [],
  metrics: { total: 0, open: 0, closed: 0, avg_rating: null, sla_first_response_min: null },
+ slaAlerts: { waitingCount: 0, atRiskCount: 0, breachedCount: 0, forgottenTodayCount: 0, forgottenLeadsCount: 0, forgottenThreads: [] },
  };
  }
 
@@ -368,186 +373,305 @@ export const listChatThreads = createServerFn({ method: "GET" })
  }
 
  const messagesByThreadMap = new Map<string, any[]>();
+ const threadSummaryByRpc = new Map<string, { message: string | null; message_type: string | null; created_at: string | null; is_staff_reply: boolean; total_messages: number }>();
  const threadIds = threadsList.map((t: any) => t.id).filter(Boolean);
  if (threadIds.length > 0) {
-  const { data: recentMessages } = await db
-   .from("chat_messages")
-   .select("id, thread_id, message, message_type, created_at, is_staff_reply, payload")
-   .in("thread_id", threadIds)
-   .order("created_at", { ascending: false })
-   .limit(Math.min(threadIds.length * 5, 400));
+  let usedRpc = false;
+  try {
+    const rpcRes = await (db as any).rpc("get_threads_latest_public_messages", { p_thread_ids: threadIds });
+    if (!rpcRes?.error && Array.isArray(rpcRes?.data)) {
+      usedRpc = true;
+      for (const row of rpcRes.data) {
+        if (row?.thread_id) {
+          threadSummaryByRpc.set(String(row.thread_id), {
+            message: row.message ?? null,
+            message_type: row.message_type ?? "text",
+            created_at: row.created_at ?? null,
+            is_staff_reply: Boolean(row.is_staff_reply),
+            total_messages: Number(row.total_messages || 0),
+          });
+        }
+      }
+    }
+  } catch {
+    usedRpc = false;
+  }
 
-  for (const msg of recentMessages || []) {
-   const arr = messagesByThreadMap.get(msg.thread_id) || [];
-   arr.push(msg);
-   messagesByThreadMap.set(msg.thread_id, arr);
+  if (!usedRpc) {
+    // Fallback em fatias pequenas (20 threads/fatia) para impedir que 1 thread ruidosa esgote o limite das demais
+    for (let i = 0; i < threadIds.length; i += 20) {
+      const batchIds = threadIds.slice(i, i + 20);
+      const { data: recentMessages } = await db
+        .from("chat_messages")
+        .select("id, thread_id, message, message_type, created_at, is_staff_reply, payload")
+        .in("thread_id", batchIds)
+        .order("created_at", { ascending: false })
+        .limit(200);
+
+      for (const msg of recentMessages || []) {
+        const arr = messagesByThreadMap.get(msg.thread_id) || [];
+        arr.push(msg);
+        messagesByThreadMap.set(msg.thread_id, arr);
+      }
+    }
   }
  }
 
- // Mapeamento e extração da última mensagem
- const formattedThreads = threadsList.map((thread: any) => {
- const messages = messagesByThreadMap.get(thread.id) || [];
- messages.sort(
- (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
- );
- // Mensagens públicas (exclui notas internas da equipe para não vazar informações confidenciais)
- const isInternalMsg = (m: any) => {
-   return Boolean(
-     m.payload?.is_internal ||
-     m.payload?.is_whisper ||
-     m.payload?.whisper ||
-     m.message_type === "internal_note" ||
-     m.message_type === "system_event" ||
-     m.origin === "internal_note" ||
-     (typeof m.message === "string" && thread.internal_notes && thread.internal_notes.includes(m.message))
-   );
- };
- const publicMessages = messages.filter((m: any) => !isInternalMsg(m));
- const lastPublicMsg = publicMessages[0];
- const lastMsg = messages[0];
- const customerProfile = thread.customer_id ? profilesMap.get(thread.customer_id) : null;
- const agentProfile = thread.assigned_to_profile_id ? profilesMap.get(thread.assigned_to_profile_id) : null;
- const threadMeta = (thread.metadata && typeof thread.metadata === "object" ? thread.metadata : {}) as Record<string, any>;
- const overrideProfile = (threadMeta.customer_profile_override && typeof threadMeta.customer_profile_override === "object" ? threadMeta.customer_profile_override : null) as Record<string, any> | null;
- const rawEntityDigits = String(thread.entity_id || "").replace(/\D/g, "");
- const threadIsGroup = Boolean(
-   thread.thread_type === "group" ||
-   threadMeta.is_group ||
-   String(thread.entity_id || "").includes("@g.us") ||
-   /^120363\d{10,}$/.test(rawEntityDigits)
- );
- const threadIsChannel = Boolean(thread.thread_type === "channel" || threadMeta.is_channel || String(thread.entity_id || "").includes("@newsletter"));
- const threadAvatar = overrideProfile?.avatar_url || threadMeta.avatar_url || customerProfile?.avatar_url || null;
- const rawEmail = String(overrideProfile?.email || customerProfile?.email || thread.guest_email || "").trim();
- const cleanEmail = /@(grupo\.)?whatsap/i.test(rawEmail) ? "" : rawEmail;
- const resolvedCandidatePhone = overrideProfile?.phone || customerProfile?.phone || thread.primary_phone_e164 || thread.entity_id || "";
- const isMetaLidWithoutPhone = !threadIsGroup && !threadIsChannel && isSyntheticMetaLid(thread.entity_id, resolvedCandidatePhone, threadMeta);
- const directPhone = threadIsGroup || threadIsChannel || isMetaLidWithoutPhone ? "" : resolvedCandidatePhone;
- const groupSubject = overrideProfile?.full_name || thread.group_subject || threadMeta.group_subject || null;
- const safeCustomerName = !isRawLidOrSyntheticName(customerProfile?.full_name, thread.entity_id, threadMeta) ? customerProfile?.full_name : null;
- const safeGuestName = !isRawLidOrSyntheticName(thread.guest_name, thread.entity_id, threadMeta) ? thread.guest_name : null;
- const safePushName = !isRawLidOrSyntheticName(threadMeta.push_name, thread.entity_id, threadMeta) ? threadMeta.push_name : null;
- const resolvedDisplayName =
-   overrideProfile?.full_name ||
-   (threadIsGroup ? groupSubject : null) ||
-   safeCustomerName ||
-   safeGuestName ||
-   safePushName ||
-   (threadIsGroup
-     ? "Grupo WhatsApp"
-     : threadIsChannel
-       ? "Canal WhatsApp"
-       : thread.context_type === "whatsapp"
-         ? isMetaLidWithoutPhone
-           ? `Contato WhatsApp #${rawEntityDigits.slice(-4) || "LID"}`
-           : `WhatsApp ${directPhone || thread.entity_id || ""}`
-         : "Cliente");
- const threadAttribution =
-   (thread.attribution && typeof thread.attribution === "object" && Object.keys(thread.attribution).length > 0
-     ? thread.attribution
-     : threadMeta.attribution && typeof threadMeta.attribution === "object"
-       ? threadMeta.attribution
-       : null);
+  const [deptSlaRes, forgottenLeadsRes] = await Promise.all([
+    db
+      .from("chat_departments")
+      .select("slug, sla_minutes")
+      .eq("store_id", effectiveStoreId)
+      .eq("is_active", true),
+    (async () => {
+      try {
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+        const { count } = await db
+          .from("leads_crm")
+          .select("id", { count: "exact", head: true })
+          .eq("store_id", effectiveStoreId)
+          .gte("created_at", startOfDay.toISOString())
+          .is("last_contacted_at", null)
+          .not("status", "in", "(won,ganho,lost,perdido,archived,arquivado,closed,fechado)");
+        return Number(count || 0);
+      } catch {
+        return 0;
+      }
+    })(),
+  ]);
 
- return {
- id: thread.id,
- status: thread.status,
- subject: thread.subject,
- department: thread.department || "geral",
- priority: thread.priority || "normal",
- satisfaction_rating: thread.satisfaction_rating,
- assigned_agent: agentProfile,
- thread_type: threadIsGroup ? "group" : threadIsChannel ? "channel" : thread.thread_type,
- is_group: threadIsGroup,
- is_channel: threadIsChannel,
- is_lid: isMetaLidWithoutPhone,
- group_subject: groupSubject,
- group_jid: threadIsGroup ? (threadMeta.whatsapp_jid || threadMeta.remote_jid || thread.entity_id || null) : null,
- participants_count: Array.isArray(threadMeta.participants) ? threadMeta.participants.length : 0,
- lead_id: thread.lead_id || threadMeta.active_lead_id || null,
- attribution: threadAttribution,
- avatar_url: threadAvatar,
- metadata: threadMeta,
-			context_type: thread.context_type,
-			channel: thread.context_type === "whatsapp" ? "whatsapp" : "web",
-			customer: {
-				...(customerProfile || {}),
-				full_name: resolvedDisplayName,
-				email: cleanEmail,
-				phone: directPhone,
-				avatar_url: threadAvatar,
-			},
- order_id: thread.order_id,
- internal_notes: thread.internal_notes,
-        tags: thread.tags || [],
- updated_at: thread.updated_at,
- created_at: thread.created_at,
- last_message: (() => {
-   if (lastPublicMsg) {
-     if (typeof lastPublicMsg.message === "string" && !lastPublicMsg.message.startsWith("waesy-msg:")) {
-       return lastPublicMsg.message;
-     }
-     return lastPublicMsg.message_type === "image" ? "[Imagem]"
-       : lastPublicMsg.message_type === "video" ? "[Vídeo]"
-       : lastPublicMsg.message_type === "audio" ? "[Áudio]"
-       : lastPublicMsg.message_type === "document" ? "[Documento]"
-       : lastPublicMsg.message_type === "sticker" ? "[Figurinha]"
-       : "[Mensagem]";
-   }
-   const hasInternalNotes = messages.some(isInternalMsg) || Boolean(thread.internal_notes && thread.internal_notes.trim());
-   if (hasInternalNotes) {
-     return "(Apenas anotações internas da equipe)";
-   }
-   return "";
- })(),
- last_message_type: lastPublicMsg ? lastPublicMsg.message_type : (lastMsg ? lastMsg.message_type : "text"),
- is_last_reply_staff: lastPublicMsg ? Boolean(lastPublicMsg.is_staff_reply) : false,
- total_messages: messages.length,
- };
- });
+  const deptSlaMinutesMap = new Map<string, number>();
+  for (const d of (deptSlaRes?.data as any[]) || []) {
+    if (d?.slug && typeof d.sla_minutes === "number" && d.sla_minutes > 0) {
+      deptSlaMinutesMap.set(String(d.slug), d.sla_minutes);
+    }
+  }
 
- const ratedThreads = threadsList.filter(
-  (t: any) => typeof t.satisfaction_rating === "number" && t.satisfaction_rating > 0,
- );
- const avg_rating =
-  ratedThreads.length > 0
-   ? Number(
-     (
-      ratedThreads.reduce((acc: number, t: any) => acc + t.satisfaction_rating, 0) /
-      ratedThreads.length
-     ).toFixed(1),
-    )
-   : null;
+  const [{ computeThreadSlaStatus, computeSlaAlertsSummary }, { sanitizeCustomerEmail }] = await Promise.all([
+    import("@/lib/sla-metrics"),
+    import("@/lib/contact-sanitize"),
+  ]);
+  const nowSlaMs = Date.now();
 
- // Métricas de Governança Autênticas (Zero Mocks / Invariante B.33)
- const metrics = {
- total: threadsList.length,
- open: threadsList.filter((t) => t.status === "open").length,
- closed: threadsList.filter((t) => t.status === "closed" || t.status === "resolved").length,
- avg_rating,
- sla_first_response_min: null,
- };
+  // Mapeamento, SLA real e extração da última mensagem
+  const formattedThreads = threadsList.map((thread: any) => {
+  const rpcSummary = threadSummaryByRpc.get(thread.id);
+  const messages = messagesByThreadMap.get(thread.id) || [];
+  messages.sort(
+  (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+  );
+  // Mensagens públicas (exclui notas internas da equipe para não vazar informações confidenciais)
+  const isInternalMsg = (m: any) => {
+    return Boolean(
+      m.payload?.is_internal ||
+      m.payload?.is_whisper ||
+      m.payload?.whisper ||
+      m.message_type === "internal_note" ||
+      m.message_type === "system_event" ||
+      m.origin === "internal_note" ||
+      (typeof m.message === "string" && thread.internal_notes && thread.internal_notes.includes(m.message))
+    );
+  };
+  const publicMessages = messages.filter((m: any) => !isInternalMsg(m));
+  const lastPublicMsg = publicMessages[0];
+  const lastMsg = messages[0];
+  const customerProfile = thread.customer_id ? profilesMap.get(thread.customer_id) : null;
+  const agentProfile = thread.assigned_to_profile_id ? profilesMap.get(thread.assigned_to_profile_id) : null;
+  const threadMeta = (thread.metadata && typeof thread.metadata === "object" ? thread.metadata : {}) as Record<string, any>;
+  const overrideProfile = (threadMeta.customer_profile_override && typeof threadMeta.customer_profile_override === "object" ? threadMeta.customer_profile_override : null) as Record<string, any> | null;
+  const rawEntityDigits = String(thread.entity_id || "").replace(/\D/g, "");
+  const threadIsGroup = Boolean(
+    thread.thread_type === "group" ||
+    threadMeta.is_group ||
+    String(thread.entity_id || "").includes("@g.us") ||
+    /^120363\d{10,}$/.test(rawEntityDigits)
+  );
+  const threadIsChannel = Boolean(thread.thread_type === "channel" || threadMeta.is_channel || String(thread.entity_id || "").includes("@newsletter"));
+  const threadAvatar = overrideProfile?.avatar_url || threadMeta.avatar_url || customerProfile?.avatar_url || null;
+  const rawEmail = String(overrideProfile?.email || customerProfile?.email || thread.guest_email || "").trim();
+  const cleanEmail = sanitizeCustomerEmail(rawEmail) || "";
+  const resolvedCandidatePhone = overrideProfile?.phone || customerProfile?.phone || thread.primary_phone_e164 || thread.entity_id || "";
+  const isMetaLidWithoutPhone = !threadIsGroup && !threadIsChannel && isSyntheticMetaLid(thread.entity_id, resolvedCandidatePhone, threadMeta);
+  const directPhone = threadIsGroup || threadIsChannel || isMetaLidWithoutPhone ? "" : resolvedCandidatePhone;
+  const groupSubject = overrideProfile?.full_name || thread.group_subject || threadMeta.group_subject || null;
+  const safeCustomerName = !isRawLidOrSyntheticName(customerProfile?.full_name, thread.entity_id, threadMeta) ? customerProfile?.full_name : null;
+  const safeGuestName = !isRawLidOrSyntheticName(thread.guest_name, thread.entity_id, threadMeta) ? thread.guest_name : null;
+  const safePushName = !isRawLidOrSyntheticName(threadMeta.push_name, thread.entity_id, threadMeta) ? threadMeta.push_name : null;
+  const resolvedDisplayName =
+    overrideProfile?.full_name ||
+    (threadIsGroup ? groupSubject : null) ||
+    safeCustomerName ||
+    safeGuestName ||
+    safePushName ||
+    (threadIsGroup
+      ? "Grupo WhatsApp"
+      : threadIsChannel
+        ? "Canal WhatsApp"
+        : thread.context_type === "whatsapp"
+          ? isMetaLidWithoutPhone
+            ? `Contato WhatsApp #${rawEntityDigits.slice(-4) || "LID"}`
+            : `WhatsApp ${directPhone || thread.entity_id || ""}`
+          : "Cliente");
+  const threadAttribution =
+    (thread.attribution && typeof thread.attribution === "object" && Object.keys(thread.attribution).length > 0
+      ? thread.attribution
+      : threadMeta.attribution && typeof threadMeta.attribution === "object"
+        ? threadMeta.attribution
+        : null);
 
- return {
- threads: formattedThreads,
- metrics,
- isSupervisor,
- };
- } catch (error: any) {
- console.warn("[chat.functions] Falha inesperada ao listar threads:", error?.message || error);
- return {
- threads: [],
- metrics: { total: 0, open: 0, closed: 0, avg_rating: null, sla_first_response_min: null },
- };
- }
+  const isLastReplyStaff = lastPublicMsg ? Boolean(lastPublicMsg.is_staff_reply) : Boolean(rpcSummary?.is_staff_reply);
+  const effectiveLastAt = thread.last_message_at || rpcSummary?.created_at || thread.updated_at || null;
+  const deptSlug = String(thread.department || "geral");
+  const deptSlaMinutes = deptSlaMinutesMap.get(deptSlug) ?? 15;
+  const slaEval = computeThreadSlaStatus({
+    status: thread.status,
+    lastCustomerMessageAt: thread.last_customer_message_at || null,
+    lastStaffReplyAt: thread.last_staff_reply_at || null,
+    lastMessageAt: effectiveLastAt,
+    isLastReplyStaff,
+    departmentSlaMinutes: deptSlaMinutes,
+    nowMs: nowSlaMs,
+  });
+
+  return {
+  id: thread.id,
+  status: thread.status,
+  subject: thread.subject,
+  department: deptSlug,
+  priority: thread.priority || "normal",
+  satisfaction_rating: thread.satisfaction_rating,
+  assigned_agent: agentProfile,
+  thread_type: threadIsGroup ? "group" : threadIsChannel ? "channel" : thread.thread_type,
+  is_group: threadIsGroup,
+  is_channel: threadIsChannel,
+  is_lid: isMetaLidWithoutPhone,
+  group_subject: groupSubject,
+  group_jid: threadIsGroup ? (threadMeta.whatsapp_jid || threadMeta.remote_jid || thread.entity_id || null) : null,
+  participants_count: Array.isArray(threadMeta.participants) ? threadMeta.participants.length : 0,
+  lead_id: thread.lead_id || threadMeta.active_lead_id || null,
+  attribution: threadAttribution,
+  avatar_url: threadAvatar,
+  metadata: threadMeta,
+ 			context_type: thread.context_type,
+ 			channel: thread.context_type === "whatsapp" ? "whatsapp" : "web",
+ 			customer: {
+ 				...(customerProfile || {}),
+ 				full_name: resolvedDisplayName,
+ 				email: cleanEmail,
+ 				phone: directPhone,
+ 				avatar_url: threadAvatar,
+ 			},
+  order_id: thread.order_id,
+  internal_notes: thread.internal_notes,
+         tags: thread.tags || [],
+  last_message_at: thread.last_message_at || rpcSummary?.created_at || null,
+  last_customer_message_at: thread.last_customer_message_at || null,
+  last_staff_reply_at: thread.last_staff_reply_at || null,
+  waiting_for_reply: slaEval.waitingForReply,
+  waiting_minutes: slaEval.waitingMinutes,
+  sla_minutes: slaEval.slaMinutes,
+  sla_status: slaEval.slaStatus,
+  is_forgotten_today: slaEval.isForgottenToday,
+  updated_at: thread.last_message_at || rpcSummary?.created_at || thread.updated_at,
+  created_at: thread.created_at,
+  last_message: (() => {
+    const resolvedMsg = lastPublicMsg || (
+      rpcSummary && (Boolean(rpcSummary.message) || Number(rpcSummary.total_messages || 0) > 0)
+        ? { message: rpcSummary.message || "", message_type: rpcSummary.message_type || "text" }
+        : null
+    );
+    if (resolvedMsg) {
+      if (typeof resolvedMsg.message === "string" && resolvedMsg.message.trim() && !resolvedMsg.message.startsWith("waesy-msg:")) {
+        return resolvedMsg.message;
+      }
+      return resolvedMsg.message_type === "image" ? "[Imagem]"
+        : resolvedMsg.message_type === "video" ? "[Vídeo]"
+        : resolvedMsg.message_type === "audio" ? "[Áudio]"
+        : resolvedMsg.message_type === "document" ? "[Documento]"
+        : resolvedMsg.message_type === "sticker" ? "[Figurinha]"
+        : "[Mensagem]";
+    }
+    const persistedPreview = typeof thread.last_message_text === "string" ? thread.last_message_text.trim() : "";
+    if (persistedPreview) {
+      return persistedPreview.startsWith("waesy-msg:") ? "[Mensagem]" : persistedPreview;
+    }
+    const hasInternalNotes = messages.some(isInternalMsg) || Boolean(thread.internal_notes && thread.internal_notes.trim());
+    if (hasInternalNotes) {
+      return "(Apenas anotações internas da equipe)";
+    }
+    return "";
+  })(),
+  last_message_type: lastPublicMsg ? lastPublicMsg.message_type : (rpcSummary?.message_type || (lastMsg ? lastMsg.message_type : "text")),
+  is_last_reply_staff: isLastReplyStaff,
+  total_messages: rpcSummary ? rpcSummary.total_messages : messages.length,
+  };
+  });
+
+  const slaAlerts = computeSlaAlertsSummary(formattedThreads, forgottenLeadsRes);
+
+  let visibleThreads = formattedThreads;
+  if (data?.status === "waiting") {
+    visibleThreads = formattedThreads
+      .filter((t: any) => t.waiting_for_reply === true)
+      .sort((a: any, b: any) => (b.waiting_minutes || 0) - (a.waiting_minutes || 0));
+  } else if (data?.status === "forgotten") {
+    visibleThreads = formattedThreads
+      .filter((t: any) => t.is_forgotten_today === true)
+      .sort((a: any, b: any) => (b.waiting_minutes || 0) - (a.waiting_minutes || 0));
+  }
+
+  const ratedThreads = threadsList.filter(
+   (t: any) => typeof t.satisfaction_rating === "number" && t.satisfaction_rating > 0,
+  );
+  const avg_rating =
+   ratedThreads.length > 0
+    ? Number(
+      (
+       ratedThreads.reduce((acc: number, t: any) => acc + t.satisfaction_rating, 0) /
+       ratedThreads.length
+      ).toFixed(1),
+     )
+    : null;
+
+  // Métricas de Governança Autênticas (Zero Mocks / Invariante B.33)
+  const metrics = {
+  total: threadsList.length,
+  open: threadsList.filter((t: any) => t.status === "open").length,
+  closed: threadsList.filter((t: any) => t.status === "closed" || t.status === "resolved").length,
+  avg_rating,
+  sla_first_response_min: null,
+  };
+
+  return {
+  threads: visibleThreads,
+  metrics,
+  isSupervisor,
+  slaAlerts,
+  };
+  } catch (error: any) {
+  console.warn("[chat.functions] Falha inesperada ao listar threads:", error?.message || error);
+  return {
+  threads: [],
+  metrics: { total: 0, open: 0, closed: 0, avg_rating: null, sla_first_response_min: null },
+  slaAlerts: { waitingCount: 0, atRiskCount: 0, breachedCount: 0, forgottenTodayCount: 0, forgottenLeadsCount: 0, forgottenThreads: [] },
+  };
+  }
  });
 
 /**
- * Mensagens da thread com metadados ricos
+ * Mensagens da thread com metadados ricos (DB-first + suporte incremental `afterCreatedAt`)
  */
 export const getChatMessages = createServerFn({ method: "GET" })
- .validator(z.object({ threadId: z.string().uuid() }))
- .handler(async ({ data: { threadId } }) => {
+ .validator(
+   z.object({
+     threadId: z.string().uuid(),
+     afterCreatedAt: z.string().optional(),
+     limit: z.number().int().min(1).max(500).optional(),
+     forceSync: z.boolean().optional(),
+   }),
+ )
+ .handler(async ({ data: { threadId, afterCreatedAt, limit, forceSync } }) => {
  try {
  const db = getServerClient();
  const identity = await getServerIdentity();
@@ -555,7 +679,7 @@ export const getChatMessages = createServerFn({ method: "GET" })
 
  const { data: thread } = await db
  .from("chat_threads")
- .select("id, store_id, customer_id, order_id, department, status, thread_type, context_type, metadata, entity_id, channel_instance_id")
+ .select("id, store_id, customer_id, order_id, department, status, thread_type, context_type, metadata, entity_id, channel_instance_id, last_message_at, last_message_text")
  .eq("id", threadId)
  .single();
 
@@ -573,27 +697,49 @@ export const getChatMessages = createServerFn({ method: "GET" })
     throw new Error("Conversa civil protegida. Acesso não permitido no SAC da loja.");
   }
 
- const { data: messages, error } = await db
- .from("chat_messages")
- .select("id, message, message_type, is_staff_reply, created_at, sender_id, attachments, payload, delivery_status, external_message_id, failed_at, error_code, error_message")
- .eq("thread_id", threadId)
- .order("created_at", { ascending: true });
+  const effectiveLimit = limit || 200;
+  let msgQuery = db
+    .from("chat_messages")
+    .select("id, message, message_type, is_staff_reply, created_at, sender_id, attachments, payload, delivery_status, external_message_id, failed_at, error_code, error_message")
+    .eq("thread_id", threadId);
 
+  if (afterCreatedAt) {
+    msgQuery = msgQuery
+      .gte("created_at", afterCreatedAt)
+      .order("created_at", { ascending: true })
+      .limit(effectiveLimit);
+  } else {
+    msgQuery = msgQuery
+      .order("created_at", { ascending: false })
+      .limit(effectiveLimit);
+  }
+
+  const { data: messages, error } = await msgQuery;
   if (error) throw error;
-  let rawMessages = (messages || []) as any[];
+  let rawMessages = afterCreatedAt
+    ? ((messages || []) as any[])
+    : ([...(messages || [])].reverse() as any[]);
 
-  // Sincronização delta sob demanda da Evolution API (histórico inicial ou novas mensagens a cada >= 4s)
+  // Bootstrap unico da Evolution API apenas se:
+  // (a) forceSync=true explicitamente, OU
+  // (b) thread WhatsApp ainda nao possui bootstrap concluido E esta sem mensagens no banco (respeitando cooldown de 120s)
   const threadMetaForSync = ((thread as any).metadata && typeof (thread as any).metadata === "object"
     ? (thread as any).metadata
     : {}) as Record<string, any>;
   const lastEvoMsgSyncMs = threadMetaForSync.last_evo_msg_sync_at
     ? new Date(String(threadMetaForSync.last_evo_msg_sync_at)).getTime()
     : 0;
-  if (
+  const hasBootstrapped = Boolean(threadMetaForSync.history_bootstrap_done);
+  const shouldBootstrapFromEvolution =
+    !afterCreatedAt &&
     thread.context_type === "whatsapp" &&
-    (thread as any).entity_id &&
-    (rawMessages.length <= 1 || Date.now() - lastEvoMsgSyncMs > 4000)
-  ) {
+    Boolean((thread as any).entity_id) &&
+    (Boolean(forceSync) ||
+      (!hasBootstrapped &&
+        rawMessages.length === 0 &&
+        (!lastEvoMsgSyncMs || Date.now() - lastEvoMsgSyncMs > 120_000)));
+
+  if (shouldBootstrapFromEvolution) {
     try {
       const rawEntityId = String((thread as any).entity_id || "").trim();
       const threadMeta = threadMetaForSync;
@@ -646,31 +792,14 @@ export const getChatMessages = createServerFn({ method: "GET" })
         ).data;
 
       if (fallbackInst && candidateJids.length > 0) {
-        let decryptedSecrets: Record<string, any> = {};
-        if ((fallbackInst as any).secret_payload_encrypted) {
-          try {
-            const { decryptSecret } = await import("@/lib/crypto-vault.server");
-            decryptedSecrets = JSON.parse(decryptSecret(String((fallbackInst as any).secret_payload_encrypted)));
-          } catch {
-            decryptedSecrets = {};
-          }
-        }
-        const externalName = fallbackInst.external_instance_id || fallbackInst.instance_key;
-        const configuredUrl = String(
-          (fallbackInst.public_config as any)?.base_url || decryptedSecrets?.base_url || "",
-        ).replace(/\/$/, "");
-        const baseUrl = configuredUrl && !configuredUrl.includes("147.15.61.45")
-          ? configuredUrl
-          : (process.env.EVOLUTION_API_URL?.trim() || "");
-        const apiKey = String(
-          decryptedSecrets?.api_key || process.env.EVOLUTION_API_KEY || "",
-        ).trim();
+        const { resolveEvolutionGatewayAccess } = await import("./whatsapp-evolution-config.server");
+        const { baseUrl, apiKey, externalName } = resolveEvolutionGatewayAccess(fallbackInst as any);
         if (!baseUrl || !apiKey) throw new Error("Evolution API URL/Key não configuradas no ambiente.");
 
         let records: any[] = [];
         let syncedRemoteJid = "";
-        const fetchLimit = rawMessages.length <= 1 ? 30 : 15;
-        for (const candidateJid of candidateJids.slice(0, 3)) {
+        const fetchLimit = rawMessages.length === 0 ? 30 : 20;
+        for (const candidateJid of candidateJids.slice(0, 2)) {
           const evoRes = await fetch(`${baseUrl}/chat/findMessages/${encodeURIComponent(externalName)}`, {
             method: "POST",
             headers: { apikey: apiKey, "Content-Type": "application/json" },
@@ -678,7 +807,7 @@ export const getChatMessages = createServerFn({ method: "GET" })
               where: { key: { remoteJid: candidateJid } },
               limit: fetchLimit,
             }),
-            signal: AbortSignal.timeout(4000),
+            signal: AbortSignal.timeout(3000),
           });
           if (!evoRes.ok) continue;
           const evoJson: any = await evoRes.json().catch(() => ({}));
@@ -689,11 +818,17 @@ export const getChatMessages = createServerFn({ method: "GET" })
             break;
           }
         }
+        const rowsToInsert: Array<Record<string, any>> = [];
+        const existingLocalExtIds = new Set(
+          rawMessages.map((m: any) => String(m?.external_message_id || "")).filter(Boolean),
+        );
         if (records.length > 0) {
+          const { extractWhatsAppGroupContext } = await import("@/services/omnichannel-attribution.server");
           for (const rec of records) {
             const key = rec.key || {};
-            const externalId = String(key.id || "");
-            if (!externalId) continue;
+            const externalId = String(key.id || "").trim();
+            if (!externalId || existingLocalExtIds.has(externalId)) continue;
+            existingLocalExtIds.add(externalId);
             const fromMe = Boolean(key.fromMe);
             const msg = rec.message || {};
             let msgType = "text";
@@ -766,62 +901,88 @@ export const getChatMessages = createServerFn({ method: "GET" })
 
             const ts = Number(rec.messageTimestamp || Date.now() / 1000);
             const occurredAt = new Date(ts < 2_000_000_000 ? ts * 1000 : ts).toISOString();
-            const exists = rawMessages.some((m: any) => m.external_message_id === externalId);
-            if (!exists) {
-              const { extractWhatsAppGroupContext } = await import("@/services/omnichannel-attribution.server");
-              const grp = extractWhatsAppGroupContext(rec, rec);
-              const msgMetadata =
-                grp.isGroup || grp.senderPhone || grp.senderName
-                  ? {
-                      sender_jid: grp.senderJid || null,
-                      sender_phone: grp.senderPhone || null,
-                      sender_name: grp.senderName || null,
-                      is_group: grp.isGroup,
-                    }
-                  : {};
-              const { data: createdMsg } = await db.from("chat_messages").insert({
-                thread_id: thread.id,
-                channel: "whatsapp",
-                message: text,
-                message_type: msgType,
-                is_staff_reply: fromMe,
-                provider: "evolution_api",
-                external_message_id: externalId,
-                delivery_status: fromMe ? "sent" : "delivered",
-                sent_at: occurredAt,
-                delivered_at: occurredAt,
-                attachments: mediaUrl ? [mediaUrl] : [],
-                payload: {
-                  ...msgMetadata,
-                  origin: fromMe ? "whatsapp_device" : "whatsapp_customer",
-                  ...(mediaUrl ? { media: { type: msgType, url: mediaUrl, mimetype: mediaMime } } : {}),
-                },
-                created_at: occurredAt,
-              }).select("id, message, message_type, is_staff_reply, created_at, sender_id, attachments, payload, delivery_status, external_message_id").maybeSingle();
-              if (createdMsg) rawMessages.push(createdMsg);
+            const grp = extractWhatsAppGroupContext(rec, rec);
+            const msgMetadata =
+              grp.isGroup || grp.senderPhone || grp.senderName
+                ? {
+                    sender_jid: grp.senderJid || null,
+                    sender_phone: grp.senderPhone || null,
+                    sender_name: grp.senderName || null,
+                    is_group: grp.isGroup,
+                  }
+                : {};
+            rowsToInsert.push({
+              thread_id: thread.id,
+              channel: "whatsapp",
+              message: text,
+              message_type: msgType,
+              is_staff_reply: fromMe,
+              provider: "evolution_api",
+              provider_name: "evolution_api",
+              external_message_id: externalId,
+              provider_message_id: externalId,
+              delivery_status: fromMe ? "sent" : "delivered",
+              sent_at: occurredAt,
+              delivered_at: occurredAt,
+              is_encrypted: false,
+              encryption_version: 1,
+              attachments: mediaUrl ? [mediaUrl] : [],
+              payload: {
+                ...msgMetadata,
+                origin: fromMe ? "whatsapp_device" : "whatsapp_customer",
+                ...(mediaUrl ? { media: { type: msgType, url: mediaUrl, mimetype: mediaMime } } : {}),
+              },
+              created_at: occurredAt,
+            });
+          }
+
+          if (rowsToInsert.length > 0) {
+            const { persistWhatsAppMessagesIdempotently } = await import("./whatsapp-message-persistence.server");
+            const persistRes = await persistWhatsAppMessagesIdempotently(db, rowsToInsert, {
+              selectFields:
+                "id, message, message_type, is_staff_reply, created_at, sender_id, attachments, payload, delivery_status, external_message_id, failed_at, error_code, error_message",
+            });
+            if (persistRes.insertedRows.length > 0) {
+              rawMessages.push(...persistRes.insertedRows);
+            } else if (rawMessages.length === 0 && persistRes.skippedDuplicates > 0) {
+              const { data: racedRows } = await db
+                .from("chat_messages")
+                .select("id, message, message_type, is_staff_reply, created_at, sender_id, attachments, payload, delivery_status, external_message_id, failed_at, error_code, error_message")
+                .eq("thread_id", threadId)
+                .order("created_at", { ascending: false })
+                .limit(effectiveLimit);
+              if (Array.isArray(racedRows) && racedRows.length > 0) {
+                rawMessages.push(...[...racedRows].reverse());
+              }
             }
           }
           rawMessages.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-          const latestSynced = rawMessages[rawMessages.length - 1];
-          const nextSyncMeta = {
-            ...threadMetaForSync,
-            last_evo_msg_sync_at: new Date().toISOString(),
-            ...(syncedRemoteJid && !threadMetaForSync.whatsapp_jid ? { whatsapp_jid: syncedRemoteJid } : {}),
-          };
-          await db
-            .from("chat_threads")
-            .update({
-              metadata: nextSyncMeta,
-              ...(latestSynced
-                ? {
-                    last_message_text: String(latestSynced.message || "").slice(0, 200),
-                    last_message_at: latestSynced.created_at,
-                  }
-                : {}),
-            })
-            .eq("id", thread.id)
-            .eq("store_id", thread.store_id);
         }
+
+        const latestSynced = rawMessages[rawMessages.length - 1];
+        const latestSyncedMs = latestSynced?.created_at ? new Date(latestSynced.created_at).getTime() : 0;
+        const prevCursorMs = Number(threadMetaForSync.sync_cursor_ms || 0);
+        const nowSyncIso = new Date().toISOString();
+        const nextSyncMeta = {
+          ...threadMetaForSync,
+          history_bootstrap_done: true,
+          last_evo_msg_sync_at: nowSyncIso,
+          ...(latestSyncedMs > prevCursorMs ? { sync_cursor_ms: latestSyncedMs } : {}),
+          ...(syncedRemoteJid && !threadMetaForSync.whatsapp_jid ? { whatsapp_jid: syncedRemoteJid } : {}),
+        };
+        const threadSyncPatch: Record<string, any> = { metadata: nextSyncMeta };
+        if (latestSynced) {
+          const prevLastMs = (thread as any).last_message_at ? new Date(String((thread as any).last_message_at)).getTime() : 0;
+          if (latestSyncedMs > prevLastMs || !(thread as any).last_message_text) {
+            threadSyncPatch.last_message_text = String(latestSynced.message || "").slice(0, 200);
+            threadSyncPatch.last_message_at = latestSynced.created_at;
+          }
+        }
+        await db
+          .from("chat_threads")
+          .update(threadSyncPatch)
+          .eq("id", thread.id)
+          .eq("store_id", thread.store_id);
       }
     } catch (pullErr) {
       console.warn("[chat] Erro ao sincronizar historico da Evolution API:", pullErr);
@@ -857,7 +1018,7 @@ export const getChatMessages = createServerFn({ method: "GET" })
                   .maybeSingle()
               : await db
                   .from("whatsapp_channel_instances")
-                  .select("instance_key, external_instance_id, public_config")
+                  .select("instance_key, external_instance_id, public_config, secret_payload_encrypted")
                   .eq("store_id", thread.store_id)
                   .eq("is_active", true)
                   .order("is_default", { ascending: false })
@@ -865,12 +1026,8 @@ export const getChatMessages = createServerFn({ method: "GET" })
                   .maybeSingle();
 
             if (inst) {
-              const externalName = inst.external_instance_id || inst.instance_key;
-              const configuredUrl = String((inst.public_config as any)?.base_url || "").replace(/\/$/, "");
-              const baseUrl = configuredUrl && !configuredUrl.includes("147.15.61.45")
-                ? configuredUrl
-                : (process.env.EVOLUTION_API_URL?.trim() || "");
-              const apiKey = process.env.EVOLUTION_API_KEY?.trim() || "";
+              const { resolveEvolutionGatewayAccess } = await import("./whatsapp-evolution-config.server");
+              const { baseUrl, apiKey, externalName } = resolveEvolutionGatewayAccess(inst as any);
 
               if (baseUrl && apiKey) {
                 const evoRes = await fetch(`${baseUrl}/chat/findMessages/${encodeURIComponent(externalName)}`, {
@@ -927,17 +1084,68 @@ export const getChatMessages = createServerFn({ method: "GET" })
     })
   );
 
-  // Hidrata proativamente audios recentes da conversa que chegaram sem base64 embarcado
-  if (thread.context_type === "whatsapp" && decryptedMessages.length > 0) {
-    const missingAudioIndices: number[] = [];
-    for (let i = decryptedMessages.length - 1; i >= 0 && missingAudioIndices.length < 5; i--) {
-      const m = decryptedMessages[i];
-      const att = Array.isArray(m.attachments) && m.attachments.length > 0 ? m.attachments[0] : m.payload?.media?.url;
-      if (m.message_type === "audio" && m.external_message_id && isBrokenOrMissingMediaUri(att, "audio")) {
-        missingAudioIndices.push(i);
+  // Renova Signed URLs expiradas do bucket privado `chat-media-private` e hidrata mídias pendentes
+  const storageRowsToRefresh: number[] = [];
+  for (let i = 0; i < decryptedMessages.length; i++) {
+    const m = decryptedMessages[i];
+    const mediaMeta = m?.payload?.media;
+    if (mediaMeta?.storage_bucket && mediaMeta?.storage_path) {
+      const att = Array.isArray(m.attachments) && m.attachments.length > 0 ? String(m.attachments[0] || "") : "";
+      const hydratedAtMs = mediaMeta.hydrated_at ? Date.parse(String(mediaMeta.hydrated_at)) : 0;
+      const isSignedExpired = !att || !/^https?:\/\//i.test(att) || (hydratedAtMs > 0 && Date.now() - hydratedAtMs > 40 * 60_000);
+      if (isSignedExpired) {
+        storageRowsToRefresh.push(i);
       }
     }
-    if (missingAudioIndices.length > 0) {
+  }
+  if (storageRowsToRefresh.length > 0) {
+    const { refreshSignedChatMediaUrl } = await import("./whatsapp-media.server");
+    await Promise.all(
+      storageRowsToRefresh.slice(-20).map(async (idx) => {
+        const msgRow = decryptedMessages[idx];
+        const mediaMeta = msgRow.payload.media;
+        const freshUrl = await refreshSignedChatMediaUrl(
+          db,
+          mediaMeta.storage_bucket,
+          mediaMeta.storage_path,
+          3600,
+        );
+        if (freshUrl) {
+          decryptedMessages[idx] = {
+            ...msgRow,
+            attachments: [freshUrl],
+            payload: {
+              ...(msgRow.payload || {}),
+              media: {
+                ...mediaMeta,
+                url: freshUrl,
+              },
+            },
+          };
+        }
+      }),
+    );
+  }
+
+  // Hidrata proativamente mídias recentes (áudio, imagem, vídeo, documento e figurinha) sem URI persistida (máx. 2 por chamada; não bloqueia deltas)
+  if (!afterCreatedAt && thread.context_type === "whatsapp" && decryptedMessages.length > 0) {
+    const missingMediaIndices: number[] = [];
+    const autoHydrateTypes = new Set(["audio", "image", "sticker", "video", "document"]);
+    for (let i = decryptedMessages.length - 1; i >= 0 && missingMediaIndices.length < 2; i--) {
+      const m = decryptedMessages[i];
+      const msgType = typeof m.message_type === "string" ? m.message_type : "";
+      const att = Array.isArray(m.attachments) && m.attachments.length > 0 ? m.attachments[0] : m.payload?.media?.url;
+      if (
+        autoHydrateTypes.has(msgType) &&
+        m.external_message_id &&
+        !m.payload?.media?.storage_path &&
+        !m.payload?.media?.media_size_guard &&
+        isBrokenOrMissingMediaUri(att, msgType)
+      ) {
+        missingMediaIndices.push(i);
+      }
+    }
+    if (missingMediaIndices.length > 0) {
       const threadMeta = (thread.metadata && typeof thread.metadata === "object" ? thread.metadata : {}) as Record<string, any>;
       const remoteJid =
         typeof threadMeta.whatsapp_jid === "string" && threadMeta.whatsapp_jid.trim()
@@ -947,8 +1155,9 @@ export const getChatMessages = createServerFn({ method: "GET" })
             : null;
       const { hydrateMediaFromEvolution } = await import("./whatsapp-media.server");
       await Promise.all(
-        missingAudioIndices.map(async (idx) => {
+        missingMediaIndices.map(async (idx) => {
           const msgRow = decryptedMessages[idx];
+          const msgType = typeof msgRow.message_type === "string" ? msgRow.message_type : "audio";
           const hydrated = await hydrateMediaFromEvolution({
             db,
             storeId: thread.store_id,
@@ -958,21 +1167,27 @@ export const getChatMessages = createServerFn({ method: "GET" })
             externalMessageId: String(msgRow.external_message_id),
             remoteJid,
             fromMe: Boolean(msgRow.is_staff_reply),
-            messageType: "audio",
-            preferredMime: typeof msgRow.payload?.media?.mimetype === "string" ? msgRow.payload.media.mimetype : "audio/ogg",
+            messageType: msgType,
+            preferredMime:
+              typeof msgRow.payload?.media?.mimetype === "string"
+                ? msgRow.payload.media.mimetype
+                : resolveDefaultMimeByMessageType(msgType),
             persistToMessage: true,
           }).catch(() => null);
-          if (hydrated?.dataUri) {
+          const effectiveUrl = hydrated?.signedUrl || hydrated?.dataUri;
+          if (effectiveUrl) {
             decryptedMessages[idx] = {
               ...msgRow,
-              attachments: [hydrated.dataUri],
+              attachments: [effectiveUrl],
               payload: {
                 ...(msgRow.payload || {}),
                 media: {
                   ...((msgRow.payload && msgRow.payload.media) || {}),
-                  type: "audio",
-                  url: hydrated.dataUri,
+                  type: msgRow.payload?.media?.type || msgType,
+                  url: effectiveUrl,
                   mimetype: hydrated.mimetype,
+                  ...(hydrated.storageBucket ? { storage_bucket: hydrated.storageBucket } : {}),
+                  ...(hydrated.storagePath ? { storage_path: hydrated.storagePath } : {}),
                 },
               },
             };
@@ -1181,25 +1396,36 @@ export async function _sendChatMessage(
       resolvedProvider = routing.provider;
     }
 
-    await db
+    const prevSendMeta = (((thread as any).metadata || {}) as Record<string, any>);
+    const prevSendCursor = Number(prevSendMeta.sync_cursor_ms || 0);
+    const sentAtMs = Date.parse(nowIso) || Date.now();
+    const threadStaffPatch = {
+      last_message_text: normalizedInputText.slice(0, 200),
+      metadata: {
+        ...prevSendMeta,
+        handoff_mode: "human_active",
+        ai_auto_reply_enabled: false,
+        last_human_agent_id: identity.id,
+        history_bootstrap_done: true,
+        sync_cursor_ms: Math.max(prevSendCursor, sentAtMs),
+      },
+      ...(!(thread as any).assigned_to_profile_id ? { assigned_to_profile_id: identity.id } : {}),
+      ...(!(thread as any).first_response_at ? { first_response_at: nowIso } : {}),
+      ...(!(thread as any).channel_instance_id && resolvedChannelInstanceId
+        ? { channel_instance_id: resolvedChannelInstanceId }
+        : {}),
+      last_message_at: nowIso,
+      last_staff_reply_at: nowIso,
+      updated_at: nowIso,
+    };
+    const { error: patchErr } = await db
       .from("chat_threads")
-      .update({
-        last_message_text: normalizedInputText.slice(0, 200),
-        metadata: {
-          ...(((thread as any).metadata || {}) as Record<string, any>),
-          handoff_mode: "human_active",
-          ai_auto_reply_enabled: false,
-          last_human_agent_id: identity.id,
-        },
-        ...(!(thread as any).assigned_to_profile_id ? { assigned_to_profile_id: identity.id } : {}),
-        ...(!(thread as any).first_response_at ? { first_response_at: nowIso } : {}),
-        ...(!(thread as any).channel_instance_id && resolvedChannelInstanceId
-          ? { channel_instance_id: resolvedChannelInstanceId }
-          : {}),
-        last_message_at: nowIso,
-        updated_at: nowIso,
-      })
+      .update(threadStaffPatch)
       .eq("id", input.threadId);
+    if (patchErr && (String(patchErr.code || "") === "42703" || String(patchErr.message || "").includes("last_staff_reply_at"))) {
+      const { last_staff_reply_at: _omit, ...legacyPatch } = threadStaffPatch;
+      await db.from("chat_threads").update(legacyPatch).eq("id", input.threadId);
+    }
 
     // Cross-Module Outbound Dispatch: Disparo bidirecional para canais externos apenas se NÃO for nota interna
     if (thread.context_type === "whatsapp" && thread.entity_id) {
@@ -1425,72 +1651,17 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
    }
  }
 
+ const { sanitizeCustomerEmail } = await import("@/lib/contact-sanitize");
  const isMetaLidThread = !isGroupThread && isSyntheticMetaLid(threadContext?.entity_id, rawPhone, threadMeta);
  const customerPhone = profileData?.phone || crmCustomer?.phone || (isMetaLidThread ? null : rawPhone) || null;
  const overrideMeta = (threadContext?.metadata as any)?.customer_profile_override || null;
  const rawCandidateEmail = String(overrideMeta?.email || crmCustomer?.email || threadContext?.guest_email || "").trim();
- const sanitizedCustomerEmail = !rawCandidateEmail || /@(grupo\.)?whatsap/i.test(rawCandidateEmail) ? null : rawCandidateEmail;
- let resolvedAvatarUrl =
+ const sanitizedCustomerEmail = sanitizeCustomerEmail(rawCandidateEmail);
+ const resolvedAvatarUrl =
    overrideMeta?.avatar_url ||
    profileData?.avatar_url ||
    (threadContext?.metadata as any)?.avatar_url ||
    null;
-
- if (!resolvedAvatarUrl && (cleanDigits.length >= 8 || (threadContext?.metadata as any)?.whatsapp_jid)) {
-   try {
-     const { data: inst } = await db
-       .from("whatsapp_channel_instances")
-       .select("instance_key, external_instance_id, public_config")
-       .eq("store_id", storeId)
-       .eq("provider", "evolution_api")
-       .eq("is_active", true)
-       .order("is_default", { ascending: false })
-       .limit(1)
-       .maybeSingle();
-
-     if (inst) {
-       const externalName = inst.external_instance_id || inst.instance_key;
-       const configuredUrl = String((inst.public_config as any)?.base_url || "").replace(/\/$/, "");
-       const baseUrl = configuredUrl && !configuredUrl.includes("147.15.61.45")
-         ? configuredUrl
-         : (process.env.EVOLUTION_API_URL?.trim() || "");
-       const apiKey = process.env.EVOLUTION_API_KEY?.trim() || "";
-       const targetNumber =
-         (threadContext?.metadata as any)?.whatsapp_jid_alt ||
-         (threadContext?.metadata as any)?.whatsapp_jid ||
-         cleanDigits;
-
-       if (baseUrl && apiKey && targetNumber) {
-         const picRes = await fetch(`${baseUrl}/chat/fetchProfilePictureUrl/${encodeURIComponent(externalName)}`, {
-           method: "POST",
-           headers: { apikey: apiKey, "Content-Type": "application/json" },
-           body: JSON.stringify({ number: targetNumber }),
-           signal: AbortSignal.timeout(2500),
-         });
-         if (picRes.ok) {
-           const picJson = (await picRes.json().catch(() => ({}))) as Record<string, any>;
-           const fetchedPic = picJson.profilePictureUrl || picJson.profilePicUrl || picJson.picture || null;
-           if (typeof fetchedPic === "string" && fetchedPic.startsWith("http")) {
-             resolvedAvatarUrl = fetchedPic;
-             if (threadContext?.id) {
-               const nextMeta = {
-                 ...(((threadContext.metadata as any) || {}) as Record<string, any>),
-                 avatar_url: fetchedPic,
-               };
-               threadContext.metadata = nextMeta;
-               await db.from("chat_threads").update({ metadata: nextMeta }).eq("id", threadContext.id);
-             }
-             if (resolvedCustomerId) {
-               await db.from("profiles").update({ avatar_url: fetchedPic }).eq("id", resolvedCustomerId);
-             }
-           }
-         }
-       }
-     }
-   } catch {
-     // Best-effort avatar resolution
-   }
- }
 
  const safeContextGuestName = !isRawLidOrSyntheticName(guestName, threadContext?.entity_id, threadMeta) ? guestName : null;
  const safeThreadGuestName = !isRawLidOrSyntheticName(threadContext?.guest_name, threadContext?.entity_id, threadMeta) ? threadContext?.guest_name : null;
@@ -1523,8 +1694,11 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
  const leadOrFilters: string[] = [];
  if (threadContext?.lead_id) leadOrFilters.push(`id.eq.${threadContext.lead_id}`);
  if (resolvedCustomerId) leadOrFilters.push(`customer_id.eq.${resolvedCustomerId}`);
- if (!isGroupThread && customerPhone) leadOrFilters.push(`phone.eq.${customerPhone}`);
- if (!isGroupThread && cleanDigits.length >= 8) leadOrFilters.push(`phone.eq.+${cleanDigits}`, `phone.eq.${cleanDigits}`);
+ if (!isGroupThread) {
+   for (const variant of buildBrazilPhoneVariants(overrideMeta?.phone || customerPhone)) {
+     leadOrFilters.push(`phone.eq.${variant}`);
+   }
+ }
 
  const [ordersRes, ticketsRes, opTicketsRes, tasksRes, tripsRes, creditsRes, leadsRes, quotesRes, contractsRes, debtRes, docsRes, proposalsRes] = await Promise.all([
    resolvedCustomerId
@@ -1572,8 +1746,19 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
        .order("created_at", { ascending: false })
        .limit(5);
    })(),
-   resolvedCustomerId
-     ? db.from("contracts").select("id, verification_code, title, status, metadata, created_at").eq("store_id", storeId).eq("customer_id", resolvedCustomerId).order("created_at", { ascending: false }).limit(5)
+   (resolvedCustomerId || threadContext?.lead_id)
+     ? db
+         .from("contracts")
+         .select("id, verification_code, title, status, metadata, created_at")
+         .eq("store_id", storeId)
+         .or(
+           [
+             ...(resolvedCustomerId ? [`customer_id.eq.${resolvedCustomerId}`] : []),
+             ...(threadContext?.lead_id ? [`lead_id.eq.${threadContext.lead_id}`] : []),
+           ].join(","),
+         )
+         .order("created_at", { ascending: false })
+         .limit(8)
      : Promise.resolve({ data: [] as any[] }),
    resolvedCustomerId
      ? db.from("customer_debt_ledger").select("id, amount_cents, status, reason, created_at").eq("customer_id", resolvedCustomerId).eq("status", "pending")
@@ -1583,12 +1768,18 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
      : Promise.resolve({ data: [] as any[] }),
    (() => {
      const propOrParts: string[] = [];
+     const activeLeadHint =
+       typeof (threadContext?.metadata as any)?.active_lead_id === "string" &&
+       (threadContext?.metadata as any).active_lead_id !== "none"
+         ? (threadContext?.metadata as any).active_lead_id
+         : threadContext?.lead_id || null;
      if (resolvedCustomerId) propOrParts.push(`customer_id.eq.${resolvedCustomerId}`);
-     if (threadContext?.lead_id) propOrParts.push(`lead_id.eq.${threadContext.lead_id}`);
+     if (activeLeadHint) propOrParts.push(`lead_id.eq.${activeLeadHint}`);
      if (profileData?.email) propOrParts.push(`client_email.eq.${profileData.email}`);
-     if (customerPhone) propOrParts.push(`client_whatsapp.eq.${customerPhone}`);
-     if (cleanDigits.length >= 8) {
-       propOrParts.push(`client_whatsapp.eq.+${cleanDigits}`, `client_whatsapp.eq.${cleanDigits}`);
+     if (!isGroupThread) {
+       for (const variant of buildBrazilPhoneVariants(overrideMeta?.phone || customerPhone)) {
+         propOrParts.push(`client_whatsapp.eq.${variant}`);
+       }
      }
      if (propOrParts.length === 0) return Promise.resolve({ data: [] as any[] });
      return db
@@ -1631,7 +1822,7 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
      : Promise.resolve({ data: [] as any[] }),
    db
      .from("stores")
-     .select("id, name, slug, custom_domain, niche")
+     .select("id, name, slug, custom_domain, niche, settings")
      .eq("id", storeId)
      .maybeSingle(),
    resolvedCustomerId
@@ -1892,27 +2083,49 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
    threadContext?.channel_identity_id
      ? db
          .from("whatsapp_contact_identities")
-         .select("id, provider, external_user_id, phone_e164, display_name, profile_name, consent_status, metadata, last_seen_at")
+         .select("id, provider, external_user_id, phone_e164, display_name, profile_name, consent_status, contact_scope, suppress_lead_capture, internal_role_label, metadata, last_seen_at")
          .eq("id", threadContext.channel_identity_id)
          .eq("store_id", storeId)
          .maybeSingle()
+         .then(async (res: any) =>
+           res?.error && /contact_scope|suppress_lead_capture|column/i.test(res.error.message || "")
+             ? db
+                 .from("whatsapp_contact_identities")
+                 .select("id, provider, external_user_id, phone_e164, display_name, profile_name, consent_status, metadata, last_seen_at")
+                 .eq("id", threadContext.channel_identity_id)
+                 .eq("store_id", storeId)
+                 .maybeSingle()
+             : res,
+         )
      : !isGroupThread && cleanDigits.length >= 8
        ? db
            .from("whatsapp_contact_identities")
-           .select("id, provider, external_user_id, phone_e164, display_name, profile_name, consent_status, metadata, last_seen_at")
+           .select("id, provider, external_user_id, phone_e164, display_name, profile_name, consent_status, contact_scope, suppress_lead_capture, internal_role_label, metadata, last_seen_at")
            .eq("store_id", storeId)
            .or(`phone_e164.eq.+${cleanDigits},phone_e164.eq.${cleanDigits}`)
            .order("last_seen_at", { ascending: false })
            .limit(1)
            .maybeSingle()
+           .then(async (res: any) =>
+             res?.error && /contact_scope|suppress_lead_capture|column/i.test(res.error.message || "")
+               ? db
+                   .from("whatsapp_contact_identities")
+                   .select("id, provider, external_user_id, phone_e164, display_name, profile_name, consent_status, metadata, last_seen_at")
+                   .eq("store_id", storeId)
+                   .or(`phone_e164.eq.+${cleanDigits},phone_e164.eq.${cleanDigits}`)
+                   .order("last_seen_at", { ascending: false })
+                   .limit(1)
+                   .maybeSingle()
+               : res,
+           )
        : Promise.resolve({ data: null as any }),
    attrOrFilters.length > 0
      ? (db.from("ad_attribution_touchpoints") as any)
-         .select("id, ad_platform, utm_source, utm_medium, utm_campaign, utm_content, utm_term, ad_id, adset_id, campaign_id, form_id, ad_headline, ad_body, source_url, landing_url, referrer, ctwa_clid, fbclid, fbp, fbc, gclid, ttclid, lead_code, entity_type, entity_id, entity_title, captured_via, created_at")
+         .select("id, ad_platform, utm_source, utm_medium, utm_campaign, utm_content, utm_term, ad_id, adset_id, campaign_id, form_id, source_pixel_id, ad_headline, ad_body, source_url, landing_url, referrer, ctwa_clid, fbclid, fbp, fbc, gclid, ttclid, lead_code, entity_type, entity_id, entity_title, captured_via, metadata, created_at")
          .eq("store_id", storeId)
          .or(attrOrFilters.join(","))
          .order("created_at", { ascending: false })
-         .limit(10)
+         .limit(50)
      : Promise.resolve({ data: [] as any[] }),
    telemetryOrFilters.length > 0
      ? db
@@ -2009,12 +2222,55 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
  );
 
  const storeRow = (storeInfoRes?.data as any) || null;
- const storePortalOrigin = storeRow?.custom_domain
-   ? `https://${String(storeRow.custom_domain).replace(/^https?:\/\//, "").replace(/\/$/, "")}`
-   : "https://waesy.com.br";
+ const storeSettings = (storeRow?.settings && typeof storeRow.settings === "object" ? storeRow.settings : {}) as Record<string, any>;
+ let activeAppTokenRow: any = null;
+ if (!isGroupThread && storeRow?.slug) {
+   try {
+     const tokenMatchOr: string[] = [];
+     if (resolvedCustomerId) tokenMatchOr.push(`customer_id.eq.${resolvedCustomerId}`, `crm_customer_id.eq.${resolvedCustomerId}`);
+     if (linkedLead?.id) tokenMatchOr.push(`lead_id.eq.${linkedLead.id}`);
+     if (cleanDigits.length >= 8) {
+       tokenMatchOr.push(`customer_phone_digits.eq.${cleanDigits}`);
+     }
+     if (threadId && tokenMatchOr.length === 0) {
+       tokenMatchOr.push(`thread_id.eq.${threadId}`);
+     }
+     if (tokenMatchOr.length > 0) {
+       const { data: tokenCandidate } = await db
+         .from("store_app_client_tokens")
+         .select("id, client_code, magic_token, expires_at, last_accessed_at, access_count")
+         .eq("store_id", storeId)
+         .eq("is_active", true)
+         .is("revoked_at", null)
+         .gt("expires_at", new Date().toISOString())
+         .or(tokenMatchOr.join(","))
+         .order("created_at", { ascending: false })
+         .limit(1)
+         .maybeSingle();
+       if (tokenCandidate?.magic_token) {
+         activeAppTokenRow = tokenCandidate;
+       }
+     }
+   } catch {
+     // Tabela opcional antes da migração: mantém geração sob demanda via POST
+   }
+ }
+
+ const brandedAppHostInput = {
+   slug: storeRow?.slug || null,
+   customDomain: storeRow?.custom_domain || null,
+   customDomainStatus: storeSettings?.custom_domain_status || null,
+   fallbackOrigin: "https://waesy.com.br",
+ };
+ const baseCompanyAppUrl = buildBrandedAppBaseUrl(brandedAppHostInput);
+ const resolvedClientCode = activeAppTokenRow?.client_code || customerTraceHash.replace(/^#/, "");
  const storePortalUrl = storeRow?.slug
-   ? `${storePortalOrigin}/conta?loja=${encodeURIComponent(storeRow.slug)}`
-   : `${storePortalOrigin}/conta`;
+   ? buildBrandedClientPortalUrl({
+       ...brandedAppHostInput,
+       magicToken: activeAppTokenRow?.magic_token || null,
+       clientCode: resolvedClientCode,
+     })
+   : "";
 
  const rawFormSubs = (formSubmissionsRes?.data as any[]) || [];
  const matchedFormSubmissions = resolvedCustomerId
@@ -2033,14 +2289,48 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
  const clinicalRecordsList = (clinicalRecordsRes?.data as any[]) || [];
  const appointmentsList = (appointmentsRes?.data as any[]) || [];
 
+  const { computeCustomerTouchpointJourney } = await import("@/lib/attribution-journey");
+  const jsonTouchpoints = Array.isArray(leadCustomFields?.ad_attribution_touchpoints)
+    ? (leadCustomFields.ad_attribution_touchpoints as any[])
+    : [];
+  const mergedRawTouchpoints = touchpoints.length > 0 ? touchpoints : jsonTouchpoints;
+  const journeySummary = computeCustomerTouchpointJourney(
+    mergedRawTouchpoints,
+    Object.keys(resolvedAttribution).length > 0 ? resolvedAttribution : null,
+  );
+  const confirmedTrips = tripsList.filter((tr: any) =>
+    ["confirmed", "active", "completed", "paid"].includes(String(tr?.status || "").toLowerCase()),
+  );
+  const tripsRevenueCents = confirmedTrips.reduce((sum: number, tr: any) => sum + (Number(tr.total_cents) || 0), 0);
+  const paidCommercialCents = matchedCommercialInvoices
+    .filter((ci: any) => ["paid", "settled", "received"].includes(String(ci?.status || "").toLowerCase()))
+    .reduce((sum: number, ci: any) => sum + (Number(ci.total_cents) || 0), 0);
+  const combinedCustomerLtvCents =
+    totalSpentCents + (totalSpentCents === 0 ? Math.max(tripsRevenueCents, paidCommercialCents) : 0);
+  const purchaseEventsCount = Math.max(paidOrders.length, confirmedTrips.length);
+
  return {
    storeInfo: {
      id: storeRow?.id || storeId,
      name: storeRow?.name || null,
      slug: storeRow?.slug || null,
      custom_domain: storeRow?.custom_domain || null,
+     custom_domain_status: storeSettings?.custom_domain_status || null,
      niche: storeRow?.niche || null,
-     portal_url: storePortalUrl,
+     app_url: baseCompanyAppUrl || null,
+     portal_url: storePortalUrl || null,
+     client_app_access: storeRow?.slug
+       ? {
+           app_url: baseCompanyAppUrl,
+           portal_url: storePortalUrl,
+           client_code: resolvedClientCode,
+           magic_token: activeAppTokenRow?.magic_token || null,
+           expires_at: activeAppTokenRow?.expires_at || null,
+           last_accessed_at: activeAppTokenRow?.last_accessed_at || null,
+           access_count: Number(activeAppTokenRow?.access_count || 0),
+           has_active_token: Boolean(activeAppTokenRow?.magic_token),
+         }
+       : null,
    },
    profile: {
      ...profileData,
@@ -2057,6 +2347,7 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
    whatsappIdentity: identityRes?.data || null,
    attribution: Object.keys(resolvedAttribution).length > 0 ? resolvedAttribution : null,
    touchpoints,
+   journeySummary,
    pixelConversions: (telemetryRes?.data as any[]) || [],
    permissions: {
      role: memberRole,
@@ -2067,7 +2358,9 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
    },
    metrics: {
      total_orders: orders.length,
-     ltv_cents: totalSpentCents,
+     repeat_purchases: Math.max(0, purchaseEventsCount - 1),
+     ltv_cents: combinedCustomerLtvCents,
+     total_touchpoints: journeySummary.totalClicksCount,
      last_purchase_at: lastPurchaseAt,
      pending_debt_cents: pendingDebtCents,
      active_tickets_count: mergedTickets.filter((t: any) => t.status === "open" || t.status === "under_review").length,
@@ -2111,7 +2404,7 @@ export const linkThreadToCrmOpportunity = createServerFn({ method: "POST" })
 
     const { data: current } = await db
       .from("chat_threads")
-      .select("id, store_id, metadata")
+      .select("id, store_id, customer_id, metadata")
       .eq("id", threadId)
       .eq("store_id", identity.store_id)
       .single();
@@ -2119,11 +2412,12 @@ export const linkThreadToCrmOpportunity = createServerFn({ method: "POST" })
     if (!current) throw new Error("Conversa não encontrada.");
 
     let linkedLead: any = null;
-    if (leadId && leadId !== "none") {
+    const normalizedLeadId = leadId && leadId !== "none" ? leadId : null;
+    if (normalizedLeadId) {
       const { data: foundLead } = await db
         .from("leads_crm")
-        .select("id, status, title, estimated_value_cents, source, destination_of_interest, assigned_to, notes, checklist, created_at, updated_at")
-        .eq("id", leadId)
+        .select("id, status, title, full_name, phone, email, customer_id, estimated_value_cents, source, destination, destination_of_interest, assigned_to, notes, checklist, created_at, updated_at")
+        .eq("id", normalizedLeadId)
         .eq("store_id", identity.store_id)
         .single();
       if (!foundLead) throw new Error("Oportunidade não encontrada nesta loja.");
@@ -2133,20 +2427,40 @@ export const linkThreadToCrmOpportunity = createServerFn({ method: "POST" })
       };
     }
 
+    const nowIso = new Date().toISOString();
     const nextMeta = {
       ...(((current.metadata as any) || {}) as Record<string, any>),
-      active_lead_id: leadId || "none",
-      linked_opportunity_updated_at: new Date().toISOString(),
+      active_lead_id: normalizedLeadId || "none",
+      linked_opportunity_updated_at: nowIso,
     };
 
     await db
       .from("chat_threads")
       .update({
+        lead_id: normalizedLeadId,
+        ...(linkedLead?.customer_id && !(current as any).customer_id
+          ? { customer_id: linkedLead.customer_id }
+          : {}),
         metadata: nextMeta,
-        updated_at: new Date().toISOString(),
+        updated_at: nowIso,
       })
       .eq("id", threadId)
       .eq("store_id", identity.store_id);
+
+    await db.from("chat_messages").insert({
+      thread_id: threadId,
+      message: linkedLead
+        ? `Conversa vinculada ao lead "${linkedLead.title || linkedLead.full_name || normalizedLeadId}" no CRM.`
+        : "Vínculo com oportunidade do CRM removido desta conversa.",
+      message_type: "system_event",
+      payload: {
+        is_internal: true,
+        ...(normalizedLeadId ? { lead_id: normalizedLeadId } : {}),
+      },
+      is_staff_reply: true,
+      sender_id: identity.id,
+      sender_profile_id: identity.id,
+    });
 
     return { success: true, linkedLead };
   });
@@ -2289,6 +2603,16 @@ export const convertChatThreadToCrmLead = createServerFn({ method: "POST" })
  estimatedBudget: z.number().optional(),
  estimatedValue: z.number().optional(),
  destinationOfInterest: z.string().optional(),
+ destinationTags: z.array(z.any()).optional(),
+ travelStart: z.string().optional().nullable(),
+ travelEnd: z.string().optional().nullable(),
+ interestPeriod: z.string().optional().nullable(),
+ targetMonths: z.array(z.string()).optional(),
+ dateFlexibilityMode: z.string().optional().nullable(),
+ paxAdults: z.number().int().min(1).optional(),
+ childrenAges: z.array(z.number().int().min(0).max(17)).optional(),
+ roomOccupancies: z.array(z.any()).optional(),
+ rawIntentMarkdown: z.string().optional().nullable(),
  notes: z.string().optional(),
  }),
  )
@@ -2412,65 +2736,93 @@ export const convertChatThreadToCrmLead = createServerFn({ method: "POST" })
     } catch {}
   }
 
+  const { normalizeDestinationTagList } = await import("@/lib/travel/opportunity-matching-engine");
+  const normalizedDestTags = normalizeDestinationTagList(
+    data.destinationTags as any,
+    data.destinationOfInterest || null,
+  );
+  const childAges = Array.isArray(data.childrenAges)
+    ? data.childrenAges.filter((a) => Number.isFinite(a) && a >= 0 && a <= 17)
+    : [];
+  const effectiveDestLabel =
+    data.destinationOfInterest ||
+    (normalizedDestTags.length > 0 ? normalizedDestTags.map((d) => d.label).join(", ") : null);
+
   const nowIso = new Date().toISOString();
-  const leadInsertPayload: Record<string, any> = {
-    store_id: storeId,
+  const { ingestOmnichannelLead } = await import("./omnichannel-lead-ingestion");
+  const ingestedLeadRes = await ingestOmnichannelLead(db, {
+    storeId,
+    leadId: (thread as any).lead_id || null,
+    source: thread.context_type === "whatsapp" ? "whatsapp" : "site",
+    sourceDetail: thread.context_type === "whatsapp" ? "WhatsApp Atendimento" : "Chat Central",
+    fullName,
+    phone: phone || null,
+    email: email || null,
     title: resolvedLeadTitle,
-    full_name: fullName,
-    phone,
-    email: email || `atendimento+${thread.id.slice(0, 8)}@sem-email.waesy.local`,
-    customer_id: resolvedCustomerId,
-    assigned_to: data.assignedTo || identity.id,
-    source: thread.context_type === "whatsapp" ? "WhatsApp Atendimento" : "Chat Central",
-    destination: data.destinationOfInterest || null,
-    destination_of_interest: data.destinationOfInterest || null,
-    estimated_value_cents: resolvedEstimatedBudget ? Math.round(Number(resolvedEstimatedBudget) * 100) : 0,
-    status: "new",
-    custom_fields: {
+    destination: effectiveDestLabel || null,
+    travelStart: data.travelStart || null,
+    travelEnd: data.travelEnd || null,
+    paxAdults: data.paxAdults ?? null,
+    paxChildren: childAges.length > 0 ? childAges.length : null,
+    paxInfants: childAges.length > 0 ? childAges.filter((a) => a <= 1).length : null,
+    estimatedValueCents: resolvedEstimatedBudget ? Math.round(Number(resolvedEstimatedBudget) * 100) : 0,
+    notes: data.notes || `Criado via Central de Atendimento da Thread ${thread.id}`,
+    customFields: {
       ...resolvedAttribution,
       source_thread_id: thread.id,
-      kanban_stage_key: "new",
-      kanban_stage_purpose: "inbox",
-      kanban_stage_updated_at: nowIso,
+      ...(normalizedDestTags.length > 0 ? { destination_tags: normalizedDestTags } : {}),
+      ...(data.interestPeriod ? { interest_period: data.interestPeriod } : {}),
+      ...(Array.isArray(data.targetMonths) && data.targetMonths.length > 0 ? { target_months: data.targetMonths } : {}),
+      ...(data.dateFlexibilityMode ? { date_flexibility_mode: data.dateFlexibilityMode } : {}),
+      ...(childAges.length > 0 ? { children_ages: childAges, pax_ages: childAges } : {}),
+      ...(Array.isArray(data.roomOccupancies) && data.roomOccupancies.length > 0 ? { room_occupancies: data.roomOccupancies } : {}),
+      ...(data.rawIntentMarkdown ? { raw_intent_markdown: data.rawIntentMarkdown } : {}),
     },
-    notes: data.notes || `Criado via Central de Atendimento da Thread ${thread.id}`,
-    last_contacted_at: nowIso,
-    created_at: nowIso,
-    updated_at: nowIso,
-  };
+  });
 
-  let { data: lead, error: leadErr } = await db
-    .from("leads_crm")
-    .insert(leadInsertPayload as any)
-    .select("id, title, status, full_name, phone, email, estimated_value_cents, destination_of_interest, custom_fields, created_at")
-    .single();
-
-  if (leadErr) {
-    // Fallback enxuto caso coluna estendida falhe
-    ({ data: lead, error: leadErr } = await db
-      .from("leads_crm")
-      .insert({
-        store_id: storeId,
-        title: resolvedLeadTitle,
-        full_name: fullName,
-        phone,
-        email: email || `atendimento+${thread.id.slice(0, 8)}@sem-email.waesy.local`,
-        customer_id: resolvedCustomerId,
-        assigned_to: data.assignedTo || identity.id,
-        source: thread.context_type === "whatsapp" ? "WhatsApp Atendimento" : "Chat Central",
-        destination_of_interest: data.destinationOfInterest || null,
-        status: "new",
-        custom_fields: leadInsertPayload.custom_fields,
-        notes: data.notes || `Criado via Central de Atendimento da Thread ${thread.id}`,
-        created_at: nowIso,
-        updated_at: nowIso,
-      } as any)
-      .select("id, title, status, full_name, phone, email, estimated_value_cents, destination_of_interest, custom_fields, created_at")
-      .single());
+  if (!ingestedLeadRes.success || !ingestedLeadRes.leadId) {
+    throw new Error(`Falha ao criar card no CRM: ${ingestedLeadRes.reason || "Erro desconhecido"}`);
   }
 
-  if (leadErr || !lead) {
-    throw new Error(`Falha ao criar card no CRM: ${leadErr?.message || "Erro desconhecido"}`);
+  // Enriquecimento opcional de colunas estruturadas estendidas (tolerante caso colunas nao existam no schema)
+  const extendedLeadPatch: Record<string, any> = {
+    assigned_to: data.assignedTo || identity.id,
+    ...(normalizedDestTags.length > 0 ? { destination_tags: normalizedDestTags } : {}),
+    ...(effectiveDestLabel ? { destination_of_interest: effectiveDestLabel } : {}),
+    ...(data.interestPeriod ? { interest_period: data.interestPeriod } : {}),
+    ...(Array.isArray(data.targetMonths) && data.targetMonths.length > 0 ? { target_months: data.targetMonths } : {}),
+    ...(data.dateFlexibilityMode ? { date_flexibility_mode: data.dateFlexibilityMode } : {}),
+    ...(childAges.length > 0 ? { pax_ages: childAges, children_ages: childAges } : {}),
+    ...(Array.isArray(data.roomOccupancies) && data.roomOccupancies.length > 0 ? { room_occupancies: data.roomOccupancies } : {}),
+    ...(data.rawIntentMarkdown ? { raw_intent_markdown: data.rawIntentMarkdown } : {}),
+  };
+  await db
+    .from("leads_crm")
+    .update(extendedLeadPatch as any)
+    .eq("id", ingestedLeadRes.leadId)
+    .eq("store_id", storeId)
+    .then(() => null, () => null);
+
+  const { data: loadedLead } = await db
+    .from("leads_crm")
+    .select("id, title, status, full_name, phone, email, estimated_value_cents, destination, custom_fields, created_at")
+    .eq("id", ingestedLeadRes.leadId)
+    .maybeSingle();
+
+  const lead = loadedLead || {
+    id: ingestedLeadRes.leadId,
+    title: resolvedLeadTitle,
+    status: "new",
+    full_name: fullName,
+    phone,
+    email,
+    estimated_value_cents: resolvedEstimatedBudget ? Math.round(Number(resolvedEstimatedBudget) * 100) : 0,
+    destination: effectiveDestLabel,
+    custom_fields: {},
+    created_at: nowIso,
+  };
+  if (ingestedLeadRes.customerId && !resolvedCustomerId) {
+    resolvedCustomerId = ingestedLeadRes.customerId;
   }
 
   // Closed-Loop Pixels: dispara qualificacao inicial quando lead nasce no Atendimento com contexto comercial/ads
@@ -2495,10 +2847,11 @@ export const convertChatThreadToCrmLead = createServerFn({ method: "POST" })
     }).catch(() => {});
   } catch {}
 
- // Vincula a oportunidade recém-criada como oportunidade ativa da conversa atual (relação 1:N)
+ // Vincula a oportunidade recém-criada como oportunidade ativa da conversa atual (coluna lead_id + metadata 1:N)
  await db
    .from("chat_threads")
    .update({
+     lead_id: lead.id,
      ...(resolvedCustomerId && !thread.customer_id ? { customer_id: resolvedCustomerId } : {}),
      metadata: {
        ...(((thread as any).metadata || {}) as Record<string, any>),
@@ -2517,6 +2870,17 @@ export const convertChatThreadToCrmLead = createServerFn({ method: "POST" })
  sender_id: identity.id,
  sender_profile_id: identity.id,
  });
+
+ if (effectiveDestLabel) {
+   import("./opportunity-radar.functions")
+     .then((mod) =>
+       mod.internalEvaluateDemandAgainstAllSupply({
+         storeId,
+         leadId: String(lead.id),
+       })
+     )
+     .catch(() => {});
+ }
 
  return { success: true, ok: true, leadId: lead.id, lead };
  });
@@ -2608,470 +2972,6 @@ export const getCustomerChatThread = createServerFn({ method: "GET" })
  console.error("[chat] getCustomerChatThread error:", e);
  throw new Error(e.message || "Erro ao buscar chat.");
  }
- });
-
-/**
- * Cliente envia mensagem segura
- */
-export const sendCustomerChatMessage = createServerFn({ method: "POST" })
- .validator(sendCustomerMessageSchema)
- .handler(async ({ data: input }) => {
- try {
- const ssrClient = await getSSRClient();
- const { data: { user } } = await ssrClient.auth.getUser();
-
- const db = getServerClient();
-
- const { data: thread } = await db
- .from("chat_threads")
- .select("id, customer_id")
- .eq("id", input.threadId)
- .single();
-
- if (!thread) throw new Error("Conversa não encontrada.");
- if (!user || !thread.customer_id || thread.customer_id !== user.id) {
- throw new Error("Acesso não autorizado.");
- }
-
- const { data: msg, error } = await db
- .from("chat_messages")
- .insert({
- thread_id: input.threadId,
- message: input.message,
- message_type: input.message_type,
- attachments: input.attachments,
- payload: input.payload,
- is_staff_reply: false,
- sender_id: user ? user.id : null,
- sender_profile_id: user ? user.id : null,
- })
- .select()
- .single();
-
- if (error) throw error;
-
- await db
- .from("chat_threads")
- .update({
- last_message_text: input.message,
- last_message_at: new Date().toISOString(),
- updated_at: new Date().toISOString(),
- status: "open",
- })
- .eq("id", input.threadId);
-
- return msg;
- } catch (e: any) {
- console.error("[chat] sendCustomerChatMessage error:", e);
- throw new Error(e.message || "Erro ao enviar mensagem.");
- }
- });
-
-/**
- * Busca unificada de contatos (membros da rede e lojas/negócios locais) para iniciar nova conversa
- */
-export const searchChatContacts = createServerFn({ method: "GET" })
-  .validator(
-    z.object({
-      query: z.string().default(""),
-      limit: z.number().int().min(1).max(30).default(15),
-    }),
-  )
-  .handler(async ({ data }) => {
-    try {
-      const q = data.query.trim();
-      const db = getServerClient();
-      const ssrClient = await getSSRClient();
-      const { data: { user } } = await ssrClient.auth.getUser();
-
-      let profilesQuery = db
-        .from("profiles")
-        .select("id, full_name, avatar_url, bio, city")
-        .limit(data.limit);
-
-      if (user) {
-        profilesQuery = profilesQuery.neq("id", user.id);
-      }
-
-      if (q.length > 0) {
-        profilesQuery = profilesQuery.ilike("full_name", `%${q}%`);
-      }
-
-      let storesQuery = db
-        .from("stores")
-        .select("id, name, slug, settings, city")
-        .eq("is_active", true)
-        .limit(data.limit);
-
-      if (q.length > 0) {
-        storesQuery = storesQuery.or(`name.ilike.%${q}%,city.ilike.%${q}%`);
-      }
-
-      const [profilesRes, storesRes] = await Promise.all([profilesQuery, storesQuery]);
-
-      const contacts = (profilesRes.data || []).map((p: any) => ({
-        id: p.id,
-        name: p.full_name || "Membro da Comunidade",
-        type: "person" as const,
-        avatar_url: p.avatar_url,
-        subtitle: p.city ? `Membro em ${p.city}` : "Membro da Comunidade",
-      }));
-
-      const stores = (storesRes.data || []).map((s: any) => {
-        const settings = s.settings || {};
-        return {
-          id: s.id,
-          name: s.name,
-          type: "store" as const,
-          avatar_url: settings.logoUrl || settings.logo_url || null,
-          subtitle: settings.category || settings.segment || "Loja & Negócio Local",
-          slug: s.slug,
-        };
-      });
-
-      return {
-        contacts,
-        stores,
-      };
-    } catch (err) {
-      console.error("[chat] searchChatContacts error:", err);
-      return { contacts: [], stores: [] };
-    }
-  });
-
-/**
- * Lista todas as conversas do cliente (lojas e membros P2P)
- */
-export const listCustomerChatThreads = createServerFn({ method: "GET" }).handler(async () => {
-  try {
-    const ssrClient = await getSSRClient();
-    const { data: { user } } = await ssrClient.auth.getUser();
-    if (!user) throw new Error("Não autenticado");
-
-    const db = getServerClient();
-    const { data, error } = await db
-      .from("chat_threads")
-      .select(`
-        id, store_id, status, subject, department, updated_at, created_at, order_id, thread_type, context_type, metadata, customer_id, recipient_profile_id,
-        store:stores(id, name, slug, settings),
-        chat_messages(id, message, created_at, is_staff_reply)
-      `)
-      .or(`customer_id.eq.${user.id},recipient_profile_id.eq.${user.id}`)
-      .not("thread_type", "in", "(ai_assistant,copilot,project)")
-      .order("updated_at", { ascending: false });
-
-    if (error) throw error;
-
-    // ISOLAMENTO ZERO-TRUST: Garantir que nenhuma thread de IA apareça no inbox humano/comercial
-    const sanitizedData = (data || []).filter((t: any) => {
-      if (t.thread_type === "ai_assistant" || t.thread_type === "copilot" || t.thread_type === "project") return false;
-      if (t.context_type === "ai_assistant" || t.context_type === "copilot" || t.context_type === "project") return false;
-      if (t.metadata?.is_copilot || t.metadata?.is_civil || t.metadata?.agent_mode) return false;
-      return true;
-    });
-
-    // Se houver conversas P2P, busca perfis participantes
-    const p2pProfileIds = new Set<string>();
-    for (const t of sanitizedData) {
-      if (t.thread_type === "direct_p2p" || t.recipient_profile_id) {
-        const otherId = t.customer_id === user.id ? t.recipient_profile_id : t.customer_id;
-        if (otherId) p2pProfileIds.add(otherId);
-      }
-    }
-
-    const profilesMap = new Map<string, any>();
-    if (p2pProfileIds.size > 0) {
-      const { data: profilesList } = await db
-        .from("profiles")
-        .select("id, full_name, avatar_url, city")
-        .in("id", Array.from(p2pProfileIds));
-      for (const p of profilesList || []) {
-        profilesMap.set(p.id, p);
-      }
-    }
-
-    return sanitizedData.map((thread: any) => {
-      const messages = thread.chat_messages || [];
-      messages.sort(
-        (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-      );
-      const lastMsg = messages[0];
-      const storeSettings = (thread.store?.settings as any) || {};
-      const mappedStore = thread.store
-        ? {
-            ...thread.store,
-            logo_url: storeSettings.logoUrl || storeSettings.logo_url || null,
-          }
-        : null;
-
-      const isP2P = thread.thread_type === "direct_p2p" || (!thread.store_id && thread.recipient_profile_id);
-      let peerProfile: any = null;
-      if (isP2P) {
-        const otherId = thread.customer_id === user.id ? thread.recipient_profile_id : thread.customer_id;
-        peerProfile = profilesMap.get(otherId) || { full_name: "Membro", avatar_url: null };
-      }
-
-      return {
-        ...thread,
-        is_p2p: isP2P,
-        peer_profile: peerProfile,
-        store: mappedStore,
-        last_message: lastMsg ? lastMsg.message : "Conversa iniciada",
-        last_message_at: lastMsg ? lastMsg.created_at : thread.created_at,
-        unread_count: messages.filter((m: any) => m.is_staff_reply).length,
-        is_last_reply_staff: lastMsg ? lastMsg.is_staff_reply : false,
-      };
-    });
-  } catch (e: any) {
-    console.error("[chat] listCustomerChatThreads error:", e);
-    throw new Error(e.message || "Erro ao listar conversas.");
-  }
-});
-
-/**
- * Inicia ou localiza thread unificada (cliente-loja ou direta P2P)
- */
-export const startCustomerChatThread = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      storeId: z.string().uuid().optional(),
-      recipientProfileId: z.string().uuid().optional(),
-      orderId: z.string().uuid().optional(),
-      subject: z.string().min(1).default("Conversa"),
-      initialMessage: z.string().min(1),
-      department: z.string().default("geral"),
-    }),
-  )
-  .handler(async ({ data: input }) => {
-    try {
-      const ssrClient = await getSSRClient();
-      const { data: { user } } = await ssrClient.auth.getUser();
-      const db = getServerClient();
-
-      if (!input.storeId && !input.recipientProfileId) {
-        throw new Error("Selecione uma loja ou membro para conversar.");
-      }
-
-      let profile: any = null;
-      if (user) {
-        const { data: p } = await db
-          .from("profiles")
-          .select("full_name, avatar_url")
-          .eq("id", user.id)
-          .maybeSingle();
-        profile = p ? { ...p, email: user.email } : null;
-      }
-
-      let threadId: string | undefined;
-
-      if (input.recipientProfileId) {
-        if (!user) throw new Error("Faça login para conversar com membros.");
-        const { data: existingP2P } = await db
-          .from("chat_threads")
-          .select("id")
-          .or(
-            `and(customer_id.eq.${user.id},recipient_profile_id.eq.${input.recipientProfileId}),and(customer_id.eq.${input.recipientProfileId},recipient_profile_id.eq.${user.id})`
-          )
-          .maybeSingle();
-
-        if (existingP2P) {
-          threadId = existingP2P.id;
-        } else {
-          const { data: newP2P, error: p2pErr } = await db
-            .from("chat_threads")
-            .insert({
-              store_id: null,
-              customer_id: user.id,
-              recipient_profile_id: input.recipientProfileId,
-              thread_type: "direct_p2p",
-              guest_name: profile?.full_name || "Membro",
-              guest_email: profile?.email || null,
-              subject: input.subject,
-              status: "open",
-            })
-            .select()
-            .single();
-
-          if (p2pErr) throw p2pErr;
-          threadId = newP2P.id;
-        }
-      } else if (input.storeId) {
-        let query = db
-          .from("chat_threads")
-          .select("id")
-          .eq("store_id", input.storeId)
-          .eq("status", "open");
-
-        if (user) {
-          query = query.eq("customer_id", user.id);
-        }
-
-        if (input.orderId) {
-          query = query.eq("order_id", input.orderId);
-        }
-
-        const { data: existing } = await query.maybeSingle();
-
-        if (existing) {
-          threadId = existing.id;
-        } else {
-          const { data: newThread, error: threadErr } = await db
-            .from("chat_threads")
-            .insert({
-              store_id: input.storeId,
-              customer_id: user ? user.id : null,
-              guest_name: profile?.full_name || "Cliente",
-              guest_email: profile?.email || null,
-              subject: input.subject,
-              order_id: input.orderId || null,
-              department: input.department,
-              thread_type: "store",
-              status: "open",
-            })
-            .select()
-            .single();
-
-          if (threadErr) throw threadErr;
-          threadId = newThread.id;
-        }
-      }
-
-      if (!threadId) throw new Error("Não foi possível criar a conversa.");
-
-      // Insere a mensagem inicial
-      await db.from("chat_messages").insert({
-        thread_id: threadId,
-        message: input.initialMessage,
-        message_type: input.orderId ? "order_card" : "text",
-        payload: input.orderId ? { order_id: input.orderId } : {},
-        is_staff_reply: false,
-        sender_id: user ? user.id : null,
-      });
-
-      return { threadId };
-    } catch (e: any) {
-      console.error("[chat] startCustomerChatThread error:", e);
-      throw new Error(e.message || "Erro ao iniciar conversa.");
-    }
-  });
-
-/**
- * Abertura de chamado SAC / RMA (Troca, Devolução ou Defeito)
- */
-export const createSupportRmaTicket = createServerFn({ method: "POST" })
- .validator(createRmaTicketSchema)
- .handler(async ({ data }) => {
- const identity = await getServerIdentity();
- if (!identity.id) throw new Error("Não autenticado");
-
- const db = getServerClient();
-
- const { data: ticket, error } = await db
- .from("store_support_tickets")
- .insert({
- thread_id: data.threadId,
- store_id: data.store_id,
- order_id: data.order_id || null,
- customer_id: identity.id,
- ticket_type: data.ticket_type,
- title: data.title,
- description: data.description,
- photo_urls: data.photo_urls,
- status: "open",
- priority: "high",
- })
- .select()
- .single();
-
- if (error) throw new Error(`Falha ao abrir chamado: ${error.message}`);
-
- // Publica card interativo do ticket na thread de chat
- await db.from("chat_messages").insert({
- thread_id: data.threadId,
- message: `[CHAMADO] Solicitação de ${data.ticket_type === "return_exchange" ? "Troca/Devolução" : "Suporte"}: "${data.title}"`,
- message_type: "rma_ticket",
- payload: {
- ticket_id: ticket.id,
- ticket_type: ticket.ticket_type,
- title: ticket.title,
- description: ticket.description,
- photo_urls: ticket.photo_urls,
- status: ticket.status,
- },
- is_staff_reply: false,
- sender_id: identity.id,
- });
-
- if (ticket.thread_id && (data as any).status === "resolved") {
-   const appOrigin = process.env.VITE_APP_URL || process.env.VITE_SITE_URL || "https://waesy.com.br";
-   const csatUrl = `${appOrigin.replace(/\/$/, "")}/chamado/${ticket.id}`;
-   await db.from("chat_messages").insert({
-     thread_id: ticket.thread_id,
-     message: `Seu chamado "${ticket.title || "Atendimento"}" foi concluído! Acesse a linha do tempo completa, valide a resolução e avalie nosso atendimento em: ${csatUrl}`,
-     message_type: "structured_blocks",
-     payload: { ticket_id: ticket.id, csat_url: csatUrl, blocks: [{ type: "summary_card", data: { title: "Avalie seu Atendimento", subtitle: `Confirme se o problema foi resolvido e dê sua nota: ${csatUrl}`, badge: "Pesquisa CSAT", action_url: csatUrl } }] },
-     is_staff_reply: true,
-     sender_id: identity.id,
-   });
- }
- return ticket;
- });
-
-/**
- * Atualiza status do ticket pela equipe da loja
- */
-export const updateTicketStatus = createServerFn({ method: "POST" })
- .validator(updateTicketStatusSchema)
- .handler(async ({ data }) => {
- const identity = await getServerIdentity();
- if (!identity?.id) throw new Error("Não autorizado");
-
- const db = getServerClient();
-
- const { data: ticket, error } = await db
- .from("store_support_tickets")
- .update({
- status: data.status,
- resolution_notes: data.resolution_notes || null,
- refund_amount_cents: data.refund_amount_cents || 0,
- updated_at: new Date().toISOString(),
- })
- .eq("id", data.ticketId)
- .eq("store_id", identity.store_id)
- .select()
- .single();
-
- if (error) throw new Error(`Falha ao atualizar chamado: ${error.message}`);
-
- // Notifica na conversa
- if (ticket.thread_id) {
- await db.from("chat_messages").insert({
- thread_id: ticket.thread_id,
- message: `[STATUS] Status do Chamado atualizado para: ${data.status.toUpperCase()}. ${data.resolution_notes || ""}`,
- message_type: "system_event",
- payload: {
- ticket_id: ticket.id,
- status: ticket.status,
- resolution_notes: data.resolution_notes,
- },
- is_staff_reply: true,
- sender_id: identity.id,
- });
- }
-
- if (ticket.thread_id && (data as any).status === "resolved") {
-   const appOrigin = process.env.VITE_APP_URL || process.env.VITE_SITE_URL || "https://waesy.com.br";
-   const csatUrl = `${appOrigin.replace(/\/$/, "")}/chamado/${ticket.id}`;
-   await db.from("chat_messages").insert({
-     thread_id: ticket.thread_id,
-     message: `Seu chamado "${ticket.title || "Atendimento"}" foi concluído! Acesse a linha do tempo completa, valide a resolução e avalie nosso atendimento em: ${csatUrl}`,
-     message_type: "structured_blocks",
-     payload: { ticket_id: ticket.id, csat_url: csatUrl, blocks: [{ type: "summary_card", data: { title: "Avalie seu Atendimento", subtitle: `Confirme se o problema foi resolvido e dê sua nota: ${csatUrl}`, badge: "Pesquisa CSAT", action_url: csatUrl } }] },
-     is_staff_reply: true,
-     sender_id: identity.id,
-   });
- }
- return ticket;
  });
 
 // ============================================================
@@ -3173,6 +3073,7 @@ export const supportScheduleItemSchema = z.object({
 });
 
 export const saveStoreSupportSettingsSchema = z.object({
+	storeId: z.string().uuid().optional(),
 	away_message: z.string().max(1000).optional(),
 	auto_reply_enabled: z.boolean().optional(),
 	support_schedules: z.array(supportScheduleItemSchema).optional(),
@@ -3182,13 +3083,18 @@ export const saveStoreSupportSettings = createServerFn({ method: "POST" })
 	.validator(saveStoreSupportSettingsSchema)
 	.handler(async ({ data }) => {
 		const identity = await getServerIdentity();
-		assertStoreAccess(identity, STAFF_ROLES, identity.store_id);
+		const targetStoreId =
+			identity.role === "platform_admin" && data.storeId
+				? data.storeId
+				: identity.store_id || identity.memberships?.[0]?.store_id;
+		if (!targetStoreId) throw new Error("Loja obrigatória.");
+		assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
 		const db = getServerClient();
 
 		const { data: currentStore, error: fetchErr } = await db
 			.from("stores")
 			.select("settings")
-			.eq("id", identity.store_id)
+			.eq("id", targetStoreId)
 			.single();
 
 		if (fetchErr) throw new Error(`Falha ao ler configurações da loja: ${fetchErr.message}`);
@@ -3212,7 +3118,7 @@ export const saveStoreSupportSettings = createServerFn({ method: "POST" })
 			.update({
 				settings: mergedSettings,
 			})
-			.eq("id", identity.store_id);
+			.eq("id", targetStoreId);
 
 		if (updateErr) throw new Error(`Falha ao salvar configurações de atendimento: ${updateErr.message}`);
 
@@ -4665,36 +4571,6 @@ export const generateSmartContextualAiReply = createServerFn({ method: "POST" })
     const effectiveStoreId = inputStoreId || thread.store_id || identity.store_id;
     assertStoreAccess(identity, STAFF_ROLES, effectiveStoreId);
 
-    const { data: store } = await db.from("stores").select("name").eq("id", effectiveStoreId).single();
-    const storeName = store?.name || "Nossa Empresa";
-    const customerName = thread.guest_name || "Cliente";
-    const threadMeta = (thread.metadata && typeof thread.metadata === "object" ? thread.metadata : {}) as Record<string, any>;
-    const activeAiAgentId = String(threadMeta.ai_agent_id || "general_copilot").trim();
-
-    const AGENT_PERSONA_DIRECTIVES: Record<string, { role: string; closing: string }> = {
-      tourism_concierge: {
-        role: "Agente Especialista de Concierge & Viagens (roteiros, passagens aéreas, embarques, hotelaria e PNR).",
-        closing: "Quer que eu confirme a disponibilidade dessas datas ou prefere ajustar algum detalhe do roteiro?",
-      },
-      commercial_closer: {
-        role: "Agente Especialista Comercial & Vendas (fechamento consultivo, condições de pagamento e emissão de propostas/faturas).",
-        closing: "Posso já emitir a proposta ou link de pagamento com essa condição para garantir sua reserva?",
-      },
-      financial_billing: {
-        role: "Agente Especialista Financeiro & Cobrança (faturas, boletos, PIX Copia e Cola, parcelamento e conciliação).",
-        closing: "Prefere que eu envie agora o código PIX Copia e Cola ou o link da fatura atualizada?",
-      },
-      sac_triage: {
-        role: "Agente Especialista de SAC & Pós-Venda (acolhimento ágil, protocolos de suporte, remarcações e solução de imprevistos).",
-        closing: "Confirme para mim o código ou detalhe pendente para eu registrar e resolver agora mesmo?",
-      },
-      general_copilot: {
-        role: "Copilot Geral de Recepção & Catálogo (triagem cordial, informação objetiva de serviços e encaminhamento assertivo).",
-        closing: "Quer que eu separe essa opção ou prefere ajustar alguma data ou condição?",
-      },
-    };
-    const personaSpec = AGENT_PERSONA_DIRECTIVES[activeAiAgentId] || AGENT_PERSONA_DIRECTIVES.general_copilot;
-
     // 1. Carrega histórico de mensagens recentes (últimas 15)
     const { data: rawMessages } = await db
       .from("chat_messages")
@@ -4738,120 +4614,20 @@ export const generateSmartContextualAiReply = createServerFn({ method: "POST" })
       lastDestination = tripsRes.data?.[0]?.destination_city || "";
     }
 
-    // 4. Última mensagem enviada pelo cliente
-    const lastCustomerMsg = [...threadMessages].reverse().find((m) => !m.is_staff_reply);
-    const clientQuery = lastCustomerMsg?.message || customInstruction || "informações sobre opções disponíveis";
-
-    // 5. Consulta Pacotes e Normas ANAC
-    const { toolLookupTourismPackages, toolGetTourismAviationPolicies } = await import("./whatsapp-ai-agent-tools.server");
-    const packages = await toolLookupTourismPackages({ storeId: effectiveStoreId, query: clientQuery, limit: 2 }).catch(() => []);
-
-    let packageData = "";
-    if (packages && packages.length > 0) {
-      const p = packages[0];
-      packageData = `Pacote disponível: ${p.title} em ${p.destination}. Valor: ${p.priceDisplay}, parcelamento: ${p.installmentTerms}. Inclusos: ${(p.includedItems || []).slice(0, 3).join(", ")}.`;
-    }
-
-    let anacData = "";
-    if (/(anac|bagagem|mala|cancelamento|arrependimento|no-show|atraso)/i.test(clientQuery)) {
-      const aviation = toolGetTourismAviationPolicies();
-      if (/(bagagem|mala)/i.test(clientQuery)) {
-        const pol = aviation.policies.find((p) => p.topic.includes("Bagagem"));
-        if (pol) anacData = `Regra ANAC bagagem: ${pol.rules[0]}; ${pol.rules[1]}`;
-      } else if (/(cancelamento|arrependimento)/i.test(clientQuery)) {
-        const pol = aviation.policies.find((p) => p.topic.includes("Arrependimento"));
-        if (pol) anacData = `Regra ANAC cancelamento: ${pol.rules[0]}; ${pol.rules[1]}`;
-      }
-    }
-
-    // 6. Geração da resposta (direta, humana, sem enrolação)
-    let suggestedReply = "";
-    let poolGroqKey = "";
-    let poolOpenAiKey = "";
-    try {
-      const [groqPool, openAiPool] = await Promise.all([
-        getAllActiveKeysForProvider("groq", identity.id, effectiveStoreId),
-        getAllActiveKeysForProvider("openai", identity.id, effectiveStoreId),
-      ]);
-      poolGroqKey = groqPool[0]?.rawKey?.trim() || "";
-      poolOpenAiKey = openAiPool[0]?.rawKey?.trim() || "";
-    } catch (poolErr) {
-      console.warn("[chat.functions] Falha ao consultar pool/BYOK na sugestão contextual:", poolErr);
-    }
-    const openaiKey = poolOpenAiKey || process.env.OPENAI_API_KEY?.trim() || "";
-    const groqKey = poolGroqKey || process.env.GROQ_API_KEY?.trim() || "";
-
-    const systemPrompt = `Você é um consultor humano atuando como ${personaSpec.role} na empresa ${storeName}.
-Diretrizes inegociáveis:
-- Fale como uma pessoa real no WhatsApp: direto ao ponto, educado, caloroso, SEM enrolação, SEM clichês ("Com certeza!", "Entendo sua dúvida").
-- Perfil do cliente: ${customerName}. ${isVipOrReturning ? `Cliente recorrente (${tripsCount} viagens já realizadas, ${quotesCount} cotações/faturas, total comprado: ${totalSpentBrl}). Reconheça a relação naturalmente.` : "Novo cliente / lead em primeiro contato."}
-- ${promiseDetection.hasPendingPromise ? `ATENÇÃO: O atendente disse anteriormente "${promiseDetection.promiseSnippet}". Cumpra essa promessa entregando a resposta agora com naturalidade!` : ""}
-- ${customInstruction ? `Instrução do atendente: "${customInstruction}"` : ""}
-- Dados de pacotes da agência: ${packageData || "Nenhum pacote fixo, consulte datas específicas."}
-- Regras ANAC: ${anacData || "Não aplicável."}
-- Responda em no máximo 3 ou 4 frases curtas, fáceis de ler no celular. Termine com uma pergunta clara de avanço alinhada ao papel (${activeAiAgentId}).`;
-
-    if (openaiKey || groqKey) {
-      try {
-        const targetUrl = groqKey
-          ? "https://api.groq.com/openai/v1/chat/completions"
-          : "https://api.openai.com/v1/chat/completions";
-        const model = groqKey ? "llama-3.3-70b-versatile" : "gpt-4o-mini";
-
-        const aiRes = await fetch(targetUrl, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${groqKey || openaiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model,
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: `Mensagem do cliente: "${clientQuery}". Escreva a resposta humana:` },
-            ],
-            temperature: 0.6,
-            max_tokens: 300,
-          }),
-          signal: AbortSignal.timeout(10000),
-        });
-
-        if (aiRes.ok) {
-          const aiJson = await aiRes.json().catch(() => ({}));
-          suggestedReply = String(aiJson?.choices?.[0]?.message?.content || "").trim();
-        }
-      } catch (err: any) {
-        console.warn("[chat.functions] Falha ao chamar LLM externa:", err?.message);
-      }
-    }
-
-    if (!suggestedReply) {
-      let followUpIntro = "";
-      if (promiseDetection.hasPendingPromise) {
-        followUpIntro = `Conforme prometido, verifiquei aqui para você. `;
-      } else if (isVipOrReturning) {
-        followUpIntro = `Que bom falar com você novamente, ${customerName}! `;
-      } else {
-        followUpIntro = `Olá, ${customerName}! `;
-      }
-
-      let contentBody = "";
-      if (packageData) {
-        contentBody = packageData.replace(/\. /g, "\n- ");
-      } else if (anacData) {
-        contentBody = anacData;
-      } else if (activeAiAgentId === "financial_billing") {
-        contentBody = "Já conferi seu histórico financeiro e deixei as instruções de pagamento organizadas para você.";
-      } else if (activeAiAgentId === "sac_triage") {
-        contentBody = "Já recebi sua solicitação de suporte e estou priorizando a conferência da sua reserva/pedido.";
-      } else if (activeAiAgentId === "commercial_closer") {
-        contentBody = "Já organizei os valores e condições comerciais atualizadas para fecharmos o melhor formato.";
-      } else {
-        contentBody = "Já levantei as melhores opções disponíveis com valores e saídas confirmadas.";
-      }
-
-      suggestedReply = `${followUpIntro}${contentBody}\n\n${personaSpec.closing}`;
-    }
+    // 4. Geração unificada multi-nicho (lê áudios transcritos, prints/OCR, atribuição e catálogo real)
+    const { buildMultiNicheCopilotContextAndReply } = await import("./omnichannel-ai-copilot.server");
+    const promiseDirective = promiseDetection.hasPendingPromise
+      ? `Cumprir promessa anterior "${promiseDetection.promiseSnippet}"${customInstruction ? ` | ${customInstruction}` : ""}`
+      : customInstruction;
+    const copilotInsight = await buildMultiNicheCopilotContextAndReply({
+      db,
+      storeId: effectiveStoreId,
+      threadId,
+      ownerId: identity.id,
+      customInstruction: promiseDirective,
+      persistToThread: true,
+    });
+    const suggestedReply = copilotInsight.suggestedReply;
 
     // 7. Geração de Áudio Opcional com Preview
     let audioPreviewUrl: string | null = null;
@@ -4873,6 +4649,7 @@ Diretrizes inegociáveis:
 
     return {
       suggestedReply,
+      copilotInsight,
       audioPreviewUrl,
       audioDuration,
       promiseDetection,
@@ -5020,6 +4797,25 @@ export const getWhatsAppMediaBase64 = createServerFn({ method: "POST" })
         ? existingMsg.attachments[0]
         : null;
 
+    if (existingMsg?.payload?.media?.storage_bucket && existingMsg?.payload?.media?.storage_path) {
+      const { refreshSignedChatMediaUrl } = await import("./whatsapp-media.server");
+      const freshUrl = await refreshSignedChatMediaUrl(
+        db,
+        existingMsg.payload.media.storage_bucket,
+        existingMsg.payload.media.storage_path,
+        3600,
+      );
+      if (freshUrl) {
+        return {
+          base64: freshUrl,
+          mimetype: String(
+            existingMsg?.payload?.media?.mimetype || resolveDefaultMimeByMessageType(existingMsg?.message_type),
+          ),
+          cached: true,
+        };
+      }
+    }
+
     if (
       cachedAttachment &&
       cachedAttachment.startsWith("data:") &&
@@ -5065,7 +4861,7 @@ export const getWhatsAppMediaBase64 = createServerFn({ method: "POST" })
     }
 
     return {
-      base64: hydrated.dataUri,
+      base64: hydrated.signedUrl || hydrated.dataUri,
       mimetype: hydrated.mimetype,
       cached: false,
     };
@@ -5575,11 +5371,11 @@ export const syncContactProfileFromWhatsApp = createServerFn({ method: "POST" })
 
     if (!thread) throw new Error("Conversa não localizada.");
 
-    let inst: { id: string; instance_key: string; external_instance_id: string | null; public_config: any } | null = null;
+    let inst: { id: string; instance_key: string; external_instance_id: string | null; public_config: any; secret_payload_encrypted?: string | null } | null = null;
     if (thread.channel_instance_id) {
       const { data: linkedInst } = await db
         .from("whatsapp_channel_instances")
-        .select("id, instance_key, external_instance_id, public_config")
+        .select("id, instance_key, external_instance_id, public_config, secret_payload_encrypted")
         .eq("id", thread.channel_instance_id)
         .eq("provider", "evolution_api")
         .eq("is_active", true)
@@ -5589,7 +5385,7 @@ export const syncContactProfileFromWhatsApp = createServerFn({ method: "POST" })
     if (!inst) {
       const { data: defaultInst } = await db
         .from("whatsapp_channel_instances")
-        .select("id, instance_key, external_instance_id, public_config")
+        .select("id, instance_key, external_instance_id, public_config, secret_payload_encrypted")
         .eq("store_id", storeId)
         .eq("provider", "evolution_api")
         .eq("is_active", true)
@@ -5601,12 +5397,8 @@ export const syncContactProfileFromWhatsApp = createServerFn({ method: "POST" })
 
     if (!inst) throw new Error("Nenhuma instância WhatsApp ativa encontrada.");
 
-    const externalName = inst.external_instance_id || inst.instance_key;
-    const configuredUrl = String((inst.public_config as any)?.base_url || "").replace(/\/$/, "");
-    const baseUrl = configuredUrl && !configuredUrl.includes("147.15.61.45")
-      ? configuredUrl
-      : (process.env.EVOLUTION_API_URL?.trim() || "");
-    const apiKey = process.env.EVOLUTION_API_KEY?.trim() || "";
+    const { resolveEvolutionGatewayAccess } = await import("./whatsapp-evolution-config.server");
+    const { baseUrl, apiKey, externalName } = resolveEvolutionGatewayAccess(inst as any);
     if (!baseUrl || !apiKey) throw new Error("Gateway WhatsApp não configurado.");
 
     const { extractParticipantPhone, isGroupJidOrSyntheticPhone, normalizePhoneE164 } = await import("@/services/omnichannel-attribution.server");
@@ -6642,245 +6434,6 @@ export const deleteCorporateEmailMailbox = createServerFn({ method: "POST" })
     return {
       success: true,
       accounts: nextAccounts,
-    };
-  });
-
-export const createLinkedCustomerTaskSchema = z.object({
-  storeId: z.string().uuid().optional(),
-  threadId: z.string().uuid().optional().nullable(),
-  customerId: z.string().optional().nullable(),
-  customerName: z.string().trim().min(1).max(120),
-  customerPhone: z.string().optional().nullable(),
-  customerAvatarUrl: z.string().optional().nullable(),
-  title: z.string().trim().min(2).max(200),
-  description: z.string().optional().nullable(),
-  priority: z.enum(["low", "medium", "high", "urgent"]).default("medium"),
-  dueDate: z.string().optional().nullable(),
-  assignedSector: z.enum(["sac_pepinos", "customer_success", "operadora_cia", "reembolso_financeiro", "documentacao", "comercial"]).default("customer_success"),
-  assignedToProfileId: z.string().uuid().optional().nullable(),
-  entityType: z.enum(["customer", "trip", "order", "booking", "contract", "ticket", "general"]).default("customer"),
-  entityId: z.string().optional().nullable(),
-  entityCode: z.string().optional().nullable(),
-  pnrLocator: z.string().optional().nullable(),
-  isMyDay: z.boolean().default(true),
-});
-
-export const createLinkedCustomerTask = createServerFn({ method: "POST" })
-  .validator(createLinkedCustomerTaskSchema)
-  .handler(async ({ data }) => {
-    const {
-      storeId: inputStoreId,
-      threadId,
-      customerId,
-      customerName,
-      customerPhone,
-      customerAvatarUrl,
-      title,
-      description,
-      priority,
-      dueDate,
-      assignedSector,
-      assignedToProfileId,
-      entityType,
-      entityId,
-      entityCode,
-      pnrLocator,
-      isMyDay,
-    } = data;
-
-    const identity = await getServerIdentity();
-    const storeId = inputStoreId || identity.store_id;
-    if (!storeId) throw new Error("Loja obrigatória para criar tarefa vinculada.");
-    assertStoreAccess(identity);
-    const db = getServerClient();
-
-    const taskCode = `TSK-${Math.floor(1000 + Math.random() * 9000)}`;
-    const custSeed = String(customerId || customerPhone || customerName).replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(-4) || "0000";
-    const customerTraceHash = `#CLI-${custSeed}`;
-
-    const entityPrefixMap: Record<string, string> = {
-      trip: "TRP",
-      order: "PED",
-      booking: "AGD",
-      contract: "CTR",
-      ticket: "SAC",
-      customer: "CLI",
-      general: "WZY",
-    };
-    const entPrefix = entityPrefixMap[entityType] || "WZY";
-    const entSeed = String(entityCode || entityId || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(-4);
-    const entityTraceHash = entSeed ? `#${entPrefix}-${entSeed}` : null;
-
-    const compositeTraceHash = [
-      customerTraceHash,
-      entityTraceHash,
-      pnrLocator ? `#PNR-${pnrLocator.trim().toUpperCase()}` : null,
-    ]
-      .filter(Boolean)
-      .join(" · ");
-
-    const mappedContextType =
-      entityType === "trip"
-        ? "group_tour"
-        : entityType === "order"
-          ? "order"
-          : entityType === "contract"
-            ? "contract"
-            : entityType === "booking"
-              ? "service"
-              : "customer";
-
-    const tags = Array.from(
-      new Set(
-        [
-          customerTraceHash,
-          entityTraceHash,
-          pnrLocator ? `PNR:${pnrLocator.trim().toUpperCase()}` : null,
-          assignedSector === "sac_pepinos"
-            ? "Pepino / SAC"
-            : assignedSector === "customer_success"
-              ? "Customer Success"
-              : assignedSector === "operadora_cia"
-                ? "Operadora / PNR"
-                : assignedSector === "documentacao"
-                  ? "Documentação"
-                  : "Pós-Venda",
-        ].filter(Boolean) as string[]
-      )
-    );
-
-    const customFields = {
-      customer_id: customerId || null,
-      customer_name: customerName,
-      customer_phone: customerPhone || null,
-      customer_avatar_url: customerAvatarUrl || null,
-      thread_id: threadId || null,
-      customer_trace_hash: customerTraceHash,
-      entity_trace_hash: entityTraceHash,
-      trace_hash: compositeTraceHash,
-      assigned_sector: assignedSector,
-      entity_type: entityType,
-      entity_id: entityId || null,
-      entity_code: entityCode || null,
-      pnr_locator: pnrLocator || null,
-    };
-
-    const { data: created, error } = await db
-      .from("workspace_tasks")
-      .insert({
-        store_id: storeId,
-        task_code: taskCode,
-        created_by_profile_id: identity.id,
-        assigned_to_profile_id: assignedToProfileId || identity.id,
-        title: title.trim(),
-        description: description?.trim() || `Vínculo automático: ${customerName} (${compositeTraceHash})`,
-        priority,
-        status: "todo",
-        due_date: dueDate ? new Date(dueDate).toISOString() : null,
-        context_type: mappedContextType,
-        context_id: customerId || entityId || null,
-        context_label: `${customerName} · ${compositeTraceHash}`,
-        tags,
-        is_my_day: isMyDay,
-        custom_fields: customFields,
-        kanban_column_id: "todo",
-      })
-      .select()
-      .single();
-
-    if (error) throw new Error(`Falha ao criar tarefa vinculada: ${error.message}`);
-    return created;
-  });
-
-export const toggleCustomerOnboardingStepSchema = z.object({
-  storeId: z.string().uuid().optional(),
-  threadId: z.string().uuid().optional().nullable(),
-  tripId: z.string().uuid().optional().nullable(),
-  stepKey: z.enum([
-    "docs_received",
-    "contract_signed",
-    "payment_verified",
-    "issuance_completed",
-    "vouchers_sent",
-    "onboarding_ready",
-    "cs_completed",
-  ]),
-  completed: z.boolean(),
-});
-
-export const toggleCustomerOnboardingStep = createServerFn({ method: "POST" })
-  .validator(toggleCustomerOnboardingStepSchema)
-  .handler(async ({ data }) => {
-    const { storeId: inputStoreId, threadId, tripId, stepKey, completed } = data;
-    const identity = await getServerIdentity();
-    const storeId = inputStoreId || identity.store_id;
-    if (!storeId) throw new Error("Loja obrigatória.");
-    assertStoreAccess(identity);
-    const db = getServerClient();
-
-    let updatedSteps: Record<string, boolean> = {};
-
-    if (threadId) {
-      const { data: threadRow } = await db
-        .from("chat_threads")
-        .select("metadata")
-        .eq("id", threadId)
-        .eq("store_id", storeId)
-        .maybeSingle();
-
-      const currentMeta = (((threadRow?.metadata as any) || {}) as Record<string, any>);
-      const existingSteps = ((currentMeta.cs_onboarding_steps || {}) as Record<string, boolean>);
-      updatedSteps = {
-        ...existingSteps,
-        [stepKey]: completed,
-      };
-      await db
-        .from("chat_threads")
-        .update({
-          metadata: {
-            ...currentMeta,
-            cs_onboarding_steps: updatedSteps,
-            cs_onboarding_updated_at: new Date().toISOString(),
-            cs_onboarding_updated_by: identity.id,
-          },
-        })
-        .eq("id", threadId)
-        .eq("store_id", storeId);
-    }
-
-    if (tripId) {
-      const { data: tripRow } = await db
-        .from("tourism_trips")
-        .select("financial_details")
-        .eq("id", tripId)
-        .eq("store_id", storeId)
-        .maybeSingle();
-
-      const currentFin = (((tripRow?.financial_details as any) || {}) as Record<string, any>);
-      const existingSteps = ((currentFin.cs_onboarding_steps || {}) as Record<string, boolean>);
-      updatedSteps = {
-        ...existingSteps,
-        ...updatedSteps,
-        [stepKey]: completed,
-      };
-      await db
-        .from("tourism_trips")
-        .update({
-          financial_details: {
-            ...currentFin,
-            cs_onboarding_steps: updatedSteps,
-            cs_onboarding_updated_at: new Date().toISOString(),
-          },
-        } as any)
-        .eq("id", tripId)
-        .eq("store_id", storeId);
-    }
-
-    return {
-      success: true,
-      stepKey,
-      completed,
-      onboardingSteps: updatedSteps,
     };
   });
 

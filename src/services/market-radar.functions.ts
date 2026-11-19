@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { parseJsonField } from "@/lib/utils";
 import { validateBrandSourceUrl } from "@/lib/brand-source-url";
 import { getNextActiveKey, markKeyError, executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
 import { MarketCompetitorDTO, CompetitorSnapshotDTO, BrandDnaProfileDTO } from "../types/squads-and-onboarding";
@@ -91,23 +92,6 @@ function normalizeBrandDnaRequest(input: unknown): Record<string, any> {
   const outer = input as Record<string, any>;
   const nested = outer.data && typeof outer.data === "object" ? outer.data : outer;
   return { ...nested, ...(outer.storeId ? { storeId: outer.storeId } : {}) };
-}
-
-function parseJsonField<T>(value: any, fallback: T): T {
-  if (value === null || value === undefined) return fallback;
-  if (typeof value === "object") return value as T;
-  if (typeof value === "string") {
-    try {
-      let parsed = JSON.parse(value);
-      if (typeof parsed === "string") {
-        parsed = JSON.parse(parsed);
-      }
-      return (parsed || fallback) as T;
-    } catch {
-      return fallback;
-    }
-  }
-  return fallback;
 }
 
 // ── 1. LÓGICA: LISTAR CONCORRENTES MONITORADOS ──────────────────────────────

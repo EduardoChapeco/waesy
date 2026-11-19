@@ -7,7 +7,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
-import { Clock, Phone, MapPin, SlidersHorizontal, Shield, Star, ShieldCheck, Share2, ArrowLeft, Store, ShoppingBag, Layers, UtensilsCrossed, Briefcase, Building2, ChevronRight, Search, ExternalLink, Plus, MessageSquare, Award, CreditCard, Truck, CheckCircle, Eye, Check, Navigation, Ticket, FileCheck, Grid, List, Camera, Edit3, Package, LayoutGrid, Tag, ArrowRight, Handshake } from "lucide-react";
+import { Clock, Phone, MapPin, SlidersHorizontal, Shield, Star, ShieldCheck, Share2, ArrowLeft, Store, Smartphone, ShoppingBag, Layers, UtensilsCrossed, Briefcase, Building2, ChevronRight, Search, ExternalLink, Plus, MessageSquare, Award, CreditCard, Truck, CheckCircle, Eye, Check, Navigation, Ticket, FileCheck, Grid, List, Camera, Edit3, Package, LayoutGrid, Tag, ArrowRight, Handshake } from "lucide-react";
 import { WhatsappLogo, PaperPlaneTilt, Globe, InstagramLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,7 +43,6 @@ import { listActiveStoreFlyers, type PromotionalFlyerDTO } from "@/services/stor
 import { ClaimBusinessModal } from "@/components/commerce/claim-business-modal";
 import { ProductAiSdrChat } from "@/components/commerce/product-ai-sdr-chat";
 import { TetrisActionGrid } from "@/components/layout/tetris-action-grid";
-import { OmniPageRenderer } from "@/components/builder/OmniPageRenderer";
 import { formatCanonicalAddress } from "@/lib/format-address";
 import { buildCompanyPublicLegalFicha, buildCompanySeoGeoJsonLd } from "@/lib/agentic/agentic-readiness-engine";
 import { toast } from "sonner";
@@ -90,7 +89,7 @@ export function CanonicalStoreProfileView({
   concursos = [],
   employerStats = null,
   associatedMembers = [],
-  omniPageDoc = null,
+  omniPageDoc: _omniPageDoc = null,
   initialTab = "vitrine",
   isOwner = false,
   source = "storefront",
@@ -924,6 +923,16 @@ function cleanAddressSegment(text: string): string {
                   <span className="hidden sm:inline ml-2">Studio</span>
                 </Button>
                 <Button
+                  asChild
+                  variant="outline"
+                  className="w-full h-11 min-h-11 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none"
+                >
+                  <Link to="/app/$slug" params={{ slug: store.slug }}>
+                    <Smartphone className="size-4 text-primary" />
+                    <span>App Oficial</span>
+                  </Link>
+                </Button>
+                <Button
                   variant="outline"
                   onClick={handleShare}
                   aria-label="Compartilhar Perfil"
@@ -934,6 +943,16 @@ function cleanAddressSegment(text: string): string {
               </>
             ) : (
               <>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full h-11 min-h-11 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none"
+                >
+                  <Link to="/app/$slug" params={{ slug: store.slug }}>
+                    <Smartphone className="size-4 text-primary shrink-0" />
+                    <span>App Oficial</span>
+                  </Link>
+                </Button>
                 {whatsappNumber && (
                   <Button
                     variant="outline"
@@ -1294,38 +1313,33 @@ function cleanAddressSegment(text: string): string {
             <div className="space-y-8 animate-in fade-in duration-150">
               {/* Gestão Silenciosa (Apple HIG — Zero Texto Conversacional) */}
               {isOwner && (
-                <div className="flex items-center justify-between py-1 px-1">
+                <div className="flex items-center justify-between py-1 px-1 gap-2">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Star className="size-4 text-primary" />
-                    <span className="font-semibold text-foreground">Vitrine Modular</span>
+                    <span className="font-semibold text-foreground">Perfil no Marketplace</span>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setIsSectionsEditorOpen(true)}
-                    className="h-7 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer hover:bg-muted/60 text-muted-foreground hover:text-foreground min-h-11 sm:min-h-0"
-                  >
-                    <SlidersHorizontal className="size-4 text-primary" />
-                    <span>Personalizar</span>
-                  </Button>
-                </div>
-              )}
-
-              {Array.isArray(omniPageDoc?.blocks) && omniPageDoc.blocks.length > 0 && (
-                <div className="rounded-2xl overflow-hidden border border-border/60 bg-background">
-                  <OmniPageRenderer
-                    document={omniPageDoc}
-                    products={catalog}
-                    categories={categories}
-                    storeData={store}
-                    classifieds={ads}
-                    posts={posts}
-                    flyers={flyersList}
-                    jobs={jobs}
-                    banners={banners}
-                    hotpages={hotpages}
-                    sponsors={sponsors}
-                  />
+                  <div className="flex items-center gap-2">
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="outline"
+                      className="h-9 px-3 rounded-lg text-xs font-semibold gap-2 min-h-11 sm:min-h-0"
+                    >
+                      <Link to="/workspace/configuracoes/pwa" search={{ tab: undefined }}>
+                        <Smartphone className="size-4 text-primary" />
+                        <span>Configurar App Oficial</span>
+                      </Link>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setIsSectionsEditorOpen(true)}
+                      className="h-9 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer hover:bg-muted/60 text-muted-foreground hover:text-foreground min-h-11 sm:min-h-0"
+                    >
+                      <SlidersHorizontal className="size-4 text-primary" />
+                      <span>Personalizar Perfil</span>
+                    </Button>
+                  </div>
                 </div>
               )}
 
@@ -1590,8 +1604,61 @@ function cleanAddressSegment(text: string): string {
                   }
 
                   if (section.type === "infinite_feed") {
-                    // Zero Context Bleeding: não vaza outras lojas na vitrine privada desta empresa
-                    return null;
+                    const feedProducts = (catalog || []).slice(0, 24);
+                    if (feedProducts.length === 0) return null;
+                    return (
+                      <div key={section.id} className="space-y-4 pt-2 border-t border-border/40">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-sm font-bold text-foreground">
+                            {section.title || "Catálogo Completo da Empresa"}
+                          </h3>
+                          <span className="text-xs font-mono text-muted-foreground">
+                            {feedProducts.length} itens
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                          {feedProducts.map((p: any) => {
+                            const priceCents = p.price_cents || p.price || 0;
+                            const imageUrl = p.images?.[0] || p.image_url || null;
+                            return (
+                              <div
+                                key={p.id}
+                                className="rounded-lg border border-border/60 bg-card overflow-hidden flex flex-col justify-between"
+                              >
+                                <Link
+                                  to="/produto/$slug"
+                                  params={{ slug: p.slug || p.id }}
+                                  className="block flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                >
+                                  <div className="aspect-square w-full overflow-hidden bg-muted/20">
+                                    {imageUrl ? (
+                                      <img
+                                        src={imageUrl}
+                                        alt={p.title}
+                                        className="size-full object-cover"
+                                        loading="lazy"
+                                      />
+                                    ) : (
+                                      <div className="size-full flex items-center justify-center">
+                                        <Package className="size-8 text-muted-foreground/30" />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="p-3 space-y-1">
+                                    <h4 className="text-xs font-bold text-foreground line-clamp-2">
+                                      {p.title}
+                                    </h4>
+                                    <p className="text-sm font-semibold font-mono text-foreground">
+                                      {formatMoney(priceCents)}
+                                    </p>
+                                  </div>
+                                </Link>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
                   }
 
                   return null;
@@ -2230,10 +2297,12 @@ function cleanAddressSegment(text: string): string {
                                 <Star key={i} className="size-3 fill-warning" />
                               ))}
                             </div>
+                          {rev.exit_reason && (
                             <Badge variant="outline" className="text-xs text-muted-foreground">
-                              {rev.exit_reason || ""}
+                              {rev.exit_reason}
                             </Badge>
-                          </div>
+                          )}
+                        </div>
                           {rev.review_text && (
                             <p className="text-xs text-foreground leading-relaxed italic">
                               "{rev.review_text}"

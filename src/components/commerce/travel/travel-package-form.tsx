@@ -63,8 +63,6 @@ import {
 import { StoryHighlightUploader, type StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
 import {
-  CANONICAL_AIRPORTS,
-  airportLabel,
   type DepartureOption,
   type DepartureStatus,
   DEPARTURE_STATUS_CONFIG,
@@ -85,6 +83,12 @@ import {
   publishExtractedTravelPackageToCatalogAndMatchRadar,
   type ExtractedTravelAdDTO,
 } from "@/services/travel-ai-extractor.functions";
+import {
+  TravelPackageCruisesSection,
+  TravelPackageMultiHotelsSection,
+  TravelPackageTransfersAndToursSection,
+  TravelPackageWebPageSection,
+} from "./travel-package-unified-extensions";
 
 export interface TravelPackageFormProps {
   value: Partial<TravelPackageData>;
@@ -1695,6 +1699,8 @@ export function TravelPackageForm({
               )}
             </div>
           </div>
+
+          <TravelPackageMultiHotelsSection value={value} onChange={onChange} />
         </div>
       )}
 
@@ -2176,6 +2182,9 @@ export function TravelPackageForm({
               </div>
             )}
           </div>
+
+          <TravelPackageCruisesSection value={value} onChange={onChange} />
+          <TravelPackageTransfersAndToursSection value={value} onChange={onChange} />
         </div>
       )}
 
@@ -2952,6 +2961,15 @@ export function TravelPackageForm({
               />
             </div>
           </div>
+
+          <TravelPackageWebPageSection
+            value={value}
+            onChange={onChange}
+            productTitle={formValues?.title}
+            priceCents={priceCents}
+            storeName={storeName}
+            storePhone={storePhone}
+          />
         </div>
       )}
     </div>

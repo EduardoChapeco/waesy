@@ -3,11 +3,12 @@ import { OMNI_APP_BLUEPRINTS } from "./omni-apps-blueprint.functions";
 import { OmniAppIdSchema } from "@/types/omni-apps";
 
 describe("Omni Apps Blueprint Engine (Wix App Market Parity)", () => {
-  it("contém exatamente os 7 pacotes de apps declarativos canônicos", () => {
+  it("contém exatamente os 8 pacotes de apps declarativos canônicos", () => {
     const appIds = Object.keys(OMNI_APP_BLUEPRINTS);
-    expect(appIds).toHaveLength(7);
+    expect(appIds).toHaveLength(8);
     expect(appIds).toContain("supermarket");
     expect(appIds).toContain("delivery");
+    expect(appIds).toContain("tourism");
     expect(appIds).toContain("events");
     expect(appIds).toContain("appointments");
     expect(appIds).toContain("ecommerce");

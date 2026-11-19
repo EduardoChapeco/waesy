@@ -166,4 +166,19 @@ describe("contract vault server authorization & tenant isolation boundary", () =
     ).replace(/\r\n/g, "\n");
     expect(vaultIndexSource).toContain("const queryError = Boolean(loadError) || (isError && !initialContracts?.length);");
   });
+
+  it("links saved_initials_url as fallback signature and enforces dark-ink light paper on DigitalSignatureCanvas", async () => {
+    const vaultSource = (
+      await readFile(new URL("./contracts-vault.functions.ts", import.meta.url), "utf8")
+    ).replace(/\r\n/g, "\n");
+    expect(vaultSource).toContain("const effectiveSignature = p?.saved_signature_url || p?.saved_initials_url || null;");
+    expect(vaultSource).toContain("savedSignature: profile?.saved_signature_url || profile?.saved_initials_url || null,");
+    expect(vaultSource).toContain("updatePayload.saved_signature_url = input.initialsImageBase64;");
+
+    const canvasSource = (
+      await readFile(new URL("../components/workspace/DigitalSignatureCanvas.tsx", import.meta.url), "utf8")
+    ).replace(/\r\n/g, "\n");
+    expect(canvasSource).toContain("ctx.strokeStyle = TOKEN_HEX.neutral900;");
+    expect(canvasSource).toContain('data-builder-canvas-isolated="light"');
+  });
 });

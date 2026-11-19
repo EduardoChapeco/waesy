@@ -1,21 +1,6 @@
 import React, { useEffect, useState } from "react";
-
-function toDateInputValue(raw?: string | null): string {
-  if (!raw) return "";
-  const trimmed = String(raw).trim();
-  if (/^\d{4}-\d{2}-\d{2}/.test(trimmed)) return trimmed.slice(0, 10);
-  const brMatch = trimmed.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-  if (brMatch) return `${brMatch[3]}-${brMatch[2]}-${brMatch[1]}`;
-  return "";
-}
-
-function parseReaisToCents(raw: string): number | null {
-  const cleaned = raw.replace(/[^\d.,]/g, "").replace(",", ".");
-  if (!cleaned) return 0;
-  const valFloat = Number.parseFloat(cleaned);
-  if (!Number.isFinite(valFloat) || valFloat < 0) return null;
-  return Math.round(valFloat * 100);
-}
+import { parseReaisToCents } from "@/lib/money";
+import { toDateInputValue } from "@/lib/datetime";
 import { useQuery } from "@tanstack/react-query";
 import type {
   TravelProposalDTO,
@@ -27,12 +12,15 @@ import type {
   ProposalCanvasFormat,
   TourOptionDTO,
   TransferDTO,
+  CruiseDTO,
+  CruiseItineraryDayDTO,
   TravelProposalOptionDTO,
 } from "@/services/travel-proposal.functions";
+import { generateProposalItineraryAI } from "@/services/travel-proposal.functions";
 import { listHotelsBank } from "@/services/travel-catalog.functions";
 import { CustomerSearchCombobox } from "@/components/crm/CustomerSearchCombobox";
 import { listGroupTours } from "@/services/group-tours.functions";
-import { CANONICAL_DESTINATIONS } from "@/lib/destinations-catalog";
+import { CANONICAL_DESTINATIONS } from "@/lib/tourism/destinations-catalog";
 import { PassHubLiveQuoterPanel } from "@/components/tourism/quotes/passhub-live-quoter-panel";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -43,11 +31,28 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { StatefulNavIcon } from "@/components/ui/stateful-nav-icon";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { MediaGalleryField } from "@/components/ui/media-gallery-field";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Plus, Minus, Trash, Copy, Plane, Building2, Calendar, DollarSign, Info, CheckCircle, MapPin, Clock, Compass, Zap, BedDouble, Car, Users, LayoutTemplate, LayoutGrid, Check, X, Bus, Moon, Briefcase, Monitor, FileText, Tag, Palette, Type, Eye, EyeOff, RotateCcw, Sparkles, Image as ImageIcon, Layers, Search } from "lucide-react";
+import { Plus, Minus, Trash, Copy, Plane, Building2, Calendar, DollarSign, Info, CheckCircle, MapPin, Clock, Compass, Zap, BedDouble, Car, Users, LayoutTemplate, LayoutGrid, Check, X, Bus, Moon, Briefcase, Monitor, FileText, Tag, Palette, Type, Eye, EyeOff, RotateCcw, Image as ImageIcon, Layers, Search, Globe, Loader2, Ship, Anchor, Camera } from "lucide-react";
+import { searchGlobalAirports } from "@/services/tourism-airports.functions";
+import { CruiseRouteSvgMap } from "@/components/tourism/shared/CruiseRouteSvgMap";
+import { CURATED_AIRPORT_COORDINATES, normalizeIataCode, resolveCruisePortCoordinates } from "@/lib/tourism/flight-route-geometry";
+import { StudioMapWidget } from "./StudioMapWidget";
+import {
+  computeExtraServicesChargeCents,
+  extractImageUrlsFromMedia,
+  normalizeCruisesList,
+  normalizeEntityMediaList,
+  resolveTransferDisplayTitle,
+  resolveTransferKindBadge,
+  sortTransfersChronologically,
+  type ProposalMediaItem,
+} from "@/lib/tourism/proposal-normalization";
+import { buildDeterministicProposalItinerary } from "@/lib/tourism/quote-ocr-normalizer";
 import { formatDynamicFieldLabel } from "@/lib/niches/unified-field-bridge";
+import { ProposalWebPageBuilder } from "@/components/tourism/studio/proposal-web-page-builder";
 import {
   isEditableCustomFieldInProposalStudio,
   sanitizeProposalCustomFields,
@@ -144,9 +149,16 @@ const COMMON_EXCLUDE_PRESETS = [
 interface StudioSidebarEditorProps {
  proposal: TravelProposalDTO;
  onChange: (patch: Partial<TravelProposalDTO>) => void;
+ activeTabOverride?: string;
+ onTabChange?: (tab: string) => void;
 }
 
-export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorProps) {
+export function StudioSidebarEditor({
+  proposal,
+  onChange,
+  activeTabOverride,
+  onTabChange,
+}: StudioSidebarEditorProps) {
   const { data: hotelsBank = [], isLoading: isLoadingHotelsBank } = useQuery({
     queryKey: ["hotels-bank-studio"],
     queryFn: () => listHotelsBank().catch(() => []),
@@ -178,9 +190,17 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  });
  const [newCustomFieldKey, setNewCustomFieldKey] = useState<string>("");
  const [newCustomFieldVal, setNewCustomFieldVal] = useState<string>("");
- const [activeTab, setActiveTab] = useState<string>("design");
+ const [activeTab, setActiveTab] = useState<string>(activeTabOverride || "design");
  const [passHubTabOpen, setPassHubTabOpen] = useState<"voos" | "hotel" | "servicos" | "opcoes" | null>(null);
  const [newOptionName, setNewOptionName] = useState<string>("");
+ const [isGeneratingItinerary, setIsGeneratingItinerary] = useState<boolean>(false);
+ const [selectedTransferIndex, setSelectedTransferIndex] = useState<number>(0);
+
+ useEffect(() => {
+   if (activeTabOverride && activeTabOverride !== activeTab) {
+     setActiveTab(activeTabOverride);
+   }
+ }, [activeTabOverride]);
 
  useEffect(() => {
    const expectedBase = proposal.pricing?.base_price_cents || proposal.pricing?.total_price_cents || 0;
@@ -189,16 +209,16 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
    const expectedTotal = proposal.pricing?.total_price_cents || 0;
 
    setBasePriceReais((prev) =>
-     parseReaisToCents(prev) === expectedBase ? prev : expectedBase > 0 ? (expectedBase / 100).toFixed(2) : "",
+     parseReaisToCents(prev, true) === expectedBase ? prev : expectedBase > 0 ? (expectedBase / 100).toFixed(2) : "",
    );
    setBoardingTaxReais((prev) =>
-     parseReaisToCents(prev) === expectedTax ? prev : expectedTax > 0 ? (expectedTax / 100).toFixed(2) : "",
+     parseReaisToCents(prev, true) === expectedTax ? prev : expectedTax > 0 ? (expectedTax / 100).toFixed(2) : "",
    );
    setDiscountReais((prev) =>
-     parseReaisToCents(prev) === expectedDiscount ? prev : expectedDiscount > 0 ? (expectedDiscount / 100).toFixed(2) : "",
+     parseReaisToCents(prev, true) === expectedDiscount ? prev : expectedDiscount > 0 ? (expectedDiscount / 100).toFixed(2) : "",
    );
    setPriceInputReais((prev) =>
-     parseReaisToCents(prev) === expectedTotal ? prev : expectedTotal > 0 ? (expectedTotal / 100).toFixed(2) : "",
+     parseReaisToCents(prev, true) === expectedTotal ? prev : expectedTotal > 0 ? (expectedTotal / 100).toFixed(2) : "",
    );
  }, [
    proposal.id,
@@ -296,14 +316,22 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
 
   const updatePrimaryRodoviarioTransfer = (patch: Record<string, any>) => {
     const existingList = Array.isArray(proposal.transfers) ? proposal.transfers : [];
-    const current = existingList[0] || {
-      id: "bus-main",
+    const idx = existingList[selectedTransferIndex] ? selectedTransferIndex : 0;
+    const current = existingList[idx] || {
+      id: `bus-${Date.now()}`,
+      name: "Transporte Rodoviário",
       type: "Ônibus Leito DD",
+      kind: "bus",
       route: "",
-      date: "",
+      route_name: "",
+      date: proposal.travel_start_date || "",
       included: true,
     };
-    const next = [{ ...current, ...patch }, ...existingList.slice(1)];
+    const updatedItem = { ...current, ...patch };
+    const next =
+      existingList.length === 0
+        ? [updatedItem]
+        : existingList.map((item, i) => (i === idx ? updatedItem : item));
     onChange({ transfers: next });
   };
 
@@ -412,7 +440,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  };
 
  const handleUpdateRoomPriceReais = (roomId: string, rawReais: string) => {
-   const cents = parseReaisToCents(rawReais);
+   const cents = parseReaisToCents(rawReais, true);
    const newRooms = currentRooms.map((r) => {
      if (r.id !== roomId) return r;
      const pax = Math.max(1, (r.adults || 1) + (r.children || 0));
@@ -600,6 +628,54 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
    });
  };
 
+ const handleHotelMediaChange = (hotelIdx: number, nextMedia: ProposalMediaItem[]) => {
+   const imgUrls = extractImageUrlsFromMedia(nextMedia);
+   const firstVid = nextMedia.find((m) => m.type === "video")?.url;
+   onChange({
+     hotels: proposal.hotels.map((h, idx) =>
+       idx !== hotelIdx
+         ? h
+         : {
+             ...h,
+             media: nextMedia,
+             images: imgUrls,
+             image_url: imgUrls[0] || "",
+             featured_image_url: imgUrls[0] || "",
+             video_url: firstVid || undefined,
+           },
+     ),
+   });
+ };
+
+ const handleItineraryMediaChange = (dayIdx: number, nextMedia: ProposalMediaItem[]) => {
+   const imgUrls = extractImageUrlsFromMedia(nextMedia);
+   const firstVid = nextMedia.find((m) => m.type === "video")?.url;
+   onChange({
+     itinerary: proposal.itinerary.map((d, idx) =>
+       idx !== dayIdx
+         ? d
+         : {
+             ...d,
+             media: nextMedia,
+             images: imgUrls,
+             image_url: imgUrls[0] || "",
+             video_url: firstVid || undefined,
+           },
+     ),
+   });
+ };
+
+ const handleTourMediaChange = (tourIdx: number, nextMedia: ProposalMediaItem[]) => {
+   const imgUrls = extractImageUrlsFromMedia(nextMedia);
+   const firstVid = nextMedia.find((m) => m.type === "video")?.url;
+   handleUpdateTour(tourIdx, {
+     media: nextMedia,
+     images: imgUrls,
+     image_url: imgUrls[0] || "",
+     video_url: firstVid || undefined,
+   });
+ };
+
  // Helpers de Roteiro
  const handleAddItineraryDay = () => {
    const nextDay = proposal.itinerary.length + 1;
@@ -664,44 +740,110 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
    });
  };
 
- const handleGenerateItineraryFromDestination = () => {
- if (currentTours.length > 0) {
- const fromTours: ItineraryDayDTO[] = currentTours.map((t: any, idx: number) => ({
- id: "day_" + Math.random().toString(36).substring(2, 7),
- day_number: idx + 1,
- date: t.date || undefined,
- title: t.title || `Dia ${idx + 1}`,
- description: t.description || t.notes || "",
- }));
- onChange({ itinerary: fromTours });
- toast.success(`Roteiro preenchido a partir de ${fromTours.length} passeio(s) selecionados.`);
+ const handleGenerateItineraryFromDestination = async () => {
+ const dest = (proposal.destination_city || proposal.hotels?.[0]?.destination || "").trim();
+ if (!dest && currentTours.length === 0 && proposal.hotels.length === 0) {
+ toast.info("Informe o destino ou adicione hospedagem para montar o roteiro.");
  return;
  }
-
- const matched = CANONICAL_DESTINATIONS.find((d) =>
- proposal.destination_city.toLowerCase().includes(d.city.toLowerCase()) ||
- d.name.toLowerCase().includes(proposal.destination_city.toLowerCase())
- );
-
- if (matched && matched.highlights.length > 0) {
- const generated: ItineraryDayDTO[] = matched.highlights.map((h, idx) => ({
- id: "day_" + Math.random().toString(36).substring(2, 7),
- day_number: idx + 1,
- title: `Dia ${idx + 1} • ${h}`,
- description: `${h} — ${matched.name}`,
- }));
- onChange({ itinerary: generated });
- toast.success(`Roteiro sugerido carregado para ${matched.name}.`);
- } else {
- toast.info("Nenhum passeio ou roteiro pré-cadastrado encontrado para este destino. Importe atividades reais na busca PassHub ou adicione os dias manualmente.");
+ setIsGeneratingItinerary(true);
+ try {
+ const res = await generateProposalItineraryAI({
+ data: {
+ proposalId: proposal.id,
+ destination: dest || "Destino",
+ startDate: proposal.travel_start_date,
+ endDate: proposal.travel_end_date,
+ flights: proposal.flights,
+ hotels: proposal.hotels,
+ transfers: currentTransfers,
+ tours: currentTours,
+ rawItineraryText: proposal.special_notes || undefined,
+ useAiEnrichment: true,
+ },
+ });
+ if (Array.isArray(res?.days) && res.days.length > 0) {
+ onChange({ itinerary: res.days });
+ toast.success(`Roteiro de ${res.days.length} dia(s) gerado com sucesso!`);
+ return;
  }
+ } catch {
+ // Fallback determinístico garante sucesso mesmo offline
+ } finally {
+ setIsGeneratingItinerary(false);
+ }
+
+ const fallback = buildDeterministicProposalItinerary({
+ destination: dest || "Destino",
+ startDate: proposal.travel_start_date,
+ endDate: proposal.travel_end_date,
+ flights: proposal.flights,
+ hotels: proposal.hotels,
+ transfers: currentTransfers,
+ tours: currentTours,
+ });
+ onChange({ itinerary: fallback });
+ toast.success(`Roteiro estruturado de ${fallback.length} dia(s) preenchido.`);
  };
 
  // Helpers de Transfers (Receptivo) e Passeios (Experiências)
  const currentTransfers = Array.isArray(proposal.transfers) ? proposal.transfers : [];
+ const currentCruises: CruiseDTO[] = Array.isArray(proposal.cruises) ? proposal.cruises : [];
  const currentTours = Array.isArray(proposal.tours) ? proposal.tours : [];
  const currentIncludes = Array.isArray(proposal.includes) ? proposal.includes : [];
  const currentExcludes = Array.isArray(proposal.excludes) ? proposal.excludes : [];
+
+ const flightWaypoints = React.useMemo(() => {
+   const points: { id: string; lat: number; lng: number; label: string }[] = [];
+   (proposal.flights || []).forEach((f: any) => {
+     const oIata = normalizeIataCode(f.origin_iata || f.origin_code || f.origin);
+     const dIata = normalizeIataCode(f.destination_iata || f.destination_code || f.destination);
+     if (oIata && CURATED_AIRPORT_COORDINATES[oIata]) {
+       const coord = CURATED_AIRPORT_COORDINATES[oIata];
+       if (!points.some((p) => p.id === oIata)) {
+         points.push({ id: oIata, lat: coord.lat, lng: coord.lng, label: `${coord.city || oIata} (${oIata})` });
+       }
+     }
+     if (dIata && CURATED_AIRPORT_COORDINATES[dIata]) {
+       const coord = CURATED_AIRPORT_COORDINATES[dIata];
+       if (!points.some((p) => p.id === dIata)) {
+         points.push({ id: dIata, lat: coord.lat, lng: coord.lng, label: `${coord.city || dIata} (${dIata})` });
+       }
+     }
+   });
+
+   (currentCruises || []).forEach((c) => {
+     if (Array.isArray(c.itinerary)) {
+       c.itinerary.forEach((itinDay) => {
+         const resolved = resolveCruisePortCoordinates(itinDay.port);
+         if (resolved && !points.some((p) => p.id === resolved.code)) {
+           points.push({
+             id: resolved.code,
+             lat: resolved.lat,
+             lng: resolved.lng,
+             label: `${resolved.city} (${resolved.code})`,
+           });
+         }
+       });
+     }
+   });
+
+   return points;
+ }, [proposal.flights, currentCruises]);
+
+ const syncServicesDeltaToPricing = (deltaCents: number): Partial<TravelProposalDTO> => {
+   if (!deltaCents) return {};
+   const currentTotal = Number(proposal.pricing?.total_price_cents || 0);
+   const nextTotal = Math.max(0, currentTotal + deltaCents);
+   setPriceInputReais(nextTotal > 0 ? (nextTotal / 100).toFixed(2) : "");
+   return {
+     pricing: {
+       ...proposal.pricing,
+       total_price_cents: nextTotal,
+       total_cents: nextTotal,
+     },
+   };
+ };
 
  const handleAddTransfer = () => {
    const nextTransfer = {
@@ -715,12 +857,25 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  };
 
  const handleUpdateTransfer = (idx: number, patch: Record<string, any>) => {
-   const next = currentTransfers.map((t, i) => (i === idx ? { ...t, ...patch } : t));
-   onChange({ transfers: next as any });
+   const prevItem: any = currentTransfers[idx] || {};
+   const nextItem: any = { ...prevItem, ...patch };
+   const prevContrib = prevItem.add_to_quote ? Number(prevItem.price_cents || 0) : 0;
+   const nextContrib = nextItem.add_to_quote ? Number(nextItem.price_cents || 0) : 0;
+   const delta = nextContrib - prevContrib;
+   const next = currentTransfers.map((t, i) => (i === idx ? nextItem : t));
+   onChange({
+     transfers: next as any,
+     ...syncServicesDeltaToPricing(delta),
+   });
  };
 
  const handleRemoveTransfer = (idx: number) => {
-   onChange({ transfers: currentTransfers.filter((_, i) => i !== idx) });
+   const prevItem: any = currentTransfers[idx];
+   const delta = prevItem?.add_to_quote ? -Number(prevItem.price_cents || 0) : 0;
+   onChange({
+     transfers: currentTransfers.filter((_, i) => i !== idx),
+     ...syncServicesDeltaToPricing(delta),
+   });
  };
 
  const handleAddTour = () => {
@@ -737,13 +892,17 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  };
 
  const handleUpdateTour = (idx: number, patch: Record<string, any>) => {
-   const next = currentTours.map((t: any, i: number) => {
-     if (i !== idx) return t;
-     const merged = { ...t, ...patch };
-     if (patch.title !== undefined) merged.description = patch.title;
-     return merged;
+   const prevItem: any = currentTours[idx] || {};
+   const merged = { ...prevItem, ...patch };
+   if (patch.title !== undefined) merged.description = patch.title;
+   const prevContrib = prevItem.add_to_quote ? Number(prevItem.price_cents || 0) : 0;
+   const nextContrib = merged.add_to_quote ? Number(merged.price_cents || 0) : 0;
+   const delta = nextContrib - prevContrib;
+   const next = currentTours.map((t: any, i: number) => (i === idx ? merged : t));
+   onChange({
+     tours: next,
+     ...syncServicesDeltaToPricing(delta),
    });
-   onChange({ tours: next });
  };
 
  const handleAddTourPhoto = (idx: number, url: string) => {
@@ -840,7 +999,12 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  };
 
  const handleRemoveTour = (idx: number) => {
-   onChange({ tours: currentTours.filter((_, i) => i !== idx) });
+   const prevItem: any = currentTours[idx];
+   const delta = prevItem?.add_to_quote ? -Number(prevItem.price_cents || 0) : 0;
+   onChange({
+     tours: currentTours.filter((_, i) => i !== idx),
+     ...syncServicesDeltaToPricing(delta),
+   });
  };
 
  const handleDuplicateTour = (idx: number) => {
@@ -871,6 +1035,89 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
    };
    onChange({ tours: [...currentTours, importedTour] });
    toast.success(`Excursão "${gt.title}" importada para os serviços da proposta!`);
+ };
+
+ const handleAddCruise = (preset?: Partial<CruiseDTO>) => {
+   const newCruise: CruiseDTO = {
+     id: `cruise_${Date.now()}`,
+     ship_name: preset?.ship_name || "MSC Grandiosa",
+     company: preset?.company || "MSC Cruzeiros",
+     cabin_category: preset?.cabin_category || "Cabine Externa com Varanda",
+     departure_port: preset?.departure_port || "Santos (São Paulo), Brasil",
+     arrival_port: preset?.arrival_port || "Santos (São Paulo), Brasil",
+     departure_date: preset?.departure_date || proposal.travel_start_date || "",
+     return_date: preset?.return_date || proposal.travel_end_date || "",
+     duration_nights: preset?.duration_nights ?? 4,
+     board_basis: preset?.board_basis || "Pensão Completa (All Inclusive disponível)",
+     image_url: preset?.image_url || "",
+     notes: preset?.notes || "Taxas portuárias e gorjetas inclusas. Experiência Fantastica.",
+     itinerary: preset?.itinerary || [
+       { day: 1, port: "Santos (São Paulo), Brasil", arrival_time: "-", departure_time: "18:00", activity_type: "boarding" },
+       { day: 2, port: "Em navegação", is_sea_day: true, arrival_time: "-", departure_time: "-", activity_type: "sea" },
+       { day: 3, port: "Búzios, Brasil", arrival_time: "07:00", departure_time: "16:00", activity_type: "dock" },
+       { day: 4, port: "Santos (São Paulo), Brasil", arrival_time: "08:00", departure_time: "-", activity_type: "disembark" },
+     ],
+   };
+   onChange({ cruises: [...currentCruises, newCruise] });
+   toast.success("Cruzeiro adicionado à cotação.");
+ };
+
+ const handleUpdateCruise = (idx: number, patch: Partial<CruiseDTO>) => {
+   const next = currentCruises.map((c, i) => (i === idx ? { ...c, ...patch } : c));
+   onChange({ cruises: next });
+ };
+
+ const handleRemoveCruise = (idx: number) => {
+   onChange({ cruises: currentCruises.filter((_, i) => i !== idx) });
+   toast.success("Cruzeiro removido.");
+ };
+
+ const handleDuplicateCruise = (idx: number) => {
+   const src = currentCruises[idx];
+   if (!src) return;
+   const clone: CruiseDTO = {
+     ...src,
+     id: `cruise_${Date.now()}`,
+     ship_name: `${src.ship_name} (Cópia)`,
+     itinerary: Array.isArray(src.itinerary) ? src.itinerary.map((d) => ({ ...d })) : [],
+   };
+   const next = [...currentCruises];
+   next.splice(idx + 1, 0, clone);
+   onChange({ cruises: next });
+   toast.success("Cruzeiro duplicado.");
+ };
+
+ const handleAddCruiseDay = (cruiseIdx: number) => {
+   const cruise = currentCruises[cruiseIdx];
+   if (!cruise) return;
+   const currentItin = Array.isArray(cruise.itinerary) ? cruise.itinerary : [];
+   const nextDayNum = currentItin.length + 1;
+   const newDay: CruiseItineraryDayDTO = {
+     day: nextDayNum,
+     port: "Em navegação",
+     is_sea_day: true,
+     arrival_time: "-",
+     departure_time: "-",
+     activity_type: "sea",
+   };
+   handleUpdateCruise(cruiseIdx, { itinerary: [...currentItin, newDay] });
+ };
+
+ const handleUpdateCruiseDay = (cruiseIdx: number, dayIdx: number, patch: Partial<CruiseItineraryDayDTO>) => {
+   const cruise = currentCruises[cruiseIdx];
+   if (!cruise) return;
+   const currentItin = Array.isArray(cruise.itinerary) ? cruise.itinerary : [];
+   const nextItin = currentItin.map((d, i) => (i === dayIdx ? { ...d, ...patch } : d));
+   handleUpdateCruise(cruiseIdx, { itinerary: nextItin });
+ };
+
+ const handleRemoveCruiseDay = (cruiseIdx: number, dayIdx: number) => {
+   const cruise = currentCruises[cruiseIdx];
+   if (!cruise) return;
+   const currentItin = Array.isArray(cruise.itinerary) ? cruise.itinerary : [];
+   const filtered = currentItin.filter((_, i) => i !== dayIdx);
+   const renumbered = filtered.map((d, i) => ({ ...d, day_number: i + 1 }));
+   handleUpdateCruise(cruiseIdx, { itinerary: renumbered });
  };
 
  const handleSuggestIncludesExcludes = () => {
@@ -955,7 +1202,10 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  <TooltipProvider delayDuration={120}>
  <Tabs
    value={activeTab}
-   onValueChange={setActiveTab}
+   onValueChange={(next) => {
+     setActiveTab(next);
+     onTabChange?.(next);
+   }}
    className="flex-1 flex flex-col sm:flex-row overflow-hidden min-w-0"
  >
    <TabsList
@@ -964,6 +1214,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
    >
      {[
        { id: "design", label: "Design", icon: LayoutTemplate },
+       { id: "web", label: "Página Web", icon: Globe },
        { id: "dados", label: "Geral", icon: FileText },
        ...(nicheCopy.showAviationAndHotelTerms ? [{ id: "voos", label: "Voos", icon: Plane }] : []),
        {
@@ -981,6 +1232,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
          icon: Building2,
        },
        ...(nicheCopy.showAviationAndHotelTerms ? [{ id: "rodoviario", label: "Rodoviário", icon: Bus }] : []),
+       ...(nicheCopy.showAviationAndHotelTerms ? [{ id: "cruzeiro", label: "Cruzeiro", icon: Ship }] : []),
        { id: "roteiro", label: nicheCopy.showAviationAndHotelTerms ? "Roteiro" : "Etapas", icon: Calendar },
        { id: "servicos", label: nicheCopy.showAviationAndHotelTerms ? "Serviços" : "Extras", icon: Compass },
        { id: "inclusoes", label: "Inclusões", icon: CheckCircle },
@@ -1028,7 +1280,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
           <div className="p-3 rounded-xl border border-border/70 bg-muted/20 space-y-2">
             <div className="flex items-center justify-between">
               <Label className="text-xs font-bold text-foreground flex items-center gap-2">
-                <Sparkles className="size-4 text-primary" />
+                <Layers className="size-4 text-primary" />
                 <span>Segmento / Nicho da Proposta</span>
               </Label>
               <span className="text-2xs font-mono text-primary font-semibold uppercase">
@@ -1226,8 +1478,9 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
               onChange={(url) => onChange({ cover_image_url: url })}
               onRemove={() => onChange({ cover_image_url: "" })}
               aspectPreset="free"
+              allowAspectSwitch={true}
               bucket="cms-media"
-              helperText="Troque ou recorte a imagem de capa para se ajustar ao template ativo"
+              helperText="Troque ou recorte a imagem de capa com proporção livre"
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -1273,38 +1526,20 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
 
             {/* Galeria Visual do Destino / Imóvel / Projeto */}
             <div className="pt-2 border-t border-border/50 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-2xs font-bold text-foreground">
-                  Galeria de Fotos do {currentNicheId === "tourism" ? "Destino / Cidade" : nicheCopy.label} ({destinationGalleryUrls.length})
-                </span>
-              </div>
-              <ImageUpload
-                value=""
-                onChange={(url) => handleAddDestinationGalleryPhoto(url)}
-                aspectPreset="widescreen"
+              <MediaGalleryField
+                label={`Galeria de Fotos do ${currentNicheId === "tourism" ? "Destino / Cidade" : nicheCopy.label}`}
+                items={normalizeEntityMediaList({ images: destinationGalleryUrls })}
+                onChange={(nextMedia) => {
+                  const urls = nextMedia.map((m) => m.url).filter(Boolean);
+                  updateStudioCustomField(
+                    "destination_gallery_urls",
+                    urls.length > 0 ? JSON.stringify(urls) : null,
+                  );
+                }}
                 bucket="cms-media"
-                label="Adicionar Foto na Galeria Mosaico"
+                allowVideos={true}
+                defaultAspectPreset="16:9"
               />
-              {destinationGalleryUrls.length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
-                  {destinationGalleryUrls.map((imgUrl, idx) => (
-                    <div
-                      key={idx}
-                      className="relative group h-16 rounded-lg overflow-hidden border border-border"
-                    >
-                      <img src={imgUrl} alt={`Galeria ${idx + 1}`} className="w-full h-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveDestinationGalleryPhoto(idx)}
-                        className="absolute top-1 right-1 min-h-11 min-w-11 sm:min-h-6 sm:min-w-6 rounded-full bg-background/90 text-destructive flex items-center justify-center shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        title="Remover foto"
-                      >
-                        <X className="size-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
 
@@ -1595,7 +1830,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  <div className="p-3 rounded-xl border border-primary/25 bg-primary/5 space-y-3">
    <div className="flex items-center justify-between">
      <span className="text-xs font-bold text-foreground flex items-center gap-2">
-       <Sparkles className="size-3.5 text-primary" />
+       <Layers className="size-3.5 text-primary" />
        <span>{nicheCopy.specsSectionTitle}</span>
      </span>
      <span className="text-2xs font-semibold px-2 py-1 rounded-full bg-background border border-border text-primary">
@@ -1852,14 +2087,15 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </div>
 
  <div className="space-y-2">
- <Label className="text-2xs font-bold">Foto de Capa da Proposta (16:9)</Label>
+ <Label className="text-2xs font-bold">Foto de Capa da Proposta</Label>
  <ImageUpload
  value={proposal.cover_image_url || ""}
  onChange={(url) => onChange({ cover_image_url: url })}
  onRemove={() => onChange({ cover_image_url: "" })}
- aspectPreset="widescreen"
+ aspectPreset="free"
+ allowAspectSwitch={true}
  bucket="cms-media"
- helperText="Capa panorâmica 16:9 para a proposta do cliente"
+ helperText="Clique para escolher foto e proporção livre"
  />
  </div>
 
@@ -2080,7 +2316,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  title="Duplicar trecho"
  aria-label="Duplicar trecho"
  onClick={() => handleDuplicateFlight(f.id)}
- className="h-7 size-7 p-0 text-muted-foreground hover:text-primary min-h-11 sm:min-h-0 min-w-11 sm:min-w-0 focus-visible:ring-2 focus-visible:ring-ring"
+ className="h-11 w-11 sm:h-8 sm:w-8 p-0 text-muted-foreground hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Copy className="size-3.5" />
  </Button>
@@ -2091,7 +2327,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  title="Remover trecho"
  aria-label="Remover trecho"
  onClick={() => handleRemoveFlight(f.id)}
- className="h-7 size-7 p-0 text-destructive min-h-11 sm:min-h-0 min-w-11 sm:min-w-0 focus-visible:ring-2 focus-visible:ring-ring"
+ className="h-11 w-11 sm:h-8 sm:w-8 p-0 text-destructive focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Trash className="size-3.5" />
  </Button>
@@ -2103,13 +2339,13 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  placeholder="Cia (Ex: GOL, LATAM)"
  value={f.airline_name || f.airline || ""}
  onChange={(e) => { handleFlightChange(f.id, "airline_name", e.target.value); handleFlightChange(f.id, "airline", e.target.value); }}
- className="h-8 text-xs rounded-lg"
+ className="h-11 sm:h-8 text-xs rounded-lg"
  />
  <Input
  placeholder="Nº Voo (Ex: LA3241)"
  value={f.flight_number || ""}
  onChange={(e) => handleFlightChange(f.id, "flight_number", e.target.value)}
- className="h-8 text-xs rounded-lg"
+ className="h-11 sm:h-8 text-xs rounded-lg"
  />
  </div>
 
@@ -2121,13 +2357,13 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  placeholder="XAP"
  value={f.origin_iata || f.origin || ""}
  onChange={(e) => { handleFlightChange(f.id, "origin_iata", e.target.value.toUpperCase()); handleFlightChange(f.id, "origin", e.target.value.toUpperCase()); }}
- className="h-8 text-xs rounded-lg uppercase font-mono w-16"
+ className="h-11 sm:h-8 text-xs rounded-lg uppercase font-mono w-16"
  />
  <Input
  placeholder="08:30"
  value={f.departure_time}
  onChange={(e) => handleFlightChange(f.id, "departure_time", e.target.value)}
- className="h-8 text-xs rounded-lg flex-1"
+ className="h-11 sm:h-8 text-xs rounded-lg flex-1"
  />
  </div>
  </div>
@@ -2139,35 +2375,53 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  placeholder="GRU"
  value={f.destination_iata || f.destination || ""}
  onChange={(e) => { handleFlightChange(f.id, "destination_iata", e.target.value.toUpperCase()); handleFlightChange(f.id, "destination", e.target.value.toUpperCase()); }}
- className="h-8 text-xs rounded-lg uppercase font-mono w-16"
+ className="h-11 sm:h-8 text-xs rounded-lg uppercase font-mono w-16"
  />
  <Input
  placeholder="10:00"
  value={f.arrival_time}
  onChange={(e) => handleFlightChange(f.id, "arrival_time", e.target.value)}
- className="h-8 text-xs rounded-lg flex-1"
+ className="h-11 sm:h-8 text-xs rounded-lg flex-1"
  />
  </div>
  </div>
  </div>
 
+ <FlightConnectionEditorField
+   flight={f}
+   onUpdateConnections={(nextConns) => {
+     onChange({
+       flights: proposal.flights.map((seg) =>
+         seg.id === f.id
+           ? {
+               ...seg,
+               connection_airports: nextConns,
+               stops_count: Math.max(nextConns.length, Number(seg.stops_count ?? seg.stops ?? 0)),
+               stops: Math.max(nextConns.length, Number(seg.stops_count ?? seg.stops ?? 0)),
+             }
+           : seg,
+       ),
+     });
+   }}
+ />
+
  <Input
  placeholder="Bagagem (Ex: 1x 10kg + Mochila)"
  value={typeof f.baggage_included === "boolean" ? (f.baggage_included ? "Inclusa" : "Não inclusa") : (f.baggage_included || "")}
  onChange={(e) => handleFlightChange(f.id, "baggage_included", e.target.value)}
- className="h-8 text-xs rounded-lg"
+ className="h-11 sm:h-8 text-xs rounded-lg"
  />
  <div className="grid grid-cols-2 gap-2">
    <Input
      type="date"
      value={f.departure_date || (f as any).date || ""}
      onChange={(e) => { handleFlightChange(f.id, "departure_date", e.target.value); handleFlightChange(f.id, "date" as any, e.target.value); }}
-     className="h-8 text-xs rounded-lg"
+     className="h-11 sm:h-8 text-xs rounded-lg"
    />
    <select
      value={f.stops_count ?? f.stops ?? 0}
      onChange={(e) => handleFlightChange(f.id, "stops_count", Number(e.target.value))}
-     className="h-8 text-xs rounded-lg bg-background border border-border px-2"
+     className="h-11 sm:h-8 text-xs rounded-lg bg-background border border-border px-2"
    >
      <option value={0}>Voo Direto</option>
      <option value={1}>1 Parada / Conexão</option>
@@ -2176,6 +2430,40 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </div>
  </div>
  ))}
+
+          {/* Seção de Captura e Sincronização do Mapa Geodésico */}
+          <div className="pt-3 border-t border-border/50 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Globe className="size-3.5 text-primary" />
+                <span className="text-2xs font-bold text-foreground">Mapa da Rota & Satélite (PDF/Web)</span>
+              </div>
+              {(proposal.captured_map_url || proposal.map_image_url) && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => onChange({ captured_map_url: null, map_image_url: null })}
+                  className="h-11 min-h-11 px-3 text-xs text-muted-foreground hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <RotateCcw className="size-3.5 mr-1" />
+                  Resetar para Vetorial
+                </Button>
+              )}
+            </div>
+            <p className="text-2xs text-muted-foreground leading-relaxed">
+              O mapa vetorial geográfico renderiza aeroportos, silhueta costeira e conexões sem risco de CORS no PDF. Para incluir captura cartográfica por satélite, capture uma foto no mapa abaixo:
+            </p>
+            <StudioMapWidget
+              agencyId={proposal.store_id || (proposal as any).agency_id || ""}
+              proposalId={proposal.id || "temp"}
+              waypoints={flightWaypoints}
+              onMapCaptured={(url) => {
+                onChange({ captured_map_url: url, map_image_url: url });
+                toast.success("Foto do mapa capturada e vinculada à lâmina!");
+              }}
+            />
+          </div>
  </TabsContent>
 
  {/* ── ABA 3: HOTELARIA / UNIDADE / FICHA ── */}
@@ -2284,7 +2572,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  />
  )}
 
- {proposal.hotels.map((h) => {
+ {proposal.hotels.map((h, hIdx) => {
  const matchedBankHotel = hotelsBank.find((hb: any) =>
  hb.name?.toLowerCase().trim() === h.hotel_name?.toLowerCase().trim() ||
  h.hotel_name?.toLowerCase().includes(hb.name?.toLowerCase())
@@ -2398,49 +2686,25 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </div>
  )}
 
- {/* Fotos do Hotel / Unidade / Produto */}
- {(() => {
- const hotelPhotos = Array.isArray(h.images)
- ? h.images.filter(Boolean)
- : h.image_url
- ? [h.image_url]
- : [];
- return (
- <div className="pt-2 border-t border-border/40 space-y-2">
- <span className="text-2xs font-bold text-foreground flex items-center gap-1">
- <ImageIcon className="size-3 text-primary" />
- <span>Fotos ({hotelPhotos.length})</span>
- </span>
- <ImageUpload
- value=""
- onChange={(url) => handleAddHotelPhoto(h.id, url)}
- aspectPreset="widescreen"
- bucket="cms-media"
- label="Adicionar Foto do Bloco"
+ {/* Mídias do Hotel / Unidade / Produto */}
+ <div className="pt-2 border-t border-border/40">
+ <MediaGalleryField
+   label="Fotos e Vídeos do Hotel"
+   items={normalizeEntityMediaList({
+     media: h.media,
+     featured_image_url: h.featured_image_url,
+     image_url: h.image_url,
+     images: h.images,
+     video_url: h.video_url,
+     object_position: h.object_position,
+     image_scale: h.image_scale,
+   })}
+   onChange={(nextMedia) => handleHotelMediaChange(hIdx, nextMedia)}
+   bucket="cms-media"
+   allowVideos={true}
+   defaultAspectPreset="4:3"
  />
- {hotelPhotos.length > 0 && (
- <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
- {hotelPhotos.map((imgUrl, imgIdx) => (
- <div key={imgIdx} className="relative h-20 rounded-lg overflow-hidden border border-border">
- <img src={imgUrl} alt={`${h.hotel_name || "Foto"} ${imgIdx + 1}`} className="w-full h-full object-cover" />
- <button
- type="button"
- aria-label="Remover foto"
- onClick={() => handleRemoveHotelPhoto(h.id, imgIdx)}
- className="absolute top-0 right-0 size-11 min-h-11 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
- title="Remover foto"
- >
- <span className="size-6 rounded-full bg-background/90 text-destructive border border-border flex items-center justify-center">
- <X className="size-3" />
- </span>
- </button>
  </div>
- ))}
- </div>
- )}
- </div>
- );
- })()}
  </div>
  );
  })}
@@ -2451,75 +2715,504 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
         {/* ── ABA 3.5: RODOVIÁRIO & TRANSPORTE TERRESTRE ── */}
         <TabsContent value="rodoviario" className="space-y-4">
           <div className="p-4 rounded-lg border border-border bg-card space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <span className="text-xs font-bold text-foreground flex items-center gap-2">
                 <Bus className="size-4 text-primary" />
-                <span>Transporte Rodoviário e Ônibus</span>
+                <span>Transporte Terrestre ({currentTransfers.length})</span>
               </span>
-              <span className="text-2xs font-semibold px-2 py-1 rounded-full bg-muted border border-border text-primary">
-                Multimodal
-              </span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const nextIdx = currentTransfers.length;
+                  handleAddTransfer();
+                  setSelectedTransferIndex(nextIdx);
+                }}
+                className="h-11 min-h-11 px-3 text-xs font-semibold gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Plus className="size-3.5" />
+                <span>Novo Trecho</span>
+              </Button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            {currentTransfers.length > 1 && (
               <div className="space-y-1">
-                <Label className="text-2xs font-bold">Tipo de Frota / Veículo</Label>
+                <Label className="text-2xs font-bold">Trecho em Edição</Label>
                 <select
-                  value={proposal.transfers?.[0]?.type || "Ônibus Leito DD"}
-                  onChange={(e) => updatePrimaryRodoviarioTransfer({ type: e.target.value })}
-                  className="w-full h-9 rounded-lg bg-background border border-border text-xs px-2"
+                  value={currentTransfers[selectedTransferIndex] ? selectedTransferIndex : 0}
+                  onChange={(e) => setSelectedTransferIndex(Number(e.target.value))}
+                  className="w-full h-11 rounded-lg bg-background border border-border text-xs px-2"
                 >
-                  <option value="Ônibus Leito DD">Ônibus Leito DD (Double Decker)</option>
-                  <option value="Ônibus Semi-Leito Executivo">Ônibus Semi-Leito Executivo</option>
-                  <option value="Micro-ônibus Executivo">Micro-ônibus Executivo</option>
-                  <option value="Van Executiva Luxo">Van Executiva Luxo</option>
-                  <option value="Transfer Privativo In/Out">Transfer Privativo In/Out</option>
+                  {currentTransfers.map((tr: any, idx: number) => (
+                    <option key={tr.id || idx} value={idx}>
+                      Trecho #{idx + 1}: {resolveTransferDisplayTitle(tr, idx)}
+                    </option>
+                  ))}
                 </select>
               </div>
+            )}
 
-              <div className="space-y-1">
-                <Label className="text-2xs font-bold">Empresa de Transporte / Linha</Label>
-                <Input
-                  placeholder="Ex: Expresso São Miguel / Frota Própria"
-                  value={proposal.transfers?.[0]?.route || ""}
-                  onChange={(e) => updatePrimaryRodoviarioTransfer({ route: e.target.value })}
-                  className="h-9 text-xs rounded-lg"
-                />
-              </div>
-            </div>
+            {(() => {
+              const activeTr: any = currentTransfers[selectedTransferIndex] || currentTransfers[0] || {};
+              return (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    <div className="space-y-1">
+                      <Label className="text-2xs font-bold">Tipo / Frota</Label>
+                      <Input
+                        placeholder="Ex: Ônibus Leito DD, 4x4, Van Executiva"
+                        value={activeTr.vehicle || activeTr.vehicle_type || activeTr.type || ""}
+                        onChange={(e) =>
+                          updatePrimaryRodoviarioTransfer({
+                            vehicle: e.target.value,
+                            vehicle_type: e.target.value,
+                          })
+                        }
+                        className="h-11 text-xs rounded-lg"
+                      />
+                    </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-              <div className="space-y-1">
-                <Label className="text-2xs font-bold">Ponto & Cidade de Embarque</Label>
-                <Input
-                  placeholder="Ex: Chapecó - Posto Bertaso (20:00)"
-                  value={proposal.transfers?.[0]?.pickup_time || ""}
-                  onChange={(e) => updatePrimaryRodoviarioTransfer({ pickup_time: e.target.value })}
-                  className="h-9 text-xs rounded-lg"
-                />
-              </div>
+                    <div className="space-y-1">
+                      <Label className="text-2xs font-bold">Nome do Trecho / Linha</Label>
+                      <Input
+                        placeholder="Ex: Traslado Fortaleza ↔ Jericoacoara"
+                        value={activeTr.name || activeTr.route_name || activeTr.route || activeTr.description || ""}
+                        onChange={(e) =>
+                          updatePrimaryRodoviarioTransfer({
+                            name: e.target.value,
+                            title: e.target.value,
+                            route: e.target.value,
+                            route_name: e.target.value,
+                            description: e.target.value,
+                          })
+                        }
+                        className="h-11 text-xs rounded-lg"
+                      />
+                    </div>
+                  </div>
 
-              <div className="space-y-1">
-                <Label className="text-2xs font-bold">Previsão de Desembarque / Chegada</Label>
-                <Input
-                  placeholder="Ex: Curitiba - Hotel Bourbon (06:00)"
-                  value={proposal.transfers?.[0]?.dropoff_time || ""}
-                  onChange={(e) => updatePrimaryRodoviarioTransfer({ dropoff_time: e.target.value })}
-                  className="h-9 text-xs rounded-lg"
-                />
-              </div>
-            </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    <div className="space-y-1">
+                      <Label className="text-2xs font-bold">Ponto e Horário de Embarque</Label>
+                      <Input
+                        placeholder="Ex: Chapecó - Posto Bertaso (20:00)"
+                        value={activeTr.pickup_time || ""}
+                        onChange={(e) => updatePrimaryRodoviarioTransfer({ pickup_time: e.target.value })}
+                        className="h-11 text-xs rounded-lg"
+                      />
+                    </div>
 
-            <div className="space-y-1 text-xs">
-              <Label className="text-2xs font-bold">Pontos de Embarque no Roteiro (Cidades Intermediárias)</Label>
-              <Textarea
-                placeholder="Ex: São Miguel do Oeste (18:30) • Maravilha (19:15) • Chapecó (20:00) • Xanxerê (21:00)"
-                value={proposal.transfers?.[0]?.notes || ""}
-                onChange={(e) => updatePrimaryRodoviarioTransfer({ notes: e.target.value })}
-                className="text-xs rounded-lg min-h-16"
-              />
+                    <div className="space-y-1">
+                      <Label className="text-2xs font-bold">Previsão de Chegada</Label>
+                      <Input
+                        placeholder="Ex: Hotel - Receptivo (14:00)"
+                        value={activeTr.dropoff_time || ""}
+                        onChange={(e) => updatePrimaryRodoviarioTransfer({ dropoff_time: e.target.value })}
+                        className="h-11 text-xs rounded-lg"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 text-xs">
+                    <Label className="text-2xs font-bold">Observações / Cidades Intermediárias</Label>
+                    <Textarea
+                      placeholder="Ex: Embarques ou orientações deste trecho..."
+                      value={activeTr.notes || ""}
+                      onChange={(e) => updatePrimaryRodoviarioTransfer({ notes: e.target.value })}
+                      className="text-xs rounded-lg min-h-16"
+                    />
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="cruzeiro" className="space-y-4">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <span className="text-xs font-bold text-foreground flex items-center gap-2">
+              <Ship className="size-3.5 text-primary" />
+              <span>Cruzeiros Marítimos ({currentCruises.length})</span>
+            </span>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => handleAddCruise()}
+              className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <Plus className="size-3.5" /> Adicionar Cruzeiro
+            </Button>
+          </div>
+
+          {/* Presets Rápidos com 1 Clique */}
+          <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 space-y-2">
+            <span className="text-2xs font-bold text-primary uppercase tracking-wider block">
+              Roteiros Rápidos Pré-configurados (1 Clique)
+            </span>
+            <div className="grid grid-cols-1 gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  handleAddCruise({
+                    ship_name: "MSC Grandiosa",
+                    company: "MSC Cruzeiros",
+                    cabin_category: "Cabine com Varanda Vista Mar",
+                    departure_port: "Santos (São Paulo), Brasil",
+                    arrival_port: "Santos (São Paulo), Brasil",
+                    duration_nights: 3,
+                    board_basis: "Pensão Completa",
+                    notes: "Taxas portuárias, de serviço e gorjetas inclusas. Experiência Fantastica.",
+                    itinerary: [
+                      { day: 1, port: "Santos (São Paulo), Brasil", arrival_time: "-", departure_time: "18:00", notes: "Embarque no Concais e saída ao pôr do sol", activity_type: "boarding" },
+                      { day: 2, port: "Em navegação", is_sea_day: true, arrival_time: "-", departure_time: "-", notes: "Dia livre curtindo as piscinas e shows a bordo", activity_type: "sea" },
+                      { day: 3, port: "Búzios, Brasil", arrival_time: "07:00", departure_time: "16:00", notes: "Desembarque de lancha na Praia dos Ossos / Rua das Pedras", activity_type: "dock" },
+                      { day: 4, port: "Santos (São Paulo), Brasil", arrival_time: "08:00", departure_time: "-", notes: "Desembarque final pela manhã", activity_type: "disembark" },
+                    ],
+                  })
+                }
+                className="h-11 min-h-11 text-2xs justify-start rounded-lg text-left font-medium hover:bg-primary/10"
+              >
+                <Anchor className="size-3.5 text-primary mr-2 shrink-0" />
+                <span>MSC 4D/3N: Santos -&gt; Búzios -&gt; Santos</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  handleAddCruise({
+                    ship_name: "Costa Diadema",
+                    company: "Costa Cruzeiros",
+                    cabin_category: "Cabine Externa com Janela",
+                    departure_port: "Santos (São Paulo), Brasil",
+                    arrival_port: "Santos (São Paulo), Brasil",
+                    duration_nights: 4,
+                    board_basis: "Pensão Completa (All Inclusive disponível)",
+                    notes: "Estilo italiano autêntico no mar. Festas temáticas inclusas.",
+                    itinerary: [
+                      { day: 1, port: "Santos (São Paulo), Brasil", arrival_time: "-", departure_time: "17:00", notes: "Embarque e saída de Santos", activity_type: "boarding" },
+                      { day: 2, port: "Ilhabela, Brasil", arrival_time: "08:00", departure_time: "17:00", notes: "Escala em Ilhabela com praias e cachoeiras", activity_type: "dock" },
+                      { day: 3, port: "Rio de Janeiro, Brasil", arrival_time: "07:00", departure_time: "18:00", notes: "Parada no Pier Mauá, próximo ao Boulevard Olímpico", activity_type: "dock" },
+                      { day: 4, port: "Em navegação", is_sea_day: true, arrival_time: "-", departure_time: "-", notes: "Navegação e relaxamento nos spas e restaurantes", activity_type: "sea" },
+                      { day: 5, port: "Santos (São Paulo), Brasil", arrival_time: "08:00", departure_time: "-", notes: "Desembarque matutino", activity_type: "disembark" },
+                    ],
+                  })
+                }
+                className="h-11 min-h-11 text-2xs justify-start rounded-lg text-left font-medium hover:bg-primary/10"
+              >
+                <Anchor className="size-3.5 text-primary mr-2 shrink-0" />
+                <span>Costa 5D/4N: Santos -&gt; Ilhabela -&gt; Rio -&gt; Santos</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  handleAddCruise({
+                    ship_name: "MSC Seaview",
+                    company: "MSC Cruzeiros",
+                    cabin_category: "Suíte Aurea com Varanda",
+                    departure_port: "Santos (São Paulo), Brasil",
+                    arrival_port: "Santos (São Paulo), Brasil",
+                    duration_nights: 7,
+                    board_basis: "All Inclusive Premium Extra",
+                    notes: "Design inovador voltado para o mar. Pacote de bebidas e internet inclusos.",
+                    itinerary: [
+                      { day: 1, port: "Santos (São Paulo), Brasil", arrival_time: "-", departure_time: "18:00", activity_type: "boarding" },
+                      { day: 2, port: "Em navegação", is_sea_day: true, arrival_time: "-", departure_time: "-", activity_type: "sea" },
+                      { day: 3, port: "Salvador, Brasil", arrival_time: "09:00", departure_time: "22:00", notes: "Passeio pelo Pelourinho e Mercado Modelo", activity_type: "dock" },
+                      { day: 4, port: "Ilhéus, Brasil", arrival_time: "08:00", departure_time: "17:00", notes: "Fazendas de cacau e centro histórico", activity_type: "dock" },
+                      { day: 5, port: "Em navegação", is_sea_day: true, arrival_time: "-", departure_time: "-", activity_type: "sea" },
+                      { day: 6, port: "Búzios, Brasil", arrival_time: "08:00", departure_time: "17:00", activity_type: "dock" },
+                      { day: 7, port: "Em navegação", is_sea_day: true, arrival_time: "-", departure_time: "-", activity_type: "sea" },
+                      { day: 8, port: "Santos (São Paulo), Brasil", arrival_time: "08:00", departure_time: "-", activity_type: "disembark" },
+                    ],
+                  })
+                }
+                className="h-11 min-h-11 text-2xs justify-start rounded-lg text-left font-medium hover:bg-primary/10"
+              >
+                <Anchor className="size-3.5 text-primary mr-2 shrink-0" />
+                <span>MSC 8D/7N: Santos -&gt; Salvador -&gt; Ilhéus -&gt; Santos</span>
+              </Button>
             </div>
           </div>
+
+          {currentCruises.length === 0 ? (
+            <div className="p-4 text-center rounded-xl bg-muted/30 border border-dashed border-border/60 text-xs text-muted-foreground space-y-2">
+              <Ship className="size-8 mx-auto text-muted-foreground/60" />
+              <p>Nenhum cruzeiro marítimo adicionado nesta proposta.</p>
+              <p className="text-2xs text-muted-foreground/80">
+                Selecione um dos modelos pré-configurados acima ou clique em &quot;Adicionar Cruzeiro&quot; para montar o itinerário na costa.
+              </p>
+            </div>
+          ) : (
+            currentCruises.map((cr, idx) => {
+              const itin = Array.isArray(cr.itinerary) ? cr.itinerary : [];
+              return (
+                <div key={cr.id || idx} className="p-3 sm:p-4 rounded-xl bg-muted/40 border border-border/50 space-y-3">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="flex items-center gap-2 text-foreground">
+                      <Ship className="size-4 text-primary" />
+                      <span>{cr.ship_name || `Cruzeiro #${idx + 1}`}</span>
+                      {cr.company && (
+                        <span className="text-2xs font-normal text-muted-foreground">({cr.company})</span>
+                      )}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDuplicateCruise(idx)}
+                        title="Duplicar cruzeiro"
+                        className="h-11 size-11 p-0 text-muted-foreground hover:text-primary"
+                      >
+                        <Copy className="size-3.5" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveCruise(idx)}
+                        title="Remover cruzeiro"
+                        className="h-11 size-11 p-0 text-destructive"
+                      >
+                        <Trash className="size-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Visualização de Rota Costeira ao Vivo */}
+                  <div className="space-y-1">
+                    <Label className="text-2xs font-bold text-foreground">Mapa Costeiro da Rota (Prévia ao Vivo)</Label>
+                    <div className="w-full h-44 rounded-xl overflow-hidden border border-border/60 bg-sky-950/20">
+                      <CruiseRouteSvgMap
+                        itinerary={itin}
+                        className="w-full h-full"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-2xs font-semibold">Navio</Label>
+                      <Input
+                        placeholder="Ex: MSC Grandiosa"
+                        value={cr.ship_name || ""}
+                        onChange={(e) => handleUpdateCruise(idx, { ship_name: e.target.value })}
+                        className="h-11 text-xs rounded-lg"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-2xs font-semibold">Companhia</Label>
+                      <Input
+                        placeholder="Ex: MSC Cruzeiros ou Costa Cruzeiros"
+                        value={cr.company || ""}
+                        onChange={(e) => handleUpdateCruise(idx, { company: e.target.value })}
+                        className="h-11 text-xs rounded-lg"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-2xs font-semibold">Categoria de Cabine</Label>
+                      <Input
+                        placeholder="Ex: Cabine com Varanda Vista Mar"
+                        value={cr.cabin_category || ""}
+                        onChange={(e) => handleUpdateCruise(idx, { cabin_category: e.target.value })}
+                        className="h-11 text-xs rounded-lg"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-2xs font-semibold">Regime / Experiência</Label>
+                      <Input
+                        placeholder="Ex: Pensão Completa / Fantastica"
+                        value={cr.board_basis || ""}
+                        onChange={(e) => handleUpdateCruise(idx, { board_basis: e.target.value })}
+                        className="h-11 text-xs rounded-lg"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-2xs font-semibold">Porto de Embarque</Label>
+                      <Input
+                        placeholder="Ex: Santos"
+                        value={cr.departure_port || ""}
+                        onChange={(e) => handleUpdateCruise(idx, { departure_port: e.target.value })}
+                        className="h-11 text-xs rounded-lg"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-2xs font-semibold">Porto de Desembarque</Label>
+                      <Input
+                        placeholder="Ex: Santos"
+                        value={cr.arrival_port || ""}
+                        onChange={(e) => handleUpdateCruise(idx, { arrival_port: e.target.value })}
+                        className="h-11 text-xs rounded-lg"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-2xs font-semibold">Noites</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        placeholder="Noites"
+                        value={cr.duration_nights || ""}
+                        onChange={(e) => handleUpdateCruise(idx, { duration_nights: Number(e.target.value) || undefined })}
+                        className="h-11 text-xs rounded-lg"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-2xs font-semibold">Data de Embarque</Label>
+                      <Input
+                        type="date"
+                        value={toDateInputValue(cr.departure_date)}
+                        onChange={(e) => handleUpdateCruise(idx, { departure_date: e.target.value })}
+                        className="h-11 text-xs rounded-lg"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-2xs font-semibold">Data de Desembarque</Label>
+                      <Input
+                        type="date"
+                        value={toDateInputValue(cr.return_date)}
+                        onChange={(e) => handleUpdateCruise(idx, { return_date: e.target.value })}
+                        className="h-11 text-xs rounded-lg"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-2xs font-semibold">Foto Ilustrativa do Navio ou Cabine</Label>
+                    <ImageUpload
+                      value={cr.image_url || ""}
+                      onChange={(url) => handleUpdateCruise(idx, { image_url: url })}
+                      onRemove={() => handleUpdateCruise(idx, { image_url: "" })}
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-2xs font-semibold">Observações / Taxas / Incluso</Label>
+                    <Textarea
+                      placeholder="Ex: Taxas portuárias e gorjetas inclusas. Bebidas servidas às refeições..."
+                      value={cr.notes || ""}
+                      onChange={(e) => handleUpdateCruise(idx, { notes: e.target.value })}
+                      className="text-xs rounded-lg min-h-16"
+                    />
+                  </div>
+
+                  {/* ITINERÁRIO DIA A DIA DO CRUZEIRO */}
+                  <div className="pt-2 border-t border-border/50 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+                        <Calendar className="size-3.5 text-primary" />
+                        Itinerário Dia a Dia ({itin.length} dias)
+                      </span>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleAddCruiseDay(idx)}
+                        className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <Plus className="size-3.5" /> Dia
+                      </Button>
+                    </div>
+
+                    <div className="space-y-2">
+                      {itin.map((d, dayIdx) => (
+                        <div key={dayIdx} className="p-3 rounded-lg bg-background/80 border border-border/60 space-y-2">
+                          <div className="flex items-center justify-between text-2xs font-bold">
+                            <span className="text-primary flex items-center gap-1">
+                              <span className="size-2 rounded-full bg-primary inline-block" />
+                              DIA {d.day}
+                            </span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveCruiseDay(idx, dayIdx)}
+                              className="h-11 min-h-11 size-11 p-0 text-destructive hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-ring"
+                              title="Remover dia"
+                            >
+                              <Trash className="size-3.5" />
+                            </Button>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <div className="sm:col-span-2 space-y-1">
+                              <Input
+                                placeholder="Porto / Cidade (Ex: Santos, Búzios, Ilhabela...)"
+                                value={d.is_sea_day ? "Em navegação" : d.port || ""}
+                                disabled={Boolean(d.is_sea_day)}
+                                onChange={(e) => handleUpdateCruiseDay(idx, dayIdx, { port: e.target.value })}
+                                className="h-10 text-xs rounded-lg"
+                              />
+                            </div>
+                            <label className="inline-flex items-center gap-2 cursor-pointer h-10 px-2 rounded-lg bg-muted/30 border border-border/50 text-2xs text-foreground">
+                              <input
+                                type="checkbox"
+                                checked={Boolean(d.is_sea_day)}
+                                onChange={(e) =>
+                                  handleUpdateCruiseDay(idx, dayIdx, {
+                                    is_sea_day: e.target.checked,
+                                    port: e.target.checked ? "Em navegação" : "",
+                                    arrival_time: e.target.checked ? "-" : d.arrival_time,
+                                    departure_time: e.target.checked ? "-" : d.departure_time,
+                                  })
+                                }
+                              />
+                              <span>Em navegação</span>
+                            </label>
+                          </div>
+
+                          {!d.is_sea_day && (
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="space-y-1">
+                                <Label className="text-3xs text-muted-foreground">Chegada (ARR)</Label>
+                                <Input
+                                  placeholder="Ex: 08:00 ou -"
+                                  value={d.arrival_time || ""}
+                                  onChange={(e) => handleUpdateCruiseDay(idx, dayIdx, { arrival_time: e.target.value })}
+                                  className="h-9 text-xs rounded-lg"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-3xs text-muted-foreground">Partida (DEP)</Label>
+                                <Input
+                                  placeholder="Ex: 18:00 ou -"
+                                  value={d.departure_time || ""}
+                                  onChange={(e) => handleUpdateCruiseDay(idx, dayIdx, { departure_time: e.target.value })}
+                                  className="h-9 text-xs rounded-lg"
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          <Input
+                            placeholder="Atividade / Detalhes deste dia (Opcional)"
+                            value={d.notes || ""}
+                            onChange={(e) => handleUpdateCruiseDay(idx, dayIdx, { notes: e.target.value })}
+                            className="h-9 text-2xs rounded-lg"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </TabsContent>
 
         <TabsContent value="roteiro" className="space-y-3">
@@ -2532,18 +3225,24 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  type="button"
  size="sm"
  variant="outline"
+ disabled={isGeneratingItinerary}
  onClick={handleGenerateItineraryFromDestination}
- className="h-8 text-2xs rounded-lg gap-1 text-primary hover:text-primary min-h-11 sm:min-h-0"
- title="Sugerir Roteiro"
+ className="h-11 text-2xs rounded-lg gap-1 text-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ title="Gerar Roteiro"
  >
- <Calendar className="size-3.5" /> Sugerir Dias
+ {isGeneratingItinerary ? (
+   <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
+ ) : (
+   <Compass className="size-3.5" />
+ )}
+ <span>{isGeneratingItinerary ? "Gerando..." : "Sugerir Dias"}</span>
  </Button>
  <Button
  type="button"
  size="sm"
  variant="outline"
  onClick={handleAddItineraryDay}
- className="h-8 text-xs rounded-lg gap-1 min-h-11 sm:min-h-0"
+ className="h-11 text-xs rounded-lg gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Plus className="size-3.5" /> Dia
  </Button>
@@ -2558,10 +3257,12 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  type="button"
  size="sm"
  variant="outline"
+ disabled={isGeneratingItinerary}
  onClick={handleGenerateItineraryFromDestination}
- className="text-xs rounded-lg font-bold"
+ className="h-11 min-h-11 text-xs rounded-lg font-bold gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
- Gerar Roteiro Sugerido pelo Destino
+ {isGeneratingItinerary ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Compass className="size-3.5" />}
+ <span>{isGeneratingItinerary ? "Gerando Roteiro..." : "Gerar Roteiro"}</span>
  </Button>
  </div>
  ) : (
@@ -2634,49 +3335,24 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
    />
  </div>
 
- {/* Fotos da Etapa do Roteiro */}
- {(() => {
-   const dayPhotos = Array.isArray(day.images)
-     ? day.images.filter(Boolean)
-     : day.image_url
-       ? [day.image_url]
-       : [];
-   return (
-     <div className="pt-2 border-t border-border/40 space-y-2">
-       <span className="text-2xs font-bold text-foreground flex items-center gap-1">
-         <ImageIcon className="size-3 text-primary" />
-         <span>Fotos do Dia / Bloco ({dayPhotos.length})</span>
-       </span>
-       <ImageUpload
-         value=""
-         onChange={(url) => handleAddItineraryPhoto(day.id, url)}
-         aspectPreset="widescreen"
-         bucket="cms-media"
-         label="Adicionar Foto"
-       />
-       {dayPhotos.length > 0 && (
-         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-           {dayPhotos.map((imgUrl, imgIdx) => (
-             <div key={imgIdx} className="relative h-20 rounded-lg overflow-hidden border border-border">
-               <img src={imgUrl} alt={`${day.title || "Etapa"} ${imgIdx + 1}`} className="w-full h-full object-cover" />
-               <button
-                 type="button"
-                 aria-label="Remover foto"
-                 onClick={() => handleRemoveItineraryPhoto(day.id, imgIdx)}
-                 className="absolute top-0 right-0 size-11 min-h-11 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
-                 title="Remover foto"
-               >
-                 <span className="size-6 rounded-full bg-background/90 text-destructive border border-border flex items-center justify-center">
-                   <X className="size-3" />
-                 </span>
-               </button>
-             </div>
-           ))}
-         </div>
-       )}
-     </div>
-   );
- })()}
+ {/* Mídias da Etapa do Roteiro */}
+ <div className="pt-2 border-t border-border/40">
+   <MediaGalleryField
+     label="Fotos e Vídeos do Dia"
+     items={normalizeEntityMediaList({
+       media: day.media,
+       image_url: day.image_url,
+       images: day.images,
+       video_url: day.video_url,
+       object_position: day.object_position,
+       image_scale: day.image_scale,
+     })}
+     onChange={(nextMedia) => handleItineraryMediaChange(idx, nextMedia)}
+     bucket="cms-media"
+     allowVideos={true}
+     defaultAspectPreset="16:9"
+   />
+ </div>
  </div>
  ))
  )}
@@ -2686,12 +3362,26 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  <TabsContent value="servicos" className="space-y-4">
    {/* Bloco 1: Traslados / Receptivo */}
    <div className="space-y-2">
-     <div className="flex items-center justify-between">
+     <div className="flex items-center justify-between gap-2 flex-wrap">
        <span className="text-xs font-bold text-foreground flex items-center gap-2">
          <Car className="size-3.5 text-primary" />
          <span>{nicheCopy.transfersTitle} ({currentTransfers.length})</span>
        </span>
        <div className="flex items-center gap-2">
+         {currentTransfers.length > 1 && (
+           <Button
+             type="button"
+             size="sm"
+             variant="ghost"
+             onClick={() => {
+               onChange({ transfers: sortTransfersChronologically(currentTransfers) as any });
+               toast.success("Traslados ordenados cronologicamente.");
+             }}
+             className="h-11 text-xs rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+           >
+             Ordenar por Data
+           </Button>
+         )}
          <Button
            type="button"
            size="sm"
@@ -2760,7 +3450,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
        currentTransfers.map((tr: any, idx: number) => (
          <div key={tr.id || idx} className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-2">
            <div className="flex items-center justify-between text-xs font-bold">
-             <span>Traslado #{idx + 1}</span>
+             <span>{String(idx + 1).padStart(2, "0")} · {resolveTransferKindBadge(tr.kind || tr.type)}</span>
              <div className="flex items-center gap-1">
                <Button
                  type="button"
@@ -2787,45 +3477,105 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
              </div>
            </div>
            <Input
-             placeholder="Descrição (Ex: Aeroporto ↔ Resort Privativo)"
-             value={tr.description || tr.type || ""}
-             onChange={(e) => handleUpdateTransfer(idx, { description: e.target.value })}
+             placeholder="Nome do Traslado / Serviço (Ex: Aeroporto ↔ Resort)"
+             value={tr.name || tr.title || tr.route_name || tr.route || tr.description || ""}
+             onChange={(e) =>
+               handleUpdateTransfer(idx, {
+                 name: e.target.value,
+                 title: e.target.value,
+                 route_name: e.target.value,
+                 route: e.target.value,
+                 description: e.target.value,
+               })
+             }
              className="h-11 text-xs rounded-lg"
            />
-           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+           <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
              <select
-               value={tr.type === "shared" ? "shared" : "private"}
-               onChange={(e) => handleUpdateTransfer(idx, { type: e.target.value })}
+               value={tr.is_private === false || tr.type === "shared" ? "shared" : "private"}
+               onChange={(e) =>
+                 handleUpdateTransfer(idx, {
+                   type: e.target.value,
+                   is_private: e.target.value === "private",
+                 })
+               }
                className="h-11 text-xs rounded-lg bg-background border border-border px-2"
              >
                <option value="private">Privativo</option>
                <option value="shared">Regular / Compartilhado</option>
              </select>
-             <select
-               value={tr.vehicle || "Van Executiva"}
-               onChange={(e) => handleUpdateTransfer(idx, { vehicle: e.target.value })}
-               className="h-11 text-xs rounded-lg bg-background border border-border px-2"
-             >
-               <option value="Van Executiva">Van Executiva</option>
-               <option value="Sedan Executivo">Sedan Executivo</option>
-               <option value="SUV Blindado / Luxo">SUV Luxo</option>
-               <option value="Micro-ônibus">Micro-ônibus</option>
-               <option value="Ônibus Turismo">Ônibus</option>
-               <option value="Lancha / Catamarã">Lancha / Barco</option>
-             </select>
+             <Input
+               placeholder="Veículo (Ex: 4x4, Van)"
+               value={tr.vehicle || tr.vehicle_type || ""}
+               onChange={(e) =>
+                 handleUpdateTransfer(idx, {
+                   vehicle: e.target.value,
+                   vehicle_type: e.target.value,
+                 })
+               }
+               className="h-11 text-xs rounded-lg"
+             />
              <Input
                type="date"
-               value={tr.date || ""}
+               value={toDateInputValue(tr.date)}
                onChange={(e) => handleUpdateTransfer(idx, { date: e.target.value })}
                className="h-11 text-xs rounded-lg"
              />
+             <Input
+               type="time"
+               aria-label="Horário do traslado"
+               value={tr.pickup_time || ""}
+               onChange={(e) => handleUpdateTransfer(idx, { pickup_time: e.target.value })}
+               className="h-11 text-xs rounded-lg"
+             />
            </div>
-           <Input
-             placeholder="Observações (Ex: Placa nominal no desembarque)"
-             value={tr.notes || ""}
-             onChange={(e) => handleUpdateTransfer(idx, { notes: e.target.value })}
-             className="h-11 text-xs rounded-lg"
-           />
+           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+             <Input
+               placeholder="Valor R$ (ex: 243,06)"
+               value={tr.price_cents ? (tr.price_cents / 100).toFixed(2) : ""}
+               onChange={(e) => {
+                 const cents = parseReaisToCents(e.target.value, true);
+                 if (cents !== null) handleUpdateTransfer(idx, { price_cents: cents });
+               }}
+               className="h-11 text-xs rounded-lg font-mono"
+             />
+             <Input
+               placeholder="Observações (Ex: Placa nominal)"
+               value={tr.notes || ""}
+               onChange={(e) => handleUpdateTransfer(idx, { notes: e.target.value })}
+               className="h-11 text-xs rounded-lg"
+             />
+           </div>
+           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+             <Input
+               placeholder="Ponto de Encontro (Ex: Desembarque Portão B)"
+               value={tr.meeting_point || ""}
+               onChange={(e) => handleUpdateTransfer(idx, { meeting_point: e.target.value })}
+               className="h-11 text-xs rounded-lg"
+             />
+             <Input
+               placeholder="Bagagem Permitida (Ex: 1 mala 23kg + 1 de mão)"
+               value={tr.luggage_notes || ""}
+               onChange={(e) => handleUpdateTransfer(idx, { luggage_notes: e.target.value })}
+               className="h-11 text-xs rounded-lg"
+             />
+           </div>
+           <div className="space-y-1">
+             <Label className="text-2xs font-semibold text-muted-foreground">Foto Ilustrativa do Veículo ou Traslado (Opcional)</Label>
+             <ImageUpload
+               value={tr.image_url || ""}
+               onChange={(url) => handleUpdateTransfer(idx, { image_url: url })}
+               onRemove={() => handleUpdateTransfer(idx, { image_url: "" })}
+             />
+           </div>
+           <label className="inline-flex items-center gap-2 cursor-pointer min-h-11 text-xs text-foreground">
+             <input
+               type="checkbox"
+               checked={Boolean(tr.add_to_quote)}
+               onChange={(e) => handleUpdateTransfer(idx, { add_to_quote: e.target.checked })}
+             />
+             <span>Somar valor deste traslado ao Total da Proposta</span>
+           </label>
          </div>
        ))
      )}
@@ -2928,13 +3678,30 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
              onChange={(e) => handleUpdateTour(idx, { title: e.target.value })}
              className="h-11 text-xs rounded-lg"
            />
-           <div className="grid grid-cols-2 gap-2">
+           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
              <Input
-               placeholder="Duração / Prazo (Ex: Dia inteiro)"
-               value={tour.duration || tour.date || ""}
+               type="date"
+               value={toDateInputValue(tour.date)}
+               onChange={(e) => handleUpdateTour(idx, { date: e.target.value })}
+               className="h-11 text-xs rounded-lg"
+             />
+             <Input
+               placeholder="Duração (Ex: Dia inteiro)"
+               value={tour.duration || ""}
                onChange={(e) => handleUpdateTour(idx, { duration: e.target.value })}
                className="h-11 text-xs rounded-lg"
              />
+             <Input
+               placeholder="Valor R$"
+               value={tour.price_cents ? (tour.price_cents / 100).toFixed(2) : ""}
+               onChange={(e) => {
+                 const cents = parseReaisToCents(e.target.value, true);
+                 if (cents !== null) handleUpdateTour(idx, { price_cents: cents });
+               }}
+               className="h-11 text-xs rounded-lg font-mono"
+             />
+           </div>
+           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
              <select
                value={tour.included === false ? "optional" : "included"}
                onChange={(e) =>
@@ -2943,43 +3710,38 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
                    is_included: e.target.value === "included",
                  })
                }
-               className="h-11 text-xs rounded-lg bg-background border border-border px-2"
+               className="w-full h-11 text-xs rounded-lg bg-background border border-border px-2"
              >
                <option value="included">Incluso na Proposta</option>
                <option value="optional">Opcional Sugerido</option>
              </select>
+             <label className="inline-flex items-center gap-2 px-3 rounded-lg border border-border/60 bg-background cursor-pointer min-h-11 text-xs text-foreground">
+               <input
+                 type="checkbox"
+                 checked={Boolean(tour.add_to_quote)}
+                 onChange={(e) => handleUpdateTour(idx, { add_to_quote: e.target.checked })}
+               />
+               <span>Somar ao Total</span>
+             </label>
            </div>
 
-           {/* Fotos do Passeio / Experiência / Item */}
-           <div className="pt-2 border-t border-border/40 space-y-2">
-             <span className="text-2xs font-bold text-foreground flex items-center gap-1">
-               <ImageIcon className="size-3 text-primary" />
-               <span>Fotos ({tourPhotos.length})</span>
-             </span>
-             <ImageUpload
-               value=""
-               onChange={(url) => handleAddTourPhoto(idx, url)}
-               aspectPreset="widescreen"
+           {/* Mídias do Passeio / Experiência / Item */}
+           <div className="pt-2 border-t border-border/40">
+             <MediaGalleryField
+               label="Fotos e Vídeos do Passeio"
+               items={normalizeEntityMediaList({
+                 media: tour.media,
+                 image_url: tour.image_url,
+                 images: tour.images,
+                 video_url: tour.video_url,
+                 object_position: tour.object_position,
+                 image_scale: tour.image_scale,
+               })}
+               onChange={(nextMedia) => handleTourMediaChange(idx, nextMedia)}
                bucket="cms-media"
-               label="Adicionar Foto do Passeio / Item"
+               allowVideos={true}
+               defaultAspectPreset="4:3"
              />
-             {tourPhotos.length > 0 && (
-               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                 {tourPhotos.map((imgUrl, imgIdx) => (
-                   <div key={imgIdx} className="relative h-14 rounded-lg overflow-hidden border border-border">
-                     <img src={imgUrl} alt={`${tour.title || "Item"} ${imgIdx + 1}`} className="w-full h-full object-cover" />
-                     <button
-                       type="button"
-                       onClick={() => handleRemoveTourPhoto(idx, imgIdx)}
-                       className="absolute top-1 right-1 min-h-11 min-w-11 sm:min-h-6 sm:min-w-6 rounded-full bg-background/90 text-destructive flex items-center justify-center shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                       title="Remover foto"
-                     >
-                       <X className="size-3" />
-                     </button>
-                   </div>
-                 ))}
-               </div>
-             )}
            </div>
          </div>
        )})
@@ -3210,6 +3972,14 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  {formatMoney(proposal.pricing?.total_price_cents || 0)}
  </span>
  </Label>
+ {computeExtraServicesChargeCents(currentTransfers, currentTours) > 0 && (
+   <div className="px-3 py-1 rounded-lg bg-muted/40 border border-border/50 text-2xs text-muted-foreground flex items-center justify-between">
+     <span>Extras somados (Traslados + Passeios):</span>
+     <span className="font-mono font-semibold text-foreground">
+       {formatMoney(computeExtraServicesChargeCents(currentTransfers, currentTours))}
+     </span>
+   </div>
+ )}
  <div className="relative">
  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">
  R$
@@ -3431,7 +4201,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  : ""
  }
  onChange={(e) => {
- const parsed = parseReaisToCents(e.target.value);
+ const parsed = parseReaisToCents(e.target.value, true);
  updateStudioCustomField(
  "custom_price_per_person_cents",
  parsed && parsed > 0 ? String(parsed) : null,
@@ -3770,7 +4540,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
                  min="0"
                  value={currentTotalReais}
                  onChange={(e) => {
-                   const parsedCents = parseReaisToCents(e.target.value);
+                   const parsedCents = parseReaisToCents(e.target.value, true);
                    if (parsedCents !== null) {
                      updateOpt({
                        pricing: {
@@ -3799,9 +4569,126 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
      </div>
    )}
  </TabsContent>
+
+        <TabsContent value="web" className="space-y-4 mt-0">
+          <ProposalWebPageBuilder proposal={proposal} onChange={onChange} />
+        </TabsContent>
    </div>
  </Tabs>
  </TooltipProvider>
  </div>
  );
+}
+
+function FlightConnectionEditorField({
+  flight,
+  onUpdateConnections,
+}: {
+  flight: FlightSegmentDTO;
+  onUpdateConnections: (nextConnections: string[]) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const currentConnections: string[] = Array.isArray(flight.connection_airports)
+    ? flight.connection_airports
+    : [];
+
+  const { data: airportSuggestionsRes } = useQuery({
+    queryKey: ["studio-airport-autocomplete", query],
+    queryFn: () => searchGlobalAirports({ data: { query: query.trim(), limit: 6 } }),
+    enabled: query.trim().length >= 2,
+    staleTime: 60 * 1000,
+  });
+
+  const suggestions = airportSuggestionsRes?.airports || [];
+
+  const handleAddCode = (rawCode: string) => {
+    const clean = rawCode.trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 3);
+    if (clean.length !== 3) {
+      toast.info("Informe um código IATA válido com 3 letras (ex: GRU, VCP, BSB).");
+      return;
+    }
+    if (!currentConnections.includes(clean)) {
+      onUpdateConnections([...currentConnections, clean]);
+    }
+    setQuery("");
+  };
+
+  return (
+    <div className="space-y-2 pt-1">
+      <div className="flex items-center justify-between gap-2">
+        <label className="text-3xs font-mono uppercase text-muted-foreground">
+          Conexões / Escalas (IATA)
+        </label>
+        {currentConnections.length > 0 && (
+          <span className="text-3xs font-mono text-primary font-semibold">
+            {currentConnections.join(" → ")}
+          </span>
+        )}
+      </div>
+
+      {currentConnections.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {currentConnections.map((code, idx) => (
+            <button
+              key={`${code}-${idx}`}
+              type="button"
+              onClick={() => onUpdateConnections(currentConnections.filter((_, i) => i !== idx))}
+              aria-label={`Remover conexão ${code}`}
+              className="inline-flex items-center gap-1 px-2 py-1 min-h-11 sm:min-h-0 rounded-md border border-border bg-card text-xs font-mono font-bold text-foreground hover:border-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <span>{code}</span>
+              <X className="size-3 text-muted-foreground" />
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="flex gap-1">
+        <Input
+          placeholder="Buscar cidade ou IATA da conexão (ex: GRU)"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              if (/^[a-zA-Z]{3}$/.test(query.trim())) {
+                handleAddCode(query);
+              } else if (suggestions[0]?.iata_code) {
+                handleAddCode(suggestions[0].iata_code);
+              }
+            }
+          }}
+          className="h-11 sm:h-8 text-xs rounded-lg flex-1"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => handleAddCode(suggestions[0]?.iata_code || query)}
+          disabled={!query.trim()}
+          className="h-11 sm:h-8 px-3 text-xs rounded-lg shrink-0 focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          + Conexão
+        </Button>
+      </div>
+
+      {query.trim().length >= 2 && suggestions.length > 0 && (
+        <div className="rounded-lg border border-border bg-card divide-y divide-border/50 max-h-36 overflow-y-auto">
+          {suggestions.map((ap) => (
+            <button
+              key={ap.iata_code}
+              type="button"
+              onClick={() => handleAddCode(ap.iata_code)}
+              className="w-full px-3 py-2 min-h-11 sm:min-h-0 text-left text-xs hover:bg-muted/60 flex items-center justify-between gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <span className="font-medium text-foreground">
+                {ap.city} — {ap.name}
+              </span>
+              <span className="font-mono font-bold text-primary shrink-0">{ap.iata_code}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }

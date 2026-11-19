@@ -2006,6 +2006,18 @@ export const getMarketingRoiClosedLoopMetrics = createServerFn({ method: "GET" }
   const globalRevenueReais = (totalAttributedRevenueCents / 100).toFixed(2).replace(".", ",");
   const periodLabels = campaignRoiBreakdown.map((campaign: any) => campaign.periodLabel);
   const totalSpendCents = hasAnyObservedSpend ? observedSpendSumCents : null;
+  const roas =
+    totalSpendCents != null && totalSpendCents > 0
+      ? Number((totalAttributedRevenueCents / totalSpendCents).toFixed(2))
+      : null;
+  const cpcCents =
+    totalSpendCents != null && totalClicks > 0
+      ? Math.round(totalSpendCents / totalClicks)
+      : null;
+  const cplCents =
+    totalSpendCents != null && totalAttributedOrdersCount > 0
+      ? Math.round(totalSpendCents / totalAttributedOrdersCount)
+      : null;
 
   return {
     totalPlannedBudgetCents: campaignList.every((campaign: any) => campaign.budget_cents != null)
@@ -2016,6 +2028,9 @@ export const getMarketingRoiClosedLoopMetrics = createServerFn({ method: "GET" }
     totalAttributedOrdersCount,
     totalImpressions,
     totalClicks,
+    roas,
+    cpcCents,
+    cplCents,
     headline: `R$ ${globalRevenueReais} em pedidos pagos associados por identificador exato de campanha`,
     attributionRule: "Somente pedidos com status paid e attributed_campaign_id igual ao ID da campanha (ou, sem esse ID, utm_campaign exatamente igual); created_at deve estar no período da campanha. Associação não comprova causalidade.",
     periodLabel: periodLabels.length ? `Períodos individuais: ${periodLabels.join("; ")}` : "Sem campanhas no período.",
@@ -2196,33 +2211,65 @@ export async function executeDiscoverAccessibleAdAccounts(
       amountSpentCents: acc.amount_spent != null ? Number(acc.amount_spent) : 0,
     }));
 
-    const pixels: Array<{ id: string; name: string; accountId: string }> = [];
-    if (accounts.length > 0) {
-      try {
-        const pxRes = await fetch(
-          `https://graph.facebook.com/v20.0/act_${accounts[0].accountId}/adspixels?fields=id,name&limit=10&access_token=${encodeURIComponent(accessToken)}`
-        );
-        const pxJson = await pxRes.json().catch(() => ({}));
-        if (Array.isArray(pxJson?.data)) {
-          for (const px of pxJson.data) {
-            if (px?.id) {
-              pixels.push({
-                id: String(px.id),
-                name: String(px.name || `Pixel ${px.id}`),
-                accountId: accounts[0].accountId,
-              });
+    const pixels: Array<{ id: string; name: string; accountId: string; accountName?: string }> = [];
+    const seenPixelIds = new Set<string>();
+    const targetAccounts = accounts.slice(0, 15);
+    for (let i = 0; i < targetAccounts.length; i += 5) {
+      const slice = targetAccounts.slice(i, i + 5);
+      await Promise.all(
+        slice.map(async (acc: any) => {
+          try {
+            const pxRes = await fetch(
+              `https://graph.facebook.com/v20.0/act_${encodeURIComponent(acc.accountId)}/adspixels?fields=id,name,owner_business&limit=25&access_token=${encodeURIComponent(accessToken)}`,
+              { signal: AbortSignal.timeout(6000) },
+            );
+            const pxJson = await pxRes.json().catch(() => ({}));
+            if (Array.isArray(pxJson?.data)) {
+              for (const px of pxJson.data) {
+                if (px?.id) {
+                  const key = `${acc.accountId}:${px.id}`;
+                  if (!seenPixelIds.has(key)) {
+                    seenPixelIds.add(key);
+                    pixels.push({
+                      id: String(px.id),
+                      name: String(px.name || `Pixel ${px.id}`),
+                      accountId: String(acc.accountId),
+                      accountName: String(acc.name || acc.accountId),
+                    });
+                  }
+                }
+              }
             }
+          } catch {
+            // Pixels opcionais por conta
+          }
+        }),
+      );
+    }
+
+    const pages: Array<{ id: string; name: string }> = [];
+    try {
+      const pgRes = await fetch(
+        `https://graph.facebook.com/v20.0/me/accounts?fields=id,name&limit=25&access_token=${encodeURIComponent(accessToken)}`,
+        { signal: AbortSignal.timeout(5000) },
+      );
+      const pgJson = await pgRes.json().catch(() => ({}));
+      if (Array.isArray(pgJson?.data)) {
+        for (const pg of pgJson.data) {
+          if (pg?.id) {
+            pages.push({ id: String(pg.id), name: String(pg.name || `Página ${pg.id}`) });
           }
         }
-      } catch {
-        // Pixels opcionais
       }
+    } catch {
+      // Páginas opcionais dependendo de scope OAuth
     }
 
     return {
       platform: "meta_ads" as const,
       accounts,
       pixels,
+      pages,
       discoveredAt: new Date().toISOString(),
     };
   }
@@ -2266,6 +2313,115 @@ export async function executeDiscoverAccessibleAdAccounts(
     discoveredAt: new Date().toISOString(),
   };
 }
+
+export const importDiscoveredMetaPixelsToSourcesFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().uuid().optional(),
+      pixels: z.array(
+        z.object({
+          id: z.string().min(3).max(120),
+          name: z.string().min(1).max(160),
+          accountId: z.string().optional().nullable(),
+          pageId: z.string().optional().nullable(),
+        }),
+      ).min(1).max(30),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    const storeId = data.storeId || identity.store_id;
+    assertStoreAccess(identity, ["owner", "admin", "manager"], storeId);
+    if (!storeId) throw new Error("Loja inválida.");
+
+    const nowIso = new Date().toISOString();
+    const { data: sourceRow, error: srcErr } = await (supabase.from("marketing_sources") as any)
+      .upsert(
+        {
+          store_id: storeId,
+          slug: "meta-ads",
+          name: "Meta Ads (Facebook & Instagram)",
+          platform: "meta_ads",
+          description: "Pixels e campanhas sincronizadas via Meta Business / Graph API.",
+          is_active: true,
+          updated_at: nowIso,
+        },
+        { onConflict: "store_id,slug" },
+      )
+      .select("id")
+      .single();
+
+    if (srcErr || !sourceRow?.id) {
+      throw new Error(`Falha ao garantir fonte Meta Ads: ${srcErr?.message || "registro ausente"}`);
+    }
+
+    const { data: existingRows } = await (supabase.from("marketing_source_pixels") as any)
+      .select("id, external_pixel_id")
+      .eq("store_id", storeId)
+      .eq("provider", "meta_pixel");
+    const existingByExternal = new Map<string, string>(
+      ((existingRows || []) as any[]).map((r) => [String(r.external_pixel_id), String(r.id)]),
+    );
+
+    let imported = 0;
+    for (let idx = 0; idx < data.pixels.length; idx++) {
+      const px = data.pixels[idx];
+      const existingId = existingByExternal.get(px.id);
+      if (existingId) {
+        await (supabase.from("marketing_source_pixels") as any)
+          .update({
+            name: px.name,
+            ad_account_id: px.accountId || null,
+            page_id: px.pageId || null,
+            is_active: true,
+            updated_at: nowIso,
+          })
+          .eq("id", existingId)
+          .eq("store_id", storeId);
+      } else {
+        await (supabase.from("marketing_source_pixels") as any)
+          .insert({
+            store_id: storeId,
+            source_id: sourceRow.id,
+            name: px.name,
+            provider: "meta_pixel",
+            external_pixel_id: px.id,
+            ad_account_id: px.accountId || null,
+            page_id: px.pageId || null,
+            is_default: existingByExternal.size === 0 && idx === 0,
+            is_active: true,
+            updated_at: nowIso,
+          });
+      }
+      imported += 1;
+    }
+
+    return { success: true, sourceId: String(sourceRow.id), importedCount: imported };
+  });
+
+export const enrichMetaAdByIdMcpFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().uuid().optional(),
+      adId: z.string().trim().min(3).max(120).optional().nullable(),
+      campaignId: z.string().trim().min(3).max(120).optional().nullable(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    const storeId = data.storeId || identity.store_id;
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller"], storeId);
+    if (!storeId) throw new Error("Loja inválida.");
+    const { resolveAndEnrichMetaAdMetadata } = await import("@/services/meta-ad-enrichment.server");
+    const enriched = await resolveAndEnrichMetaAdMetadata(supabase, {
+      storeId,
+      adId: data.adId || null,
+      campaignId: data.campaignId || null,
+    });
+    return { enriched };
+  });
 
 /**
  * Sincroniza métricas reais em tempo real via Meta Graph Insights API e Google Ads GAQL (`googleAds:searchStream`),

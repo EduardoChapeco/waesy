@@ -30,11 +30,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { TravelProposalDTO, TravelProposalOptionDTO } from "@/services/travel-proposal.functions";
+import type { HotelDTO, TravelProposalDTO, TravelProposalOptionDTO } from "@/services/travel-proposal.functions";
 import { ProposalCanvasRenderer } from "@/components/tourism/studio/proposal-canvas-renderer";
+import { ProposalWebShowcase } from "@/components/tourism/studio/proposal-web-showcase";
 import { StudioFrame } from "@/components/tourism/studio/studio-frame";
-import { EditorialShowcaseView } from "@/components/classifieds/editorial-showcase-view";
-import { proposalToEditorialClassified } from "@/lib/tourism/proposal-editorial-mapper";
+import { normalizeProposalOptionsAndHotels } from "@/lib/tourism/proposal-normalization";
 import {
   formatProposalDateRange,
   formatProposalPaxSummary,
@@ -74,35 +74,46 @@ export function ProposalQuickPreviewSheet({
   onExportPng,
   onExportJson,
 }: ProposalQuickPreviewSheetProps) {
-  const [previewMode, setPreviewMode] = useState<"canvas" | "editorial">("canvas");
+  const [previewMode, setPreviewMode] = useState<"canvas" | "web">("canvas");
   const [selectedOptionIdx, setSelectedOptionIdx] = useState(0);
 
+  const normalizedPkg = useMemo(() => {
+    if (!proposal) return { hotels: [] as HotelDTO[], options: [] as TravelProposalOptionDTO[] };
+    const norm = normalizeProposalOptionsAndHotels(
+      proposal.hotels || [],
+      proposal.options || [],
+    );
+    return {
+      hotels: norm.hotels as HotelDTO[],
+      options: norm.options as TravelProposalOptionDTO[],
+    };
+  }, [proposal]);
+
   const options: TravelProposalOptionDTO[] = useMemo(
-    () => (Array.isArray(proposal?.options) ? proposal.options : []),
-    [proposal?.options],
+    () => normalizedPkg.options as TravelProposalOptionDTO[],
+    [normalizedPkg.options],
   );
 
   const activeProposal = useMemo(() => {
     if (!proposal) return null;
-    if (options.length === 0) return proposal;
+    const baseHotels = normalizedPkg.hotels.length > 0 ? normalizedPkg.hotels : proposal.hotels;
+    if (options.length === 0) return { ...proposal, hotels: baseHotels };
     const chosen = options[selectedOptionIdx] || options[0];
-    if (!chosen) return proposal;
+    if (!chosen) return { ...proposal, hotels: baseHotels };
     return {
       ...proposal,
       flights: chosen.flights && chosen.flights.length > 0 ? chosen.flights : proposal.flights,
-      hotels: chosen.hotels && chosen.hotels.length > 0 ? chosen.hotels : proposal.hotels,
+      hotels: chosen.hotels && chosen.hotels.length > 0 ? chosen.hotels : baseHotels,
       itinerary:
         chosen.itinerary && chosen.itinerary.length > 0 ? chosen.itinerary : proposal.itinerary,
+      transfers:
+        chosen.transfers && chosen.transfers.length > 0 ? chosen.transfers : proposal.transfers,
+      tours: chosen.tours && chosen.tours.length > 0 ? chosen.tours : proposal.tours,
       includes: chosen.includes && chosen.includes.length > 0 ? chosen.includes : proposal.includes,
       excludes: chosen.excludes && chosen.excludes.length > 0 ? chosen.excludes : proposal.excludes,
       pricing: chosen.pricing || proposal.pricing,
     };
-  }, [proposal, options, selectedOptionIdx]);
-
-  const editorialClassified = useMemo(() => {
-    if (!activeProposal) return null;
-    return proposalToEditorialClassified(activeProposal);
-  }, [activeProposal]);
+  }, [proposal, normalizedPkg.hotels, options, selectedOptionIdx]);
 
   if (!proposal || !activeProposal) return null;
 
@@ -270,16 +281,16 @@ export function ProposalQuickPreviewSheet({
               </button>
               <button
                 type="button"
-                onClick={() => setPreviewMode("editorial")}
+                onClick={() => setPreviewMode("web")}
                 className={cn(
                   "h-11 min-h-11 px-3 rounded-lg text-xs font-semibold inline-flex items-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  previewMode === "editorial"
+                  previewMode === "web"
                     ? "bg-foreground text-background"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <Globe className="size-3.5" />
-                <span>Página do Cliente</span>
+                <span>Página Web</span>
               </button>
             </div>
 
@@ -323,11 +334,11 @@ export function ProposalQuickPreviewSheet({
             >
               <ProposalCanvasRenderer proposal={activeProposal} />
             </StudioFrame>
-          ) : editorialClassified ? (
+          ) : (
             <div className="p-4 sm:p-6">
-              <EditorialShowcaseView classified={editorialClassified} isOwner />
+              <ProposalWebShowcase proposal={activeProposal} webPage={activeProposal.web_page} />
             </div>
-          ) : null}
+          )}
         </div>
       </SheetContent>
     </Sheet>

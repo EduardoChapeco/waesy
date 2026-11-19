@@ -12,6 +12,8 @@ import {
 } from "@/lib/pdf-export";
 import { downloadTextFile, sanitizeProposalFilename } from "@/lib/tourism/proposal-export";
 import { resolveProposalCanvasTheme } from "@/lib/tourism/proposal-theme-palettes";
+import { escapeHtml } from "@/lib/sanitize";
+export { escapeHtml };
 
 export type DocumentExportFormat = "pdf" | "png" | "html" | "doc" | "md" | "print";
 
@@ -56,15 +58,6 @@ export interface ExportDocumentBundleOptions {
   fallbackHtml?: string | null;
   pageFormat?: DocumentPageFormat;
   theme?: DocumentExportThemeInput;
-}
-
-export function escapeHtml(raw: string): string {
-  return String(raw ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }
 
 function formatInlineMarkdown(text: string): string {

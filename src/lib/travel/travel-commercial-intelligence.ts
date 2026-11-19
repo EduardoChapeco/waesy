@@ -13,6 +13,16 @@
 
 import { formatMoney } from "@/lib/money";
 import type { TravelParty, TravelOffer, PriceBasis } from "./excelencia-offer-engine";
+import {
+  evaluateUnifiedOpportunityMatch,
+  normalizeDestinationTagList,
+  normalizePeriodSpec,
+  normalizeRoomsFromLeadOrLegacy,
+  type CanonicalDemandLead,
+  type CanonicalSupplyOffer,
+  type ChildSimulationResult,
+  type HistoricalPriceCheck,
+} from "./opportunity-matching-engine";
 
 // ============================================================================
 // 1. COMMERCIAL CONTACT (Identidade Leve Pré-CRM)
@@ -68,10 +78,14 @@ export interface TravelInterest {
   id: string;
   contactId: string;
   tenantId?: string;
+  leadId?: string | null;
   title: string; // e.g., "Caribe / Punta Cana em família"
   destinations: string[]; // e.g. ["Punta Cana", "Caribe", "Cancún"]
+  destinationTags?: Array<string | { label: string; normalized: string; iata?: string | null }>;
   destinationCategories?: string[]; // e.g. ["praia", "resort", "all_inclusive", "internacional"]
   preferredOrigins?: string[]; // e.g. ["XAP", "FLN", "GRU", "Chapecó"]
+  periodTags?: string[];
+  flexibilityDays?: number;
   dates: {
     flexibility: DateFlexibilityMode;
     targetMonths?: string[]; // e.g. ["2026-08", "2026-09", "2026-10"]
@@ -81,6 +95,13 @@ export interface TravelInterest {
     durationNightsRange?: [number, number]; // e.g. [5, 8]
   };
   party: TravelParty;
+  roomOccupancies?: Array<{
+    roomNumber?: number;
+    roomLabel?: string;
+    adultsCount?: number;
+    childrenCount?: number;
+    childrenAges?: number[];
+  }>;
   budget: {
     maxTotalBudgetCents?: number | null;
     maxInstallmentCents?: number | null;
@@ -118,8 +139,16 @@ export interface TravelOpportunityMatch {
   interestId: string;
   offerId: string;
   contactId: string;
+  leadId?: string | null;
   matchScore: number; // 0..100
   isHighPriority: boolean; // matchScore >= 80
+  matchTier?: string;
+  requiresChildRequote?: boolean;
+  simulatedTotalCents?: number | null;
+  childSimulation?: ChildSimulationResult | null;
+  historicalCheck?: HistoricalPriceCheck | null;
+  warnings?: string[];
+  alreadyProposedRecently?: boolean;
   dimensions: MatchScoreDimension[];
   matchedAt: string;
   status: "new" | "reviewed" | "approached" | "engaged" | "promoted_to_crm" | "dismissed";
@@ -359,29 +388,163 @@ export function computeOfferInterestMatch(
   interest: TravelInterest,
   contact: CommercialContact
 ): TravelOpportunityMatch | null {
+  if (contact.status === "opted_out" || interest.status === "cancelled" || interest.status === "dormant") {
+    return null;
+  }
+
+  const normalizedRooms = normalizeRoomsFromLeadOrLegacy({
+    rooms: interest.roomOccupancies,
+    adultsCount: interest.party.adults || 2,
+    childrenCount: interest.party.children || 0,
+    childrenAges: interest.party.childAges || [],
+    roomsCount: Array.isArray(interest.roomOccupancies) && interest.roomOccupancies.length > 0
+      ? interest.roomOccupancies.length
+      : 1,
+  });
+
+  const offerRooms = normalizeRoomsFromLeadOrLegacy({
+    rooms: (offer.rooms || []).map((r, idx) => ({
+      roomNumber: idx + 1,
+      roomLabel: r.roomTypeLabel,
+      adultsCount: r.adults,
+      childrenCount: r.children,
+      childrenAges: offer.party.childAges || [],
+    })),
+    adultsCount: offer.party.adults || 2,
+    childrenCount: (offer.party.children || 0) + (offer.party.infants || 0),
+    childrenAges: offer.party.childAges || [],
+  });
+
+  const canonicalOffer: CanonicalSupplyOffer = {
+    id: offer.id,
+    sourceType: "offer_engine",
+    title: offer.destination.title || offer.destination.city,
+    originCity: offer.destination.originCity || null,
+    originIata: offer.destination.originIata || null,
+    destinationCity: offer.destination.city || offer.destination.title,
+    destinationIata: offer.destination.destinationIata || null,
+    destinationCountry: offer.destination.country || null,
+    destinationTags: normalizeDestinationTagList(
+      [offer.destination.city, offer.destination.title].filter(Boolean)
+    ),
+    departureDate: offer.dates.departureDate || null,
+    returnDate: offer.dates.returnDate || null,
+    quotedAdultsCount: offerRooms.adultsCount,
+    quotedChildrenCount: offerRooms.childrenCount,
+    quotedChildrenAges: offerRooms.childrenAges,
+    rooms: offerRooms.rooms,
+    totalPriceCents:
+      offer.pricing.totalPackagePriceCents ||
+      offer.paymentTermsSnapshot.totalAmountCents ||
+      0,
+    installmentCount: offer.paymentTermsSnapshot.installmentCount || offer.pricing.installmentCount || null,
+    installmentValueCents:
+      offer.paymentTermsSnapshot.installmentAmountCents || offer.pricing.installmentAmountCents || null,
+    productType: offer.offerType || null,
+    mealPlan: offer.hotels[0]?.mealPlanLabel || null,
+    inclusions: offer.inclusions || [],
+  };
+
+  const seasonToTags: string[] = [...(interest.periodTags || [])];
+  if (interest.dates.preferredSeason === "school_holidays") seasonToTags.push("ferias_julho");
+  if (interest.dates.preferredSeason === "low_season") seasonToTags.push("baixa_temporada");
+
+  const canonicalDemand: CanonicalDemandLead = {
+    id: interest.id,
+    demandSource: "travel_interest",
+    leadId: interest.leadId || contact.linkedCrmLeadId || null,
+    contactId: contact.id,
+    fullName: contact.name,
+    whatsapp: contact.phone,
+    originCity: interest.preferredOrigins?.[0] || null,
+    destinations: normalizeDestinationTagList(
+      interest.destinationTags || interest.destinations,
+      interest.title
+    ),
+    period: normalizePeriodSpec({
+      startDate: interest.dates.exactDepartureDate || null,
+      endDate: interest.dates.exactReturnDate || null,
+      targetMonths: interest.dates.targetMonths || [],
+      seasonTags: seasonToTags,
+      flexibilityDays:
+        typeof interest.flexibilityDays === "number"
+          ? interest.flexibilityDays
+          : String(interest.dates.flexibility) === "flexible_plus_minus_7" ||
+              String(interest.dates.flexibility) === "flexible_7days"
+            ? 7
+            : 3,
+      dateFlexibilityMode:
+        interest.dates.flexibility === "flexible_anytime"
+          ? "flexible_anytime"
+          : String(interest.dates.flexibility) === "unspecified"
+            ? "unspecified"
+            : undefined,
+      dateFlexibleFlag: interest.dates.flexibility === "flexible_anytime",
+    }),
+    rooms: normalizedRooms.rooms,
+    adultsCount: normalizedRooms.adultsCount,
+    childrenAges: normalizedRooms.childrenAges,
+    maxTotalBudgetCents:
+      interest.budget.maxTotalBudgetCents && interest.budget.maxTotalBudgetCents > 0
+        ? interest.budget.maxTotalBudgetCents
+        : null,
+    maxInstallmentCents:
+      interest.budget.maxInstallmentCents && interest.budget.maxInstallmentCents > 0
+        ? interest.budget.maxInstallmentCents
+        : null,
+    preferredInstallments: interest.budget.preferredInstallments || null,
+    wantedInclusions: interest.inclusionsWanted || [],
+    minHotelStars: interest.hotelPreferences?.minStars || null,
+  };
+
+  const unified = evaluateUnifiedOpportunityMatch(canonicalOffer, canonicalDemand, {
+    minScore: 45,
+  });
+
+  // Hard gate: nunca retornar match se destino, datas ou orcamento falharem no motor unificado
+  if (!unified.isMatch || unified.scoreBreakdown.destination === 0) {
+    return null;
+  }
+
   const destMatch = evaluateDestinationMatch(offer, interest);
   const budgetMatch = evaluateBudgetMatch(offer, interest);
   const datesMatch = evaluateDatesMatch(offer, interest);
   const partyMatch = evaluatePartyMatch(offer, interest);
   const inclusionsMatch = evaluateInclusionsMatch(offer, interest);
 
+  const effectiveDestScore = Math.max(destMatch.score, unified.scoreBreakdown.destination);
+  if (effectiveDestScore === 0) {
+    return null;
+  }
+
   const totalScore =
-    destMatch.score +
+    effectiveDestScore +
     budgetMatch.score +
     datesMatch.score +
     partyMatch.score +
     inclusionsMatch.score;
 
-  // Filtro de corte: pelo menos 45 pontos para ser considerado uma oportunidade viável
+  // Filtro de corte rigoroso
   if (totalScore < 45) {
     return null;
   }
 
+  const destDetails =
+    destMatch.score > 0
+      ? destMatch.details
+      : unified.matchedDestinationLabel
+        ? `Gateway/Destino compatível: ${unified.matchedDestinationLabel} (${effectiveDestScore}/35)`
+        : destMatch.details;
+
+  const partyDetails = unified.childSimulation.requiresChildRequote
+    ? `${partyMatch.details} — ${unified.childSimulation.reasonPt}`
+    : partyMatch.details;
+
   const dimensions: MatchScoreDimension[] = [
-    { dimension: "destination", weight: 35, score: destMatch.score, details: destMatch.details },
+    { dimension: "destination", weight: 35, score: effectiveDestScore, details: destDetails },
     { dimension: "budget", weight: 25, score: budgetMatch.score, details: budgetMatch.details },
     { dimension: "dates", weight: 20, score: datesMatch.score, details: datesMatch.details },
-    { dimension: "party", weight: 10, score: partyMatch.score, details: partyMatch.details },
+    { dimension: "party", weight: 10, score: partyMatch.score, details: partyDetails },
     { dimension: "inclusions", weight: 10, score: inclusionsMatch.score, details: inclusionsMatch.details },
   ];
 
@@ -393,8 +556,16 @@ export function computeOfferInterestMatch(
     interestId: interest.id,
     offerId: offer.id,
     contactId: contact.id,
+    leadId: interest.leadId || contact.linkedCrmLeadId || null,
     matchScore: totalScore,
     isHighPriority: totalScore >= 80,
+    matchTier: unified.matchTier,
+    requiresChildRequote: unified.requiresChildRequote,
+    simulatedTotalCents: unified.effectiveOfferTotalCents,
+    childSimulation: unified.childSimulation,
+    historicalCheck: unified.historicalCheck,
+    warnings: unified.warnings,
+    alreadyProposedRecently: unified.alreadyProposedRecently,
     dimensions,
     matchedAt: new Date().toISOString(),
     status: "new",

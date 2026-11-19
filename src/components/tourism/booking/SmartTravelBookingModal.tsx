@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
@@ -380,19 +381,32 @@ export function SmartTravelBookingModal({
                       </Label>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                         {childrenAges.map((age, i) => (
-                          <div key={i} className="flex items-center gap-2 p-2 rounded-md bg-muted/30 border border-border">
-                            <span className="text-2xs font-semibold text-muted-foreground whitespace-nowrap">
-                              Criança #{i + 1}:
-                            </span>
-                            <Input
-                              type="number"
-                              min={0}
-                              max={11}
-                              value={age}
-                              onChange={(e) => handleChildAgeChange(i, parseInt(e.target.value) || 0)}
-                              className="h-8 text-xs font-bold text-center"
-                            />
-                            <span className="text-2xs text-muted-foreground">anos</span>
+                          <div key={i} className="flex flex-col gap-2 p-2 rounded-md bg-muted/30">
+                            <Label
+                              htmlFor={`booking-child-age-${i}`}
+                              className="text-2xs font-semibold text-muted-foreground whitespace-nowrap"
+                            >
+                              Criança #{i + 1}
+                            </Label>
+                            <Select
+                              value={String(Math.max(0, Math.min(11, Number(age) || 0)))}
+                              onValueChange={(v) => handleChildAgeChange(i, Number(v))}
+                            >
+                              <SelectTrigger
+                                id={`booking-child-age-${i}`}
+                                aria-label={`Idade da criança ${i + 1}`}
+                                className="h-11 min-h-11 text-xs font-bold bg-background"
+                              >
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Array.from({ length: 12 }, (_, idxAge) => (
+                                  <SelectItem key={idxAge} value={String(idxAge)}>
+                                    {idxAge === 0 ? "Colo (< 1 ano)" : `${idxAge} anos`}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </div>
                         ))}
                       </div>

@@ -1,17 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { getTravelQuoteBundleBySlug } from "@/services/travel-financials.functions";
-import { EditorialShowcaseView } from "@/components/classifieds/editorial-showcase-view";
+import { ProposalWebShowcase } from "@/components/tourism/studio/proposal-web-showcase";
+import { mapQuoteBundleToTravelProposal } from "@/lib/tourism/proposal-normalization";
 import { formatMoney } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  CheckCircle2,
   Users,
-  Building2,
   Plane,
   Share2,
   ArrowLeft,
+  Building2,
+  CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -50,7 +51,32 @@ function QuoteBundleComparisonPage() {
   const { bundle } = (Route.useLoaderData?.() as any) || {};
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  if (!bundle || !Array.isArray(bundle.items) || bundle.items.length === 0) {
+  const canonicalProposal = useMemo(
+    () => (bundle && Array.isArray(bundle.items) && bundle.items.length > 0 ? mapQuoteBundleToTravelProposal(bundle) : null),
+    [bundle],
+  );
+
+  const activeProposal = useMemo(() => {
+    if (!canonicalProposal) return null;
+    const opts = Array.isArray(canonicalProposal.options) ? canonicalProposal.options : [];
+    const activeOpt = opts[selectedIndex] || opts[0];
+    if (!activeOpt) return canonicalProposal;
+    return {
+      ...canonicalProposal,
+      cover_image_url: activeOpt.cover_image_url || canonicalProposal.cover_image_url,
+      hotels: Array.isArray(activeOpt.hotels) && activeOpt.hotels.length > 0 ? activeOpt.hotels : canonicalProposal.hotels,
+      flights: Array.isArray(activeOpt.flights) && activeOpt.flights.length > 0 ? activeOpt.flights : canonicalProposal.flights,
+      transfers: Array.isArray(activeOpt.transfers) ? activeOpt.transfers : canonicalProposal.transfers,
+      tours: Array.isArray(activeOpt.tours) ? activeOpt.tours : canonicalProposal.tours,
+      itinerary: Array.isArray(activeOpt.itinerary) ? activeOpt.itinerary : canonicalProposal.itinerary,
+      includes: Array.isArray(activeOpt.includes) ? activeOpt.includes : canonicalProposal.includes,
+      excludes: Array.isArray(activeOpt.excludes) ? activeOpt.excludes : canonicalProposal.excludes,
+      pricing: activeOpt.pricing || canonicalProposal.pricing,
+      subtitle: activeOpt.notes || canonicalProposal.subtitle,
+    };
+  }, [canonicalProposal, selectedIndex]);
+
+  if (!bundle || !Array.isArray(bundle.items) || bundle.items.length === 0 || !activeProposal) {
     return (
       <div className="min-h-dvh bg-background text-foreground flex flex-col items-center justify-center p-6 text-center space-y-4">
         <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
@@ -61,7 +87,7 @@ function QuoteBundleComparisonPage() {
           Este link de proposta múltipla pode ter expirado ou foi atualizado pelo seu consultor de viagens.
         </p>
         <Button asChild className="h-11 px-5 rounded-lg font-bold">
-          <Link to="/classificados">Explorar Vitrines</Link>
+          <Link to="/turismo">Explorar Pacotes e Roteiros</Link>
         </Button>
       </div>
     );
@@ -69,20 +95,9 @@ function QuoteBundleComparisonPage() {
 
   const items = bundle.items;
   const activeItem = items[selectedIndex] || items[0];
-  const activeListing = activeItem?.listing
-    ? {
-        ...activeItem.listing,
-        price_cents:
-          activeItem.custom_price_cents != null && activeItem.custom_price_cents > 0
-            ? activeItem.custom_price_cents
-            : activeItem.listing.price_cents,
-        is_custom_quote: true,
-        visibility_mode: "unlisted",
-        passenger_composition:
-          bundle.passenger_composition ||
-          activeItem.listing.passenger_composition ||
-          activeItem.listing.attributes?.passenger_composition,
-      }
+  const rawWhatsappDigits = String(bundle?.store?.whatsapp || bundle?.store?.phone || "").replace(/\D/g, "");
+  const whatsappHref = rawWhatsappDigits
+    ? `https://wa.me/${rawWhatsappDigits.startsWith("55") ? rawWhatsappDigits : `55${rawWhatsappDigits}`}?text=${encodeURIComponent(`Olá! Gostaria de falar sobre a opção "${activeItem?.option_label || bundle.title}" da proposta comparativa.`)}`
     : null;
 
   const comp = bundle.passenger_composition || { adults: 2, children: 0, children_max_age: 12 };
@@ -103,7 +118,7 @@ function QuoteBundleComparisonPage() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
               <Link
-                to="/classificados"
+                to="/turismo"
                 className="size-11 rounded-lg border border-border bg-muted hover:bg-muted/80 flex items-center justify-center text-foreground shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label="Voltar"
               >
@@ -251,8 +266,11 @@ function QuoteBundleComparisonPage() {
         </div>
       </div>
 
-      {/* ── Vitrine Editorial Completa da Opção Selecionada ── */}
-      {activeListing && <EditorialShowcaseView classified={activeListing} isOwner={false} />}
+      {/* ── Vitrine Editorial Canônica de Turismo ── */}
+      <ProposalWebShowcase
+        proposal={activeProposal}
+        whatsappHref={whatsappHref}
+      />
     </div>
   );
 }

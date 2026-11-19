@@ -34,11 +34,11 @@ export const createDealProposal = createServerFn({ method: "POST" })
  throw new Error("Você não pode enviar uma proposta para o seu próprio anúncio.");
  }
 
- let classifiedMeta: { id?: string; title?: string | null; store_id?: string | null; category?: string | null; attributes?: any } | null = null;
+ let classifiedMeta: { id?: string; title?: string | null; store_id?: string | null; category?: string | null; price_cents?: number | null; attributes?: any } | null = null;
  if (input.classifiedId) {
    const { data: classified, error: classifiedErr } = await supabase
      .from("classifieds")
-     .select("id, title, store_id, category, attributes, author_profile_id, status")
+     .select("id, title, store_id, category, price_cents, attributes, author_profile_id, status")
      .eq("id", input.classifiedId)
      .maybeSingle();
    if (classifiedErr || !classified) throw new Error("Anúncio não encontrado.");
@@ -52,6 +52,42 @@ export const createDealProposal = createServerFn({ method: "POST" })
  }
 
  const isDirect = input.isDirectBooking || false;
+ let authoritativeTotalCents = input.totalPriceCents || input.proposedPriceCents;
+ let authoritativeDailyRateCents = input.dailyRateCents || null;
+ let authoritativeCleaningFeeCents = input.cleaningFeeCents || 0;
+
+ if (isDirect) {
+   if (!classifiedMeta) {
+     throw new Error("Reserva direta exige um anúncio válido vinculado.");
+   }
+   const clsAttrs = ((classifiedMeta.attributes || {}) as Record<string, any>) || {};
+   if (clsAttrs.allow_instant_booking === false || clsAttrs.instant_booking === false) {
+     throw new Error("Este anúncio não aceita reserva instantânea sem aprovação.");
+   }
+
+   const nights = Math.max(1, input.nightsCount || 1);
+   const catalogDailyRate = Number(clsAttrs.daily_rate_cents ?? clsAttrs.diaria_cents ?? 0);
+   const catalogCleaningFee = Number(clsAttrs.cleaning_fee_cents ?? clsAttrs.taxa_limpeza_cents ?? 0);
+   const catalogBasePrice = Number(classifiedMeta.price_cents ?? clsAttrs.price_cents ?? 0);
+
+   if (input.dealType === "rental" && catalogDailyRate > 0) {
+     const expectedTotal = catalogDailyRate * nights + Math.max(0, catalogCleaningFee);
+     if (authoritativeTotalCents < expectedTotal) {
+       throw new Error("Valor da reserva direta inferior à tarifa cadastrada no anúncio.");
+     }
+     authoritativeDailyRateCents = catalogDailyRate;
+     authoritativeCleaningFeeCents = Math.max(0, catalogCleaningFee);
+     authoritativeTotalCents = Math.max(authoritativeTotalCents, expectedTotal);
+   } else if (catalogBasePrice > 0) {
+     if (authoritativeTotalCents < catalogBasePrice) {
+       throw new Error("Valor da reserva direta inferior ao preço cadastrado no anúncio.");
+     }
+     authoritativeTotalCents = Math.max(authoritativeTotalCents, catalogBasePrice);
+   } else {
+     throw new Error("Anúncio sem preço definido não permite reserva instantânea.");
+   }
+ }
+
  const initialStatus = isDirect ? "accepted" : "negotiating";
 
  const { data: deal, error } = await supabase
@@ -60,7 +96,7 @@ export const createDealProposal = createServerFn({ method: "POST" })
  classified_id: input.classifiedId,
  buyer_id: identity.id,
  seller_id: input.sellerId,
- proposed_price_cents: input.totalPriceCents || input.proposedPriceCents,
+ proposed_price_cents: authoritativeTotalCents,
  deposit_cents: input.depositCents,
  installments_count: input.installmentsCount,
  deal_type: input.dealType === "travel" ? "sale" : input.dealType,
@@ -68,9 +104,9 @@ export const createDealProposal = createServerFn({ method: "POST" })
  start_date: input.startDate ? new Date(input.startDate).toISOString() : null,
  end_date: input.endDate ? new Date(input.endDate).toISOString() : null,
  nights_count: input.nightsCount || 1,
- daily_rate_cents: input.dailyRateCents || null,
- cleaning_fee_cents: input.cleaningFeeCents || 0,
- total_price_cents: input.totalPriceCents || input.proposedPriceCents,
+ daily_rate_cents: authoritativeDailyRateCents,
+ cleaning_fee_cents: authoritativeCleaningFeeCents,
+ total_price_cents: authoritativeTotalCents,
  guests_count: input.guestsCount || 1,
  is_direct_booking: isDirect,
  booking_status: isDirect ? "confirmed" : "pending",
@@ -244,6 +280,22 @@ export const respondToDealProposal = createServerFn({ method: "POST" })
  }
  if ((input.action === "accept" || input.action === "confirm_dates") && !["negotiating", "accepted"].includes(String(deal.status))) {
    throw new Error("A negociação não está em uma fase que aceite confirmação.");
+ }
+ if (input.action === "accept" || input.action === "confirm_dates") {
+   const { data: lastPriceEvent } = await supabase
+     .from("deal_events")
+     .select("sender_id, event_type")
+     .eq("deal_id", deal.id)
+     .in("event_type", ["proposal", "counter_proposal"])
+     .order("created_at", { ascending: false })
+     .limit(1)
+     .maybeSingle();
+   if (lastPriceEvent?.sender_id === identity.id) {
+     throw new Error("Aguarde a contraparte responder à última proposta enviada.");
+   }
+   if (!lastPriceEvent && deal.seller_id !== identity.id) {
+     throw new Error("Somente o anunciante pode aceitar a proposta inicial.");
+   }
  }
  if (input.action === "complete" && !["accepted", "negotiating"].includes(String(deal.status))) {
    throw new Error("Somente negociações aceitas podem ser concluídas.");

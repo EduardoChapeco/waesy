@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { calculateAnacRights } from './travel-reaccommodation.functions';
 import { calculateInstallmentPlan } from './travel-installments.functions';
+import { analyzeFlightDifferences, compareItineraries } from '@/lib/tourism/flight-connections';
 
 describe('Travel Flights, ANAC 400 & Legal Contracts Test Suite', () => {
  describe('Malha Aérea & Segmentos de Voo (GDS / PNR)', () => {
@@ -101,4 +102,88 @@ describe('Travel Flights, ANAC 400 & Legal Contracts Test Suite', () => {
  expect(sha256).toMatch(/^[a-f0-9]{64}$/);
  });
  });
+
+  describe('Comparação de Itinerários & Análise Determinística de Reacomodação (W1)', () => {
+    it('deve calcular diff exato entre segmentos originais e alterados', () => {
+      const orig = [
+        {
+          segment_order: 1,
+          airline_code: 'LA',
+          flight_number: 'LA3000',
+          origin_iata: 'GRU',
+          destination_iata: 'MIA',
+          departure_at: '2026-11-10T10:00:00Z',
+          arrival_at: '2026-11-10T18:30:00Z',
+          baggage: '1x 23kg',
+          cabin: 'economy',
+          record_locator: 'ABC123',
+        },
+      ];
+      const comp = [
+        {
+          segment_order: 1,
+          airline_code: 'AA',
+          flight_number: 'AA904',
+          origin_iata: 'GRU',
+          destination_iata: 'MCO',
+          departure_at: '2026-11-10T12:00:00Z',
+          arrival_at: '2026-11-10T21:00:00Z',
+          baggage: 'Sem bagagem',
+          cabin: 'premium_economy',
+          record_locator: 'XYZ999',
+        },
+      ];
+
+      const diff = compareItineraries(orig, comp);
+      expect(diff.has_changes).toBe(true);
+      expect(diff.segment_count_delta).toBe(0);
+      expect(diff.segmentsDiff[0]?.airline_changed).toBe(true);
+      expect(diff.segmentsDiff[0]?.destination_changed).toBe(true);
+      expect(diff.segmentsDiff[0]?.departure_delta_minutes).toBe(120);
+      expect(diff.segmentsDiff[0]?.baggage_changed).toBe(true);
+      expect(diff.segmentsDiff[0]?.cabin_changed).toBe(true);
+    });
+
+    it('deve pontuar risco elevado ao mudar aeroporto e incluir pernoite > 8h', () => {
+      const orig = [
+        {
+          segment_order: 1,
+          origin_iata: 'GRU',
+          destination_iata: 'MIA',
+          departure_at: '2026-11-10T10:00:00Z',
+          arrival_at: '2026-11-10T18:30:00Z',
+          baggage: '1x 23kg',
+          cabin: 'economy',
+        },
+      ];
+      const alt = [
+        {
+          segment_order: 1,
+          origin_iata: 'GRU',
+          destination_iata: 'PTY',
+          departure_at: '2026-11-10T09:00:00Z',
+          arrival_at: '2026-11-10T16:00:00Z',
+          baggage: '1x 23kg',
+          cabin: 'economy',
+        },
+        {
+          segment_order: 2,
+          origin_iata: 'PTY',
+          destination_iata: 'FLL',
+          departure_at: '2026-11-11T08:00:00Z',
+          arrival_at: '2026-11-11T11:30:00Z',
+          baggage: '1x 23kg',
+          cabin: 'economy',
+        },
+      ];
+
+      const analysis = analyzeFlightDifferences(orig, alt);
+      expect(analysis.airport_changed).toBe(true);
+      expect(analysis.overnight_connection).toBe(true);
+      expect(analysis.segment_count_delta).toBe(1);
+      expect(analysis.risk_score).toBeGreaterThanOrEqual(75);
+      expect(analysis.warnings.length).toBeGreaterThanOrEqual(3);
+      expect(analysis.deterministic_summary).toContain('Risco');
+    });
+  });
 });

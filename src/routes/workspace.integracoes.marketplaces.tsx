@@ -43,7 +43,7 @@ import { formatMoney } from "@/lib/money";
 import { formatDateTime } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
 import { getStoreSettings } from "@/services/store.functions";
-import { getNicheSemantics } from "@/lib/niche-semantics";
+import { getNicheSemantics } from "@/lib/niches/niche-semantics";
 
 export const Route = createFileRoute("/workspace/integracoes/marketplaces")({
   head: () => ({

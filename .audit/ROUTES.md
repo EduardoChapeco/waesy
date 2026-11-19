@@ -1,6 +1,6 @@
 # ROUTES.md — Inventário de Rotas, Telas, Shells e Nichos (P04)
 
-**Total de Rotas Analisadas:** 440
+**Total de Rotas Analisadas:** 477  
 **Status do Check C27 (Rotas Órfãs/Mortas):** 🟢 0 (Todas as rotas mapeadas possuem componentes ativos no sistema TanStack Router)
 
 ---
@@ -8,18 +8,18 @@
 ## 1. Distribuição por Shell de Navegação
 | Shell | Quantidade de Rotas | Proporção |
 |---|---|---|
-| **Admin Master Shell** | 38 | 8.6% |
-| **Mobile Native Shell** | 10 | 2.3% |
-| **Headless API / MCP** | 24 | 5.5% |
-| **Storefront Shell (Responsive B2C)** | 179 | 40.7% |
-| **Workspace Shell (Desktop/Mobile Split)** | 189 | 43.0% |
+| **Admin Master Shell** | 40 | 8.4% |
+| **Headless API / MCP** | 35 | 7.3% |
+| **Mobile Native Shell** | 11 | 2.3% |
+| **Storefront Shell (Responsive B2C)** | 189 | 39.6% |
+| **Workspace Shell (Desktop/Mobile Split)** | 202 | 42.3% |
 
 ---
 
 ## 2. Distribuição por Nicho de Mercado
 | Nicho | Quantidade de Rotas |
 |---|---|
-| **Núcleo Genérico (Cross-Niche)** | 393 |
+| **Núcleo Genérico (Cross-Niche)** | 430 |
 | **Turismo & Viagens** | 37 |
 | **Eventos & Festas** | 6 |
 | **Gastronomia & Restaurantes** | 4 |
@@ -48,6 +48,7 @@
 | `/admin-master` | `src/routes/admin-master.index.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
 | `/admin-master/integracoes` | `src/routes/admin-master.integracoes.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
 | `/admin-master/kyc` | `src/routes/admin-master.kyc.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
+| `/admin-master/landings` | `src/routes/admin-master.landings.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
 | `/admin-master/logistica` | `src/routes/admin-master.logistica.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
 | `/admin-master/logs` | `src/routes/admin-master.logs.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
 | `/admin-master/lojas` | `src/routes/admin-master.lojas.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
@@ -58,6 +59,5 @@
 | `/admin-master/portal-completo` | `src/routes/admin-master.portal-completo.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
 | `/admin-master/pre-cadastro` | `src/routes/admin-master.pre-cadastro.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
 | `/admin-master/seguranca/certificados/$id` | `src/routes/admin-master.seguranca.certificados.$id.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/seguranca/certificados` | `src/routes/admin-master.seguranca.certificados.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Desktop/Geral |
 
-*(Relatório completo disponível em .audit/ROUTES.json com 100% das 440 rotas)*
+*(Relatório completo disponível em .audit/ROUTES.json com 100% das 477 rotas)*

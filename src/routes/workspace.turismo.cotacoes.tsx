@@ -25,6 +25,7 @@ import {
   type TransferDTO,
   type TravelProposalOptionDTO,
 } from "@/services/travel-proposal.functions";
+import { analyzeIncomingOfferAgainstPipelineFn } from "@/services/opportunity-radar.functions";
 import { listDestinations } from "@/services/travel-catalog.functions";
 import { PassHubLiveQuoterPanel } from "@/components/tourism/quotes/passhub-live-quoter-panel";
 import { getStoreSettings } from "@/services/store.functions";
@@ -34,7 +35,7 @@ import { TravelAiImporterBanner } from "@/components/tourism/promotional-flyer/t
 import { ingestTravelDocument } from "@/services/travel-canonical-pipeline.functions";
 import { formatDate } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
-import { formatMoney } from "@/lib/money";
+import { formatMoney, parseReaisToCents as parseQuoteReaisToCents } from "@/lib/money";
 
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet } from "@/components/workspace/workspace-dashboard-sheet";
@@ -86,25 +87,9 @@ const TRIP_TYPE_OPTIONS = [
  { id: "car_rental", label: "Locação de Veículos & Transfers" },
  { id: "corporate_b2b", label: "Corporativo B2B (Faturado / Política)" },
  { id: "cruise", label: "Cruzeiro Marítimo" },
- { id: "bus", label: "Excursão Rodoviária / Ônibus" },
- { id: "visa_assistance", label: "Assessoria de Visto / Passaporte" },
+  { id: "bus", label: "Excursão Rodoviária / Ônibus" },
+  { id: "visa_assistance", label: "Assessoria de Visto / Passaporte" },
 ];
-
-function parseQuoteReaisToCents(raw: string): number | null {
-  const trimmed = (raw || "").trim();
-  if (!trimmed) return null;
-  const cleaned = trimmed.replace(/[^\d.,]/g, "");
-  if (!cleaned) return null;
-  let normalized = cleaned;
-  if (cleaned.includes(",")) {
-    normalized = cleaned.replace(/\./g, "").replace(",", ".");
-  } else if (/^\d{1,3}(\.\d{3})+$/.test(cleaned)) {
-    normalized = cleaned.replace(/\./g, "");
-  }
-  const num = Number.parseFloat(normalized);
-  if (!Number.isFinite(num) || num < 0) return null;
-  return Math.round(num * 100);
-}
 
 export default function AgencyQuotesPage() {
  const { quotes: initialQuotes, destinations: initialDestinations, store } = ((Route.useLoaderData?.() as any) || {});
@@ -131,6 +116,47 @@ export default function AgencyQuotesPage() {
  const [editStatus, setEditStatus] = useState<"new" | "analyzing" | "quoted" | "won" | "lost">("new");
  const [editAgencyNotes, setEditAgencyNotes] = useState("");
  const [editQuoteAmount, setEditQuoteAmount] = useState("");
+ const resolvedManagingAmountCents =
+   parseQuoteReaisToCents(editQuoteAmount) ?? managingQuote?.quote_amount_cents ?? 0;
+
+ const quoteRadarQuery = useQuery({
+   queryKey: [
+     "quote-radar-analysis",
+     managingQuote?.id,
+     managingQuote?.destination_city,
+     resolvedManagingAmountCents,
+     managingQuote?.departure_date,
+   ],
+   queryFn: () =>
+     analyzeIncomingOfferAgainstPipelineFn({
+       data: {
+         title: managingQuote?.protocol_number
+           ? `Cotação ${managingQuote.protocol_number} — ${managingQuote.destination_city}`
+           : `Cotação ${managingQuote?.destination_city || ""}`,
+         destinationCity: managingQuote!.destination_city,
+         destinationIata: managingQuote?.destination_iata || null,
+         originCity: managingQuote?.origin_city || null,
+         originIata: managingQuote?.origin_iata || null,
+         departureDate: managingQuote?.departure_date || null,
+         returnDate: managingQuote?.return_date || null,
+         quotedAdultsCount: Math.max(1, Number(managingQuote?.adults_count || 2)),
+         quotedChildrenAges: Array.isArray(managingQuote?.children_ages) ? managingQuote.children_ages : [],
+         totalPriceCents: Math.max(0, Number(resolvedManagingAmountCents || 0)),
+         excludeLeadId: managingQuote?.lead_id || null,
+         sourceType: "agency_quote",
+         sourceQuoteId: managingQuote?.id || null,
+         persistMatches: false,
+         minScore: 55,
+       },
+     }),
+   enabled: Boolean(
+     managingQuote?.id &&
+       managingQuote?.destination_city &&
+       managingQuote.destination_city.trim().length >= 2 &&
+       Number(resolvedManagingAmountCents || 0) > 0,
+   ),
+   staleTime: 30_000,
+ });
  const [isFlightSimulatorOpen, setIsFlightSimulatorOpen] = useState(false);
  const [selectedQuoteSegments, setSelectedQuoteSegments] = useState<{
    flights: FlightSegmentDTO[];
@@ -215,8 +241,17 @@ export default function AgencyQuotesPage() {
  },
  });
  },
- onSuccess: () => {
+ onSuccess: (res: any) => {
  toast.success("Lead atualizado com sucesso!");
+ if (Number(res?.matchedLeadsCount || 0) > 0) {
+ toast.info(`Radar encontrou ${res.matchedLeadsCount} lead(s) compatíveis com esta cotação!`, {
+ action: {
+ label: "Ver no Radar",
+ onClick: () => navigate({ to: "/workspace/turismo/oportunidades" }),
+ },
+ });
+ }
+ queryClient.invalidateQueries({ queryKey: ["unified-radar-opportunities"] });
  invalidateAllQuoteCaches();
  setManagingQuote(null);
  },
@@ -370,13 +405,17 @@ export default function AgencyQuotesPage() {
      },
    });
  },
- onSuccess: (res) => {
+ onSuccess: (res: any) => {
  queryClient.invalidateQueries({ queryKey: ["agency-travel-quotes"] });
  queryClient.invalidateQueries({ queryKey: ["agency-proposals"] });
+ queryClient.invalidateQueries({ queryKey: ["unified-radar-opportunities"] });
  queryClient.invalidateQueries({ queryKey: ["crm-leads"] });
  queryClient.invalidateQueries({ queryKey: ["lead-dossier"] });
  queryClient.invalidateQueries({ queryKey: ["customer-360"] });
  toast.success("Lâmina criada! Abrindo Studio...");
+ if (Number(res?.matchedLeadsCount || 0) > 0) {
+   toast.info(`Radar detectou ${res.matchedLeadsCount} lead(s) compatíveis para esta proposta.`);
+ }
  navigate({ to: "/workspace/turismo/propostas/$id", params: { id: res.id } });
  },
  onError: (err: any) => toast.error(err?.message || "Erro ao criar proposta."),
@@ -1085,6 +1124,7 @@ export default function AgencyQuotesPage() {
  onCreated={() => {
  queryClient.invalidateQueries({ queryKey: ["agency-travel-quotes"] });
  queryClient.invalidateQueries({ queryKey: ["agency-proposals"] });
+ queryClient.invalidateQueries({ queryKey: ["unified-radar-opportunities"] });
  }}
  />
 
@@ -1104,23 +1144,36 @@ export default function AgencyQuotesPage() {
              Atualize o estágio da cotação, valores do pacote e histórico de atendimento.
            </SheetDescription>
          </div>
-         {managingQuote?.contact_whatsapp && (
-           <Button
-             variant="outline"
-
-             className="h-11 min-h-11 px-4 gap-2 text-xs text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 rounded-lg focus-visible:ring-2 focus-visible:ring-emerald-500 cursor-pointer"
-             asChild
-           >
-             <a
-               href={`https://wa.me/${managingQuote.contact_whatsapp.replace(/\D/g, "")}`}
-               target="_blank"
-               rel="noopener noreferrer"
+         <div className="flex flex-wrap items-center gap-2">
+           {managingQuote?.lead_id && (
+             <Button
+               variant="outline"
+               className="h-11 min-h-11 px-4 gap-2 text-xs rounded-lg focus-visible:ring-2 focus-visible:ring-ring"
+               asChild
              >
-               <WhatsappLogo size={14} weight="bold" />
-               <span>Conversar no WhatsApp</span>
-             </a>
-           </Button>
-         )}
+               <Link to="/workspace/turismo" search={{ leadId: managingQuote.lead_id } as any}>
+                 <ExternalLink className="size-3.5" />
+                 <span>Abrir Lead</span>
+               </Link>
+             </Button>
+           )}
+           {managingQuote?.contact_whatsapp && (
+             <Button
+               variant="outline"
+               className="h-11 min-h-11 px-4 gap-2 text-xs text-success border-success/30 hover:bg-success/10 rounded-lg focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+               asChild
+             >
+               <a
+                 href={`https://wa.me/${managingQuote.contact_whatsapp.replace(/\D/g, "")}`}
+                 target="_blank"
+                 rel="noopener noreferrer"
+               >
+                 <WhatsappLogo size={14} weight="bold" />
+                 <span>Conversar no WhatsApp</span>
+               </a>
+             </Button>
+           )}
+         </div>
        </div>
      </SheetHeader>
 
@@ -1395,7 +1448,7 @@ export default function AgencyQuotesPage() {
                    const cleanPhone = (managingQuote.contact_whatsapp || "").replace(/\D/g, "");
                    window.open(`https://wa.me/55${cleanPhone}?text=${encodeURIComponent(`Olá ${managingQuote.contact_name}! Sou da agência de turismo no Waesy. Recebi sua solicitação para ${managingQuote.destination_city} e preparei opções personalizadas!`)}`, "_blank");
                  }}
-                 className="h-11 min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-md text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                 className="h-11 min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-md text-success hover:bg-success/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                  title="Abrir WhatsApp do Cliente"
                >
                  <WhatsappLogo size={16} weight="fill" />
@@ -1457,6 +1510,75 @@ export default function AgencyQuotesPage() {
            />
          </div>
        </div>
+
+       {Number(resolvedManagingAmountCents || 0) > 0 && managingQuote?.destination_city && (
+         <div className="p-4 rounded-2xl bg-muted/30 space-y-3 text-xs">
+           <div className="flex flex-wrap items-center justify-between gap-2">
+             <span className="font-bold text-foreground">Inteligência de Preço & Radar</span>
+             <Link
+               to="/workspace/turismo/oportunidades"
+               className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1 min-h-11 px-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+             >
+               <span>Abrir Radar</span>
+               <ExternalLink className="size-3.5" />
+             </Link>
+           </div>
+
+           {quoteRadarQuery.isLoading ? (
+             <p className="text-muted-foreground">Analisando histórico e leads compatíveis...</p>
+           ) : quoteRadarQuery.data ? (
+             <div className="space-y-3">
+               {quoteRadarQuery.data.historicalCheck && (
+                 <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-background/70 px-3 py-2">
+                   <span className="text-muted-foreground">
+                     {quoteRadarQuery.data.historicalCheck.verdictLabelPt}
+                   </span>
+                   <Badge
+                     variant={quoteRadarQuery.data.historicalCheck.verdict === "great_deal" ? "success" : "secondary"}
+                     className="text-2xs shrink-0"
+                   >
+                     {quoteRadarQuery.data.historicalCheck.sampleCount >= 2 &&
+                     quoteRadarQuery.data.historicalCheck.historicalSavingsPct != null
+                       ? `${quoteRadarQuery.data.historicalCheck.historicalSavingsPct > 0 ? "-" : "+"}${Math.abs(Math.round(quoteRadarQuery.data.historicalCheck.historicalSavingsPct))}% histórico`
+                       : `${quoteRadarQuery.data.historicalCheck.sampleCount} amostras`}
+                   </Badge>
+                 </div>
+               )}
+
+               {quoteRadarQuery.data.matchedLeads.length > 0 ? (
+                 <div className="divide-y divide-border/50 rounded-lg bg-background/70 overflow-hidden">
+                   {quoteRadarQuery.data.matchedLeads.slice(0, 4).map((ml, idx) => (
+                     <div
+                       key={`${ml.leadId || ml.interestId || ml.fullName}-${idx}`}
+                       className="px-3 py-2 flex items-center justify-between gap-2"
+                     >
+                       <div className="min-w-0">
+                         <p className="font-semibold text-foreground truncate">{ml.fullName}</p>
+                         <p className="text-2xs text-muted-foreground truncate">
+                           {ml.matchScore}% match ·{" "}
+                           {ml.requiresChildRequote ? `Simulado CHD ${formatMoney(ml.effectiveTotalCents)}` : formatMoney(ml.effectiveTotalCents)}
+                           {ml.roomsSummary ? ` · ${ml.roomsSummary}` : ""}
+                         </p>
+                       </div>
+                       {ml.leadId && (
+                         <Button asChild size="sm" variant="outline" className="h-11 min-h-11 px-3 text-2xs shrink-0">
+                           <Link to="/workspace/turismo" search={{ leadId: ml.leadId } as any}>
+                             Abrir Lead
+                           </Link>
+                         </Button>
+                       )}
+                     </div>
+                   ))}
+                 </div>
+               ) : (
+                 <p className="text-muted-foreground">
+                   Nenhum outro lead ativo no funil atingiu score mínimo com estes critérios.
+                 </p>
+               )}
+             </div>
+           ) : null}
+         </div>
+       )}
      </div>
 
      <div className="p-4 border-t border-border/60 bg-muted/20 flex items-center justify-between gap-2 shrink-0">

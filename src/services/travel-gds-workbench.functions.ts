@@ -25,6 +25,8 @@ import {
   resolveStoreInfotravelCredentials,
   sanitizeInfotravelSearchText,
   type InfoTravelOperatorSlug,
+  INFOTRAVEL_OPERATOR_SLUGS as INFOTRAVEL_OPERATOR_SET,
+  normalizeInfoTravelOperatorSlug as normalizeInfoTravelSlug,
 } from "@/services/infotravel";
 import type { TravelOfferDTO } from "@/types/corporate-travel";
 
@@ -88,33 +90,6 @@ export const TRAVEL_GDS_PROVIDER_CATALOG = [
 ] as const;
 
 export type TravelGdsProviderCode = (typeof TRAVEL_GDS_PROVIDER_CATALOG)[number]["code"];
-
-const INFOTRAVEL_OPERATOR_SET = new Set<string>([
-  "infotravel",
-  "infotravel_default",
-  "orinter",
-  "frt",
-  "incomum",
-  "cativa",
-  "befly",
-  "confianca",
-]);
-
-function normalizeInfoTravelSlug(code: string): InfoTravelOperatorSlug {
-  const clean = code.toLowerCase().replace(/^infotravel_/, "");
-  if (
-    clean === "orinter" ||
-    clean === "frt" ||
-    clean === "incomum" ||
-    clean === "cativa" ||
-    clean === "befly" ||
-    clean === "confianca" ||
-    clean === "infotravel_default"
-  ) {
-    return clean;
-  }
-  return "infotravel_default";
-}
 
 function parseVaultObject(vaultBlob: unknown): Record<string, any> {
   if (typeof vaultBlob !== "string" || !vaultBlob.trim()) return {};

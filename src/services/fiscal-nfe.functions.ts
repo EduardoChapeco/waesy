@@ -81,6 +81,49 @@ export const getStoreNFeConfig = createServerFn({ method: "GET" })
       return null;
     }
 
+    if (!config) {
+      // Unificação SSOT: se não houver configuração fiscal criada, pré-carrega da loja e compliance
+      try {
+        const [storeRes, complianceRes] = await Promise.all([
+          supabase
+            .from("stores")
+            .select("name, cnpj, email, settings")
+            .eq("id", targetStoreId)
+            .maybeSingle(),
+          supabase
+            .from("marketplace_compliance")
+            .select("*")
+            .eq("store_id", targetStoreId)
+            .maybeSingle(),
+        ]);
+
+        const storeData = storeRes?.data;
+        const comp = complianceRes?.data;
+        const settings = (storeData?.settings as Record<string, any>) || {};
+
+        return {
+          store_id: targetStoreId,
+          provider: "focus_nfe",
+          api_token: null,
+          environment: "sandbox",
+          cnpj: comp?.cnpj || storeData?.cnpj || "",
+          inscricao_municipal: settings.municipal_tax_id || null,
+          inscricao_estadual: comp?.state_registration || settings.state_registration || settings.state_tax_id || null,
+          razao_social: comp?.legal_name || settings.corporate_name || storeData?.name || "",
+          nome_fantasia: comp?.trade_name || settings.trade_name || storeData?.name || null,
+          regime_tributario: (settings.tax_regime as TaxRegime) || "simples_nacional",
+          aliquota_iss: 2.0,
+          codigo_servico_municipal: "09.01",
+          serie_nfe: "1",
+          proximo_numero: 1,
+          is_active: false,
+          accountant_email: comp?.sac_email || storeData?.email || null,
+        };
+      } catch {
+        return null;
+      }
+    }
+
     return config as StoreNFeConfigDTO | null;
   });
 
@@ -152,6 +195,46 @@ export const saveStoreNFeConfig = createServerFn({ method: "POST" })
         contract_name: "saveStoreNFeConfig",
       });
       throw new Error(`Erro ao salvar configurações fiscais: ${error.message}`);
+    }
+
+    // Sincronização Bilateral SSOT: atualiza dados centrais na tabela stores e compliance
+    try {
+      const { data: currentStore } = await supabase
+        .from("stores")
+        .select("settings")
+        .eq("id", targetStoreId)
+        .maybeSingle();
+
+      const existingSettings = (currentStore?.settings as Record<string, any>) || {};
+      const updatedSettings = {
+        ...existingSettings,
+        corporate_name: data.razao_social.trim(),
+        trade_name: data.nome_fantasia ? data.nome_fantasia.trim() : existingSettings.trade_name,
+        state_registration: data.inscricao_estadual || existingSettings.state_registration || null,
+        state_tax_id: data.inscricao_estadual || existingSettings.state_tax_id || null,
+        municipal_tax_id: data.inscricao_municipal || existingSettings.municipal_tax_id || null,
+        tax_regime: data.regime_tributario,
+      };
+
+      await supabase
+        .from("stores")
+        .update({
+          cnpj: payload.cnpj,
+          settings: updatedSettings,
+        })
+        .eq("id", targetStoreId);
+
+      await supabase
+        .from("marketplace_compliance")
+        .update({
+          legal_name: data.razao_social.trim(),
+          trade_name: data.nome_fantasia ? data.nome_fantasia.trim() : null,
+          cnpj: payload.cnpj,
+          state_registration: data.inscricao_estadual || null,
+        })
+        .eq("store_id", targetStoreId);
+    } catch (syncErr) {
+      console.warn("[fiscal-nfe] Aviso de sincronização bilateral SSOT:", syncErr);
     }
 
     return saved;

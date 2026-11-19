@@ -16,7 +16,7 @@ import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
 import { listPublicJobs, type JobItemDTO } from "@/services/jobs.functions";
 import { EmptyState } from "@/components/state/states";
-import { resolveNicheDepartments } from "@/lib/niche-helpers";
+import { resolveNicheDepartments } from "@/lib/niches/niche-helpers";
 import { findProfessionByTitle } from "@/lib/data/professions-catalog";
 import { formatMoney } from "@/lib/money";
 import { ProfessionSearchDialog } from "@/components/admin/professions/profession-search-dialog";

@@ -5,7 +5,7 @@ import {
   searchHotelsCatalog,
   getHotelByNameOrSlug,
 } from "@/lib/data/hotels-resorts-catalog";
-import { CANONICAL_DESTINATIONS, searchCanonicalDestinations } from "@/lib/destinations-catalog";
+import { CANONICAL_DESTINATIONS, searchCanonicalDestinations } from "@/lib/tourism/destinations-catalog";
 import { MinedHotelStructuredSchema } from "@/services/hotel-mining.functions";
 
 describe("Ecossistema Canônico de Hotéis, Resorts e Destinos (SSOT)", () => {

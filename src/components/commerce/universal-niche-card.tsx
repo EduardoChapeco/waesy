@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   MapPin,
@@ -339,6 +339,12 @@ export function UniversalNicheCard({
   const itemNiche = resolveClassifiedNiche(item);
   const activeNicheId = forcedNiche || itemNiche.id || item.niche_id || "retail";
   const img = getClassifiedCover(item);
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [img]);
+
   const targetPhone = item.contact_whatsapp || item.whatsapp || item.profiles?.phone;
 
   // Resolve as 2 pílulas canônicas para este nicho
@@ -450,11 +456,12 @@ export function UniversalNicheCard({
             className="block size-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label={`Ver detalhes de ${item.title}`}
           >
-            {img ? (
+            {img && !imgError ? (
               <div className="relative size-full overflow-hidden">
                 <img
                   src={img}
                   alt={item.title}
+                  onError={() => setImgError(true)}
                   className="relative size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none ease-out"
                   loading="lazy"
                 />
@@ -543,14 +550,14 @@ export function UniversalNicheCard({
       </div>
 
       {/* Rodapé Comercial: Preço à esquerda + CTA Primário Proeminente à direita */}
-      <div className="pt-4 border-t border-border flex items-center justify-between gap-3 mt-4">
+      <div className="pt-4 border-t border-border flex flex-wrap items-center justify-between gap-3 mt-4">
         {/* Bloco de Preço */}
-        <div className="flex flex-col min-w-0">
+        <div className="flex flex-col min-w-0 max-w-full">
           <span className="text-xs text-muted-foreground font-medium leading-none mb-1">
             A partir de
           </span>
-          <div className="flex items-baseline gap-1">
-            <span className="text-xl sm:text-2xl font-bold font-mono text-foreground tracking-tight">
+          <div className="flex flex-wrap items-baseline gap-1 min-w-0">
+            <span className="text-lg sm:text-xl font-bold font-mono text-foreground tracking-tight break-words">
               {priceCents > 0 ? formatMoney(priceCents) : "Consulte"}
             </span>
             {priceSuffix && (

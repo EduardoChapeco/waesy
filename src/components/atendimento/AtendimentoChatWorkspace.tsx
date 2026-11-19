@@ -1,12 +1,31 @@
 import { cn } from "@/lib/utils";
+import { readFileAsDataUrl } from "@/lib/media-utils";
 import { Link as RouterLink } from "@tanstack/react-router";
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { WhatsAppMarkdownText } from "@/components/atendimento/WhatsAppMarkdownText";
+import {
+  createCoalescedController,
+  patchThreadListOnMessageInsert,
+  patchThreadListOnThreadUpdate,
+} from "@/lib/chat-thread-realtime";
 import { TransferChatThreadModal } from "@/components/chat/TransferChatThreadModal";
 import { QuickAnswersManagerModal } from "@/components/chat/QuickAnswersManagerModal";
 import { ScheduleWhatsAppMessageModal } from "@/components/chat/ScheduleWhatsAppMessageModal";
 import { WhatsAppVoiceStudioModal } from "@/components/chat/WhatsAppVoiceStudioModal";
-import { transcribeWhatsAppAudioMessage } from "@/services/whatsapp-voice-ai.functions";
+import {
+  analyzeChatMediaWithAi,
+  transcribeWhatsAppAudioMessage,
+} from "@/services/whatsapp-voice-ai.functions";
+import {
+  computeSlaAlertsSummary,
+  computeThreadSlaStatus,
+  type SlaAlertsSummary,
+} from "@/lib/sla-metrics";
+import {
+  getContactScopeLabel,
+  isContactScopeSuppressed,
+} from "@/lib/whatsapp-contact-scope";
 import { listStoreQuickAnswers, interpolateTemplateVariables } from "@/services/chat-operations.functions";
 import { listTeamMembers, toggleAgentPresence } from "@/services/admin-team.functions";
 import {
@@ -14,6 +33,7 @@ import {
   getChatMessages,
   sendChatMessage,
   assignChatThread,
+  convertChatThreadToCrmLead,
   updateTicketStatus,
   archiveChatThread,
   clearChatThreadMessagesLocal,
@@ -24,6 +44,8 @@ import {
   listChatContactDeletionRequests,
   generateTourismAiCopilotReply,
   generateSmartContextualAiReply,
+  generateOmnichannelCopilotInsight,
+  autoFillLeadDossierFromChatAi,
   detectStaffFollowUpPromise,
   toggleChatThreadStaffVisibility,
   getWhatsAppMediaBase64,
@@ -34,7 +56,7 @@ import {
   toggleIntranetMilestone,
   getStoreIntranetSalesSpreadsheet,
 } from "@/services/intranet.functions";
-import { getNicheSemantics } from "@/lib/niche-semantics";
+import { getNicheSemantics } from "@/lib/niches/niche-semantics";
 import { getRealtimeChannel } from "@/services/realtime-channel";
 import { getClientActiveTenant } from "@/lib/context-auth";
 import { getBrowserClient } from "@/lib/supabase";
@@ -123,13 +145,13 @@ import { listSdrChatSessions, type SdrChatSessionDTO } from "@/services/ai-sdr.f
 import {
   listWorkspaceWhatsAppInstances,
   syncWhatsAppChatsFromEvolution,
+  syncWhatsAppDeltaNow,
   type WhatsAppChannelInstanceDTO,
 } from "@/services/whatsapp-channel-instances.functions";
 import { Link } from "@tanstack/react-router";
 import { TransferTicketDialog } from "@/components/chat/TransferTicketDialog";
 import { QuickRepliesMenu, type QuickReplyItem } from "@/components/chat/QuickRepliesMenu";
 import { ThreadTagsPicker, resolveTagPillClass } from "@/components/chat/ThreadTagsPicker";
-import { SmartPhoneText } from "@/components/atendimento/SmartPhoneText";
 import {
   listChatQuickReplies,
   listStoreTagCatalog,
@@ -146,6 +168,15 @@ import {
   isSyntheticMetaLid,
   type ClassifiedChatFile,
 } from "@/lib/chat-media-attachment";
+import {
+  clearCachedThreadMessages,
+  getCachedThreadList,
+  getCachedThreadMessages,
+  getLatestMessageCursor,
+  mergeMessagesIncremental,
+  setCachedThreadList,
+  setCachedThreadMessages,
+} from "@/lib/chat-client-cache";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { StatefulNavIcon } from "@/components/ui/stateful-nav-icon";
 import {
@@ -237,8 +268,10 @@ function MessageDeliveryStatusIcon({
 import { ArtifactInteractiveTable } from "@/components/chat/artifacts/ArtifactInteractiveTable";
 import {
   ChatQuickComposerModals,
+  type QuickComposerModalKind,
   type StructuredDispatchPayload,
 } from "@/components/chat/ChatQuickComposerModals";
+import { openOrCreateWhatsAppThreadForLead } from "@/services/chat-quick-actions.functions";
 import {
   Dialog,
   DialogContent,
@@ -251,6 +284,7 @@ import {
 export type AtendimentoChatWorkspaceProps = {
   initialThreads: any[];
   metrics: any;
+  slaAlerts?: SlaAlertsSummary;
   isSupervisor: boolean;
   store: any;
   sdrSessions: SdrChatSessionDTO[];
@@ -258,7 +292,7 @@ export type AtendimentoChatWorkspaceProps = {
   whatsappInstances: WhatsAppChannelInstanceDTO[];
   quickReplies: QuickReplyItem[];
   intranetChannels: any[];
-  searchParams?: { threadId?: string; search?: string; channelInstanceId?: string; storeId?: string };
+  searchParams?: { threadId?: string; search?: string; channelInstanceId?: string; storeId?: string; leadId?: string; phone?: string };
   initialPresence?: 'online' | 'busy' | 'away' | 'offline';
   onSelectChannelInstance?: (channelInstanceId?: string) => void;
 };
@@ -275,6 +309,7 @@ const DEPARTMENT_LABELS: Record<string, string> = {
 export function AtendimentoChatWorkspace({
     initialThreads,
     metrics,
+    slaAlerts: initialSlaAlerts,
     isSupervisor,
     store,
     sdrSessions: initialSdrSessions,
@@ -309,9 +344,7 @@ export function AtendimentoChatWorkspace({
   const [activeHubTab, setActiveHubTab] = useState<"live" | "intranet" | "sdr">("live");
   const [showLiveTimeline, setShowLiveTimeline] = useState(false);
   const [liveComposerTrayOpen, setLiveComposerTrayOpen] = useState(false);
-  const [liveModalOverride, setLiveModalOverride] = useState<
-    "form" | "event" | "sticker" | "spreadsheet" | "invoice" | "boleto" | "contract" | "quote" | "image_card" | null
-  >(null);
+  const [liveModalOverride, setLiveModalOverride] = useState<QuickComposerModalKind | null>(null);
 
   // Estados da Intranet Corporativa (Canais estilo Slack + Linha do Tempo + Planilhas)
   const [intranetScopeFilter, setIntranetScopeFilter] = useState<"all" | "public" | "private">("all");
@@ -365,7 +398,8 @@ export function AtendimentoChatWorkspace({
   const [channelFilter, setChannelFilter] = useState<string>(
     (searchParams as any)?.channelInstanceId || "all",
   );
-  const [statusFilter, setStatusFilter] = useState<"all" | "direct" | "groups" | "open" | "waiting" | "archived">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "direct" | "groups" | "open" | "waiting" | "forgotten" | "archived">("all");
+  const [forgottenLeadsCount, setForgottenLeadsCount] = useState<number>(initialSlaAlerts?.forgottenLeadsCount || 0);
   const [deptFilter, setDeptFilter] = useState("all");
   const [selectedTagFilter, setSelectedTagFilter] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState((searchParams as any).search || "");
@@ -376,11 +410,22 @@ export function AtendimentoChatWorkspace({
     staleTime: 30000,
   });
 
-  // Instâncias de WhatsApp
+  // Instâncias de WhatsApp & Estado Ao Vivo Realtime
   const [whatsappInstances, setWhatsappInstances] = useState<WhatsAppChannelInstanceDTO[]>(
     initialInstances || [],
   );
   const [isSyncingWhatsApp, setIsSyncingWhatsApp] = useState(false);
+  const [isDeltaSyncing, setIsDeltaSyncing] = useState(false);
+  const [realtimeStatus, setRealtimeStatus] = useState<"connecting" | "live" | "reconnecting">("connecting");
+  const realtimeStatusRef = useRef(realtimeStatus);
+  useEffect(() => {
+    realtimeStatusRef.current = realtimeStatus;
+  }, [realtimeStatus]);
+  const deltaInFlightRef = useRef(false);
+  const channelFilterRef = useRef(channelFilter);
+  useEffect(() => {
+    channelFilterRef.current = channelFilter;
+  }, [channelFilter]);
 
   const handleChangePresence = async (nextPresence: "online" | "busy" | "away" | "offline") => {
     const prev = agentPresence;
@@ -420,22 +465,38 @@ export function AtendimentoChatWorkspace({
   const handleSyncWhatsApp = async () => {
     setIsSyncingWhatsApp(true);
     try {
-      const res = await syncWhatsAppChatsFromEvolution({ data: { storeId: store?.id, forceImport: true } });
+      const res: any = await syncWhatsAppChatsFromEvolution({
+        data: {
+          storeId: store?.id,
+          ...(channelFilter !== "all" ? { instanceId: channelFilter } : {}),
+          forceImport: true,
+        },
+      });
       if (activeThreadIdRef.current) {
         reloadActiveMessages(activeThreadIdRef.current);
       }
-      const threadsRes = await listChatThreads({
-        data: {
-          store_id: store?.id,
-          channel_instance_id: channelFilter === "all" ? undefined : channelFilter,
-        },
-      });
+      const [threadsRes, instList] = await Promise.all([
+        listChatThreads({
+          data: {
+            store_id: store?.id,
+            channel_instance_id: channelFilter === "all" ? undefined : channelFilter,
+          },
+        }),
+        store?.id
+          ? listWorkspaceWhatsAppInstances({ data: { store_id: store.id } }).catch(() => null)
+          : Promise.resolve(null),
+      ]);
       if (threadsRes?.threads) {
         setThreads(threadsRes.threads);
       }
+      if (Array.isArray(instList)) {
+        setWhatsappInstances(instList);
+      }
+      const importedMsgCount = Number(res?.importedMessages || 0);
+      const importedChatCount = Number(res?.importedCount || 0);
       toast.success(
-        res?.importedCount
-          ? `${res.importedCount} conversas sincronizadas do WhatsApp!`
+        importedChatCount || importedMsgCount
+          ? `Sincronizado: ${importedChatCount} conversa(s) e ${importedMsgCount} mensagem(ns).`
           : "Sincronização concluída. Todas as conversas estão atualizadas."
       );
     } catch (err: any) {
@@ -510,6 +571,7 @@ export function AtendimentoChatWorkspace({
       await clearChatThreadMessagesLocal({
         data: { threadId: activeThread.id, storeId: store.id },
       });
+      clearCachedThreadMessages(store.id, activeThread.id);
       setMessages([]);
       setClearMessagesModalOpen(false);
       const threadsRes = await listChatThreads({ data: { store_id: store.id } }).catch(() => null);
@@ -532,6 +594,7 @@ export function AtendimentoChatWorkspace({
       await deleteChatThreadLocal({
         data: { threadId: activeThread.id, storeId: store.id },
       });
+      clearCachedThreadMessages(store.id, activeThread.id);
       setMessages([]);
       setDeleteThreadModalOpen(false);
       const remainingThreads = threads.filter((t) => t.id !== activeThread.id);
@@ -556,6 +619,7 @@ export function AtendimentoChatWorkspace({
       await deleteChatContactPermanently({
         data: { threadId: activeThread.id, storeId: store.id, deleteFromCrm: true },
       });
+      clearCachedThreadMessages(store.id, activeThread.id);
       setMessages([]);
       setDeleteContactModalOpen(false);
       const remainingThreads = threads.filter((t) => t.id !== activeThread.id);
@@ -794,19 +858,35 @@ export function AtendimentoChatWorkspace({
   const [selectedSdrSession, setSelectedSdrSession] = useState<SdrChatSessionDTO | null>(null);
   const [sdrDrawerOpen, setSdrDrawerOpen] = useState(false);
 
-  // Estados de Conversas
-  const [threads, setThreads] = useState<any[]>(initialThreads || []);
+  // Estados de Conversas (hidrata do cache de sessão se SSR vier vazio, sem zerar histórico entre navegações)
+  const [threads, setThreads] = useState<any[]>(() => {
+    if (initialThreads && initialThreads.length > 0) return initialThreads;
+    const effectiveStoreId = store?.id || (typeof window !== "undefined" ? getClientActiveTenant() : null);
+    return getCachedThreadList(effectiveStoreId) || initialThreads || [];
+  });
   const [activeThreadId, setActiveThreadId] = useState<string | null>(() => {
     if ((searchParams as any)?.threadId) return (searchParams as any).threadId;
     if (typeof window !== "undefined" && window.innerWidth < 768) return null;
-    return (initialThreads && initialThreads.length > 0 ? initialThreads[0]?.id : null) || null;
+    if (initialThreads && initialThreads.length > 0) return initialThreads[0]?.id || null;
+    const effectiveStoreId = store?.id || (typeof window !== "undefined" ? getClientActiveTenant() : null);
+    const cachedList = getCachedThreadList(effectiveStoreId);
+    return (cachedList && cachedList[0]?.id) || null;
   });
 
   useEffect(() => {
-    if (initialThreads) {
+    if (initialThreads && initialThreads.length > 0) {
       setThreads(initialThreads);
+      const effectiveStoreId = store?.id || (typeof window !== "undefined" ? getClientActiveTenant() : null);
+      setCachedThreadList(effectiveStoreId, initialThreads);
     }
-  }, [initialThreads]);
+  }, [initialThreads, store?.id]);
+
+  useEffect(() => {
+    if (threads.length > 0 && statusFilter === "all" && channelFilter === "all") {
+      const effectiveStoreId = store?.id || (typeof window !== "undefined" ? getClientActiveTenant() : null);
+      setCachedThreadList(effectiveStoreId, threads);
+    }
+  }, [threads, statusFilter, channelFilter, store?.id]);
 
   useEffect(() => {
     if (!activeThreadId && threads.length > 0 && typeof window !== "undefined" && window.innerWidth >= 768) {
@@ -814,19 +894,22 @@ export function AtendimentoChatWorkspace({
     }
   }, [threads, activeThreadId]);
 
-  // Client-side fallback defensivo para sincronizar threads com o tenant ativo do workspace
+  // Client-side fallback defensivo para sincronizar threads uma única vez quando SSR chegou vazio
+  const didAttemptEmptyFallbackRef = useRef(false);
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (didAttemptEmptyFallbackRef.current || statusFilter !== "all") return;
     const activeTenant = getClientActiveTenant();
     const effectiveStore = store?.id || activeTenant;
     if (effectiveStore && threads.length === 0) {
+      didAttemptEmptyFallbackRef.current = true;
       listChatThreads({ data: { store_id: effectiveStore } }).then((res) => {
         if (res?.threads && res.threads.length > 0) {
           setThreads(res.threads);
         }
       }).catch(() => {});
     }
-  }, [store?.id, threads.length]);
+  }, [store?.id, threads.length, statusFilter]);
 
   const activeThreadIdRef = useRef<string | null>(activeThreadId);
   useEffect(() => {
@@ -844,6 +927,7 @@ export function AtendimentoChatWorkspace({
   }, [threads]);
 
   const [messages, setMessages] = useState<any[]>([]);
+  const [messagesError, setMessagesError] = useState<string | null>(null);
   const messagesRef = useRef(messages);
   useEffect(() => {
     messagesRef.current = messages;
@@ -856,10 +940,12 @@ export function AtendimentoChatWorkspace({
     if (!effectiveStoreId) return;
     try {
       const sf = statusFilterRef.current;
-      const res = await listChatThreads({
+      const cf = channelFilterRef.current;
+      const res: any = await listChatThreads({
         data: {
           store_id: effectiveStoreId,
-          status: (sf === "waiting" ? "open" : sf) as any,
+          status: sf as any,
+          ...(cf && cf !== "all" ? { channel_instance_id: cf } : {}),
         },
       });
       if (res?.threads) {
@@ -868,30 +954,93 @@ export function AtendimentoChatWorkspace({
           return;
         }
         setThreads(res.threads);
+        if (typeof res?.slaAlerts?.forgottenLeadsCount === "number") {
+          setForgottenLeadsCount(res.slaAlerts.forgottenLeadsCount);
+        }
       }
     } catch (e) {
       console.warn("[atendimento] Erro ao recarregar threads:", e);
     }
   }, [store?.id]);
 
-  // Revalidação em background das mensagens da conversa ativa
-  const reloadActiveMessages = useCallback(async (targetThreadId?: string) => {
-    const tId = targetThreadId || activeThreadIdRef.current;
-    if (!tId) return;
-    try {
-      const res: any = await getChatMessages({ data: { threadId: tId } });
-      if (res?.messages && activeThreadIdRef.current === tId) {
-        if (res.messages.length === 0 && messagesRef.current.length > 0) {
-          console.warn("[atendimento] getChatMessages retornou 0 mensagens inesperadamente; mantendo mensagens ativas em cache.");
+  // Motor unificado de sincronização incremental (elimina duplicidade entre troca de conversa e revalidação)
+  const syncThreadMessagesIncremental = useCallback(
+    async (
+      targetThreadId: string,
+      options?: {
+        forceFull?: boolean;
+        silent?: boolean;
+        initialBaseline?: any[] | null;
+        isCancelled?: () => boolean;
+      },
+    ) => {
+      const activeTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
+      const effectiveStoreId = store?.id || activeTenant;
+      const snapshotBaseline =
+        options?.initialBaseline ||
+        (activeThreadIdRef.current === targetThreadId && messagesRef.current.length > 0
+          ? messagesRef.current
+          : getCachedThreadMessages(effectiveStoreId, targetThreadId)) ||
+        [];
+      const hasBaseline = snapshotBaseline.length > 0;
+      const cursor =
+        !options?.forceFull && hasBaseline ? getLatestMessageCursor(snapshotBaseline) : undefined;
+
+      try {
+        const res: any = await getChatMessages({
+          data: cursor ? { threadId: targetThreadId, afterCreatedAt: cursor } : { threadId: targetThreadId },
+        });
+        if (options?.isCancelled?.() || !res?.messages) return;
+
+        // Re-lê baseline ao vivo após a rede para jamais sobrescrever envios/Realtime em voo
+        const liveBaseline =
+          (activeThreadIdRef.current === targetThreadId && messagesRef.current.length > 0
+            ? messagesRef.current
+            : getCachedThreadMessages(effectiveStoreId, targetThreadId)) || snapshotBaseline;
+
+        const merged =
+          cursor || liveBaseline.length > 0
+            ? mergeMessagesIncremental(liveBaseline, res.messages)
+            : res.messages;
+
+        if (merged.length === 0 && liveBaseline.length > 0) {
           return;
         }
-        setMessages(res.messages);
+        if (merged.length > 0) {
+          setCachedThreadMessages(effectiveStoreId, targetThreadId, merged);
+        }
+        if (activeThreadIdRef.current === targetThreadId && !options?.isCancelled?.()) {
+          setMessages((prev) =>
+            cursor || prev.length > 0 ? mergeMessagesIncremental(prev, res.messages) : merged,
+          );
+          setMessagesError(null);
+        }
+      } catch (e) {
+        if (options?.isCancelled?.() || activeThreadIdRef.current !== targetThreadId) return;
+        if (options?.silent || hasBaseline) {
+          console.warn("[atendimento] Erro ao sincronizar delta de mensagens:", e);
+          return;
+        }
+        console.error("Falha ao carregar mensagens:", e);
+        const msg = e instanceof Error ? e.message : "Erro ao carregar mensagens da conversa.";
+        setMessagesError(msg);
+        toast.error("Erro ao carregar mensagens da conversa.");
       }
-    } catch (e) {
-      console.warn("[atendimento] Erro ao recarregar mensagens:", e);
-    }
-  }, []);
+    },
+    [store?.id],
+  );
 
+  // Revalidação incremental em background (busca apenas mensagens novas a partir do cursor em cache)
+  const reloadActiveMessages = useCallback(
+    async (targetThreadId?: string, forceFull = false) => {
+      const tId = targetThreadId || activeThreadIdRef.current;
+      if (!tId) return;
+      await syncThreadMessagesIncremental(tId, { forceFull, silent: true });
+    },
+    [syncThreadMessagesIncremental],
+  );
+
+  const handledLeadParamRef = useRef<string | null>(null);
   useEffect(() => {
     if ((searchParams as any)?.search) {
       setSearchTerm((searchParams as any).search);
@@ -899,7 +1048,31 @@ export function AtendimentoChatWorkspace({
     if ((searchParams as any)?.threadId) {
       setActiveThreadId((searchParams as any).threadId);
     }
-  }, [(searchParams as any)?.search, (searchParams as any)?.threadId]);
+    const targetLeadId = (searchParams as any)?.leadId;
+    if (targetLeadId && !((searchParams as any)?.threadId) && handledLeadParamRef.current !== targetLeadId) {
+      handledLeadParamRef.current = targetLeadId;
+      void openOrCreateWhatsAppThreadForLead({
+        data: {
+          storeId: store?.id || undefined,
+          leadId: targetLeadId,
+        },
+      })
+        .then((res) => {
+          if (res?.threadId) {
+            setThreads((prev) => {
+              if (prev.some((t) => t.id === res.threadId)) return prev;
+              return res.thread ? [{ ...res.thread, customer: { full_name: res.thread.guest_name, phone: res.thread.primary_phone_e164 } }, ...prev] : prev;
+            });
+            setActiveThreadId(res.threadId);
+            void reloadThreads();
+            void reloadActiveMessages(res.threadId);
+          }
+        })
+        .catch((err: any) => {
+          toast.error(err?.message || "Nao foi possivel abrir a conversa do lead.");
+        });
+    }
+  }, [(searchParams as any)?.search, (searchParams as any)?.threadId, (searchParams as any)?.leadId, store?.id]);
   const promiseDetection = useMemo(() => {
     return detectStaffFollowUpPromise(messages);
   }, [messages]);
@@ -1003,21 +1176,224 @@ export function AtendimentoChatWorkspace({
     }
   };
 
+  const [analyzingMediaMap, setAnalyzingMediaMap] = useState<Record<string, boolean>>({});
+  const handleAnalyzeMediaVision = async (msg: any) => {
+    if (!activeThread?.id || !msg?.id) return;
+    setAnalyzingMediaMap((prev) => ({ ...prev, [msg.id]: true }));
+    try {
+      const mediaUrl =
+        Array.isArray(msg.attachments) && msg.attachments.length > 0 && typeof msg.attachments[0] === "string"
+          ? msg.attachments[0]
+          : msg.payload?.media?.url || null;
+      const res = await analyzeChatMediaWithAi({
+        data: {
+          threadId: activeThread.id,
+          messageId: msg.id,
+          mediaUrl,
+          caption: msg.payload?.media?.caption || msg.message || null,
+        },
+      });
+      if (res?.summary) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === msg.id
+              ? {
+                  ...m,
+                  payload: {
+                    ...(m.payload || {}),
+                    vision_summary: res.summary,
+                    extracted_structured: {
+                      detected_niche: res.detectedNiche,
+                      matched_catalog_title: res.matchedCatalogTitle,
+                      extracted_fields: res.extractedFields,
+                      knowledge_facts: res.knowledgeFacts,
+                    },
+                  },
+                }
+              : m,
+          ),
+        );
+        toast.success("Conteúdo analisado e indexado no contexto do cliente!");
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao analisar mídia com IA.");
+    } finally {
+      setAnalyzingMediaMap((prev) => ({ ...prev, [msg.id]: false }));
+    }
+  };
+
   const activeThread = threads.find((t) => t.id === activeThreadId);
 
-  // Recarregar threads ao alternar statusFilter (para suportar 'archived' via backend)
+  const [copilotInsight, setCopilotInsight] = useState<any | null>(null);
+  const [isLoadingCopilotInsight, setIsLoadingCopilotInsight] = useState(false);
+  const [isAutoFillingLeadFromChat, setIsAutoFillingLeadFromChat] = useState(false);
+  const [autoFillPreview, setAutoFillPreview] = useState<{
+    preview: any;
+    leadId: string | null;
+    applied: boolean;
+  } | null>(null);
+  const [showForgottenTray, setShowForgottenTray] = useState(false);
+  const [slaTickMs, setSlaTickMs] = useState(() => Date.now());
+
   useEffect(() => {
-    listChatThreads({ data: { store_id: store?.id, status: (statusFilter === "waiting" ? "open" : statusFilter) as any } })
-      .then((res) => {
+    const timer = window.setInterval(() => {
+      setSlaTickMs(Date.now());
+    }, 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    setCopilotInsight(activeThread?.metadata?.ai_copilot_suggestion || null);
+    setAutoFillPreview(null);
+  }, [activeThread?.id, activeThread?.metadata?.ai_copilot_suggestion]);
+
+  const handleRefreshCopilotInsight = async (directiveOverride?: string) => {
+    if (!activeThread?.id) return;
+    setIsLoadingCopilotInsight(true);
+    try {
+      const res = await generateOmnichannelCopilotInsight({
+        data: {
+          threadId: activeThread.id,
+          storeId: store?.id || null,
+          customInstruction: directiveOverride || text.trim() || null,
+        },
+      });
+      if (res) {
+        setCopilotInsight(res);
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao atualizar Copiloto SDR.");
+    } finally {
+      setIsLoadingCopilotInsight(false);
+    }
+  };
+
+  const handleAutoFillLeadFromChat = async () => {
+    if (!activeThread?.id) return;
+    setIsAutoFillingLeadFromChat(true);
+    try {
+      const res = await autoFillLeadDossierFromChatAi({
+        data: {
+          threadId: activeThread.id,
+          leadId: activeThread.lead_id || null,
+          storeId: store?.id || null,
+          apply: false,
+        },
+      });
+      if (res?.preview) {
+        setAutoFillPreview({
+          preview: res.preview,
+          leadId: res.leadId || activeThread.lead_id || null,
+          applied: Boolean(res.applied),
+        });
+        toast.success("Ficha consolidada via IA! Revise os dados abaixo e confirme para salvar.");
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Não foi possível auto-preencher a ficha via IA.");
+    } finally {
+      setIsAutoFillingLeadFromChat(false);
+    }
+  };
+
+  const handleConfirmAutoFillSave = async () => {
+    if (!activeThread?.id || !autoFillPreview?.preview) return;
+    setIsAutoFillingLeadFromChat(true);
+    try {
+      const p = autoFillPreview.preview;
+      if (autoFillPreview.leadId) {
+        const appliedRes = await autoFillLeadDossierFromChatAi({
+          data: {
+            threadId: activeThread.id,
+            leadId: autoFillPreview.leadId,
+            storeId: store?.id || null,
+            apply: true,
+          },
+        });
+        if (appliedRes?.applied) {
+          toast.success("Ficha do Lead atualizada automaticamente com histórico, áudios e prints!");
+          setAutoFillPreview(null);
+        }
+      } else {
+        const createdLead = await convertChatThreadToCrmLead({
+          data: {
+            threadId: activeThread.id,
+            leadTitle: p.title || `Oportunidade · ${p.destination || activeThread.customer?.full_name || "WhatsApp"}`,
+            destinationOfInterest: p.destination || undefined,
+            travelStart: p.travelStart || undefined,
+            travelEnd: p.travelEnd || undefined,
+            paxAdults: typeof p.paxAdults === "number" ? p.paxAdults : undefined,
+            estimatedBudget: typeof p.estimatedValueCents === "number" ? p.estimatedValueCents / 100 : undefined,
+            notes: p.notesSummary || undefined,
+          },
+        });
+        const newLeadId = createdLead?.leadId || createdLead?.lead?.id;
+        if (newLeadId) {
+          setThreads((prev) =>
+            prev.map((t) =>
+              t.id === activeThread.id
+                ? {
+                    ...t,
+                    lead_id: newLeadId,
+                    metadata: { ...(t.metadata || {}), active_lead_id: newLeadId },
+                  }
+                : t,
+            ),
+          );
+          toast.success("Novo Lead criado e preenchido no Kanban com os dados da conversa!");
+          setAutoFillPreview(null);
+        }
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao gravar dados extraídos no CRM.");
+    } finally {
+      setIsAutoFillingLeadFromChat(false);
+    }
+  };
+
+  const liveSlaAlerts = useMemo(() => {
+    const recalculated = threads.map((t) => {
+      if (t.status === "closed" || t.status === "archived") return t;
+      const evalRes = computeThreadSlaStatus({
+        status: t.status,
+        lastCustomerMessageAt: t.last_customer_message_at || null,
+        lastStaffReplyAt: t.last_staff_reply_at || null,
+        lastMessageAt: t.last_message_at || t.updated_at || null,
+        isLastReplyStaff: t.is_last_reply_staff,
+        departmentSlaMinutes: t.sla_minutes || 15,
+        nowMs: slaTickMs,
+      });
+      return {
+        ...t,
+        waiting_for_reply: evalRes.waitingForReply,
+        waiting_minutes: evalRes.waitingMinutes,
+        sla_status: evalRes.slaStatus,
+        is_forgotten_today: evalRes.isForgottenToday,
+      };
+    });
+    return computeSlaAlertsSummary(recalculated, forgottenLeadsCount);
+  }, [threads, forgottenLeadsCount, slaTickMs]);
+
+  // Recarregar threads ao alternar statusFilter (ignora mount inicial pois o loader ja hidratou "all")
+  const isFirstStatusFilterMountRef = useRef(true);
+  useEffect(() => {
+    if (isFirstStatusFilterMountRef.current) {
+      isFirstStatusFilterMountRef.current = false;
+      return;
+    }
+    listChatThreads({ data: { store_id: store?.id, status: statusFilter as any } })
+      .then((res: any) => {
         if (res?.threads) {
           setThreads(res.threads);
+          if (typeof res?.slaAlerts?.forgottenLeadsCount === "number") {
+            setForgottenLeadsCount(res.slaAlerts.forgottenLeadsCount);
+          }
           if (activeThreadId && !res.threads.some((t: any) => t.id === activeThreadId)) {
             setActiveThreadId(res.threads.length > 0 ? (res.threads[0]?.id || null) : null);
           }
         }
       })
       .catch(() => {});
-  }, [statusFilter]);
+  }, [statusFilter, store?.id]);
 
   // Cálculo de Disponibilidade e Janela WhatsApp (Meta Cloud API exige template após 24h; canais Web/Evolution operam 24/7)
   const isWhatsAppWindowOpen = useMemo(() => {
@@ -1033,24 +1409,47 @@ export function AtendimentoChatWorkspace({
     return diffHours <= 24;
   }, [messages, whatsappInstances]);
 
-  // Carregamento de Mensagens
+  // Carregamento Cache-First + Incremental de Mensagens (troca instantânea entre conversas sem zerar estado)
   useEffect(() => {
     if (!activeThreadId) {
       setMessages([]);
+      setMessagesError(null);
+      setLoadingMessages(false);
       return;
     }
 
-    setLoadingMessages(true);
-    getChatMessages({ data: { threadId: activeThreadId } })
-      .then((res: any) => {
-        setMessages(res?.messages || []);
-      })
-      .catch((e) => {
-        console.error("Falha ao carregar mensagens:", e);
-        toast.error("Erro ao carregar mensagens da conversa.");
-      })
-      .finally(() => setLoadingMessages(false));
-  }, [activeThreadId]);
+    let cancelled = false;
+    const targetThreadId = activeThreadId;
+    const effectiveStoreId = store?.id || (typeof window !== "undefined" ? getClientActiveTenant() : null);
+    const cached = getCachedThreadMessages(effectiveStoreId, targetThreadId);
+
+    if (cached && cached.length > 0) {
+      setMessages(cached);
+      setMessagesError(null);
+      setLoadingMessages(false);
+      void syncThreadMessagesIncremental(targetThreadId, {
+        silent: true,
+        initialBaseline: cached,
+        isCancelled: () => cancelled,
+      });
+    } else {
+      setMessages([]);
+      setMessagesError(null);
+      setLoadingMessages(true);
+      void syncThreadMessagesIncremental(targetThreadId, {
+        silent: false,
+        isCancelled: () => cancelled,
+      }).finally(() => {
+        if (!cancelled && activeThreadIdRef.current === targetThreadId) {
+          setLoadingMessages(false);
+        }
+      });
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeThreadId, store?.id, syncThreadMessagesIncremental]);
 
   // Auto-scroll
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -1060,6 +1459,44 @@ export function AtendimentoChatWorkspace({
     }
   }, [messages, loadingMessages]);
 
+  // Auto-delta sync silencioso com trava contra concorrencia e cooldown no servidor
+  const runBackgroundDeltaSync = useCallback(
+    async (forceSync = false) => {
+      const activeTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
+      const effectiveStoreId = store?.id || activeTenant;
+      if (!effectiveStoreId || deltaInFlightRef.current) return;
+      deltaInFlightRef.current = true;
+      setIsDeltaSyncing(true);
+      try {
+        const cf = channelFilterRef.current;
+        const res = await syncWhatsAppDeltaNow({
+          data: {
+            storeId: effectiveStoreId,
+            ...(cf && cf !== "all" ? { instanceId: cf } : {}),
+            force: forceSync,
+          },
+        });
+        if (res && !res.skipped) {
+          if (res.importedChats > 0 || res.importedMessages > 0) {
+            void reloadThreads();
+            if (activeThreadIdRef.current) {
+              void reloadActiveMessages(activeThreadIdRef.current);
+            }
+          }
+          listWorkspaceWhatsAppInstances({ data: { store_id: effectiveStoreId } })
+            .then((list) => setWhatsappInstances(list))
+            .catch(() => {});
+        }
+      } catch {
+        // Silencioso em background para nao poluir a UX caso gateway oscile
+      } finally {
+        deltaInFlightRef.current = false;
+        setIsDeltaSyncing(false);
+      }
+    },
+    [store?.id, reloadThreads, reloadActiveMessages],
+  );
+
   // Subscrição Unificada Supabase Realtime (Zero Duplicidade, Reconexão Resiliente e Catch-Up Automático)
   useEffect(() => {
     const activeTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
@@ -1068,29 +1505,21 @@ export function AtendimentoChatWorkspace({
     const rt = getRealtimeChannel(`store-chat-${effectiveStoreId}`);
     if (!rt.channel) return;
 
-    try {
-      const supabase = getBrowserClient();
-      supabase.auth
-        .getSession()
-        .then(({ data }) => {
-          if (data?.session?.access_token) {
-            supabase.realtime.setAuth(data.session.access_token);
-          }
-        })
-        .catch(() => {});
-    } catch {
-      // noop
-    }
+    void rt.ensureAuth?.();
 
     let hadDisconnection = false;
-    const runCatchUp = () => {
-      reloadThreads();
+    const coalescedReload = createCoalescedController(() => reloadThreads(), 1500);
+    const runCatchUp = (withDelta = false) => {
+      coalescedReload.schedule(600);
       if (activeThreadIdRef.current) {
         reloadActiveMessages(activeThreadIdRef.current);
       }
       listWorkspaceWhatsAppInstances({ data: { store_id: effectiveStoreId } })
         .then((list) => setWhatsappInstances(list))
         .catch(() => {});
+      if (withDelta) {
+        void runBackgroundDeltaSync(false);
+      }
     };
 
     rt.channel
@@ -1115,55 +1544,33 @@ export function AtendimentoChatWorkspace({
               reloadActiveMessages(newMsg.thread_id);
             } else {
               setMessages((prev) => {
-                if (prev.some((m) => m.id === newMsg.id || (newMsg.external_message_id && m.external_message_id === newMsg.external_message_id))) {
-                  return prev.map((m) => (m.id === newMsg.id ? { ...m, ...newMsg } : m));
-                }
-                return [...prev, newMsg];
+                const next = mergeMessagesIncremental(prev, [newMsg]);
+                setCachedThreadMessages(effectiveStoreId, newMsg.thread_id, next);
+                return next;
               });
             }
 
             if (!newMsg.is_staff_reply) {
               playMessageChime();
             }
-          } else if (!newMsg.is_staff_reply) {
-            playMessageChime();
+          } else {
+            const cachedOther = getCachedThreadMessages(effectiveStoreId, newMsg.thread_id);
+            if (cachedOther && !newMsg.is_encrypted && !(typeof newMsg.message === "string" && newMsg.message.startsWith("waesy-msg:"))) {
+              setCachedThreadMessages(effectiveStoreId, newMsg.thread_id, mergeMessagesIncremental(cachedOther, [newMsg]));
+            }
+            if (!newMsg.is_staff_reply) {
+              playMessageChime();
+            }
           }
 
           const exists = threadsRef.current.some((t) => t.id === newMsg.thread_id);
           if (exists) {
-            setThreads((prev) => {
-              const target = prev.find((t) => t.id === newMsg.thread_id);
-              if (!target) return prev;
-              if (isInternalMsg) {
-                return [
-                  {
-                    ...target,
-                    updated_at: newMsg.created_at || new Date().toISOString(),
-                  },
-                  ...prev.filter((t) => t.id !== newMsg.thread_id),
-                ];
-              }
-              const cleanPreview = (typeof newMsg.message === "string" && !newMsg.message.startsWith("waesy-msg:"))
-                ? newMsg.message
-                : (newMsg.message_type === "image" ? "[Imagem]"
-                  : newMsg.message_type === "video" ? "[Vídeo]"
-                  : newMsg.message_type === "audio" ? "[Áudio]"
-                  : newMsg.message_type === "document" ? "[Documento]"
-                  : newMsg.message_type === "sticker" ? "[Figurinha]"
-                  : (target.last_message || "Nova mensagem"));
-              const updated = {
-                ...target,
-                last_message: cleanPreview,
-                is_last_reply_staff: newMsg.is_staff_reply,
-                updated_at: newMsg.created_at || new Date().toISOString(),
-              };
-              return [updated, ...prev.filter((t) => t.id !== newMsg.thread_id)];
-            });
+            setThreads((prev) => patchThreadListOnMessageInsert(prev, newMsg, isInternalMsg));
             if (newMsg.is_encrypted || (typeof newMsg.message === "string" && newMsg.message.startsWith("waesy-msg:"))) {
-              reloadThreads();
+              coalescedReload.schedule(1800);
             }
           } else {
-            reloadThreads();
+            coalescedReload.schedule(1500);
           }
         },
       )
@@ -1175,12 +1582,19 @@ export function AtendimentoChatWorkspace({
           if (!updatedMsg) return;
 
           if (updatedMsg.thread_id === activeThreadIdRef.current) {
-            setMessages((prev) =>
-              prev.map((m) => {
+            if (updatedMsg.is_encrypted || (typeof updatedMsg.message === "string" && updatedMsg.message.startsWith("waesy-msg:"))) {
+              reloadActiveMessages(updatedMsg.thread_id);
+              return;
+            }
+            setMessages((prev) => {
+              const next = prev.map((m) => {
                 if (m.id !== updatedMsg.id) return m;
                 const mergedPayload = { ...(m.payload || {}), ...(updatedMsg.payload || {}) };
                 return {
                   ...m,
+                  message: typeof updatedMsg.message === "string" ? updatedMsg.message : m.message,
+                  message_type: updatedMsg.message_type ?? m.message_type,
+                  attachments: Array.isArray(updatedMsg.attachments) ? updatedMsg.attachments : m.attachments,
                   delivery_status: updatedMsg.delivery_status ?? m.delivery_status,
                   external_message_id: updatedMsg.external_message_id ?? m.external_message_id,
                   sent_at: updatedMsg.sent_at ?? m.sent_at,
@@ -1193,8 +1607,26 @@ export function AtendimentoChatWorkspace({
                   revoked_at: (mergedPayload.revoked_at as string) || m.revoked_at || null,
                   payload: mergedPayload,
                 };
-              })
-            );
+              });
+              setCachedThreadMessages(effectiveStoreId, updatedMsg.thread_id, next);
+              return next;
+            });
+          }
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "chat_messages" },
+        (payload: any) => {
+          const deletedId = payload.old?.id;
+          if (deletedId) {
+            setMessages((prev) => {
+              const next = prev.filter((m) => m.id !== deletedId);
+              if (activeThreadIdRef.current) {
+                setCachedThreadMessages(effectiveStoreId, activeThreadIdRef.current, next);
+              }
+              return next;
+            });
           }
         },
       )
@@ -1202,23 +1634,84 @@ export function AtendimentoChatWorkspace({
         "postgres_changes",
         { event: "*", schema: "public", table: "chat_threads", filter: `store_id=eq.${effectiveStoreId}` },
         (payload: any) => {
-          const newThread = payload.new as any;
-          if (newThread?.thread_type === "ai_assistant" || newThread?.thread_type === "copilot") {
+          const targetThread = (payload.new || payload.old) as any;
+          if (targetThread?.thread_type === "ai_assistant" || targetThread?.thread_type === "copilot") {
             return;
           }
-          reloadThreads();
-          if (newThread?.id && newThread.id === activeThreadIdRef.current) {
-            reloadActiveMessages(newThread.id);
+          if (payload.eventType === "DELETE" && payload.old?.id) {
+            clearCachedThreadMessages(effectiveStoreId, payload.old.id);
+            setThreads((prev) => prev.filter((t) => t.id !== payload.old.id));
+            return;
+          }
+          if (payload.eventType === "INSERT" && payload.new?.id) {
+            if (!threadsRef.current.some((t) => t.id === payload.new.id)) {
+              coalescedReload.schedule(1500);
+            }
+            return;
+          }
+          if (payload.eventType === "UPDATE" && payload.new?.id) {
+            const updatedRow = payload.new as any;
+            const known = threadsRef.current.some((t) => t.id === updatedRow.id);
+            if (!known) {
+              coalescedReload.schedule(1500);
+              return;
+            }
+            setThreads((prev) => patchThreadListOnThreadUpdate(prev, updatedRow));
           }
         },
       )
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "whatsapp_channel_instances", filter: `store_id=eq.${effectiveStoreId}` },
-        () => {
-          listWorkspaceWhatsAppInstances({ data: { store_id: effectiveStoreId } })
-            .then((list) => setWhatsappInstances(list))
-            .catch(() => {});
+        { event: "*", schema: "public", table: "whatsapp_channel_live_state", filter: `store_id=eq.${effectiveStoreId}` },
+        (payload: any) => {
+          const live = payload.new as any;
+          if (live?.instance_id) {
+            setWhatsappInstances((prev) => {
+              const found = prev.some((i) => i.id === live.instance_id);
+              if (!found) return prev;
+              return prev.map((i) =>
+                i.id === live.instance_id
+                  ? {
+                      ...i,
+                      status: live.status ?? i.status,
+                      display_phone_number: live.display_phone_number ?? i.display_phone_number,
+                      is_active: live.is_active ?? i.is_active,
+                      is_default: live.is_default ?? i.is_default,
+                      last_error_message: live.last_error_message ?? i.last_error_message,
+                      public_config: {
+                        ...(i.public_config || {}),
+                        diagnostic_state: live.diagnostic_state ?? i.public_config?.diagnostic_state,
+                        diagnostic_reason: live.diagnostic_reason ?? i.public_config?.diagnostic_reason,
+                        last_webhook_at: live.last_webhook_at ?? i.public_config?.last_webhook_at,
+                        last_webhook_state: live.last_webhook_state ?? i.public_config?.last_webhook_state,
+                        last_synced_at: live.last_synced_at ?? i.public_config?.last_synced_at,
+                        qr_code_url: live.qr_code_url ?? null,
+                      },
+                    }
+                  : i,
+              );
+            });
+          } else {
+            listWorkspaceWhatsAppInstances({ data: { store_id: effectiveStoreId } })
+              .then((list) => setWhatsappInstances(list))
+              .catch(() => {});
+          }
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "whatsapp_history_sync_jobs", filter: `store_id=eq.${effectiveStoreId}` },
+        (payload: any) => {
+          const job = payload.new as any;
+          if (job?.status === "completed") {
+            coalescedReload.schedule(1500);
+            if (activeThreadIdRef.current) {
+              reloadActiveMessages(activeThreadIdRef.current);
+            }
+            listWorkspaceWhatsAppInstances({ data: { store_id: effectiveStoreId } })
+              .then((list) => setWhatsappInstances(list))
+              .catch(() => {});
+          }
         },
       )
       .on(
@@ -1277,9 +1770,13 @@ export function AtendimentoChatWorkspace({
       .subscribe((status: string) => {
         if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
           hadDisconnection = true;
-        } else if (status === "SUBSCRIBED" && hadDisconnection) {
-          hadDisconnection = false;
-          runCatchUp();
+          setRealtimeStatus("reconnecting");
+        } else if (status === "SUBSCRIBED") {
+          setRealtimeStatus("live");
+          if (hadDisconnection) {
+            hadDisconnection = false;
+            runCatchUp(true);
+          }
         }
       });
 
@@ -1293,7 +1790,7 @@ export function AtendimentoChatWorkspace({
           } catch {
             // noop
           }
-          runCatchUp();
+          runCatchUp(true);
         }
       });
       authSubscription = data?.subscription || null;
@@ -1301,21 +1798,33 @@ export function AtendimentoChatWorkspace({
       // noop
     }
 
+    const initialDeltaTimer = setTimeout(() => {
+      void runBackgroundDeltaSync(false);
+    }, 800);
+
     return () => {
+      coalescedReload.cancel();
+      clearTimeout(initialDeltaTimer);
       authSubscription?.unsubscribe();
       rt.unsubscribe();
     };
-  }, [store?.id, reloadThreads, reloadActiveMessages]);
+  }, [store?.id, reloadThreads, reloadActiveMessages, runBackgroundDeltaSync]);
 
-  // Listener de Visibilidade, Retomada de Foco e Reconexão de Rede (Zero Lag Mobile/Background)
+  // Listener de Visibilidade, Retomada de Foco e Reconexão com debounce (evita rajada ao trocar de janela)
+  const lastRevalidationMsRef = useRef(0);
   useEffect(() => {
     const handleRevalidation = () => {
-      if (document.visibilityState === "visible") {
+      if (document.visibilityState !== "visible") return;
+      const now = Date.now();
+      if (now - lastRevalidationMsRef.current < 15_000) return;
+      lastRevalidationMsRef.current = now;
+      if (realtimeStatusRef.current !== "live") {
         reloadThreads();
         if (activeThreadIdRef.current) {
           reloadActiveMessages(activeThreadIdRef.current);
         }
       }
+      void runBackgroundDeltaSync(false);
     };
     window.addEventListener("visibilitychange", handleRevalidation);
     window.addEventListener("focus", handleRevalidation);
@@ -1325,25 +1834,28 @@ export function AtendimentoChatWorkspace({
       window.removeEventListener("focus", handleRevalidation);
       window.removeEventListener("online", handleRevalidation);
     };
-  }, [reloadThreads, reloadActiveMessages]);
+  }, [reloadThreads, reloadActiveMessages, runBackgroundDeltaSync]);
 
-  // Polling Delta de Alta Reatividade (5s para conversa ativa + 10s para lista de conversas)
+  // Rede de Seguranca Ao Vivo: polling gentil (45s apenas se Realtime offline; delta sync a cada 60s)
   useEffect(() => {
     if (!store?.id) return;
     let tick = 0;
     const interval = setInterval(() => {
       if (document.visibilityState === "visible") {
         tick += 1;
-        if (activeThreadIdRef.current) {
-          reloadActiveMessages(activeThreadIdRef.current);
-        }
-        if (tick % 2 === 0) {
+        if (realtimeStatusRef.current !== "live" && tick % 3 === 0) {
           reloadThreads();
+          if (activeThreadIdRef.current) {
+            reloadActiveMessages(activeThreadIdRef.current);
+          }
+        }
+        if (tick % 4 === 0) {
+          void runBackgroundDeltaSync(false);
         }
       }
-    }, 5000);
+    }, 15_000);
     return () => clearInterval(interval);
-  }, [store?.id, reloadThreads, reloadActiveMessages]);
+  }, [store?.id, reloadThreads, reloadActiveMessages, runBackgroundDeltaSync]);
 
   // Anexos Universais (Ctrl+V, Drag & Drop e Hover-to-Open em Conversas)
   const [pendingAttachments, setPendingAttachments] = useState<ChatAttachmentDraft[]>([]);
@@ -1385,17 +1897,6 @@ export function AtendimentoChatWorkspace({
       }
     };
   }, [clearThreadDragHover]);
-
-  const readFileAsDataUrl = (file: File) =>
-    new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (typeof reader.result === "string") resolve(reader.result);
-        else reject(new Error("Falha ao ler conteúdo do arquivo."));
-      };
-      reader.onerror = () => reject(new Error("Não foi possível ler o arquivo selecionado."));
-      reader.readAsDataURL(file);
-    });
 
   const uploadSingleDraft = useCallback(async (draftId: string, file: File, classification: ClassifiedChatFile) => {
     try {
@@ -1689,17 +2190,14 @@ export function AtendimentoChatWorkspace({
         dispatchedMessages.push(sent);
       }
 
+      const activeTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
+      const effectiveStoreId = store?.id || activeTenant;
       setMessages((prev) => {
-        let next = [...prev];
-        for (const sent of dispatchedMessages) {
-          if (next.some((m) => m.id === sent.id)) {
-            next = next.map((m) => (m.id === sent.id ? { ...m, ...sent } : m));
-          } else {
-            next.push(sent);
-          }
-        }
+        const next = mergeMessagesIncremental(prev, dispatchedMessages);
+        setCachedThreadMessages(effectiveStoreId, activeThreadId, next);
         return next;
       });
+      setMessagesError(null);
       setText("");
       setIsWhisperMode(false);
 
@@ -1732,12 +2230,13 @@ export function AtendimentoChatWorkspace({
         };
         return [updatedTarget, ...prev.filter((t) => t.id !== activeThreadId)];
       });
-      setTimeout(() => {
-        if (activeThreadIdRef.current === activeThreadId) {
-          reloadActiveMessages(activeThreadId);
-        }
-        reloadThreads();
-      }, 1500);
+      if (realtimeStatusRef.current !== "live") {
+        setTimeout(() => {
+          if (activeThreadIdRef.current === activeThreadId) {
+            reloadActiveMessages(activeThreadId);
+          }
+        }, 2500);
+      }
     } catch (err: any) {
       toast.error(err.message || "Erro ao despachar mensagem.");
     } finally {
@@ -1866,7 +2365,8 @@ export function AtendimentoChatWorkspace({
       if (statusFilter === "groups" && !isGrp) return false;
       if (statusFilter === "open" && t.status !== "open") return false;
       if (statusFilter === "archived" && t.status !== "archived") return false;
-      if (statusFilter === "waiting" && (t.status === "archived" || t.is_last_reply_staff)) return false;
+      if (statusFilter === "waiting" && (t.status === "archived" || t.status === "closed" || t.status === "resolved" || !(t.waiting_for_reply ?? !t.is_last_reply_staff))) return false;
+      if (statusFilter === "forgotten" && !t.is_forgotten_today) return false;
       if ((statusFilter === "all" || statusFilter === "direct" || statusFilter === "groups") && t.status === "archived") return false;
       const matchDept = deptFilter === "all" || t.department === deptFilter;
 
@@ -2249,22 +2749,52 @@ export function AtendimentoChatWorkspace({
                   size="icon"
                   onClick={handleSyncWhatsApp}
                   disabled={isSyncingWhatsApp}
-                  title="Sincronizar conversas do WhatsApp"
-                  className="size-11 min-w-11 min-h-11 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                  aria-label={
+                    realtimeStatus === "live"
+                      ? "Ao vivo — Sincronizar conversas do WhatsApp"
+                      : "Reconectando — Sincronizar conversas do WhatsApp"
+                  }
+                  title={
+                    realtimeStatus === "live"
+                      ? "Ao vivo — Sincronizar conversas do WhatsApp"
+                      : "Reconectando ao tempo real — Clique para sincronizar"
+                  }
+                  className="relative size-11 min-w-11 min-h-11 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                 >
-                  <RefreshCw className={cn("size-4", isSyncingWhatsApp && "animate-spin motion-reduce:animate-none text-primary")} />
+                  <RefreshCw
+                    className={cn(
+                      "size-4",
+                      (isSyncingWhatsApp || isDeltaSyncing) && "animate-spin motion-reduce:animate-none text-primary",
+                    )}
+                  />
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "absolute top-1 right-1 size-2 rounded-full",
+                      realtimeStatus === "live"
+                        ? "bg-success"
+                        : "bg-warning animate-pulse motion-reduce:animate-none",
+                    )}
+                  />
                 </Button>
               </div>
 
               
-              {/* Chips Rápidos de Abas: Todas / Individuais / Grupos / Abertas / Aguardando / Arquivadas (Squircles Compactos) */}
+              {/* Chips Rápidos de Abas: Todas / Individuais / Grupos / Abertas / Aguardando / Esquecidos / Arquivadas */}
               <div className="flex items-center gap-1 overflow-x-auto tab-list no-scrollbar py-1">
                 {[
                   { id: "all", label: "Todas" },
                   { id: "direct", label: "Individuais" },
                   { id: "groups", label: "Grupos" },
                   { id: "open", label: "Abertas" },
-                  { id: "waiting", label: "Aguardando" },
+                  {
+                    id: "waiting",
+                    label: liveSlaAlerts.waitingCount > 0 ? `Aguardando (${liveSlaAlerts.waitingCount})` : "Aguardando",
+                  },
+                  {
+                    id: "forgotten",
+                    label: liveSlaAlerts.forgottenTodayCount > 0 ? `Esquecidos (${liveSlaAlerts.forgottenTodayCount})` : "Esquecidos",
+                  },
                   { id: "archived", label: "Arquivadas" },
                 ].map((chip) => (
                   <button
@@ -2272,16 +2802,72 @@ export function AtendimentoChatWorkspace({
                     type="button"
                     onClick={() => setStatusFilter(chip.id as any)}
                     className={cn(
-                      "px-2 py-1 rounded-md text-2xs font-semibold transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                      "min-h-11 sm:min-h-8 px-3 sm:px-2 py-1 rounded-md text-xs font-semibold transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                       statusFilter === chip.id
                         ? "bg-foreground text-background font-bold shadow-2xs"
-                        : "bg-muted/60 text-muted-foreground hover:text-foreground border border-border/50"
+                        : chip.id === "forgotten" && liveSlaAlerts.forgottenTodayCount > 0
+                          ? "bg-warning/15 text-warning-strong border border-warning/40 hover:bg-warning/25"
+                          : "bg-muted/60 text-muted-foreground hover:text-foreground border border-border/50"
                     )}
                   >
                     {chip.label}
                   </button>
                 ))}
               </div>
+
+              {(liveSlaAlerts.breachedCount > 0 || liveSlaAlerts.forgottenTodayCount > 0 || liveSlaAlerts.forgottenLeadsCount > 0) && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2 px-2 py-1 rounded-md bg-warning/10 border border-warning/30 text-xs text-warning-strong">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <AlertTriangle className="size-3.5 shrink-0" />
+                      <span className="truncate font-semibold">
+                        {liveSlaAlerts.breachedCount > 0
+                          ? `${liveSlaAlerts.breachedCount} SLA estourado(s)`
+                          : `${liveSlaAlerts.forgottenTodayCount} sem retorno hoje`}
+                        {liveSlaAlerts.forgottenLeadsCount > 0 ? ` · ${liveSlaAlerts.forgottenLeadsCount} lead(s) sem contato` : ""}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {liveSlaAlerts.forgottenThreads.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setShowForgottenTray((v) => !v)}
+                          className="min-h-11 sm:min-h-8 px-2 py-1 rounded text-xs font-bold hover:bg-warning/20 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                        >
+                          {showForgottenTray ? "Ocultar" : `Esquecidos (${liveSlaAlerts.forgottenThreads.length})`}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setStatusFilter("forgotten")}
+                        className="min-h-11 sm:min-h-8 px-2 py-1 rounded text-xs font-bold hover:bg-warning/20 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                      >
+                        Ver fila
+                      </button>
+                    </div>
+                  </div>
+                  {showForgottenTray && liveSlaAlerts.forgottenThreads.length > 0 && (
+                    <div className="rounded-md border border-warning/30 bg-background/95 p-2 space-y-1 max-h-40 overflow-y-auto">
+                      {liveSlaAlerts.forgottenThreads.slice(0, 6).map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => {
+                            setActiveThreadId(item.id);
+                            setShowForgottenTray(false);
+                          }}
+                          className="w-full h-11 min-h-11 sm:h-8 sm:min-h-8 px-2 rounded hover:bg-muted/70 flex items-center justify-between gap-2 text-left text-2xs cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                        >
+                          <span className="font-semibold text-foreground truncate">{item.guestName}</span>
+                          <span className="font-mono text-destructive shrink-0">
+                            {item.waitingMinutes}m / SLA {item.slaMinutes}m
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Filtro por Setor + Filtro por Tags / Pastas de Tags (Umbler Talk / Whaticket Parity) */}
               <div className="flex items-center gap-1 overflow-x-auto tab-list no-scrollbar">
@@ -2479,6 +3065,36 @@ export function AtendimentoChatWorkspace({
                           <Badge variant="secondary" className="text-2xs px-2 py-0 h-4 uppercase">
                             {departmentLabels[t.department] || t.department}
                           </Badge>
+
+                          {t.waiting_for_reply && (
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "text-2xs px-2 py-0 h-4 font-semibold",
+                                t.sla_status === "breached"
+                                  ? "bg-destructive/10 text-destructive border-destructive/30"
+                                  : t.sla_status === "at_risk"
+                                    ? "bg-warning/15 text-warning-strong border-warning/30"
+                                    : "bg-muted text-muted-foreground border-border/60",
+                              )}
+                            >
+                              {t.sla_status === "breached"
+                                ? `SLA +${t.waiting_minutes || 0}m`
+                                : `Aguarda ${t.waiting_minutes || 0}m`}
+                            </Badge>
+                          )}
+
+                          {isContactScopeSuppressed(
+                            t.metadata?.contact_scope,
+                            t.metadata?.suppress_lead_capture,
+                          ) && (
+                            <Badge
+                              variant="outline"
+                              className="text-2xs px-2 py-0 h-4 font-semibold bg-muted text-muted-foreground border-border/70"
+                            >
+                              {getContactScopeLabel(t.metadata?.contact_scope || "ignored")}
+                            </Badge>
+                          )}
 
                           {Array.isArray(t.tags) &&
                             t.tags.slice(0, 3).map((tagLabel: string) => (
@@ -2933,9 +3549,24 @@ export function AtendimentoChatWorkspace({
                 ref={chatContainerRef}
                 className="flex-1 space-y-4 overflow-y-auto no-scrollbar p-4 bg-muted/10"
               >
-                {loadingMessages ? (
+                {loadingMessages && messages.length === 0 ? (
                   <div className="flex items-center justify-center h-full">
-                    <Loader2 className="size-6 animate-spin text-primary" />
+                    <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
+                  </div>
+                ) : messagesError && messages.length === 0 ? (
+                  <div className="text-center py-12 space-y-3 text-xs">
+                    <AlertTriangle className="size-6 text-destructive mx-auto" />
+                    <p className="text-muted-foreground">{messagesError}</p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => activeThreadId && void reloadActiveMessages(activeThreadId, true)}
+                      className="h-11 min-h-11 px-4 text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <RefreshCw className="size-3.5" />
+                      <span>Tentar novamente</span>
+                    </Button>
                   </div>
                 ) : messages.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground text-xs">
@@ -3294,6 +3925,29 @@ export function AtendimentoChatWorkspace({
                             </div>
                           )}
 
+                          {(mediaType === "image" || mediaType === "document") && mediaUrl && (
+                            <div className="mb-2">
+                              {msg.payload?.vision_summary ? (
+                                <div className="p-2 rounded bg-background/30 border border-border/40 text-xs">
+                                  <span className="font-semibold block opacity-80 text-2xs uppercase tracking-wide">
+                                    Leitura IA (Print / Doc):
+                                  </span>
+                                  <p className="mt-1 whitespace-pre-wrap">{msg.payload.vision_summary}</p>
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleAnalyzeMediaVision(msg)}
+                                  disabled={analyzingMediaMap[msg.id]}
+                                  className="h-11 min-h-11 px-3 rounded text-xs font-medium flex items-center gap-2 text-muted-foreground hover:text-foreground bg-background/20 hover:bg-background/40 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                                >
+                                  <Zap className="size-4 shrink-0" />
+                                  <span>{analyzingMediaMap[msg.id] ? "Lendo conteúdo..." : "Ler mídia com IA"}</span>
+                                </button>
+                              )}
+                            </div>
+                          )}
+
                           {/* Texto da mensagem */}
                           {Boolean(
                             msg.message &&
@@ -3316,7 +3970,7 @@ export function AtendimentoChatWorkspace({
                                           ? "[Figurinha]"
                                           : "[Mensagem recebida]"
                               ) : (
-                                <SmartPhoneText
+                                <WhatsAppMarkdownText
                                   text={String(msg.message)}
                                   instances={whatsappInstances}
                                   onStartWhatsAppCall={(phoneE164, instanceId) =>
@@ -3434,12 +4088,157 @@ export function AtendimentoChatWorkspace({
                   </div>
                 )}
 
+                {/* Painel Copiloto IA SDR Multi-Nicho + Auto-preencher CRM */}
+                <div className="flex flex-col gap-2 px-3 py-2 rounded-lg border border-border/70 bg-muted/20 text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Bot className="size-4 text-primary shrink-0" />
+                      <span className="font-semibold text-foreground">Copiloto SDR IA</span>
+                      {copilotInsight && (
+                        <>
+                          <Badge variant="outline" className="text-2xs px-2 py-0 h-5 bg-primary/10 text-primary border-primary/30 font-semibold">
+                            Score {copilotInsight.sdrScore ?? "--"}/100 · {copilotInsight.buyerIntent === "hot" ? "Quente" : copilotInsight.buyerIntent === "financial" ? "Financeiro" : copilotInsight.buyerIntent === "support" ? "Suporte" : copilotInsight.buyerIntent === "warm" ? "Morno" : "Inicial"}
+                          </Badge>
+                          {copilotInsight.recommendedNextStep && (
+                            <span className="text-2xs text-muted-foreground truncate hidden sm:inline">
+                              {copilotInsight.recommendedNextStep}
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleRefreshCopilotInsight()}
+                        disabled={isLoadingCopilotInsight}
+                        className="h-11 sm:h-8 min-h-11 sm:min-h-8 px-3 rounded-md border border-border/70 bg-background hover:bg-muted text-2xs font-semibold inline-flex items-center gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                      >
+                        <Zap className="size-3.5 text-primary" />
+                        <span>{isLoadingCopilotInsight ? "Analisando..." : "Sugerir SDR"}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleAutoFillLeadFromChat}
+                        disabled={isAutoFillingLeadFromChat}
+                        className="h-11 sm:h-8 min-h-11 sm:min-h-8 px-3 rounded-md border border-primary/30 bg-primary/5 text-primary hover:bg-primary/15 text-2xs font-semibold inline-flex items-center gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                      >
+                        <FileText className="size-3.5" />
+                        <span>{isAutoFillingLeadFromChat ? "Preenchendo..." : "Auto-preencher Ficha via IA"}</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {[
+                      { label: "Quebrar objeção", hint: "Contornar objeções de preço/prazo com empatia e valor real" },
+                      { label: "Qualificar interesse", hint: "Fazer pergunta direta de qualificação alinhada ao nicho" },
+                      { label: "Avançar fechamento", hint: "Propor agendamento, reserva ou envio de proposta formal" },
+                    ].map((chip) => (
+                      <button
+                        key={chip.label}
+                        type="button"
+                        disabled={isLoadingCopilotInsight}
+                        onClick={() => handleRefreshCopilotInsight(chip.hint)}
+                        className="px-2 py-1 rounded bg-background hover:bg-muted border border-border/60 text-2xs font-medium text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                      >
+                        {chip.label}
+                      </button>
+                    ))}
+                    {copilotInsight?.catalogMatchTitle && (
+                      <Badge variant="secondary" className="text-2xs px-2 py-0 h-5">
+                        Catálogo: {copilotInsight.catalogMatchTitle}
+                      </Badge>
+                    )}
+                    {Array.isArray(copilotInsight?.detectedObjections) &&
+                      copilotInsight.detectedObjections.slice(0, 2).map((obj: string) => (
+                        <Badge
+                          key={obj}
+                          variant="outline"
+                          className="text-2xs px-2 py-0 h-5 bg-warning/10 text-warning-strong border-warning/30"
+                        >
+                          {obj}
+                        </Badge>
+                      ))}
+                  </div>
+                  {copilotInsight?.suggestedReply && (
+                    <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/50">
+                      <p className="text-xs text-muted-foreground line-clamp-2 flex-1 min-w-0">
+                        {copilotInsight.suggestedReply}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setText(copilotInsight.suggestedReply);
+                          toast.success("Sugestão aplicada ao campo de resposta!");
+                        }}
+                        className="h-11 sm:h-8 min-h-11 sm:min-h-8 px-3 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-2xs font-semibold shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                      >
+                        Aplicar
+                      </button>
+                    </div>
+                  )}
+                  {autoFillPreview?.preview && (
+                    <div className="pt-2 border-t border-border/60 space-y-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="text-2xs font-bold uppercase tracking-wide text-primary">
+                          Prévia da Ficha Extraída ({autoFillPreview.preview.source === "llm" ? "IA Multimodal" : "Determinística"})
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setAutoFillPreview(null)}
+                            className="px-2 py-1 rounded text-2xs text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                          >
+                            Fechar
+                          </button>
+                          <button
+                            type="button"
+                            disabled={isAutoFillingLeadFromChat}
+                            onClick={handleConfirmAutoFillSave}
+                            className="h-11 sm:h-8 min-h-11 sm:min-h-8 px-3 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-2xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                          >
+                            {autoFillPreview.leadId ? "Salvar na Ficha do Lead" : "Criar Lead no Kanban"}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-2xs text-foreground">
+                        {autoFillPreview.preview.fullName && (
+                          <span className="px-2 py-1 rounded bg-background border border-border/60">
+                            Nome: <strong>{autoFillPreview.preview.fullName}</strong>
+                          </span>
+                        )}
+                        {autoFillPreview.preview.destination && (
+                          <span className="px-2 py-1 rounded bg-background border border-border/60">
+                            Interesse: <strong>{autoFillPreview.preview.destination}</strong>
+                          </span>
+                        )}
+                        {typeof autoFillPreview.preview.estimatedValueCents === "number" &&
+                          autoFillPreview.preview.estimatedValueCents > 0 && (
+                            <span className="px-2 py-1 rounded bg-background border border-border/60">
+                              Orçamento: <strong>{formatMoney(autoFillPreview.preview.estimatedValueCents)}</strong>
+                            </span>
+                          )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Trilho de Respostas Rápidas / Macros Compacto (Squircles Finos Estilo Tags) */}
                 <div
                   role="tablist"
                   aria-label="Atalhos Rápidos"
                   className="flex items-center gap-1 overflow-x-auto tab-list no-scrollbar py-1"
                 >
+                  <button
+                    type="button"
+                    onClick={() => setLiveComposerTrayOpen(true)}
+                    className="h-11 sm:h-8 min-h-11 sm:min-h-8 px-3 py-1 rounded-md text-2xs font-bold inline-flex items-center gap-1 shrink-0 border border-primary/50 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                    title="Abrir Central de Acoes Rapidas (Lead CRM, Proposta, Cobranca PIX, Contrato, Formulario, Produto, Tarefa)"
+                  >
+                    <Layers className="size-3.5" />
+                    <span>Acoes Rapidas</span>
+                  </button>
+
                   <button
                     type="button"
                     onClick={() => setQuickAnswersModalOpen(true)}
@@ -3839,6 +4638,45 @@ export function AtendimentoChatWorkspace({
                 onOpenTransfer={() => setTransferModalOpen(true)}
                 onOpenSchedule={() => setScheduleModalOpen(true)}
                 onOpenQuickComposerModal={(modal) => setLiveModalOverride(modal)}
+                onLinkedLeadChange={(nextLead) => {
+                  const targetId = activeThread?.id;
+                  if (!targetId) return;
+                  setThreads((prev) =>
+                    prev.map((t) =>
+                      t.id === targetId
+                        ? {
+                            ...t,
+                            lead_id: nextLead?.id || null,
+                            metadata: {
+                              ...(t.metadata || {}),
+                              active_lead_id: nextLead?.id || "none",
+                              ...(nextLead?.title ? { lead_title: nextLead.title } : {}),
+                            },
+                          }
+                        : t,
+                    ),
+                  );
+                }}
+                onContactScopeChanged={({ contactScope, suppressLeadCapture, archivedLeadId }) => {
+                  const targetId = activeThread?.id;
+                  if (!targetId) return;
+                  setThreads((prev) =>
+                    prev.map((t) =>
+                      t.id === targetId
+                        ? {
+                            ...t,
+                            ...(archivedLeadId ? { lead_id: null } : {}),
+                            metadata: {
+                              ...(t.metadata || {}),
+                              contact_scope: contactScope,
+                              suppress_lead_capture: suppressLeadCapture,
+                              ...(archivedLeadId ? { active_lead_id: "none" } : {}),
+                            },
+                          }
+                        : t,
+                    ),
+                  );
+                }}
                 onProfileSynced={({ avatarUrl: nextAvatar, fullName: nextName, phone: nextPhone, isGroup: nextIsGroup, attribution: nextAttribution }) => {
                   const targetId = activeThread?.id;
                   if (!targetId) return;
@@ -3919,6 +4757,26 @@ export function AtendimentoChatWorkspace({
                       setText(msgText);
                       setMobileCustomer360Open(false);
                     }}
+                    onContactScopeChanged={({ contactScope, suppressLeadCapture, archivedLeadId }) => {
+                      const targetId = activeThread?.id;
+                      if (!targetId) return;
+                      setThreads((prev) =>
+                        prev.map((t) =>
+                          t.id === targetId
+                            ? {
+                                ...t,
+                                ...(archivedLeadId ? { lead_id: null } : {}),
+                                metadata: {
+                                  ...(t.metadata || {}),
+                                  contact_scope: contactScope,
+                                  suppress_lead_capture: suppressLeadCapture,
+                                  ...(archivedLeadId ? { active_lead_id: "none" } : {}),
+                                },
+                              }
+                            : t,
+                        ),
+                      );
+                    }}
                     onOpenTransfer={() => {
                       setMobileCustomer360Open(false);
                       setTransferModalOpen(true);
@@ -3930,6 +4788,25 @@ export function AtendimentoChatWorkspace({
                     onOpenQuickComposerModal={(modal) => {
                       setMobileCustomer360Open(false);
                       setLiveModalOverride(modal);
+                    }}
+                    onLinkedLeadChange={(nextLead) => {
+                      const targetId = activeThread?.id;
+                      if (!targetId) return;
+                      setThreads((prev) =>
+                        prev.map((t) =>
+                          t.id === targetId
+                            ? {
+                                ...t,
+                                lead_id: nextLead?.id || null,
+                                metadata: {
+                                  ...(t.metadata || {}),
+                                  active_lead_id: nextLead?.id || "none",
+                                  ...(nextLead?.title ? { lead_title: nextLead.title } : {}),
+                                },
+                              }
+                            : t,
+                        ),
+                      );
                     }}
                     onProfileSynced={({ avatarUrl: nextAvatar, fullName: nextName, phone: nextPhone, isGroup: nextIsGroup, attribution: nextAttribution }) => {
                       const targetId = activeThread?.id;
@@ -4870,11 +5747,37 @@ export function AtendimentoChatWorkspace({
         storeId={store?.id}
         storeName={store?.name || "Loja"}
         storeSlug={store?.slug}
+        storeAddress={[store?.address, store?.city, store?.state].filter(Boolean).join(" • ") || null}
         threadId={activeThread?.id}
         customerId={activeThread?.customer?.id}
         customerName={activeThread?.customer?.full_name}
         customerPhone={activeThread?.customer?.phone}
         customerEmail={activeThread?.customer?.email}
+        leadId={activeThread?.lead_id || activeThread?.metadata?.active_lead_id || null}
+        leadTitle={activeThread?.metadata?.lead_title || null}
+        onOpenSchedule={() => setScheduleModalOpen(true)}
+        onOpenTransfer={() => setTransferModalOpen(true)}
+        onOpenVoiceStudio={() => setVoiceStudioModalOpen(true)}
+        onLeadLinked={(nextLead) => {
+          const targetId = activeThread?.id;
+          if (!targetId) return;
+          setThreads((prev) =>
+            prev.map((t) =>
+              t.id === targetId
+                ? {
+                    ...t,
+                    lead_id: nextLead?.id || null,
+                    metadata: {
+                      ...(t.metadata || {}),
+                      active_lead_id: nextLead?.id || "none",
+                      ...(nextLead?.title ? { lead_title: nextLead.title } : {}),
+                    },
+                  }
+                : t,
+            ),
+          );
+          void reloadThreads();
+        }}
         onDispatchMessage={async (data: StructuredDispatchPayload) => {
           if (!activeThreadId) {
             throw new Error("Nenhuma conversa selecionada.");

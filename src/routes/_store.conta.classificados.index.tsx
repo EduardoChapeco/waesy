@@ -50,6 +50,7 @@ import { BoostBottomSheet } from "@/components/commerce/boost-bottom-sheet";
 import { ClassifiedAnalyticsSheet } from "@/components/classifieds/classified-analytics-sheet";
 import { BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { RouteErrorFallback } from "@/components/state/route-error-fallback";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -72,12 +73,8 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { formatMoney } from "@/lib/money";
+import { isVideoUrl } from "@/lib/media-utils";
 import { resolveClassifiedNiche } from "@/lib/classifieds/semantics";
-
-function isVideoUrl(url?: string | null): boolean {
-  if (!url) return false;
-  return /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url);
-}
 
 // ─── Ad-Tech: Mini-Sparkline Monocromático 7 Dias (Design Silencioso) ─────────
 function AdSparkline({ data, className = "h-7 w-20" }: { data: number[]; className?: string }) {
@@ -124,40 +121,18 @@ function AdSparkline({ data, className = "h-7 w-20" }: { data: number[]; classNa
 
 export const Route = createFileRoute("/_store/conta/classificados/")({
   head: () => ({ meta: [{ title: "Meus Anúncios | Waesy" }] }),
-  errorComponent: ContaClassificadosErrorComponent,
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorFallback
+      error={error}
+      reset={reset}
+      icon={Tag}
+      title="Falha ao Carregar Seus Anúncios"
+      description="Não foi possível sincronizar sua lista de anúncios gerenciados no momento."
+      showErrorDetails
+    />
+  ),
   component: ClassificadosIndex,
 });
-
-function ContaClassificadosErrorComponent({ error }: { error: any }) {
-  return (
-    <div className="mx-auto max-w-xl px-4 py-16 text-center space-y-5">
-      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-1">
-        <Tag className="size-8" />
-      </div>
-      <div className="space-y-2">
-        <h1 className="text-xl font-bold text-foreground">Falha ao Carregar Seus Anúncios</h1>
-        <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
-          Não foi possível sincronizar sua lista de anúncios gerenciados no momento.
-        </p>
-      </div>
-      {error?.message && (
-        <pre className="mt-2 rounded-lg bg-muted/40 border border-border/50 p-3 text-xs text-muted-foreground overflow-auto max-h-32 text-left font-mono">
-          {error.message}
-        </pre>
-      )}
-      <div className="pt-2 flex items-center justify-center gap-3">
-        <Button
-          variant="default"
-          className="rounded-lg text-xs h-11 px-5 font-bold cursor-pointer"
-          onClick={() => window.location.reload()}
-        >
-          <RefreshCw className="size-3.5 mr-2" />
-          <span>Tentar Novamente</span>
-        </Button>
-      </div>
-    </div>
-  );
-}
 
 
 export const NICHE_TABS = [
@@ -172,7 +147,7 @@ export const NICHE_TABS = [
   { id: "travel", label: "Turismo & Viagens" },
 ] as const;
 
-export function matchesNicheTab(ad: any, nicheTabId: string): boolean {
+function matchesNicheTab(ad: any, nicheTabId: string): boolean {
   if (nicheTabId === "all") return true;
   const niche = resolveClassifiedNiche(ad);
   const cat = ad.category;
@@ -1553,5 +1528,3 @@ function ClassificadosIndex() {
     </div>
   );
 }
-// Default export removed for TanStack Router code-splitting optimization
-export default ClassificadosIndex;

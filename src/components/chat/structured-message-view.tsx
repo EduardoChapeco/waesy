@@ -55,6 +55,7 @@ import {
   ChatAppointmentCard,
   ChatQuoteCard,
 } from "./chat-commerce-card";
+import { CopilotHotOfferWorkflowCard } from "./copilot-hot-offer-workflow-card";
 
 // ============================================================
 // Tipos Canônicos de Mensagem Estruturada (ia/09-chat.md & ia/13-design-conversa.md)
@@ -88,6 +89,7 @@ export type AIChatBlockType =
   | "food_modifier_selector"
   | "creative_ad_preview"
   | "in_chat_simlab_verdict"
+  | "hot_offer_workflow"
   | "widget";
 
 export interface AIChatBlock {
@@ -2114,6 +2116,22 @@ export function StructuredMessageView({
           case "in_chat_simlab_verdict":
             return (
               <SimlabVerdictBlock key={index} data={block.data} onAction={handleAction} />
+            );
+
+          case "hot_offer_workflow":
+            return (
+              <CopilotHotOfferWorkflowCard
+                key={index}
+                data={block.data as any}
+                onCompletedAction={(res) => {
+                  handleAction?.({
+                    id: `hot-offer-done-${res.offer.id}`,
+                    label: "Ver Oferta Publicada",
+                    action_type: "open_artifact",
+                    payload: { offerId: res.offer.id, slug: res.offer.slug },
+                  });
+                }}
+              />
             );
 
           case "widget": {

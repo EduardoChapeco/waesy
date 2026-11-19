@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { getRealtimeChannel } from "@/services/realtime-channel";
 import { ErrorState } from "@/components/state/states";
 import { toast } from "sonner";
 import {
@@ -25,32 +26,23 @@ import {
 } from "@/services/chat-operations.functions";
 import { saveStoreSupportSettings } from "@/services/chat.functions";
 import { getStoreSettings } from "@/services/store.functions";
-import {
-  listChatDepartments,
-  saveWhatsAppGovernanceConfig,
-  type ChatDepartmentDTO,
-} from "@/services/whatsapp-channel-instances.functions";
+import { saveWhatsAppGovernanceConfig } from "@/services/whatsapp-channel-instances.functions";
 
 export const Route = createFileRoute("/workspace/atendimento/horarios")({
   head: () => ({ meta: [{ title: "Horários & Mensagens — Atendimento" }] }),
   loader: async () => {
     try {
       const store = await getStoreSettings();
-      const [quickAnswers, departments] = await Promise.all([
-        listStoreQuickAnswers({ data: { storeId: store?.id } }),
-        listChatDepartments({ data: { storeId: store?.id } }),
-      ]);
+      const quickAnswers = await listStoreQuickAnswers({ data: { storeId: store?.id } });
       return {
         store,
         quickAnswers: quickAnswers || [],
-        departments: (departments || []) as ChatDepartmentDTO[],
         loadError: null as string | null,
       };
     } catch (err: any) {
       return {
         store: null,
         quickAnswers: [],
-        departments: [] as ChatDepartmentDTO[],
         loadError: err?.message || "Falha ao carregar horários e respostas rápidas.",
       };
     }
@@ -63,7 +55,6 @@ function WorkspaceAtendimentoHorariosPage() {
   const loaderData = (Route.useLoaderData?.() as any) || {};
   const loadError = loaderData.loadError || null;
   const store = loaderData.store || null;
-  const departments: ChatDepartmentDTO[] = loaderData.departments || [];
   const initialSupport = (store?.settings as any)?.support_settings || {};
   const initialGovPerms = (store?.settings as any)?.whatsapp_governance?.permissions || {};
 
@@ -108,45 +99,50 @@ function WorkspaceAtendimentoHorariosPage() {
   const [macroMessage, setMacroMessage] = useState("");
   const [isSavingMacro, setIsSavingMacro] = useState(false);
 
+  useEffect(() => {
+    setQuickAnswers(loaderData.quickAnswers || []);
+  }, [loaderData.quickAnswers]);
+
+  useEffect(() => {
+    const storeId = store?.id;
+    if (!storeId) return;
+    let debounceTimer: number | null = null;
+    const refreshLive = () => {
+      if (debounceTimer !== null) window.clearTimeout(debounceTimer);
+      debounceTimer = window.setTimeout(async () => {
+        debounceTimer = null;
+        const fresh = await listStoreQuickAnswers({ data: { storeId } }).catch(() => null);
+        if (fresh) setQuickAnswers(fresh);
+        void router.invalidate();
+      }, 600);
+    };
+    const filter = `store_id=eq.${storeId}`;
+    const { channel, unsubscribe } = getRealtimeChannel(`atendimento-horarios:${storeId}`);
+    channel
+      ?.on("postgres_changes", { event: "*", schema: "public", table: "store_quick_answers", filter }, refreshLive)
+      .on("postgres_changes", { event: "*", schema: "public", table: "chat_departments", filter }, refreshLive)
+      .subscribe();
+    return () => {
+      if (debounceTimer !== null) window.clearTimeout(debounceTimer);
+      unsubscribe();
+    };
+  }, [store?.id, router]);
+
   const handleSaveHorariosAndGovernance = async () => {
     setIsSavingAll(true);
     try {
       await saveStoreSupportSettings({
         data: {
+          storeId: store?.id,
           away_message: awayMessage,
           auto_reply_enabled: autoReplyEnabled,
           support_schedules: schedules,
         },
       });
 
-      const normalizedDepts = departments.map((d) => ({
-        id: d.id,
-        slug: d.slug,
-        name: d.name,
-        description: d.description || undefined,
-        color: (["emerald", "blue", "amber", "purple", "rose", "slate"].includes(d.color)
-          ? d.color
-          : "emerald") as "emerald" | "blue" | "amber" | "purple" | "rose" | "slate",
-        routingMode: d.routing_mode || "ai_sdr_first",
-        slaMinutes: Number(d.sla_minutes || 15),
-        whatsappInstanceId: d.whatsapp_instance_id || undefined,
-        instanceIds: d.whatsapp_instance_id ? [d.whatsapp_instance_id] : [],
-        assignedAgentIds: d.assigned_agent_ids || [],
-        roundRobinEnabled: d.round_robin_enabled ?? true,
-        aiSdrEnabled: d.ai_sdr_enabled ?? true,
-        aiSdrSkillPrompt: d.ai_sdr_skill_prompt || undefined,
-        autoGreetingMessage: d.auto_greeting_message || undefined,
-        scheduleStart: d.schedule_start || "08:00",
-        scheduleEnd: d.schedule_end || "18:00",
-        scheduleDays: d.schedule_days || "Seg a Sex",
-        awayMessage: d.away_message || undefined,
-        isActive: d.is_active ?? true,
-        aiTriageStages: d.ai_triage_stages || [],
-      }));
-
       await saveWhatsAppGovernanceConfig({
         data: {
-          departments: normalizedDepts,
+          storeId: store?.id,
           permissions: {
             onlyManagersCanViewQr,
             onlyManagersCanDisconnect,
@@ -161,6 +157,7 @@ function WorkspaceAtendimentoHorariosPage() {
       });
 
       toast.success("Horários, ausência e regras salvos com sucesso!");
+      void router.invalidate();
     } catch (err: any) {
       toast.error(err?.message || "Erro ao salvar configurações.");
     } finally {

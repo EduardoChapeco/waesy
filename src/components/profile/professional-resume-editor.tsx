@@ -1433,8 +1433,10 @@ function AvailabilityEditSheet({
  const [seniority, setSeniority] = useState(initialData?.seniority || "mid");
  const [workplacePreference, setWorkplacePreference] = useState(initialData?.workplacePreference || "any");
  const [employmentTypePreference, setEmploymentTypePreference] = useState(initialData?.employmentTypePreference || "any");
- const [salaryExpectation, setSalaryExpectation] = useState(
- initialData?.salaryExpectationCents ? (initialData.salaryExpectationCents / 100).toString() : ""
+ const [salaryExpectationCents, setSalaryExpectationCents] = useState<number | undefined>(
+ initialData?.salaryExpectationCents && Number(initialData.salaryExpectationCents) > 0
+ ? Math.round(Number(initialData.salaryExpectationCents))
+ : undefined
  );
  const [immediateStart, setImmediateStart] = useState(Boolean(initialData?.immediateStart));
  const [willingToRelocate, setWillingToRelocate] = useState(Boolean(initialData?.willingToRelocate));
@@ -1442,9 +1444,6 @@ function AvailabilityEditSheet({
 
  const handleSubmit = (e: React.FormEvent) => {
  e.preventDefault();
- const salaryCents = salaryExpectation
- ? Math.round(parseFloat(salaryExpectation.replace(/\D/g, "")))
- : undefined;
 
  onSave(
  {
@@ -1453,7 +1452,7 @@ function AvailabilityEditSheet({
  seniority,
  workplacePreference,
  employmentTypePreference,
- salaryExpectationCents: salaryCents,
+ salaryExpectationCents: salaryExpectationCents && salaryExpectationCents > 0 ? salaryExpectationCents : undefined,
  immediateStart,
  willingToRelocate,
  willingToTravel,
@@ -1540,10 +1539,11 @@ function AvailabilityEditSheet({
  {/* Pretensão Salarial */}
  <div className="space-y-2">
  <Label className="text-xs font-bold">Pretensão Salarial Mensal (R$)</Label>
- <Input
- value={salaryExpectation}
- onChange={(e) => setSalaryExpectation(e.target.value)}
- placeholder="Ex: 5500,00"
+ <CurrencyField
+ value={salaryExpectationCents ?? null}
+ onChange={setSalaryExpectationCents}
+ placeholder="5.500,00"
+ allowZero={false}
  className="h-11 rounded-lg text-xs font-mono"
  />
  </div>

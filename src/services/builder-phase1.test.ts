@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { sanitizeNodeProps } from "@/components/commerce/experience-renderer";
 import { resolveStoreContext } from "@/services/builder.functions";
-import type { ExperienceNode } from "@/lib/builder-types";
+import type { ExperienceNode } from "@/lib/builder/builder-types";
 
 describe("Fase 1: Estabilização do Builder & Resiliência Defensiva", () => {
  it("sanitizeNodeProps deve proteger contra nós vazios ou undefined", () => {

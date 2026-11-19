@@ -142,10 +142,66 @@ export async function exportElementAsImage(
   }
 }
 
+export interface PdfSliceRange {
+  startY: number;
+  endY: number;
+  height: number;
+}
+
+/**
+ * Computes clean non-overlapping vertical slices across a tall document canvas,
+ * snapping cuts immediately before any `[data-pdf-block], .break-inside-avoid, section, article`
+ * boundary that would otherwise be split mid-card across consecutive A4 pages.
+ */
+export function computeSmartPdfPageSlices(
+  totalHeight: number,
+  pageHeight: number,
+  blockBounds: Array<{ top: number; bottom: number }> = [],
+): PdfSliceRange[] {
+  const safeTotal = Math.max(1, Math.round(totalHeight));
+  const safePageH = Math.max(100, Math.round(pageHeight));
+  if (safeTotal <= safePageH) {
+    return [{ startY: 0, endY: safeTotal, height: safeTotal }];
+  }
+
+  const sortedBlocks = [...blockBounds]
+    .filter((b) => Number.isFinite(b.top) && Number.isFinite(b.bottom) && b.bottom > b.top)
+    .sort((a, b) => a.top - b.top);
+
+  const slices: PdfSliceRange[] = [];
+  let cursor = 0;
+
+  while (cursor < safeTotal) {
+    const nominalEnd = Math.min(safeTotal, cursor + safePageH);
+    if (nominalEnd >= safeTotal) {
+      slices.push({ startY: cursor, endY: safeTotal, height: safeTotal - cursor });
+      break;
+    }
+
+    let cutY = nominalEnd;
+    for (const blk of sortedBlocks) {
+      if (blk.top > cursor + 40 && blk.top < nominalEnd && blk.bottom > nominalEnd) {
+        if (blk.bottom - blk.top <= safePageH * 0.92) {
+          cutY = Math.round(blk.top);
+          break;
+        }
+      }
+    }
+
+    if (cutY <= cursor + 24) {
+      cutY = nominalEnd;
+    }
+    slices.push({ startY: cursor, endY: cutY, height: cutY - cursor });
+    cursor = cutY;
+  }
+
+  return slices;
+}
+
 /**
  * Captura um elemento DOM e exporta como Documento PDF em alta resolução.
  * Suporta paginação estruturada automática por folhas (.document-page / .a4-page)
- * para evitar fatiamento cego de linhas de texto e blocos visuais.
+ * e fatiamento inteligente por blocos (.break-inside-avoid) para documentos contínuos.
  */
 export async function exportElementAsPdf(
   elementId: string,
@@ -227,36 +283,69 @@ export async function exportElementAsPdf(
       return pdf.output("blob");
     }
 
-    // ── MODO DOCUMENTO CONTÍNUO / LÂMINA ÚNICA ──
+    // ── MODO DOCUMENTO CONTÍNUO / LÂMINA ÚNICA COM PAGINAÇÃO INTELIGENTE ──
     const resolvedPdfBg = resolveCanvasExportBg(element);
+    const elemRect = element.getBoundingClientRect();
+    const blockElements = Array.from(
+      element.querySelectorAll<HTMLElement>(".break-inside-avoid, section, article"),
+    );
+    const renderScale = 2;
+    const rawDomBlocks = blockElements
+      .map((el) => {
+        const rect = el.getBoundingClientRect();
+        return {
+          top: Math.max(0, (rect.top - elemRect.top) * renderScale),
+          bottom: Math.max(0, (rect.bottom - elemRect.top) * renderScale),
+        };
+      })
+      .filter((b) => b.bottom > b.top);
+
     const canvas = await renderElementToCanvasSafe(element, {
-      scale: 2,
+      scale: renderScale,
       backgroundColor: resolvedPdfBg,
     });
 
     const isCanvasLandscape = canvas.width > canvas.height;
     const orientation = defaultOrientation || (isCanvasLandscape ? "l" : "p");
-    const imgData = canvas.toDataURL("image/jpeg", 0.95);
     const pdf = new jsPDF(orientation, "mm", "a4");
 
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    const imgWidth = pageWidth;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    const canvasPageHeightPx = Math.max(120, Math.round((pageHeight * canvas.width) / pageWidth));
+    const slices = computeSmartPdfPageSlices(canvas.height, canvasPageHeightPx, rawDomBlocks);
 
-    let heightLeft = imgHeight;
-    let position = 0;
-
-    // Primeira página
-    pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
-
-    // Páginas adicionais se o canvas for maior que uma página A4
-    while (heightLeft > 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+    if (slices.length <= 1) {
+      const imgData = canvas.toDataURL("image/jpeg", 0.95);
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight);
+    } else {
+      for (let i = 0; i < slices.length; i++) {
+        const slice = slices[i];
+        const pageCanvas = document.createElement("canvas");
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = Math.max(1, slice.height);
+        const ctx = pageCanvas.getContext("2d");
+        if (ctx) {
+          ctx.fillStyle = resolvedPdfBg || DEFAULT_EXPORT_BG;
+          ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+          ctx.drawImage(
+            canvas,
+            0,
+            slice.startY,
+            canvas.width,
+            slice.height,
+            0,
+            0,
+            canvas.width,
+            slice.height,
+          );
+        }
+        const sliceImg = pageCanvas.toDataURL("image/jpeg", 0.95);
+        const sliceMmHeight = (slice.height * pageWidth) / canvas.width;
+        if (i > 0) pdf.addPage();
+        pdf.addImage(sliceImg, "JPEG", 0, 0, pageWidth, sliceMmHeight);
+      }
     }
 
     pdf.save(filename);

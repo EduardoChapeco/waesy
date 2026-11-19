@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ImageCropperDialog } from "@/components/ui/image-cropper-dialog";
+import type { ProportionalAppIconSetBlobs } from "@/lib/crop-image";
 import { extractMediaFromClipboard } from "@/lib/clipboard-media";
 import { ingestExternalMediaUrl } from "@/services/storage.functions";
 
@@ -22,6 +23,13 @@ const PRESET_ASPECT_RATIOS: Record<AspectRatioPreset, number | undefined> = {
  free: undefined, // Livre
 };
 
+export interface AppIconBundleUrls {
+  logoSquareUrl: string;
+  icon192Url: string;
+  icon512Url: string;
+  maskable512Url: string;
+}
+
 export interface ImageUploadProps {
  value?: string | null;
  onChange: (url: string) => void;
@@ -34,6 +42,10 @@ export interface ImageUploadProps {
  label?: string;
  helperText?: string;
  showExternalUrlOption?: boolean;
+ allowAspectSwitch?: boolean;
+ appLogoMode?: boolean;
+ initialLogoBgColor?: string;
+ onAppIconBundleUploaded?: (urls: AppIconBundleUrls) => void;
 }
 
 export function ImageUpload({
@@ -48,6 +60,10 @@ export function ImageUpload({
  label,
  helperText,
  showExternalUrlOption = true,
+ allowAspectSwitch = false,
+ appLogoMode = false,
+ initialLogoBgColor,
+ onAppIconBundleUploaded,
 }: ImageUploadProps) {
  const [isUploading, setIsUploading] = useState(false);
  const inputRef = useRef<HTMLInputElement>(null);
@@ -132,17 +148,90 @@ export function ImageUpload({
  }
  };
 
+  const uploadBlobVariant = async (blob: Blob, suffix: string): Promise<string> => {
+    const fileName = `${suffix}-${Date.now()}.png`;
+    try {
+      const { getSignedUploadUrl } = await import("@/services/storage.functions");
+      const res = await getSignedUploadUrl({
+        data: { fileName, bucket: bucket as any, contentType: "image/png" },
+      });
+      if (res.signedUrl) {
+        const uploadRes = await fetch(res.signedUrl, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${res.token}`,
+            "Content-Type": "image/png",
+          },
+          body: blob,
+        });
+        if (uploadRes.ok && res.publicUrl) return res.publicUrl;
+      }
+    } catch {
+      // fallback para server upload
+    }
+    const base64Data = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+    const { uploadMediaUniversal } = await import("@/services/storage.functions");
+    const fallbackRes = await uploadMediaUniversal({
+      data: {
+        fileName,
+        fileType: "image/png",
+        base64Data,
+        bucket,
+        folder: "app-icons",
+      },
+    });
+    if (!fallbackRes?.url) throw new Error("Falha ao enviar variante de ícone");
+    return fallbackRes.url;
+  };
+
+  const handleAppIconBundle = async (bundle: ProportionalAppIconSetBlobs) => {
+    if (!onAppIconBundleUploaded) return;
+    setIsUploading(true);
+    try {
+      const [logoSquareUrl, icon192Url, icon512Url, maskable512Url] = await Promise.all([
+        uploadBlobVariant(bundle.logoSquareBlob, "logo-square"),
+        uploadBlobVariant(bundle.icon192Blob, "icon-192"),
+        uploadBlobVariant(bundle.icon512Blob, "icon-512"),
+        uploadBlobVariant(bundle.maskable512Blob, "icon-maskable-512"),
+      ]);
+      onChange(logoSquareUrl);
+      onAppIconBundleUploaded({
+        logoSquareUrl,
+        icon192Url,
+        icon512Url,
+        maskable512Url,
+      });
+    } catch (err) {
+      const msg =
+        err instanceof Error && err.message
+          ? err.message
+          : "Falha ao enviar variações proporcionais da logo PWA.";
+      toast.error(msg);
+      throw err;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
  const handleCropComplete = async (croppedBase64: string) => {
- if (!currentImageFile) return;
+ const outputMimeType = croppedBase64.startsWith("data:image/webp") ? "image/webp" : "image/png";
+ const outputExt = outputMimeType === "image/webp" ? "webp" : "png";
+ const rawBaseName = (currentImageFile?.name || `crop-${Date.now()}`).replace(/\.[^/.]+$/, "");
+ const effectiveName = `${rawBaseName}.${outputExt}`;
  setIsUploading(true);
  try {
  try {
  const { getSignedUploadUrl } = await import("@/services/storage.functions");
  const res = await getSignedUploadUrl({
  data: {
- fileName: currentImageFile.name,
+ fileName: effectiveName,
  bucket: bucket as any,
- contentType: currentImageFile.type,
+ contentType: outputMimeType,
  },
  });
 
@@ -160,15 +249,14 @@ export function ImageUpload({
  const byteArray = new Uint8Array(byteNumbers);
  byteArrays.push(byteArray);
  }
- const mimeType = croppedBase64.startsWith("data:image/png") ? "image/png" : "image/webp";
- const blob = new Blob(byteArrays, { type: mimeType });
+ const blob = new Blob(byteArrays, { type: outputMimeType });
 
  // Upload directly to Supabase Storage via Signed URL
  const uploadRes = await fetch(res.signedUrl, {
  method: "PUT",
  headers: {
  Authorization: `Bearer ${res.token}`,
- "Content-Type": mimeType,
+ "Content-Type": outputMimeType,
  },
  body: blob,
  });
@@ -187,8 +275,8 @@ export function ImageUpload({
  const { uploadMediaUniversal } = await import("@/services/storage.functions");
  const fallbackRes = await uploadMediaUniversal({
  data: {
- fileName: currentImageFile.name,
- fileType: currentImageFile.type || "image/jpeg",
+ fileName: effectiveName,
+ fileType: outputMimeType,
  base64Data: croppedBase64,
  bucket,
  folder: "uploads",
@@ -233,7 +321,41 @@ export function ImageUpload({
  };
 
  const renderUrlDrawer = () => {
- return null;
+ if (!showExternalUrlOption || isAvatar) return null;
+ return (
+ <div className="space-y-2">
+ <div className="flex justify-end">
+ <button
+ type="button"
+ onClick={() => setShowManualUrl((prev) => !prev)}
+ className="h-11 min-h-11 px-2 text-xs font-semibold text-muted-foreground hover:text-foreground inline-flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
+ >
+ <ExternalLink className="size-3.5" />
+ <span>{showManualUrl ? "Fechar URL" : "Importar por URL"}</span>
+ </button>
+ </div>
+ {showManualUrl && (
+ <div className="flex items-center gap-2">
+ <Input
+ value={manualUrl}
+ onChange={(e) => setManualUrl(e.target.value)}
+ placeholder="https://..."
+ aria-label="URL externa da imagem"
+ className="h-11 min-h-11 rounded-xl text-xs"
+ />
+ <Button
+ type="button"
+ variant="outline"
+ disabled={isUploading || !manualUrl.trim()}
+ onClick={() => void handleApplyManualUrl()}
+ className="h-11 min-h-11 px-4 rounded-xl text-xs font-bold shrink-0 cursor-pointer"
+ >
+ Importar
+ </Button>
+ </div>
+ )}
+ </div>
+ );
  };
 
  // ── 1. VARIANTE AVATAR / LOGOTIPO COMPACTO (QUADRADO SQUIRCLE) ──
@@ -297,9 +419,12 @@ export function ImageUpload({
  onOpenChange={setCropModalOpen}
  imageSrc={currentImageSrc}
  aspect={effectiveAspect}
- cropShape="round"
+ cropShape={appLogoMode ? "rect" : "round"}
  lockAspect={true}
- onCropCompleteAction={handleCropComplete}
+ appLogoMode={appLogoMode}
+ initialLogoBgColor={initialLogoBgColor}
+ onAppIconSetComplete={onAppIconBundleUploaded ? handleAppIconBundle : undefined}
+ onCropCompleteAction={appLogoMode && onAppIconBundleUploaded ? undefined : handleCropComplete}
  />
  </div>
  </div>
@@ -386,7 +511,7 @@ export function ImageUpload({
  imageSrc={currentImageSrc}
  aspect={effectiveAspect}
  cropShape="rect"
- lockAspect={true}
+ lockAspect={!allowAspectSwitch && aspectPreset !== "free"}
  onCropCompleteAction={handleCropComplete}
  />
  </div>
@@ -432,38 +557,30 @@ export function ImageUpload({
  </div>
  </div>
  ) : (
- <div
- role="button"
- tabIndex={0}
- onClick={() => inputRef.current?.click()} // focus-visible:ring-2
- onKeyDown={(e) => {
- if (e.key === "Enter" || e.key === " ") {
- e.preventDefault();
- inputRef.current?.click();
- }
- }}
+ <button
+ type="button"
+ onClick={() => inputRef.current?.click()}
+ disabled={isUploading}
  style={defaultStyle}
  className={cn(
- "border-2 border-dashed border-border/80 rounded-lg flex flex-col items-center justify-center p-4 text-center cursor-pointer transition-colors duration-200 bg-muted/40 hover:bg-muted/70 hover:border-foreground/30 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+ "w-full min-h-28 border-2 border-dashed border-border/80 rounded-lg flex flex-col items-center justify-center p-4 text-center cursor-pointer transition-colors duration-200 bg-muted/40 hover:bg-muted/70 hover:border-foreground/30 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none gap-2",
  isUploading && "pointer-events-none opacity-60",
  )}
  >
- <div className="p-3 bg-background border border-border rounded-lg mb-2 text-muted-foreground shadow-xs">
+ <span className="p-3 bg-background border border-border rounded-lg text-muted-foreground shadow-xs inline-flex items-center justify-center">
  <Upload className="size-5 text-foreground" />
- </div>
- <p className="text-xs font-bold text-foreground">
+ </span>
+ <span className="text-xs font-bold text-foreground block">
  {isUploading ? "Processando Imagem..." : label || "Adicionar Imagem"}
- </p>
- <p className="text-xs text-muted-foreground mt-1 max-w-60">
+ </span>
+ <span className="text-xs text-muted-foreground max-w-60 block">
  {helperText ? `${helperText} • Cole com Ctrl+V` : `Enquadramento ${getPresetLabel()} • Cole com Ctrl+V`}
- </p>
- <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}
- disabled={isUploading}
- className="mt-1 rounded-lg text-xs font-bold h-11 px-5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
- >
- {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin motion-reduce:animate-none" /> : "Selecionar e Recortar"}
- </Button>
- </div>
+ </span>
+ <span className="inline-flex items-center justify-center rounded-lg border border-border bg-card px-5 h-11 min-h-11 text-xs font-bold text-foreground">
+ {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin motion-reduce:animate-none" /> : null}
+ <span>Selecionar e Recortar</span>
+ </span>
+ </button>
  )}
  <input
  type="file"
@@ -477,10 +594,13 @@ export function ImageUpload({
  onOpenChange={setCropModalOpen}
  imageSrc={currentImageSrc}
  aspect={effectiveAspect}
- cropShape={isAvatar ? "round" : "rect"}
- lockAspect={true}
- title="Enquadrar Imagem"
- onCropCompleteAction={handleCropComplete}
+ cropShape={isAvatar && !appLogoMode ? "round" : "rect"}
+ lockAspect={isAvatar || appLogoMode ? true : (!allowAspectSwitch && aspectPreset !== "free")}
+ title={appLogoMode ? "Proporcionalizar Logo do App" : "Enquadrar Imagem"}
+ appLogoMode={appLogoMode}
+ initialLogoBgColor={initialLogoBgColor}
+ onAppIconSetComplete={onAppIconBundleUploaded ? handleAppIconBundle : undefined}
+ onCropCompleteAction={appLogoMode && onAppIconBundleUploaded ? undefined : handleCropComplete}
  />
  </div>
  );

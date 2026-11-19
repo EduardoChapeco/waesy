@@ -17,9 +17,10 @@ const pipeline = fs.readFileSync(
 );
 
 function applyHandlerSource() {
-  const start = lifecycle.indexOf("export const applyParsedVoucherToTrip");
-  const end = lifecycle.indexOf("/**\n * 10. Listagem", start);
-  return lifecycle.slice(start, end);
+  const normalized = lifecycle.replace(/\r\n/g, "\n");
+  const start = normalized.indexOf("export const applyParsedVoucherToTrip");
+  const end = normalized.indexOf("/**\n * 10. Listagem", start);
+  return end > start ? normalized.slice(start, end) : normalized.slice(start);
 }
 
 describe("Turismo R6 — aplicação atômica de voucher", () => {

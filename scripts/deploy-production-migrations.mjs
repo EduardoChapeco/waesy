@@ -39,21 +39,12 @@ const configs = [
   },
 ];
 
-const migrationsToApply = [
-  "supabase/migrations/20261027000000_hotpages_and_banners_clean_overlays_and_shadows.sql",
-  "supabase/migrations/20261107000000_eventos_credenciais_assimilation.sql",
-  "supabase/migrations/20261109000000_launch_leads_and_founder_landing.sql",
-  "supabase/migrations/20261110000000_hotpages_show_shadow_and_text_color.sql",
-  "supabase/migrations/20261110000000_mining_and_crawlers_infrastructure.sql",
-  "supabase/migrations/20261111000000_universal_lead_forms_engine.sql",
-  "supabase/migrations/20261112000000_master_plan_v14_ck_hotels_simlab.sql",
-  "supabase/migrations/20261113000000_unify_mining_canonical_entities.sql",
-  "supabase/migrations/20261114000000_mining_pg_cron_schedules.sql",
-  "supabase/migrations/20261114000001_ghost_tenants_and_claiming_engine.sql",
-  "supabase/migrations/20261115000000_crawler_resilience_and_mined_products.sql",
-  "supabase/migrations/20261116000000_support_tickets_rls_and_bilateral.sql",
-  "supabase/migrations/20260926150000_classifieds_rls_zero_crash.sql",
-];
+const migrationsDir = path.resolve(__dirname, "../supabase/migrations");
+const migrationsToApply = fs
+  .readdirSync(migrationsDir)
+  .filter((name) => name.endsWith(".sql"))
+  .sort((a, b) => a.localeCompare(b))
+  .map((name) => path.join("supabase/migrations", name));
 
 async function run() {
   let connected = false;
@@ -99,10 +90,17 @@ async function run() {
     }
 
     const baseName = path.basename(relPath);
+    const version = baseName.split("_")[0];
+    const migName = baseName.replace(/^\d+_/, "").replace(/\.sql$/, "");
     console.log(`\nAplicando migração: ${baseName}...`);
     try {
       await client.unsafe(sql);
-      console.log(`✓ SUCESSO: ${baseName} aplicada com sucesso!`);
+      await client`
+        INSERT INTO supabase_migrations.schema_migrations (version, name, statements)
+        VALUES (${version}, ${migName}, ARRAY[]::text[])
+        ON CONFLICT (version) DO NOTHING
+      `;
+      console.log(`✓ SUCESSO: ${baseName} aplicada e registrada com sucesso!`);
     } catch (err) {
       console.error(`! Nota/Aviso em ${baseName}:`, err.message);
     }

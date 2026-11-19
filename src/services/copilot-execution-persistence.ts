@@ -1,6 +1,7 @@
 import type { AIActivityStep, ExecutionPlanStep } from "@/types/chat";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, getSSRClient } from "@/lib/server-access";
+import { getRequestScopedInflightMap } from "@/lib/request-inflight";
 
 export type PersistedExecutionStatus = "queued" | "running" | "paused" | "completed" | "failed_retryable" | "failed_final" | "cancelled";
 
@@ -13,8 +14,6 @@ interface ExecutionContext {
   userId?: string;
   domain: string;
 }
-
-const pendingExecutionWrites = new Map<string, Promise<void>>();
 
 function toPersistedStep(step: AIActivityStep, executionId: string, sequenceNo: number) {
   return {
@@ -66,10 +65,11 @@ export async function persistCopilotExecutionStep(context: Pick<ExecutionContext
 }
 
 export async function completeCopilotExecution(context: Pick<ExecutionContext, "executionId">, status: PersistedExecutionStatus, state: Record<string, unknown> = {}, error?: string): Promise<void> {
+  const inflightWrites = getRequestScopedInflightMap<void>("copilot-exec-writes");
   try {
-    await pendingExecutionWrites.get(context.executionId);
+    await inflightWrites?.get(context.executionId);
   } finally {
-    pendingExecutionWrites.delete(context.executionId);
+    inflightWrites?.delete(context.executionId);
   }
   const db = getServerClient();
   const currentPhase = status === "completed"
@@ -92,10 +92,17 @@ export function createPersistedActivitySteps(context: Pick<ExecutionContext, "ex
       return (...steps: AIActivityStep[]) => {
         const firstIndex = array.length;
         steps.forEach((step, offset) => {
-          const previous = pendingExecutionWrites.get(context.executionId) ?? Promise.resolve();
+          const inflightWrites = getRequestScopedInflightMap<void>("copilot-exec-writes");
+          const previous = inflightWrites?.get(context.executionId) ?? Promise.resolve();
           const pending = previous.then(() => persistCopilotExecutionStep(context, step, firstIndex + offset));
-          pendingExecutionWrites.set(context.executionId, pending);
-          void pending.catch((error) => console.warn("[copilot-execution] step telemetry unavailable", error));
+          inflightWrites?.set(context.executionId, pending);
+          void pending
+            .catch((error) => console.warn("[copilot-execution] step telemetry unavailable", error))
+            .finally(() => {
+              if (inflightWrites?.get(context.executionId) === pending) {
+                inflightWrites.delete(context.executionId);
+              }
+            });
         });
         return Array.prototype.push.apply(array, steps);
       };
@@ -126,10 +133,11 @@ export async function saveCopilotExecutionCheckpoint(input: {
   progressPercent?: number;
   currentStepLabel?: string;
 }): Promise<void> {
+  const inflightWrites = getRequestScopedInflightMap<void>("copilot-exec-writes");
   try {
-    await pendingExecutionWrites.get(input.executionId);
+    await inflightWrites?.get(input.executionId);
   } finally {
-    pendingExecutionWrites.delete(input.executionId);
+    inflightWrites?.delete(input.executionId);
   }
   const db = getServerClient();
   const nowIso = new Date().toISOString();

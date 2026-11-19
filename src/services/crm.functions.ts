@@ -1,14 +1,19 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { getServerIdentity, assertStoreAccess, assertManagerAccess } from "@/lib/server-access";
 import { enforceRateLimit } from "@/lib/rate-limiter";
+import { sanitizeCustomerEmail } from "@/lib/contact-sanitize";
 import { normalizeDateOnlyInput } from "@/lib/datetime";
 import { extensionForMime, resolveNormalizedMimeType } from "@/lib/chat-media-attachment";
 import { sendWhatsAppNotification } from "./integrations.functions";
 import { dispatchClosedLoopLeadQualification } from "./pixels.functions";
 import { compileContractDocument } from "@/lib/contracts/contract-compiler";
 import { autoPositionSignatureFieldsFromContent } from "@/lib/contracts/contract-semantic-dictionary";
+import {
+  normalizeDestinationTagList,
+  normalizeRoomsFromLeadOrLegacy,
+} from "@/lib/travel/opportunity-matching-engine";
 import {
   formatDynamicFieldLabel,
   formatFieldPrimitiveValue,
@@ -19,6 +24,7 @@ import {
   normalizeKanbanStageSlug,
   resolveKanbanStageSynonym,
 } from "@/lib/niches/kanban-niche-taxonomy";
+import { autoBindLeadToMatchingWhatsAppThreads } from "./chat-quick-actions.functions";
 
 async function resolveStoreStageContract(
   supabase: ReturnType<typeof getServerClient>,
@@ -225,7 +231,7 @@ export const listCustomers = createServerFn({ method: "GET" })
  legalName: c.legal_name,
  document: c.document || c.tax_id || null,
  taxId: c.document || c.tax_id || null,
- email: c.email || null,
+ email: sanitizeCustomerEmail(c.email),
  phone: c.phone || null,
  status: c.status || "active",
  channel: c.channel || "direct",
@@ -460,13 +466,14 @@ export const getCustomer360 = createServerFn({ method: "GET" })
 
     const { data: contractRows } = await supabase
       .from("contracts")
-      .select("id, title, category, status, current_version, verification_code, metadata, created_at")
+      .select("id, title, category, status, current_version, verification_code, customer_id, lead_id, metadata, created_at")
+      .or(`store_id.eq.${identity.store_id},metadata->>store_id.eq.${identity.store_id}`)
       .order("created_at", { ascending: false });
 
     if (contractRows) {
       customerContracts = contractRows.filter((c: any) => {
         const m = c.metadata || {};
-        if (m.store_id && m.store_id !== identity.store_id) return false;
+        if (customerId && (c.customer_id === customerId || m.customer_id === customerId)) return true;
         if (cleanDoc && m.client_document && m.client_document.replace(/\D/g, "").includes(cleanDoc)) return true;
         if (customer.email && m.client_email && m.client_email.toLowerCase() === customer.email.toLowerCase()) return true;
         if (cleanPhone && m.client_phone && m.client_phone.replace(/\D/g, "").includes(cleanPhone)) return true;
@@ -735,7 +742,7 @@ export const getCustomer360 = createServerFn({ method: "GET" })
   legalName: customer.legal_name || null,
   taxId: customer.document || null,
   rg: customer.rg || null,
-  email: customer.email || null,
+  email: sanitizeCustomerEmail(customer.email),
   phone: customer.phone || null,
   birthDate: customer.birth_date || null,
   kind: customer.kind || "individual",
@@ -784,6 +791,34 @@ export const getCustomer360 = createServerFn({ method: "GET" })
       ? customer.custom_fields.consent_records
       : [],
     timeline,
+    verifiedOpportunities: await (async () => {
+      try {
+        const primaryLead = (commercialLeads || [])[0];
+        if (!primaryLead?.id) return [];
+        const { internalGetVerifiedOpportunitiesForLead } = await import("./opportunity-radar.functions");
+        const bundle = await internalGetVerifiedOpportunitiesForLead({
+          storeId: identity.store_id,
+          leadId: primaryLead.id,
+        });
+        return [
+          ...bundle.verifiedOpportunities,
+          ...bundle.verifiedSimilarProposals.map((vp) => ({
+            id: vp.id,
+            sourceType: "proposal",
+            offerTitle: vp.title,
+            destinationCity: vp.destinationCity,
+            matchScore: vp.matchScore,
+            effectiveTotalCents: vp.effectiveTotalCents,
+            requiresChildRequote: vp.requiresChildRequote,
+            matchReasons: vp.reasons,
+            warnings: vp.warnings,
+            createdAt: vp.createdAt,
+          })),
+        ];
+      } catch {
+        return [];
+      }
+    })(),
   // métricas — nomes com aliases completos para compatibilidade
   ltvCents,
   totalLtvCents: ltvCents,
@@ -925,6 +960,7 @@ export const updateCustomerSchema = z.object({
  legalName: z.string().optional().nullable(),
  document: z.string().optional().nullable(),
  rg: z.string().optional().nullable(),
+ avatarUrl: z.string().optional().nullable(),
  email: z.string().optional().nullable(),
  phone: z.string().optional().nullable(),
  birthDate: z.string().optional().nullable(),
@@ -955,6 +991,7 @@ export const updateCustomer = createServerFn({ method: "POST" })
  if (input.legalName !== undefined) updatePayload.legal_name = input.legalName;
  if (input.document !== undefined) updatePayload.document = input.document;
  if (input.rg !== undefined) updatePayload.rg = input.rg;
+ if (input.avatarUrl !== undefined) updatePayload.avatar_url = input.avatarUrl;
  if (input.email !== undefined) updatePayload.email = input.email;
  if (input.phone !== undefined) updatePayload.phone = input.phone;
  if (input.birthDate !== undefined) updatePayload.birth_date = input.birthDate;
@@ -978,6 +1015,17 @@ export const updateCustomer = createServerFn({ method: "POST" })
  .eq("store_id", identity.store_id);
 
  if (error) throw new Error("Erro ao atualizar cliente: " + error.message);
+
+ if (input.avatarUrl !== undefined || input.fullName !== undefined) {
+   const threadUpdates: Record<string, any> = { updated_at: new Date().toISOString() };
+   if (input.avatarUrl !== undefined) threadUpdates.participant_avatar_url = input.avatarUrl;
+   if (input.fullName !== undefined) threadUpdates.participant_name = input.fullName;
+   await (supabase.from("chat_threads") as any)
+     .update(threadUpdates)
+     .eq("store_id", identity.store_id)
+     .eq("customer_id", input.id)
+     .catch(() => null);
+ }
  return { success: true };
  });
 
@@ -1558,15 +1606,18 @@ export const submitContactForm = createServerFn({ method: "POST" })
  .handler(async ({ data: input }) => {
  try {
  const supabase = getServerClient();
- const { error } = await supabase.from("leads_crm").insert({
- store_id: input.storeId,
- full_name: input.fullName,
+ const { ingestOmnichannelLead } = await import("./omnichannel-lead-ingestion");
+ const ingested = await ingestOmnichannelLead(supabase, {
+ storeId: input.storeId,
+ source: "site",
+ sourceDetail: "Formulário de Contato do Portal",
+ fullName: input.fullName,
  email: input.email,
  phone: input.phone || null,
  message: input.message,
  status: "new",
  });
- if (error) throw error;
+ if (!ingested.success) throw new Error("Falha ao registrar contato");
 
   if (input.phone) {
     sendWhatsAppNotification({
@@ -1588,20 +1639,31 @@ export const createLeadSchema = z.object({
  fullName: z.string().min(2, "Nome deve ter no mínimo 2 caracteres"),
  email: z.string().email("E-mail inválido").optional().nullable().or(z.literal("")),
  phone: z.string().optional().nullable(),
- destination: z.string().optional().nullable(),
- interestType: z.string().optional().nullable(),
- interestPeriod: z.string().optional().nullable(),
- travelStart: z.string().optional().nullable(),
- travelEnd: z.string().optional().nullable(),
- paxAdults: z.number().int().min(1).default(1),
- paxChildren: z.number().int().min(0).default(0),
- paxInfants: z.number().int().min(0).default(0),
- paxAges: z.array(z.number()).default([]),
+  destination: z.string().optional().nullable(),
+  destinationTags: z.array(z.any()).optional(),
+  originCity: z.string().optional().nullable(),
+  originIata: z.string().optional().nullable(),
+  interestType: z.string().optional().nullable(),
+  interestPeriod: z.string().optional().nullable(),
+  periodTags: z.array(z.string()).optional(),
+  targetMonths: z.array(z.string()).optional(),
+  flexibilityDays: z.number().int().min(0).max(60).optional(),
+  dateFlexibilityMode: z.string().optional(),
+  travelStart: z.string().optional().nullable(),
+  travelEnd: z.string().optional().nullable(),
+  roomOccupancies: z.array(z.any()).optional(),
+  paxAdults: z.number().int().min(1).default(1),
+  paxChildren: z.number().int().min(0).default(0),
+  paxInfants: z.number().int().min(0).default(0),
+  paxAges: z.array(z.number()).default([]),
+  rawIntentMarkdown: z.string().optional().nullable(),
  estimatedValueCents: z.number().int().min(0).default(0),
  source: z.string().default("whatsapp"),
  leadSourceDetail: z.string().optional().nullable(),
  status: z.string().min(1).max(80).default("new"),
  assignedTo: z.string().uuid().optional().nullable(),
+ followUpAt: z.string().optional().nullable(),
+ reminders: z.array(z.any()).optional().default([]),
  tags: z.array(z.string()).default([]),
  checklist: z.array(z.object({
  id: z.string(),
@@ -1630,7 +1692,28 @@ export const createLead = createServerFn({ method: "POST" })
  const identity = await getServerIdentity();
  assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"]);
 
- const totalPax = (input.paxAdults || 1) + (input.paxChildren || 0) + (input.paxInfants || 0);
+ const normalizedRooms = normalizeRoomsFromLeadOrLegacy({
+   rooms: input.roomOccupancies,
+   adultsCount: input.paxAdults || 1,
+   childrenCount: input.paxChildren || 0,
+   childrenAges: input.paxAges || [],
+ });
+ const derivedAdults = input.roomOccupancies?.length ? normalizedRooms.adultsCount : (input.paxAdults || 1);
+ const derivedChildrenAges = input.roomOccupancies?.length ? normalizedRooms.childrenAges : (input.paxAges || []);
+ const derivedInfants = input.roomOccupancies?.length
+   ? normalizedRooms.childrenAges.filter((a) => a <= 1).length
+   : (input.paxInfants || 0);
+ const derivedChildren = input.roomOccupancies?.length
+   ? normalizedRooms.childrenCount
+   : Math.max(input.paxChildren || 0, derivedChildrenAges.length);
+ const totalPax = derivedAdults + derivedChildren + (input.roomOccupancies?.length ? 0 : derivedInfants);
+ const resolvedDestTags = normalizeDestinationTagList(
+   input.destinationTags as Array<Record<string, unknown>> | undefined,
+   input.destination || undefined
+ );
+ const resolvedDestText =
+   input.destination?.trim() ||
+   (resolvedDestTags.length > 0 ? resolvedDestTags.map((d) => d.label).join(", ") : null);
  const resolvedStage = await resolveStoreStageContract(supabase, identity.store_id, input.status || "new");
 
  const baseCustomFields = {
@@ -1647,29 +1730,45 @@ export const createLead = createServerFn({ method: "POST" })
    utm_content: input.utmContent || null,
    kanban_stage_key: resolvedStage.matchedStageKey,
    kanban_stage_purpose: resolvedStage.purpose,
+   ...(input.reminders && input.reminders.length > 0 ? { reminders: input.reminders } : {}),
+   ...(input.followUpAt ? { next_followup_at: input.followUpAt } : {}),
+   ...(normalizedRooms.rooms.length > 0 ? { room_occupancies: normalizedRooms.rooms } : {}),
+   ...(input.rawIntentMarkdown ? { raw_intent_markdown: input.rawIntentMarkdown } : {}),
  };
 
- const payload = {
+ const payload: Record<string, any> = {
  store_id: identity.store_id,
  full_name: input.fullName.trim(),
  email: input.email ? input.email.trim() : null,
  phone: input.phone ? input.phone.trim() : null,
- title: input.title?.trim() || (input.destination ? `Viagem para ${input.destination}` : `Atendimento ${input.fullName}`),
- destination: input.destination?.trim() || null,
+ title: input.title?.trim() || (resolvedDestText ? `Viagem para ${resolvedDestText}` : `Atendimento ${input.fullName}`),
+ destination: resolvedDestText,
+ destination_tags: resolvedDestTags,
+ origin_city: input.originCity?.trim() || null,
+ origin_iata: input.originIata?.trim() || null,
  interest_type: input.interestType || null,
  interest_period: input.interestPeriod?.trim() || null,
+ period_tags: input.periodTags || [],
+ target_months: input.targetMonths || [],
+ flexibility_days: input.flexibilityDays ?? 3,
+ date_flexibility_mode: input.dateFlexibilityMode || "unspecified",
  travel_start: input.travelStart || null,
  travel_end: input.travelEnd || null,
+ rooms_count: normalizedRooms.rooms.length || 1,
+ room_occupancies: normalizedRooms.rooms,
+ children_ages: derivedChildrenAges,
  pax_count: totalPax,
- pax_adults: input.paxAdults,
- pax_children: input.paxChildren,
- pax_infants: input.paxInfants,
- pax_ages: input.paxAges || [],
+ pax_adults: derivedAdults,
+ pax_children: derivedChildren,
+ pax_infants: derivedInfants,
+ pax_ages: derivedChildrenAges,
+ raw_intent_markdown: input.rawIntentMarkdown?.trim() || null,
  estimated_value_cents: input.estimatedValueCents || 0,
  source: input.source || "whatsapp",
  lead_source_detail: input.leadSourceDetail || null,
  status: resolvedStage.matchedStageKey,
  assigned_to: input.assignedTo || identity.id,
+ follow_up_at: input.followUpAt || null,
  tags: input.tags || [],
  checklist: input.checklist || [],
  notes: input.notes?.trim() || null,
@@ -1677,16 +1776,62 @@ export const createLead = createServerFn({ method: "POST" })
  last_contacted_at: new Date().toISOString(),
  };
 
+ let activePayload: Record<string, any> = { ...payload };
  let insertRes = await supabase
  .from("leads_crm")
- .insert(payload)
+ .insert(activePayload)
  .select()
  .single();
 
- if (insertRes.error && /23514|leads_crm_status_check|pipeline_stage/i.test(`${insertRes.error.code || ""} ${insertRes.error.message || ""}`)) {
+ if (insertRes.error && /42703|column .* does not exist|PGRST204/i.test(`${insertRes.error.code || ""} ${insertRes.error.message || ""}`)) {
+   const fallbackPayload: Record<string, any> = { ...activePayload };
+   for (const col of [
+     "destination_tags",
+     "origin_city",
+     "origin_iata",
+     "period_tags",
+     "target_months",
+     "flexibility_days",
+     "date_flexibility_mode",
+     "rooms_count",
+     "room_occupancies",
+     "children_ages",
+     "raw_intent_markdown",
+     "follow_up_at",
+   ]) {
+     delete fallbackPayload[col];
+   }
+   activePayload = fallbackPayload;
    insertRes = await supabase
      .from("leads_crm")
-     .insert({ ...payload, status: resolvedStage.canonicalBucket })
+     .insert(activePayload)
+     .select()
+     .single();
+ }
+
+ if (insertRes.error && /23514|leads_crm_status_check|pipeline_stage/i.test(`${insertRes.error.code || ""} ${insertRes.error.message || ""}`)) {
+   const retryPayload: Record<string, any> = { ...activePayload, status: resolvedStage.canonicalBucket };
+   if (/destination_tags|room_occupancies/i.test(insertRes.error.message || "")) {
+     for (const col of [
+       "destination_tags",
+       "origin_city",
+       "origin_iata",
+       "period_tags",
+       "target_months",
+       "flexibility_days",
+       "date_flexibility_mode",
+       "rooms_count",
+       "room_occupancies",
+       "children_ages",
+       "raw_intent_markdown",
+     ]) {
+       delete retryPayload[col];
+     }
+   }
+   activePayload = retryPayload;
+   insertRes = await supabase
+     .from("leads_crm")
+     .insert(activePayload)
      .select()
      .single();
  }
@@ -1694,8 +1839,8 @@ export const createLead = createServerFn({ method: "POST" })
  const { data, error } = insertRes;
  if (error) throw error;
 
+ let linkedCustomerId: string | null = null;
  if (data?.id) {
-  let linkedCustomerId: string | null = null;
   try {
    const { data: rpcRes } = await (supabase.rpc as any)("deduplicate_and_link_lead_to_customer", {
     p_lead_id: data.id,
@@ -1758,7 +1903,8 @@ export const createLead = createServerFn({ method: "POST" })
      await supabase
       .from("leads_crm")
       .update({ customer_id: linkedCustomerId, updated_at: new Date().toISOString() })
-      .eq("id", data.id);
+      .eq("id", data.id)
+      .eq("store_id", identity.store_id);
      data.customer_id = linkedCustomerId;
     }
    } catch (syncErr) {
@@ -1767,7 +1913,33 @@ export const createLead = createServerFn({ method: "POST" })
   }
  }
 
- return { status: "success" as const, lead: data };
+  let linkedThreadIds: string[] = [];
+  if (data?.id) {
+    try {
+      const bindRes = await autoBindLeadToMatchingWhatsAppThreads(supabase, {
+        storeId: identity.store_id,
+        leadId: data.id,
+        phone: payload.phone,
+        customerId: linkedCustomerId,
+      });
+      linkedThreadIds = bindRes.linkedThreadIds;
+    } catch {
+      // Nao bloquear cadastro de lead se auto-vinculo opcional oscilar
+    }
+  }
+
+  if (data?.id && resolvedDestText) {
+    import("./opportunity-radar.functions")
+      .then((mod) =>
+        mod.internalEvaluateDemandAgainstAllSupply({
+          storeId: identity.store_id,
+          leadId: data.id,
+        })
+      )
+      .catch(() => {});
+  }
+
+  return { status: "success" as const, lead: data, linkedThreadIds };
  } catch (e: unknown) {
  console.error("[crm] createLead error:", e);
  throw new Error((e instanceof Error ? e.message : String(e)) || "Erro ao cadastrar oportunidade.");
@@ -1801,7 +1973,20 @@ export const batchImportLeads = createServerFn({ method: "POST" })
           status: z.string().optional().default("new"),
           estimated_value_cents: z.number().int().optional().default(0),
           destination: z.string().optional().nullable(),
+          destinationTags: z.array(z.any()).optional(),
+          travelStart: z.string().optional().nullable(),
+          travelEnd: z.string().optional().nullable(),
+          interestPeriod: z.string().optional().nullable(),
+          targetMonths: z.array(z.string()).optional(),
+          periodTags: z.array(z.string()).optional(),
+          flexibilityDays: z.number().int().min(0).max(90).optional(),
+          dateFlexibilityMode: z.string().optional().nullable(),
           passenger_count: z.number().int().optional().default(1),
+          paxAdults: z.number().int().min(1).optional(),
+          paxChildren: z.number().int().min(0).optional(),
+          childrenAges: z.array(z.number().int().min(0).max(17)).optional(),
+          roomOccupancies: z.array(z.any()).optional(),
+          rawIntentMarkdown: z.string().optional().nullable(),
           acquisition_channel: z.string().optional().default("importacao_massa"),
           notes: z.string().optional().nullable(),
         })
@@ -1813,36 +1998,97 @@ export const batchImportLeads = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
 
-    const toInsert = leads.map((l) => ({
-      store_id: identity.store_id,
-      full_name: l.fullName,
-      email: l.email || null,
-      phone: l.phone || null,
-      title: l.title || `Oportunidade - ${l.fullName}`,
-      status: l.status || "new",
-      estimated_value_cents: l.estimated_value_cents || 0,
-      destination: l.destination || null,
-      destination_of_interest: l.destination || null,
-      pax_count: l.passenger_count || 1,
-      passenger_count: l.passenger_count || 1,
-      acquisition_channel: l.acquisition_channel || "importacao_massa",
-      notes: l.notes || null,
-      source: "import_csv",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }));
+    const toInsert = leads.map((l) => {
+      const ages = Array.isArray(l.childrenAges)
+        ? l.childrenAges.filter((a) => Number.isFinite(a) && a >= 0 && a <= 17)
+        : [];
+      const adultsCount = Math.max(1, l.paxAdults ?? Math.max(1, (l.passenger_count || 1) - ages.length));
+      const childrenCount = Math.max(ages.length, l.paxChildren ?? 0);
+      const rooms =
+        Array.isArray(l.roomOccupancies) && l.roomOccupancies.length > 0
+          ? l.roomOccupancies
+          : [
+              {
+                roomNumber: 1,
+                roomLabel: "Quarto 1",
+                adultsCount,
+                childrenCount,
+                childrenAges: ages,
+              },
+            ];
+      const destTags =
+        Array.isArray(l.destinationTags) && l.destinationTags.length > 0
+          ? normalizeDestinationTagList(l.destinationTags, l.destination)
+          : l.destination
+            ? normalizeDestinationTagList(undefined, l.destination)
+            : [];
 
-    const { data, error } = await supabase
+      return {
+        store_id: identity.store_id,
+        full_name: l.fullName,
+        email: sanitizeCustomerEmail(l.email),
+        phone: l.phone || null,
+        title: l.title || `Oportunidade - ${l.fullName}`,
+        status: l.status || "new",
+        estimated_value_cents: l.estimated_value_cents || 0,
+        destination: l.destination || (destTags.length > 0 ? destTags.map((d) => d.label).join(", ") : null),
+        destination_tags: destTags,
+        destination_of_interest: l.destination || (destTags.length > 0 ? destTags[0].label : null),
+        travel_start: l.travelStart || null,
+        travel_end: l.travelEnd || null,
+        interest_period: l.interestPeriod || null,
+        target_months: Array.isArray(l.targetMonths) ? l.targetMonths : [],
+        period_tags: Array.isArray(l.periodTags) ? l.periodTags : [],
+        flexibility_days: l.flexibilityDays ?? 3,
+        date_flexibility_mode: l.dateFlexibilityMode || "unspecified",
+        pax_count: adultsCount + childrenCount,
+        passenger_count: adultsCount + childrenCount,
+        pax_adults: adultsCount,
+        pax_children: childrenCount,
+        pax_infants: ages.filter((a) => a <= 1).length,
+        pax_ages: ages,
+        children_ages: ages,
+        room_occupancies: rooms,
+        raw_intent_markdown: l.rawIntentMarkdown || null,
+        acquisition_channel: l.acquisition_channel || "importacao_massa",
+        notes: l.notes || null,
+        source: "import_csv",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+    });
+
+    let { data, error } = await supabase
       .from("leads_crm")
-      .insert(toInsert)
+      .insert(toInsert as any)
       .select("id");
+
+    if (error && /42703|column .* does not exist|PGRST204/i.test(`${error.code || ""} ${error.message || ""}`)) {
+      const stripped = toInsert.map((row) => {
+        const clone: Record<string, any> = { ...row };
+        for (const col of [
+          "destination_tags",
+          "period_tags",
+          "target_months",
+          "flexibility_days",
+          "date_flexibility_mode",
+          "room_occupancies",
+          "children_ages",
+          "raw_intent_markdown",
+        ]) {
+          delete clone[col];
+        }
+        return clone;
+      });
+      ({ data, error } = await supabase.from("leads_crm").insert(stripped as any).select("id"));
+    }
 
     if (error) {
       console.error("[crm] batchImportLeads error:", error);
       throw new Error(`Falha ao importar lote de leads: ${error.message}`);
     }
 
-    // Vincula atomicamente os leads importados à tabela canônica customers_crm
+    // Vincula atomicamente os leads importados à tabela customers_crm e avalia contra ofertas ativas no Radar
     if (data && data.length > 0) {
       for (const row of data) {
         try {
@@ -1854,6 +2100,16 @@ export const batchImportLeads = createServerFn({ method: "POST" })
           // deduplicação defensiva em lote
         }
       }
+      import("./opportunity-radar.functions")
+        .then(async (mod) => {
+          for (const row of data.slice(0, 20)) {
+            await mod.internalEvaluateDemandAgainstAllSupply({
+              storeId: identity.store_id,
+              leadId: String(row.id),
+            });
+          }
+        })
+        .catch(() => {});
     }
 
     return { success: true, count: data?.length || toInsert.length };
@@ -1976,14 +2232,23 @@ export const updateLeadDetails = createServerFn({ method: "POST" })
  email: z.string().optional().nullable(),
  phone: z.string().optional().nullable(),
  destination: z.string().optional().nullable(),
+ destinationTags: z.array(z.any()).optional(),
+ originCity: z.string().optional().nullable(),
+ originIata: z.string().optional().nullable(),
  interestType: z.string().optional().nullable(),
  interestPeriod: z.string().optional().nullable(),
+ periodTags: z.array(z.string()).optional(),
+ targetMonths: z.array(z.string()).optional(),
+ flexibilityDays: z.number().int().min(0).max(60).optional(),
+ dateFlexibilityMode: z.string().optional(),
  travelStart: z.string().optional().nullable(),
  travelEnd: z.string().optional().nullable(),
+ roomOccupancies: z.array(z.any()).optional(),
  paxAdults: z.number().optional(),
  paxChildren: z.number().optional(),
  paxInfants: z.number().optional(),
  paxAges: z.array(z.number()).optional(),
+ rawIntentMarkdown: z.string().optional().nullable(),
  status: z.string().min(1).max(80).optional(),
  notes: z.string().optional().nullable(),
  estimated_value_cents: z.number().int().min(0).optional().nullable(),
@@ -2018,15 +2283,56 @@ export const updateLeadDetails = createServerFn({ method: "POST" })
  if (updates.fullName !== undefined) dbUpdates.full_name = updates.fullName;
  if (updates.email !== undefined) dbUpdates.email = updates.email;
  if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
- if (updates.destination !== undefined) dbUpdates.destination = updates.destination;
+ if (updates.destination !== undefined) {
+   dbUpdates.destination = updates.destination;
+   if (updates.destinationTags === undefined) {
+     dbUpdates.destination_tags = normalizeDestinationTagList(undefined, updates.destination || undefined);
+   }
+ }
+ if (updates.destinationTags !== undefined) {
+   const normalizedTags = normalizeDestinationTagList(
+     updates.destinationTags as Array<Record<string, unknown>>,
+     updates.destination ?? undefined
+   );
+   dbUpdates.destination_tags = normalizedTags;
+   if (updates.destination === undefined && normalizedTags.length > 0) {
+     dbUpdates.destination = normalizedTags.map((d) => d.label).join(", ");
+   }
+ }
+ if (updates.originCity !== undefined) dbUpdates.origin_city = updates.originCity;
+ if (updates.originIata !== undefined) dbUpdates.origin_iata = updates.originIata;
  if (updates.interestType !== undefined) dbUpdates.interest_type = updates.interestType;
  if (updates.interestPeriod !== undefined) dbUpdates.interest_period = updates.interestPeriod;
+ if (updates.periodTags !== undefined) dbUpdates.period_tags = updates.periodTags;
+ if (updates.targetMonths !== undefined) dbUpdates.target_months = updates.targetMonths;
+ if (updates.flexibilityDays !== undefined) dbUpdates.flexibility_days = updates.flexibilityDays;
+ if (updates.dateFlexibilityMode !== undefined) dbUpdates.date_flexibility_mode = updates.dateFlexibilityMode;
  if (updates.travelStart !== undefined) dbUpdates.travel_start = updates.travelStart;
  if (updates.travelEnd !== undefined) dbUpdates.travel_end = updates.travelEnd;
- if (updates.paxAdults !== undefined) dbUpdates.pax_adults = updates.paxAdults;
- if (updates.paxChildren !== undefined) dbUpdates.pax_children = updates.paxChildren;
- if (updates.paxInfants !== undefined) dbUpdates.pax_infants = updates.paxInfants;
- if (updates.paxAges !== undefined) dbUpdates.pax_ages = updates.paxAges;
+ if (updates.roomOccupancies !== undefined) {
+   const normalizedRooms = normalizeRoomsFromLeadOrLegacy({
+     rooms: updates.roomOccupancies,
+     adultsCount: updates.paxAdults ?? 2,
+     childrenCount: updates.paxChildren ?? 0,
+     childrenAges: updates.paxAges ?? [],
+   });
+   dbUpdates.room_occupancies = normalizedRooms.rooms;
+   dbUpdates.rooms_count = normalizedRooms.rooms.length;
+   dbUpdates.pax_adults = normalizedRooms.adultsCount;
+   dbUpdates.pax_children = normalizedRooms.childrenCount;
+   dbUpdates.children_ages = normalizedRooms.childrenAges;
+   dbUpdates.pax_ages = normalizedRooms.childrenAges;
+   dbUpdates.pax_infants = normalizedRooms.childrenAges.filter((a) => a <= 1).length;
+ } else {
+   if (updates.paxAdults !== undefined) dbUpdates.pax_adults = updates.paxAdults;
+   if (updates.paxChildren !== undefined) dbUpdates.pax_children = updates.paxChildren;
+   if (updates.paxInfants !== undefined) dbUpdates.pax_infants = updates.paxInfants;
+   if (updates.paxAges !== undefined) {
+     dbUpdates.pax_ages = updates.paxAges;
+     dbUpdates.children_ages = updates.paxAges;
+   }
+ }
+ if (updates.rawIntentMarkdown !== undefined) dbUpdates.raw_intent_markdown = updates.rawIntentMarkdown;
  if (updates.status !== undefined) {
  const resolvedDetailStage = await resolveStoreStageContract(supabase, identity.store_id, updates.status);
  dbUpdates.status = resolvedDetailStage.matchedStageKey;
@@ -2074,7 +2380,48 @@ export const updateLeadDetails = createServerFn({ method: "POST" })
      .eq("store_id", identity.store_id));
  }
 
+ if (error && /42703|column .* does not exist|PGRST204/i.test(`${error.code || ""} ${error.message || ""}`)) {
+   for (const col of [
+     "destination_tags",
+     "origin_city",
+     "origin_iata",
+     "period_tags",
+     "target_months",
+     "flexibility_days",
+     "date_flexibility_mode",
+     "rooms_count",
+     "room_occupancies",
+     "children_ages",
+     "raw_intent_markdown",
+     "follow_up_at",
+   ]) {
+     delete dbUpdates[col];
+   }
+   ({ error } = await supabase
+     .from("leads_crm")
+     .update(dbUpdates)
+     .eq("id", leadId)
+     .eq("store_id", identity.store_id));
+ }
+
  if (error) throw error;
+
+ const updatedStatusLower = String(dbUpdates.status || "").toLowerCase();
+ const isClosedStage =
+   Boolean(dbUpdates.closed_at) ||
+   ["won", "lost", "archived", "opted_out", "closed_won", "closed_lost"].includes(updatedStatusLower);
+
+ if (!isClosedStage) {
+  import("./opportunity-radar.functions")
+    .then((mod) =>
+      mod.internalEvaluateDemandAgainstAllSupply({
+        storeId: identity.store_id,
+        leadId,
+      })
+    )
+    .catch(() => {});
+ }
+
  return { status: "success" as const };
  } catch (e: unknown) {
  console.error("[crm] updateLeadDetails error:", e);
@@ -2220,7 +2567,7 @@ export const promoteLeadToCustomer = createServerFn({ method: "POST" })
           store_id: identity.store_id,
           kind: "individual",
           full_name: lead.full_name?.trim() || lead.title || "Cliente",
-          email: lead.email?.trim() || null,
+          email: sanitizeCustomerEmail(lead.email),
           phone: lead.phone?.trim() || null,
           document: lead.document?.trim() || null,
           birth_date: lead.birth_date || null,
@@ -2270,7 +2617,7 @@ export const promoteLeadToCustomer = createServerFn({ method: "POST" })
         leadId: lead.id,
         stage: "converted",
         stagePurpose: "won",
-        email: lead.email,
+        email: sanitizeCustomerEmail(lead.email),
         phone: lead.phone,
         fbp: cf.fbp || null,
         fbc: cf.fbc || null,
@@ -2283,7 +2630,31 @@ export const promoteLeadToCustomer = createServerFn({ method: "POST" })
     }).catch(() => {});
   }
 
-  return { status: "success" as const, customerId };
+  try {
+    const { autoBindLeadToMatchingWhatsAppThreads } = await import("@/services/chat-quick-actions.functions");
+    await autoBindLeadToMatchingWhatsAppThreads(supabase, {
+      storeId: identity.store_id,
+      leadId,
+      phone: lead.phone,
+      customerId,
+    });
+  } catch {
+    // sincronizacao resiliente
+  }
+
+  const { data: customerRow } = await supabase
+    .from("customers_crm")
+    .select("id, full_name, name, document, phone, email, city, state, birth_date, avatar_url, notes, tags")
+    .eq("id", customerId)
+    .eq("store_id", identity.store_id)
+    .maybeSingle();
+
+  return {
+    status: "success" as const,
+    customerId,
+    isAlreadyCustomer: Boolean(lead.customer_id),
+    customer: customerRow || null,
+  };
  } catch (e: unknown) {
   console.error("[crm] promoteLeadToCustomer error:", e);
   throw new Error((e instanceof Error ? e.message : String(e)) || "Erro ao converter lead.");
@@ -2971,41 +3342,105 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
       healthNotes: healthNotes ?? null,
     });
 
-    const { error: updateErr } = await supabase
+    const refDate = normalizedStart ? new Date(`${normalizedStart}T12:00:00Z`) : new Date();
+    const computedChildAges: number[] = [];
+    let computedAdultCompanions = 0;
+    for (const pax of sanitizedPaxList) {
+      if (pax.birth_date && /^\d{4}-\d{2}-\d{2}/.test(String(pax.birth_date))) {
+        const b = new Date(`${String(pax.birth_date).slice(0, 10)}T12:00:00Z`);
+        let age = refDate.getUTCFullYear() - b.getUTCFullYear();
+        const mDiff = refDate.getUTCMonth() - b.getUTCMonth();
+        if (mDiff < 0 || (mDiff === 0 && refDate.getUTCDate() < b.getUTCDate())) age--;
+        if (Number.isFinite(age) && age >= 0 && age <= 17) {
+          computedChildAges.push(age);
+        } else {
+          computedAdultCompanions++;
+        }
+      } else {
+        computedAdultCompanions++;
+      }
+    }
+
+    const publicUpdatePayload: Record<string, any> = {
+      ...(linkedCustomerId ? { customer_id: linkedCustomerId } : {}),
+      full_name: cleanName,
+      document: cleanDoc || null,
+      rg: rg !== undefined ? (rg?.trim() || null) : leadRow.rg,
+      birth_date: normalizedBirth,
+      phone: cleanPhone || null,
+      email: cleanEmail || null,
+      ...(destination !== undefined ? { destination: destination?.trim() || null } : {}),
+      ...(destination?.trim()
+        ? { destination_tags: normalizeDestinationTagList(undefined, destination.trim()) }
+        : {}),
+      ...(departureCity !== undefined ? { departure_city: departureCity?.trim() || null } : {}),
+      travel_start: normalizedStart,
+      travel_end: normalizedEnd,
+      ...(interestPeriod !== undefined ? { interest_period: interestPeriod?.trim() || null } : {}),
+      ...(accommodationPref !== undefined ? { accommodation_pref: accommodationPref?.trim() || null } : {}),
+      ...(mealPlan !== undefined ? { meal_plan: mealPlan?.trim() || null } : {}),
+      ...(emergencyContactName !== undefined ? { emergency_contact_name: emergencyContactName?.trim() || null } : {}),
+      ...(emergencyContactPhone !== undefined ? { emergency_contact_phone: emergencyContactPhone?.trim() || null } : {}),
+      pax_list: sanitizedPaxList,
+      pax_count: Math.max(1, sanitizedPaxList.length + 1),
+      ...(sanitizedPaxList.length > 0
+        ? {
+            pax_adults: 1 + computedAdultCompanions,
+            pax_children: computedChildAges.length,
+            pax_infants: computedChildAges.filter((a) => a <= 1).length,
+            children_ages: computedChildAges,
+            pax_ages: computedChildAges,
+            room_occupancies: [
+              {
+                roomNumber: 1,
+                roomLabel: "Quarto 1",
+                adultsCount: 1 + computedAdultCompanions,
+                childrenCount: computedChildAges.length,
+                childrenAges: computedChildAges,
+              },
+            ],
+          }
+        : {}),
+      lgpd_accepted: true,
+      lgpd_accepted_at: nowIso,
+      health_notes: healthNotes !== undefined ? (healthNotes?.trim() || null) : leadRow.health_notes,
+      ...(pcd !== undefined ? { pcd } : {}),
+      ...(reducedMobility !== undefined ? { reduced_mobility: reducedMobility } : {}),
+      ...(autism !== undefined ? { autism } : {}),
+      custom_fields: mergedCustomFields,
+      updated_at: nowIso,
+      last_contacted_at: nowIso,
+    };
+
+    let { error: updateErr } = await supabase
       .from("leads_crm")
-      .update({
-        ...(linkedCustomerId ? { customer_id: linkedCustomerId } : {}),
-        full_name: cleanName,
-        document: cleanDoc || null,
-        rg: rg !== undefined ? (rg?.trim() || null) : leadRow.rg,
-        birth_date: normalizedBirth,
-        phone: cleanPhone || null,
-        email: cleanEmail || null,
-        ...(destination !== undefined ? { destination: destination?.trim() || null } : {}),
-        ...(departureCity !== undefined ? { departure_city: departureCity?.trim() || null } : {}),
-        travel_start: normalizedStart,
-        travel_end: normalizedEnd,
-        ...(interestPeriod !== undefined ? { interest_period: interestPeriod?.trim() || null } : {}),
-        ...(accommodationPref !== undefined ? { accommodation_pref: accommodationPref?.trim() || null } : {}),
-        ...(mealPlan !== undefined ? { meal_plan: mealPlan?.trim() || null } : {}),
-        ...(emergencyContactName !== undefined ? { emergency_contact_name: emergencyContactName?.trim() || null } : {}),
-        ...(emergencyContactPhone !== undefined ? { emergency_contact_phone: emergencyContactPhone?.trim() || null } : {}),
-        pax_list: sanitizedPaxList,
-        pax_count: Math.max(1, sanitizedPaxList.length + 1),
-        lgpd_accepted: true,
-        lgpd_accepted_at: nowIso,
-        health_notes: healthNotes !== undefined ? (healthNotes?.trim() || null) : leadRow.health_notes,
-        ...(pcd !== undefined ? { pcd } : {}),
-        ...(reducedMobility !== undefined ? { reduced_mobility: reducedMobility } : {}),
-        ...(autism !== undefined ? { autism } : {}),
-        custom_fields: mergedCustomFields,
-        updated_at: nowIso,
-        last_contacted_at: nowIso,
-      })
+      .update(publicUpdatePayload)
       .eq("id", leadRow.id);
+
+    if (updateErr && /42703|column .* does not exist|PGRST204/i.test(`${updateErr.code || ""} ${updateErr.message || ""}`)) {
+      const compatPayload = { ...publicUpdatePayload };
+      for (const col of ["destination_tags", "children_ages", "room_occupancies"]) {
+        delete compatPayload[col];
+      }
+      ({ error: updateErr } = await supabase
+        .from("leads_crm")
+        .update(compatPayload)
+        .eq("id", leadRow.id));
+    }
 
     if (updateErr) {
       throw new Error("Não foi possível salvar a ficha: " + updateErr.message);
+    }
+
+    if (leadRow.store_id) {
+      import("./opportunity-radar.functions")
+        .then((mod) =>
+          mod.internalEvaluateDemandAgainstAllSupply({
+            storeId: leadRow.store_id,
+            leadId: leadRow.id,
+          })
+        )
+        .catch(() => {});
     }
 
     await supabase.from("lead_activities").insert({
@@ -3449,6 +3884,73 @@ export const getCustomer360Profile = createServerFn({ method: "GET" })
     let trips: any[] = [];
     let incidents: any[] = [];
 
+    // Auto-identificação inteligente: se lead ainda não possui customer_id, busca cliente pré-existente
+    if (!lead.customer_id) {
+      let matchedCustomerId: string | null = null;
+      if (lead.document && lead.document.replace(/\D/g, "").length >= 11) {
+        const { data: byDoc } = await supabase
+          .from("customers_crm")
+          .select("id")
+          .eq("store_id", identity.store_id)
+          .eq("document", lead.document.trim())
+          .maybeSingle();
+        if (byDoc?.id) matchedCustomerId = byDoc.id;
+      }
+      if (!matchedCustomerId && lead.phone) {
+        const phoneDigits = lead.phone.replace(/\D/g, "");
+        if (phoneDigits.length >= 8) {
+          const suffix8 = phoneDigits.slice(-8);
+          const { data: byPhoneList } = await supabase
+            .from("customers_crm")
+            .select("id, phone")
+            .eq("store_id", identity.store_id)
+            .not("phone", "is", null);
+          const matched = (byPhoneList || []).find((c) => {
+            const cDigits = (c.phone || "").replace(/\D/g, "");
+            return cDigits.endsWith(suffix8);
+          });
+          if (matched?.id) matchedCustomerId = matched.id;
+        }
+      }
+      if (!matchedCustomerId && lead.email && sanitizeCustomerEmail(lead.email)) {
+        const cleanEmail = sanitizeCustomerEmail(lead.email);
+        if (cleanEmail) {
+          const { data: byEmail } = await supabase
+            .from("customers_crm")
+            .select("id")
+            .eq("store_id", identity.store_id)
+            .ilike("email", cleanEmail)
+            .maybeSingle();
+          if (byEmail?.id) matchedCustomerId = byEmail.id;
+        }
+      }
+
+      if (matchedCustomerId) {
+        await supabase
+          .from("leads_crm")
+          .update({
+            customer_id: matchedCustomerId,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", lead.id)
+          .eq("store_id", identity.store_id);
+
+        lead.customer_id = matchedCustomerId;
+
+        try {
+          const { autoBindLeadToMatchingWhatsAppThreads } = await import("@/services/chat-quick-actions.functions");
+          await autoBindLeadToMatchingWhatsAppThreads(supabase, {
+            storeId: identity.store_id,
+            leadId: lead.id,
+            phone: lead.phone,
+            customerId: matchedCustomerId,
+          });
+        } catch {
+          // não bloqueia
+        }
+      }
+    }
+
     if (lead.customer_id) {
       const { data: cData } = await supabase
         .from("customers_crm")
@@ -3468,14 +3970,118 @@ export const getCustomer360Profile = createServerFn({ method: "GET" })
         .order("created_at", { ascending: false });
       otherLeads = lData || [];
 
-      // Busca contratos vinculados ao cliente ou ao lead com garantia de tenant
-      const { data: ctrData } = await supabase
-        .from("travel_contracts")
-        .select("id, contract_title, public_token, status, total_value_cents, destination, signed_at, created_at")
-        .eq("store_id", identity.store_id)
-        .or(`customer_id.eq.${lead.customer_id},lead_id.eq.${lead.id}`)
-        .order("created_at", { ascending: false });
-      contracts = ctrData || [];
+      // Coleta IDs explícitos de contratos vinculados no custom_fields do lead
+      const leadContractIds = Array.from(
+        new Set<string>([
+          ...(Array.isArray(lead.custom_fields?.contract_ids) ? (lead.custom_fields.contract_ids as string[]) : []),
+          ...(lead.custom_fields?.linked_contract_id ? [String(lead.custom_fields.linked_contract_id)] : []),
+          ...(lead.custom_fields?.payment_plan?.linked_contract_id ? [String(lead.custom_fields.payment_plan.linked_contract_id)] : []),
+        ].filter(Boolean))
+      );
+
+      const contractOrParts: string[] = [
+        `lead_id.eq.${lead.id}`,
+        `metadata->>lead_id.eq.${lead.id}`,
+      ];
+      if (lead.customer_id) {
+        contractOrParts.push(`customer_id.eq.${lead.customer_id}`);
+        contractOrParts.push(`metadata->>customer_id.eq.${lead.customer_id}`);
+      }
+      if (leadContractIds.length > 0) {
+        contractOrParts.push(`id.in.(${leadContractIds.join(",")})`);
+      }
+      const contractOrFilter = contractOrParts.join(",");
+
+      const legacyOrParts: string[] = [`lead_id.eq.${lead.id}`];
+      if (lead.customer_id) {
+        legacyOrParts.push(`customer_id.eq.${lead.customer_id}`);
+      }
+      if (leadContractIds.length > 0) {
+        legacyOrParts.push(`id.in.(${leadContractIds.join(",")})`);
+      }
+      const legacyOrFilter = legacyOrParts.join(",");
+
+      // Busca contratos vinculados ao cliente ou ao lead (tabela canônica contracts + legado travel_contracts)
+      const [{ data: legacyCtrData }, canonicalRes] = await Promise.all([
+        supabase
+          .from("travel_contracts")
+          .select("id, contract_title, public_token, status, total_value_cents, destination, signed_at, created_at")
+          .eq("store_id", identity.store_id)
+          .or(legacyOrFilter)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("contracts")
+          .select(`
+            id, title, category, verification_code, status, metadata, created_at, updated_at,
+            versions:contract_versions (
+              id, version_number, is_sealed, sealed_at, page_count,
+              envelopes:signature_envelopes (
+                id, signer_name, signer_email, signer_phone, signer_role, status, viewed_at, signed_at, signing_token, dispatch_channel
+              )
+            )
+          `)
+          .eq("store_id", identity.store_id)
+          .or(contractOrFilter)
+          .order("created_at", { ascending: false }),
+      ]);
+
+      let canonicalCtrData: any[] = canonicalRes?.data || [];
+      if (canonicalRes?.error) {
+        console.warn("[getCustomer360Profile] canonicalCtrData query join warning, tentando fallback direto:", canonicalRes.error);
+        const { data: directData } = await supabase
+          .from("contracts")
+          .select("id, title, category, verification_code, status, metadata, created_at, updated_at")
+          .eq("store_id", identity.store_id)
+          .or(contractOrFilter)
+          .order("created_at", { ascending: false });
+        canonicalCtrData = (directData || []).map((d: any) => ({ ...d, versions: [] }));
+      }
+      const seenContractIds = new Set<string>();
+      contracts = [
+        ...(canonicalCtrData || []).map((c: any) => {
+          const m = (c.metadata as Record<string, any>) || {};
+          const versionList = Array.isArray(c.versions) ? c.versions : [];
+          const currentVersion = versionList[0] || null;
+          const envelopes = Array.isArray(currentVersion?.envelopes) ? currentVersion.envelopes : [];
+          const partyEnvelope = envelopes.find((e: any) => e.signer_role === "party") || envelopes[0] || null;
+          const signingToken = partyEnvelope?.signing_token || c.verification_code || m.public_token || c.id;
+          const isSigned = c.status === "completed" || c.status === "signed" || envelopes.some((e: any) => e.status === "signed");
+
+          return {
+            id: c.id,
+            contract_title: c.title,
+            title: c.title,
+            category: c.category || m.category || "tourism_package",
+            public_token: c.verification_code || m.public_token || c.id,
+            verification_code: c.verification_code || m.verification_code || "",
+            signing_token: signingToken,
+            status: isSigned ? "signed" : c.status || "signing",
+            total_value_cents: Number(m.total_value_cents || 0),
+            destination: m.destination || lead.destination || "",
+            signed_at: m.signed_at || partyEnvelope?.signed_at || null,
+            viewed_at: partyEnvelope?.viewed_at || null,
+            created_at: c.created_at,
+            updated_at: c.updated_at,
+            envelopes: envelopes.map((e: any) => ({
+              id: e.id,
+              signer_name: e.signer_name,
+              signer_email: e.signer_email,
+              signer_phone: e.signer_phone,
+              signer_role: e.signer_role,
+              status: e.status,
+              viewed_at: e.viewed_at,
+              signed_at: e.signed_at,
+              signing_token: e.signing_token,
+              dispatch_channel: e.dispatch_channel,
+            })),
+          };
+        }),
+        ...(legacyCtrData || []),
+      ].filter((c: any) => {
+        if (!c?.id || seenContractIds.has(c.id)) return false;
+        seenContractIds.add(c.id);
+        return true;
+      });
 
       // Busca todas as viagens confirmadas/históricas deste cliente ou de seus leads
       const leadIdsForCustomer = [lead.id, ...otherLeads.map((l: any) => l.id)];
@@ -3483,7 +4089,7 @@ export const getCustomer360Profile = createServerFn({ method: "GET" })
         .from("tourism_trips")
         .select("id, title, destination_city, travel_start_date, travel_end_date, status, total_cents, lead_id, customer_id, created_at")
         .eq("store_id", identity.store_id)
-        .in("lead_id", leadIdsForCustomer)
+        .or(`customer_id.eq.${lead.customer_id},lead_id.in.(${leadIdsForCustomer.join(",")})`)
         .order("travel_start_date", { ascending: false });
       trips = (tripsData || []).map((t: any) => ({
         ...t,
@@ -3510,14 +4116,102 @@ export const getCustomer360Profile = createServerFn({ method: "GET" })
         }));
       }
     } else {
-      // Se ainda não tem customer_id, busca contratos e viagens só pelo lead_id
-      const { data: ctrData } = await supabase
-        .from("travel_contracts")
-        .select("id, contract_title, public_token, status, total_value_cents, destination, signed_at, created_at")
-        .eq("lead_id", lead.id)
-        .eq("store_id", identity.store_id)
-        .order("created_at", { ascending: false });
-      contracts = ctrData || [];
+      // Coleta IDs explícitos de contratos vinculados no custom_fields do lead
+      const leadContractIds = Array.from(
+        new Set<string>([
+          ...(Array.isArray(lead.custom_fields?.contract_ids) ? (lead.custom_fields.contract_ids as string[]) : []),
+          ...(lead.custom_fields?.linked_contract_id ? [String(lead.custom_fields.linked_contract_id)] : []),
+          ...(lead.custom_fields?.payment_plan?.linked_contract_id ? [String(lead.custom_fields.payment_plan.linked_contract_id)] : []),
+        ].filter(Boolean))
+      );
+
+      const contractOrFilter = [
+        `lead_id.eq.${lead.id}`,
+        `metadata->>lead_id.eq.${lead.id}`,
+        ...(leadContractIds.length > 0 ? [`id.in.(${leadContractIds.join(",")})`] : []),
+      ].join(",");
+
+      // Se ainda não tem customer_id, busca contratos canônicos + legado e viagens pelo lead_id
+      const [{ data: legacyCtrData }, canonicalRes] = await Promise.all([
+        supabase
+          .from("travel_contracts")
+          .select("id, contract_title, public_token, status, total_value_cents, destination, signed_at, created_at")
+          .eq("lead_id", lead.id)
+          .eq("store_id", identity.store_id)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("contracts")
+          .select(`
+            id, title, category, verification_code, status, metadata, created_at, updated_at,
+            versions:contract_versions (
+              id, version_number, is_sealed, sealed_at, page_count,
+              envelopes:signature_envelopes (
+                id, signer_name, signer_email, signer_phone, signer_role, status, viewed_at, signed_at, signing_token, dispatch_channel
+              )
+            )
+          `)
+          .eq("store_id", identity.store_id)
+          .or(contractOrFilter)
+          .order("created_at", { ascending: false }),
+      ]);
+
+      let canonicalCtrData: any[] = canonicalRes?.data || [];
+      if (canonicalRes?.error) {
+        console.warn("[getCustomer360Profile:else] canonicalCtrData join warning, fallback direto:", canonicalRes.error);
+        const { data: directData } = await supabase
+          .from("contracts")
+          .select("id, title, category, verification_code, status, metadata, created_at, updated_at")
+          .eq("store_id", identity.store_id)
+          .or(contractOrFilter)
+          .order("created_at", { ascending: false });
+        canonicalCtrData = (directData || []).map((d: any) => ({ ...d, versions: [] }));
+      }
+      const seenContractIds = new Set<string>();
+      contracts = [
+        ...(canonicalCtrData || []).map((c: any) => {
+          const m = (c.metadata as Record<string, any>) || {};
+          const versionList = Array.isArray(c.versions) ? c.versions : [];
+          const currentVersion = versionList[0] || null;
+          const envelopes = Array.isArray(currentVersion?.envelopes) ? currentVersion.envelopes : [];
+          const partyEnvelope = envelopes.find((e: any) => e.signer_role === "party") || envelopes[0] || null;
+          const signingToken = partyEnvelope?.signing_token || c.verification_code || m.public_token || c.id;
+          const isSigned = c.status === "completed" || c.status === "signed" || envelopes.some((e: any) => e.status === "signed");
+
+          return {
+            id: c.id,
+            contract_title: c.title,
+            title: c.title,
+            category: c.category || m.category || "tourism_package",
+            public_token: c.verification_code || m.public_token || c.id,
+            verification_code: c.verification_code || m.verification_code || "",
+            signing_token: signingToken,
+            status: isSigned ? "signed" : c.status || "signing",
+            total_value_cents: Number(m.total_value_cents || 0),
+            destination: m.destination || lead.destination || "",
+            signed_at: m.signed_at || partyEnvelope?.signed_at || null,
+            viewed_at: partyEnvelope?.viewed_at || null,
+            created_at: c.created_at,
+            updated_at: c.updated_at,
+            envelopes: envelopes.map((e: any) => ({
+              id: e.id,
+              signer_name: e.signer_name,
+              signer_email: e.signer_email,
+              signer_phone: e.signer_phone,
+              signer_role: e.signer_role,
+              status: e.status,
+              viewed_at: e.viewed_at,
+              signed_at: e.signed_at,
+              signing_token: e.signing_token,
+              dispatch_channel: e.dispatch_channel,
+            })),
+          };
+        }),
+        ...(legacyCtrData || []),
+      ].filter((c: any) => {
+        if (!c?.id || seenContractIds.has(c.id)) return false;
+        seenContractIds.add(c.id);
+        return true;
+      });
 
       const { data: tripsData } = await supabase
         .from("tourism_trips")
@@ -3551,31 +4245,53 @@ export const getCustomer360Profile = createServerFn({ method: "GET" })
         .order("scheduled_at", { ascending: true }),
     ]);
 
-    // 3.5 Unifica contratos da tabela canônica public.contracts (category = 'tourism')
+    // 3.5 Unifica contratos da tabela canônica public.contracts
     try {
       const { data: canonicalContracts } = await supabase
         .from("contracts")
-        .select("id, title, verification_code, status, metadata, lead_id, customer_id, created_at")
+        .select("id, title, category, verification_code, status, metadata, lead_id, customer_id, created_at")
         .or(`store_id.eq.${identity.store_id},metadata->>store_id.eq.${identity.store_id}`)
-        .eq("category", "tourism")
         .order("created_at", { ascending: false })
-        .limit(50);
+        .limit(60);
 
       if (canonicalContracts && canonicalContracts.length > 0) {
         const existingIds = new Set(contracts.map((c: any) => c.id));
         const existingTokens = new Set(contracts.map((c: any) => c.public_token));
+        const cleanLeadPhone = String(lead.phone || "").replace(/\D/g, "");
+        const cleanLeadDoc = String(lead.document || "").replace(/\D/g, "");
+
         for (const cc of canonicalContracts) {
           const meta = (cc.metadata as Record<string, any>) || {};
+          const cleanMetaPhone = String(meta.client_phone || "").replace(/\D/g, "");
+          const cleanMetaDoc = String(meta.client_document || "").replace(/\D/g, "");
+
+          const phoneMatched = Boolean(
+            cleanLeadPhone.length >= 8 &&
+            cleanMetaPhone.length >= 8 &&
+            (cleanLeadPhone.endsWith(cleanMetaPhone.slice(-8)) || cleanMetaPhone.endsWith(cleanLeadPhone.slice(-8)))
+          );
+
+          const docMatched = Boolean(
+            cleanLeadDoc.length >= 11 &&
+            cleanMetaDoc.length >= 11 &&
+            cleanLeadDoc === cleanMetaDoc
+          );
+
           const matchesLead =
             cc.lead_id === lead.id ||
             meta.lead_id === lead.id ||
             (lead.customer_id && (cc.customer_id === lead.customer_id || meta.customer_id === lead.customer_id)) ||
-            (lead.phone && meta.client_phone && String(meta.client_phone).replace(/\D/g, "") === String(lead.phone).replace(/\D/g, ""));
+            phoneMatched ||
+            docMatched;
+
           if (matchesLead && !existingIds.has(cc.id) && !existingTokens.has(cc.verification_code)) {
             contracts.push({
               id: cc.id,
               contract_title: cc.title,
-              public_token: cc.verification_code,
+              title: cc.title,
+              category: cc.category || meta.category || "tourism_package",
+              public_token: cc.verification_code || meta.public_token || cc.id,
+              verification_code: cc.verification_code || meta.verification_code || "",
               status: cc.status === "signing" ? "sent" : cc.status === "completed" ? "signed" : cc.status,
               total_value_cents: Number(meta.total_value_cents || 0),
               destination: meta.destination || lead.destination || "Não informado",
@@ -3585,71 +4301,87 @@ export const getCustomer360Profile = createServerFn({ method: "GET" })
           }
         }
       }
-    } catch {
-      // fallback gracioso
+    } catch (unifyErr) {
+      console.warn("[getCustomer360Profile] notice unificando contracts:", unifyErr);
     }
 
-    // 4. Busca propostas conectadas a este lead ou cliente + propostas similares da agência e inteligência InfoTravel / Radar
+    // 4. Busca propostas do proprio lead + propostas/capturas/oportunidades VERIFICADAS pelo motor determinístico (Zero F-OPP-02)
     let proposals: any[] = [];
     let similarAgencyProposals: any[] = [];
     let infotravelCaptures: any[] = [];
     let radarMatches: any[] = [];
+    let historicalBenchmark: any = null;
     try {
       const propOr = [`lead_id.eq.${lead.id}`];
       if (lead.customer_id) propOr.push(`customer_id.eq.${lead.customer_id}`);
       const cleanLeadPhone = lead.phone ? String(lead.phone).replace(/\D/g, "").slice(-8) : "";
       if (cleanLeadPhone.length >= 6) propOr.push(`client_whatsapp.ilike.%${cleanLeadPhone}%`);
-      if (lead.email) propOr.push(`client_email.eq.${lead.email}`);
+      const sanitizedEmail = lead.email ? String(lead.email).replace(/[,()"'\\]/g, "").trim() : "";
+      if (sanitizedEmail && sanitizedEmail.includes("@")) propOr.push(`client_email.eq."${sanitizedEmail}"`);
       const propFilter = propOr.join(",");
-      const [
-        { data: propData },
-        { data: agencyProps },
-        { data: capturesData },
-        { data: opportunitiesData },
-      ] = await Promise.all([
+
+      const { internalGetVerifiedOpportunitiesForLead } = await import("./opportunity-radar.functions");
+      const [{ data: propData }, verifiedBundle] = await Promise.all([
         supabase
           .from("travel_proposals")
           .select("id, lead_id, customer_id, public_token, title, destination_city, client_name, client_whatsapp, status, pricing, valid_until, created_at")
           .eq("store_id", identity.store_id)
           .or(propFilter)
           .order("created_at", { ascending: false }),
-        supabase
-          .from("travel_proposals")
-          .select("id, lead_id, customer_id, public_token, title, destination_city, client_name, client_whatsapp, status, pricing, valid_until, created_at")
-          .eq("store_id", identity.store_id)
-          .or(`lead_id.is.null,lead_id.neq.${lead.id}`)
-          .order("created_at", { ascending: false })
-          .limit(20),
-        supabase
-          .from("travel_quote_captures")
-          .select("id, operator_slug, source_page, origin_city, destination_city, start_date, end_date, total_cents, adults_count, children_count, lead_id, summary_pitch_text, created_at")
-          .eq("store_id", identity.store_id)
-          .order("created_at", { ascending: false })
-          .limit(15),
-        supabase
-          .from("travel_opportunities")
-          .select("id, demand_id, capture_id, match_score, match_reasons, quoted_total_cents, client_budget_cents, variance_pct, tariff_temperature, status, whatsapp_pitch_draft, created_at")
-          .eq("store_id", identity.store_id)
-          .order("created_at", { ascending: false })
-          .limit(15),
+        internalGetVerifiedOpportunitiesForLead({
+          storeId: identity.store_id,
+          leadId: lead.id,
+        }),
       ]);
+
       proposals = propData || [];
-      similarAgencyProposals = agencyProps || [];
-      infotravelCaptures = (capturesData || []).map((cap: any) => ({
-        ...cap,
-        source_provider: cap.operator_slug || "InfoTravel",
-        destination: cap.destination_city || lead.destination || "Destino",
-        hotel_name: cap.summary_pitch_text || cap.destination_city || "Cotação Capturada",
-        checkin_date: cap.start_date,
-        checkout_date: cap.end_date,
-        total_amount_cents: cap.total_cents || 0,
+      historicalBenchmark = verifiedBundle.historicalBenchmark;
+
+      similarAgencyProposals = verifiedBundle.verifiedSimilarProposals.map((vp) => ({
+        id: vp.id,
+        public_token: vp.publicToken,
+        title: vp.title,
+        destination_city: vp.destinationCity,
+        departure_date: vp.departureDate,
+        client_name: vp.clientName,
+        status: vp.status,
+        pricing: { totalCents: vp.totalCents },
+        match_score: vp.matchScore,
+        match_tier: vp.matchTier,
+        requires_child_requote: vp.requiresChildRequote,
+        effective_total_cents: vp.effectiveTotalCents,
+        match_reasons: vp.reasons,
+        warnings: vp.warnings,
+        historical_verdict: vp.historicalVerdict,
+        historical_savings_pct: vp.historicalSavingsPct,
+        created_at: vp.createdAt,
       }));
-      radarMatches = (opportunitiesData || []).map((opp: any) => ({
+
+      infotravelCaptures = verifiedBundle.verifiedCaptures.map((cap) => ({
+        ...cap,
+        source_provider: cap.operatorSlug || "InfoTravel",
+        destination: cap.destinationCity,
+        hotel_name: cap.destinationCity,
+        checkin_date: cap.startDate,
+        total_amount_cents: cap.effectiveTotalCents || cap.totalCents || 0,
+        quoted_total_cents: cap.totalCents,
+        match_score: cap.matchScore,
+        match_reasons: cap.reasons,
+        warnings: cap.warnings,
+        requires_child_requote: cap.requiresChildRequote,
+      }));
+
+      radarMatches = verifiedBundle.verifiedOpportunities.map((opp) => ({
         ...opp,
-        title: opp.whatsapp_pitch_draft || "Oportunidade Detectada pelo Radar",
-        destination: lead.destination || "Rota Monitorada",
-        price_cents: opp.quoted_total_cents || 0,
-        discount_pct: opp.variance_pct ? Math.abs(Math.round(Number(opp.variance_pct))) : null,
+        title: opp.offerTitle || opp.whatsappPitchDraft || "Oportunidade Verificada",
+        destination: opp.destinationCity,
+        price_cents: opp.effectiveTotalCents || opp.quotedTotalCents || 0,
+        quoted_total_cents: opp.quotedTotalCents,
+        match_score: opp.matchScore,
+        match_reasons: opp.matchReasons,
+        warnings: opp.warnings,
+        whatsapp_pitch_draft: opp.whatsappPitchDraft,
+        discount_pct: opp.variancePct ? Math.abs(Math.round(Number(opp.variancePct))) : null,
       }));
     } catch {
       // fallback gracioso
@@ -3671,9 +4403,21 @@ export const getCustomer360Profile = createServerFn({ method: "GET" })
       customerDocuments = [];
     }
 
+    const resolvedCustomer = customer || {
+      id: `lead-cust-${lead.id}`,
+      store_id: identity.store_id,
+      full_name: lead.full_name || lead.title || "Cliente",
+      document: lead.document || null,
+      phone: lead.phone || null,
+      email: lead.email || null,
+      status: "active",
+      score: 100,
+      created_at: lead.created_at,
+    };
+
     return {
       lead,
-      customer,
+      customer: resolvedCustomer,
       documents: customerDocuments,
       otherLeads,
       contracts,
@@ -3685,6 +4429,7 @@ export const getCustomer360Profile = createServerFn({ method: "GET" })
       similarAgencyProposals,
       infotravelCaptures,
       radarMatches,
+      historicalBenchmark,
     };
   });
 
@@ -3744,7 +4489,10 @@ export const issueLeadContract = createServerFn({ method: "POST" })
       customerId = linkedId || null;
     }
 
-    const [{ data: customerRow }, { data: travelProp }] = await Promise.all([
+    const linkedPropId = (lead.custom_fields as any)?.payment_plan?.linked_proposal_id;
+    const linkedOptId = (lead.custom_fields as any)?.payment_plan?.linked_option_id;
+
+    const [{ data: customerRow }, { data: directOrLatestProp }] = await Promise.all([
       customerId
         ? supabase
             .from("customers_crm")
@@ -3753,15 +4501,27 @@ export const issueLeadContract = createServerFn({ method: "POST" })
             .eq("store_id", identity.store_id)
             .maybeSingle()
         : Promise.resolve({ data: null }),
-      supabase
-        .from("travel_proposals")
-        .select("*")
-        .eq("lead_id", lead.id)
-        .eq("store_id", identity.store_id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
+      linkedPropId
+        ? supabase
+            .from("travel_proposals")
+            .select("*")
+            .eq("id", linkedPropId)
+            .eq("store_id", identity.store_id)
+            .maybeSingle()
+        : supabase
+            .from("travel_proposals")
+            .select("*")
+            .eq("lead_id", lead.id)
+            .eq("store_id", identity.store_id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle(),
     ]);
+
+    const travelProp = directOrLatestProp;
+    const targetOption = Array.isArray((travelProp as any)?.options) && linkedOptId
+      ? (travelProp as any).options.find((o: any) => o.id === linkedOptId)
+      : (travelProp as any)?.options?.[0] || null;
 
     const storeSettings =
       (storeRow as any)?.settings && typeof (storeRow as any).settings === "object"
@@ -3773,7 +4533,15 @@ export const issueLeadContract = createServerFn({ method: "POST" })
     const publicToken = `CTR-${Math.random().toString(36).substring(2, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
     const clientName = lead.full_name || lead.title || "Cliente";
     const clientDoc = String(lead.document || (customerRow as any)?.document || lead.custom_fields?.document || "Não informado");
-    const destination = lead.destination || (travelProp as any)?.destination_city || "Não informado";
+    const destination = targetOption?.destination || lead.destination || (travelProp as any)?.destination_city || "Não informado";
+    const resolvedPaymentConditions =
+      input.paymentConditions && input.paymentConditions !== "À vista ou parcelado"
+        ? input.paymentConditions
+        : (lead.custom_fields as any)?.payment_plan?.notes ||
+          targetOption?.pricing?.payment_terms ||
+          (travelProp as any)?.pricing?.payment_terms ||
+          input.paymentConditions ||
+          "À vista ou parcelado";
     const formattedValue = new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
@@ -3815,7 +4583,7 @@ export const issueLeadContract = createServerFn({ method: "POST" })
         name: clientName,
         document: clientDoc === "Não informado" ? "" : clientDoc,
         phone: lead.phone || (customerRow as any)?.phone || "",
-        email: lead.email || (customerRow as any)?.email || "",
+        email: sanitizeCustomerEmail(lead.email) || sanitizeCustomerEmail((customerRow as any)?.email) || "",
         address: (customerRow as any)?.address || "",
         cityState: [(customerRow as any)?.city, (customerRow as any)?.state].filter(Boolean).join(" / "),
       },
@@ -3829,7 +4597,12 @@ export const issueLeadContract = createServerFn({ method: "POST" })
         },
       ],
       specs,
-      itinerary: Array.isArray((travelProp as any)?.itinerary) ? (travelProp as any).itinerary : [],
+      itinerary:
+        Array.isArray(targetOption?.itinerary) && targetOption.itinerary.length > 0
+          ? targetOption.itinerary
+          : Array.isArray((travelProp as any)?.itinerary)
+            ? (travelProp as any).itinerary
+            : [],
       passengers: Array.isArray(lead.pax_list)
         ? lead.pax_list.map((p: any) => ({
             name: String(p?.name || p?.full_name || clientName),
@@ -3840,7 +4613,7 @@ export const issueLeadContract = createServerFn({ method: "POST" })
       customFields: mergedCustomFields,
       summaryText: input.packageSummary,
       totalValueCents: input.totalValueCents || 0,
-      paymentConditions: input.paymentConditions,
+      paymentConditions: resolvedPaymentConditions,
       travelStartDate: lead.travel_start || null,
       travelEndDate: lead.travel_end || null,
       destination,
@@ -3884,7 +4657,7 @@ export const issueLeadContract = createServerFn({ method: "POST" })
           customer_id: customerId,
           client_name: clientName,
           client_document: clientDoc,
-          client_email: lead.email || customerRow?.email || null,
+          client_email: sanitizeCustomerEmail(lead.email) || sanitizeCustomerEmail(customerRow?.email) || null,
           client_phone: lead.phone || customerRow?.phone || "",
           destination,
           travel_start_date: lead.travel_start || null,
@@ -3927,18 +4700,46 @@ export const issueLeadContract = createServerFn({ method: "POST" })
       throw new Error(`Erro ao gerar versão do contrato: ${verErr?.message || "falha desconhecida"}`);
     }
 
-    const resolvedSignerEmail = lead.email || (customerRow as any)?.email || "cliente@waesy.com";
+    const resolvedSignerEmail =
+      sanitizeCustomerEmail(lead.email) || sanitizeCustomerEmail((customerRow as any)?.email) || "cliente@waesy.com";
     const resolvedSignerPhone = lead.phone || (customerRow as any)?.phone || null;
-    await supabase.from("signature_envelopes").insert({
-      contract_version_id: createdVersion.id,
-      signer_name: clientName,
-      signer_email: resolvedSignerEmail,
-      signer_phone: resolvedSignerPhone,
-      signer_cpf: clientDoc && clientDoc !== "Não informado" ? clientDoc : null,
-      signer_role: "party",
-      dispatch_channel: resolvedSignerPhone ? "whatsapp" : "email",
-      status: "pending",
-    });
+    const { data: createdEnvelope } = await supabase
+      .from("signature_envelopes")
+      .insert({
+        contract_version_id: createdVersion.id,
+        signer_name: clientName,
+        signer_email: resolvedSignerEmail,
+        signer_phone: resolvedSignerPhone,
+        signer_cpf: clientDoc && clientDoc !== "Não informado" ? clientDoc : null,
+        signer_role: "party",
+        dispatch_channel: resolvedSignerPhone ? "whatsapp" : "email",
+        status: "pending",
+      })
+      .select("id, signing_token")
+      .single();
+
+    const envelopeSigningToken = createdEnvelope?.signing_token || publicToken;
+
+    // Atualiza custom_fields do lead para vinculação permanente
+    const existingContractIds = Array.isArray(lead.custom_fields?.contract_ids)
+      ? (lead.custom_fields.contract_ids as string[])
+      : [];
+    const updatedContractIds = Array.from(new Set([...existingContractIds, contract.id]));
+    await supabase
+      .from("leads_crm")
+      .update({
+        custom_fields: {
+          ...(lead.custom_fields || {}),
+          contract_ids: updatedContractIds,
+          linked_contract_id: contract.id,
+          last_contract_token: publicToken,
+          last_signing_token: envelopeSigningToken,
+          last_contract_at: new Date().toISOString(),
+        },
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", lead.id)
+      .eq("store_id", identity.store_id);
 
     // Registra na cadeia forense
     await supabase.from("contract_audit_chain").insert({
@@ -3957,10 +4758,142 @@ export const issueLeadContract = createServerFn({ method: "POST" })
       author_id: identity.id,
       type: "contract_issued",
       content: `Contrato emitido: "${input.contractTitle}" (Token: ${publicToken})`,
-      metadata: { contract_id: contract.id, public_token: publicToken },
+      metadata: { contract_id: contract.id, public_token: publicToken, signing_token: envelopeSigningToken },
     }).then(() => null, () => null);
 
-    return { success: true, contract, publicToken };
+    return {
+      success: true,
+      contract: {
+        ...contract,
+        signing_token: envelopeSigningToken,
+      },
+      publicToken,
+      signingToken: envelopeSigningToken,
+    };
+  });
+
+export const linkContractToLead = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      leadId: z.string().uuid(),
+      contractId: z.string().uuid(),
+    })
+  )
+  .handler(async ({ data: { leadId, contractId } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
+
+    const [{ data: lead, error: leadErr }, { data: contract, error: ctrErr }] = await Promise.all([
+      supabase.from("leads_crm").select("*").eq("id", leadId).eq("store_id", identity.store_id).single(),
+      supabase.from("contracts").select("*").eq("id", contractId).eq("store_id", identity.store_id).single(),
+    ]);
+
+    if (leadErr || !lead) throw new Error("Lead não encontrado");
+    if (ctrErr || !contract) throw new Error("Contrato não encontrado");
+
+    // Vincula o contrato ao lead e ao cliente
+    await supabase
+      .from("contracts")
+      .update({
+        lead_id: lead.id,
+        customer_id: lead.customer_id || contract.customer_id || null,
+        metadata: {
+          ...(typeof contract.metadata === "object" && contract.metadata ? contract.metadata : {}),
+          lead_id: lead.id,
+          customer_id: lead.customer_id || (contract.metadata as any)?.customer_id || null,
+          client_name: lead.full_name || (contract.metadata as any)?.client_name || "Cliente",
+        },
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", contract.id)
+      .eq("store_id", identity.store_id);
+
+    const existingContractIds = Array.isArray(lead.custom_fields?.contract_ids)
+      ? (lead.custom_fields.contract_ids as string[])
+      : [];
+    const updatedContractIds = Array.from(new Set([...existingContractIds, contract.id]));
+
+    await supabase
+      .from("leads_crm")
+      .update({
+        custom_fields: {
+          ...(lead.custom_fields || {}),
+          contract_ids: updatedContractIds,
+          linked_contract_id: contract.id,
+          last_contract_at: new Date().toISOString(),
+        },
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", lead.id)
+      .eq("store_id", identity.store_id);
+
+    await supabase.from("lead_activities").insert({
+      lead_id: lead.id,
+      store_id: identity.store_id,
+      author_id: identity.id,
+      type: "contract_linked",
+      content: `Contrato vinculado ao atendimento: "${contract.title}"`,
+      metadata: { contract_id: contract.id },
+    }).then(() => null, () => null);
+
+    return {
+      success: true,
+      contract: {
+        id: contract.id,
+        title: contract.title,
+        contract_title: contract.title,
+        status: contract.status,
+        verification_code: contract.verification_code,
+        total_value_cents: (contract.metadata as any)?.total_value_cents || (contract.metadata as any)?.total_amount_cents || 0,
+        created_at: contract.created_at,
+      },
+    };
+  });
+
+export const listLinkableStoreContracts = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      leadId: z.string().uuid().optional(),
+      storeId: z.string().uuid().optional(),
+    }).optional()
+  )
+  .handler(async () => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
+
+    const { data, error } = await supabase
+      .from("contracts")
+      .select(`
+        id, title, category, status, verification_code, metadata, created_at,
+        versions:contract_versions (
+          id, version_number,
+          envelopes:signature_envelopes (
+            id, signer_name, signer_role, status, signing_token
+          )
+        )
+      `)
+      .eq("store_id", identity.store_id)
+      .order("created_at", { ascending: false })
+      .limit(40);
+
+    if (error) throw new Error("Erro ao listar contratos do cofre.");
+    return (data || []).map((c: any) => {
+      const m = (c.metadata as Record<string, any>) || {};
+      const envelopes = c.versions?.[0]?.envelopes || [];
+      const party = envelopes.find((e: any) => e.signer_role === "party") || envelopes[0];
+      return {
+        id: c.id,
+        title: c.title,
+        category: c.category,
+        status: c.status,
+        verification_code: c.verification_code || m.public_token || c.id,
+        signing_token: party?.signing_token || c.verification_code || c.id,
+        total_value_cents: Number(m.total_value_cents || 0),
+        created_at: c.created_at,
+      };
+    });
   });
 
 
@@ -3968,12 +4901,19 @@ export const issueLeadContract = createServerFn({ method: "POST" })
 export interface StoreLtvAndAdSpendDTO {
   totalAdSpendCents: number;
   totalRevenueCents: number;
+  attributedRevenueCents: number;
   roas: number;
   totalCustomers: number;
+  repeatCustomersCount: number;
+  repeatPurchaseRate: number;
   averageLtvCents: number;
   cacCents: number;
+  attributedCacCents: number;
   ltvToCacRatio: number;
   conversionRate: number;
+  totalClicksCount: number;
+  costPerClickCents: number;
+  costPerLeadCents: number;
   monthlyCohortData: Array<{
     monthKey: string;
     adSpendCents: number;
@@ -3981,11 +4921,38 @@ export interface StoreLtvAndAdSpendDTO {
     leadsCount: number;
     ordersCount: number;
   }>;
+  breakdownByCampaign: Array<{
+    campaignKey: string;
+    title: string;
+    spendCents: number;
+    revenueCents: number;
+    clicksCount: number;
+    leadsCount: number;
+    roas: number | null;
+    cplCents: number | null;
+    cacCents: number | null;
+  }>;
+  breakdownBySource: Array<{
+    source: string;
+    leadsCount: number;
+    touchpointsCount: number;
+    revenueCents: number;
+    spendCents: number;
+    roas: number | null;
+  }>;
+  breakdownByPixel: Array<{
+    pixelId: string;
+    name: string;
+    deliveredEvents: number;
+    failedEvents: number;
+    attributedRevenueCents: number;
+  }>;
 }
 
 /**
- * MOTOR DE TELEMETRIA LTV & ROAS (MASTER PROMPT V46 - FASE 3)
- * Cruza o investimento em anúncios (Meta/Google) com a receita realizada e o LTV ao longo de 12 meses.
+ * MOTOR DE TELEMETRIA LTV & ROAS (CLOSED-LOOP MULTI-NICHO)
+ * Cruza investimento real em anuncios (ad_campaigns + store_ad_campaigns), touchpoints e disparos CAPI
+ * com receita realizada em Pedidos, Viagens Confirmadas, Propostas Aceitas e Faturas Pagas.
  */
 export const calculateStoreLtvAndAdSpend = createServerFn({ method: "GET" }).handler(
   async (): Promise<StoreLtvAndAdSpendDTO> => {
@@ -3997,17 +4964,51 @@ export const calculateStoreLtvAndAdSpend = createServerFn({ method: "GET" }).han
     twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
     const isoSince = twelveMonthsAgo.toISOString();
 
-    const [campaignsRes, ordersRes, customersRes, leadsRes] = await Promise.all([
+    const [
+      campaignsRes,
+      storeCampaignsRes,
+      ordersRes,
+      tripsRes,
+      proposalsRes,
+      commercialInvRes,
+      customersRes,
+      leadsRes,
+      touchpointsRes,
+      sourcesRes,
+      sourcePixelsRes,
+      telemetryRes,
+    ] = await Promise.all([
       supabase
         .from("ad_campaigns")
-        .select("budget_cents, spent_cents, created_at, status")
+        .select("id, title, external_campaign_id, budget_cents, spent_cents, external_ad_spend_cents, created_at, status, settings")
         .eq("store_id", identity.store_id),
+      (supabase.from("store_ad_campaigns") as any)
+        .select("id, name, title, channel, platform, external_campaign_id, status, daily_budget_cents, total_budget_cents, metadata, created_at")
+        .eq("store_id", identity.store_id)
+        .then((r: any) => r, () => ({ data: [] })),
       supabase
         .from("orders")
-        .select("total_cents, created_at, status, customer_id")
+        .select("id, total_cents, created_at, status, customer_id, attributed_campaign_id, utm_campaign")
         .eq("store_id", identity.store_id)
         .gte("created_at", isoSince)
         .in("status", ["paid", "delivered", "completed", "shipped"]),
+      supabase
+        .from("tourism_trips")
+        .select("id, total_cents, status, customer_id, proposal_id, source_proposal_id, created_at")
+        .eq("store_id", identity.store_id)
+        .gte("created_at", isoSince)
+        .in("status", ["confirmed", "active", "completed", "paid"]),
+      supabase
+        .from("travel_proposals")
+        .select("id, customer_id, lead_id, status, canonical_status, acceptance_status, approved_at, pricing, created_at")
+        .eq("store_id", identity.store_id)
+        .gte("created_at", isoSince),
+      (supabase.from("commercial_invoices") as any)
+        .select("id, total_cents, status, customer_id, lead_id, created_at")
+        .eq("store_id", identity.store_id)
+        .gte("created_at", isoSince)
+        .in("status", ["paid", "settled", "received"])
+        .then((r: any) => r, () => ({ data: [] })),
       supabase
         .from("customers_crm")
         .select("id, created_at")
@@ -4015,61 +5016,260 @@ export const calculateStoreLtvAndAdSpend = createServerFn({ method: "GET" }).han
         .is("deleted_at", null),
       supabase
         .from("leads_crm")
-        .select("id, status, created_at, estimated_value_cents")
+        .select("id, customer_id, source, lead_source_detail, status, created_at, estimated_value_cents, custom_fields")
         .eq("store_id", identity.store_id)
         .gte("created_at", isoSince),
+      (supabase.from("ad_attribution_touchpoints") as any)
+        .select("id, ad_platform, utm_source, utm_campaign, campaign_id, ad_id, source_pixel_id, lead_id, created_at")
+        .eq("store_id", identity.store_id)
+        .gte("created_at", isoSince)
+        .limit(500)
+        .then((r: any) => r, () => ({ data: [] })),
+      (supabase.from("marketing_sources") as any)
+        .select("id, name, platform")
+        .eq("store_id", identity.store_id)
+        .then((r: any) => r, () => ({ data: [] })),
+      (supabase.from("marketing_source_pixels") as any)
+        .select("id, source_id, name, external_pixel_id")
+        .eq("store_id", identity.store_id)
+        .then((r: any) => r, () => ({ data: [] })),
+      supabase
+        .from("lead_conversion_telemetry")
+        .select("id, lead_id, status, source_pixel_id, external_pixel_id")
+        .eq("store_id", identity.store_id)
+        .gte("dispatched_at", isoSince)
+        .limit(300)
+        .then((r: any) => r, () => ({ data: [] })),
     ]);
 
-    const campaigns = campaignsRes.data || [];
-    const orders = ordersRes.data || [];
-    const customers = customersRes.data || [];
-    const leads = leadsRes.data || [];
+    const campaigns = (campaignsRes.data || []) as any[];
+    const storeCampaigns = (storeCampaignsRes?.data || []) as any[];
+    const orders = (ordersRes.data || []) as any[];
+    const trips = (tripsRes.data || []) as any[];
+    const allProposals = (proposalsRes.data || []) as any[];
+    const commercialInvoices = (commercialInvRes?.data || []) as any[];
+    const customers = (customersRes.data || []) as any[];
+    const leads = (leadsRes.data || []) as any[];
+    const touchpoints = (touchpointsRes?.data || []) as any[];
+    const sourcePixels = (sourcePixelsRes?.data || []) as any[];
+    const telemetryLogs = (telemetryRes?.data || []) as any[];
 
-    // 1. Totais
-    const totalAdSpendCents = campaigns.reduce((acc, c) => acc + (c.spent_cents || c.budget_cents || 0), 0);
-    const totalRevenueCents = orders.reduce((acc, o) => acc + (o.total_cents || 0), 0);
+    const seenExternalCampaignIds = new Set<string>();
+    const normalizedCampaigns: Array<{
+      id: string;
+      key: string;
+      title: string;
+      spendCents: number;
+      clicksCount: number;
+      createdAt: string;
+    }> = [];
+
+    for (const c of campaigns) {
+      const s = (c.settings && typeof c.settings === "object" ? c.settings : {}) as Record<string, any>;
+      const spend = Number(c.external_ad_spend_cents ?? s.real_spent_cents ?? c.spent_cents ?? c.budget_cents ?? 0) || 0;
+      const extKey = String(c.external_campaign_id || c.id);
+      seenExternalCampaignIds.add(extKey);
+      normalizedCampaigns.push({
+        id: String(c.id),
+        key: extKey,
+        title: String(c.title || "Campanha"),
+        spendCents: spend,
+        clicksCount: Number(s.synced_clicks || 0) || 0,
+        createdAt: String(c.created_at || new Date().toISOString()),
+      });
+    }
+
+    for (const sc of storeCampaigns) {
+      const extKey = String(sc.external_campaign_id || sc.id);
+      if (seenExternalCampaignIds.has(extKey)) continue;
+      seenExternalCampaignIds.add(extKey);
+      const m = (sc.metadata && typeof sc.metadata === "object" ? sc.metadata : {}) as Record<string, any>;
+      const spend = Number(m.spent_cents ?? m.real_spent_cents ?? sc.total_budget_cents ?? 0) || 0;
+      normalizedCampaigns.push({
+        id: String(sc.id),
+        key: extKey,
+        title: String(sc.title || sc.name || "Campanha"),
+        spendCents: spend,
+        clicksCount: Number(m.clicks || 0) || 0,
+        createdAt: String(sc.created_at || new Date().toISOString()),
+      });
+    }
+
+    // Receita fechada deduplicada cross-tabelas
+    const tripProposalIds = new Set<string>();
+    trips.forEach((tr) => {
+      if (tr.proposal_id) tripProposalIds.add(String(tr.proposal_id));
+      if (tr.source_proposal_id) tripProposalIds.add(String(tr.source_proposal_id));
+    });
+    const acceptedProposals = allProposals.filter((p) => {
+      if (tripProposalIds.has(String(p.id))) return false;
+      const st = String(p.canonical_status || p.acceptance_status || p.status || "").toLowerCase();
+      return ["accepted", "approved", "converted", "paid", "completed"].includes(st);
+    });
+
+    const leadByCustomerId = new Map<string, any>();
+    const leadById = new Map<string, any>();
+    for (const l of leads) {
+      leadById.set(String(l.id), l);
+      if (l.customer_id && !leadByCustomerId.has(String(l.customer_id))) {
+        leadByCustomerId.set(String(l.customer_id), l);
+      }
+    }
+
+    const customerPurchaseCounts = new Map<string, number>();
+    const revenueEvents: Array<{
+      amountCents: number;
+      createdAt: string;
+      customerId: string | null;
+      leadId: string | null;
+      campaignHint: string | null;
+      isOrder: boolean;
+    }> = [];
+
+    for (const o of orders) {
+      const amt = Number(o.total_cents) || 0;
+      const cid = o.customer_id ? String(o.customer_id) : null;
+      if (cid) customerPurchaseCounts.set(cid, (customerPurchaseCounts.get(cid) || 0) + 1);
+      revenueEvents.push({
+        amountCents: amt,
+        createdAt: String(o.created_at || isoSince),
+        customerId: cid,
+        leadId: cid ? (leadByCustomerId.get(cid)?.id ? String(leadByCustomerId.get(cid).id) : null) : null,
+        campaignHint: o.attributed_campaign_id ? String(o.attributed_campaign_id) : (o.utm_campaign ? String(o.utm_campaign) : null),
+        isOrder: true,
+      });
+    }
+    for (const tr of trips) {
+      const amt = Number(tr.total_cents) || 0;
+      const cid = tr.customer_id ? String(tr.customer_id) : null;
+      if (cid) customerPurchaseCounts.set(cid, (customerPurchaseCounts.get(cid) || 0) + 1);
+      revenueEvents.push({
+        amountCents: amt,
+        createdAt: String(tr.created_at || isoSince),
+        customerId: cid,
+        leadId: cid ? (leadByCustomerId.get(cid)?.id ? String(leadByCustomerId.get(cid).id) : null) : null,
+        campaignHint: null,
+        isOrder: true,
+      });
+    }
+    for (const pr of acceptedProposals) {
+      const pricing = (pr.pricing && typeof pr.pricing === "object" ? pr.pricing : {}) as Record<string, any>;
+      const amt = Number(pricing.total_price_cents ?? pricing.total_cents ?? 0) || 0;
+      const cid = pr.customer_id ? String(pr.customer_id) : null;
+      if (cid) customerPurchaseCounts.set(cid, (customerPurchaseCounts.get(cid) || 0) + 1);
+      revenueEvents.push({
+        amountCents: amt,
+        createdAt: String(pr.approved_at || pr.created_at || isoSince),
+        customerId: cid,
+        leadId: pr.lead_id ? String(pr.lead_id) : null,
+        campaignHint: null,
+        isOrder: false,
+      });
+    }
+    for (const ci of commercialInvoices) {
+      const amt = Number(ci.total_cents) || 0;
+      const cid = ci.customer_id ? String(ci.customer_id) : null;
+      if (cid) customerPurchaseCounts.set(cid, (customerPurchaseCounts.get(cid) || 0) + 1);
+      revenueEvents.push({
+        amountCents: amt,
+        createdAt: String(ci.created_at || isoSince),
+        customerId: cid,
+        leadId: ci.lead_id ? String(ci.lead_id) : null,
+        campaignHint: null,
+        isOrder: false,
+      });
+    }
+
+    const totalAdSpendCents = normalizedCampaigns.reduce((acc, c) => acc + c.spendCents, 0);
+    const totalRevenueCents = revenueEvents.reduce((acc, r) => acc + r.amountCents, 0);
     const totalCustomers = Math.max(customers.length, 1);
-    const totalLeads = Math.max(leads.length, 1);
+    const totalLeadsCount = Math.max(leads.length, 1);
+
+    const repeatCustomersCount = Array.from(customerPurchaseCounts.values()).filter((cnt) => cnt > 1).length;
+    const buyingCustomersCount = Math.max(customerPurchaseCounts.size, 1);
+    const repeatPurchaseRate = Number(((repeatCustomersCount / buyingCustomersCount) * 100).toFixed(1));
+
+    let attributedRevenueCents = 0;
+    const revenueByLeadId = new Map<string, number>();
+    for (const ev of revenueEvents) {
+      if (ev.leadId) {
+        revenueByLeadId.set(ev.leadId, (revenueByLeadId.get(ev.leadId) || 0) + ev.amountCents);
+      }
+      const linkedLead = ev.leadId ? leadById.get(ev.leadId) : ev.customerId ? leadByCustomerId.get(ev.customerId) : null;
+      const cfAttr = (linkedLead?.custom_fields?.attribution || {}) as Record<string, any>;
+      const hasAdSource = Boolean(
+        ev.campaignHint ||
+          linkedLead?.source === "meta_ads" ||
+          linkedLead?.source === "google_ads" ||
+          linkedLead?.source === "paid" ||
+          cfAttr.campaign_id ||
+          cfAttr.ad_id ||
+          cfAttr.ctwa_clid ||
+          cfAttr.fbclid ||
+          cfAttr.gclid,
+      );
+      if (hasAdSource) {
+        attributedRevenueCents += ev.amountCents;
+      }
+    }
+
+    const attributedWonLeads = leads.filter((l) => {
+      const st = String(l.status || "").toLowerCase();
+      if (!["won", "converted", "ganho", "closed", "fechado"].includes(st)) return false;
+      const cf = (l.custom_fields || {}) as Record<string, any>;
+      const attr = (cf.attribution || {}) as Record<string, any>;
+      return Boolean(
+        l.source === "meta_ads" ||
+          l.source === "google_ads" ||
+          attr.campaign_id ||
+          attr.ad_id ||
+          attr.ctwa_clid ||
+          attr.fbclid ||
+          attr.gclid,
+      );
+    }).length;
 
     const roas = totalAdSpendCents > 0 ? Number((totalRevenueCents / totalAdSpendCents).toFixed(2)) : 0;
     const averageLtvCents = Math.round(totalRevenueCents / totalCustomers);
     const cacCents = Math.round(totalAdSpendCents / totalCustomers);
+    const attributedCacCents =
+      totalAdSpendCents > 0
+        ? Math.round(totalAdSpendCents / Math.max(attributedWonLeads, buyingCustomersCount))
+        : 0;
     const ltvToCacRatio = cacCents > 0 ? Number((averageLtvCents / cacCents).toFixed(1)) : 0;
-    const wonLeads = leads.filter((l) => ["won", "converted"].includes(l.status)).length;
-    const conversionRate = Number(((wonLeads / totalLeads) * 100).toFixed(1));
+    const wonLeads = leads.filter((l) => ["won", "converted", "ganho"].includes(String(l.status || "").toLowerCase())).length;
+    const conversionRate = Number(((wonLeads / totalLeadsCount) * 100).toFixed(1));
+    const totalClicksCount =
+      normalizedCampaigns.reduce((acc, c) => acc + c.clicksCount, 0) + touchpoints.length;
+    const costPerClickCents = totalClicksCount > 0 ? Math.round(totalAdSpendCents / totalClicksCount) : 0;
+    const costPerLeadCents = leads.length > 0 ? Math.round(totalAdSpendCents / leads.length) : 0;
 
-    // 2. Agrupamento em Cohorts de 12 Meses
+    // 2. Cohorts de 12 Meses
     const monthsMap = new Map<string, { adSpend: number; revenue: number; leads: number; orders: number }>();
-
     for (let i = 11; i >= 0; i--) {
       const d = new Date();
       d.setMonth(d.getMonth() - i);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       monthsMap.set(key, { adSpend: 0, revenue: 0, leads: 0, orders: 0 });
     }
-
-    orders.forEach((o) => {
-      const key = o.created_at.substring(0, 7);
+    revenueEvents.forEach((ev) => {
+      const key = ev.createdAt.substring(0, 7);
       if (monthsMap.has(key)) {
         const item = monthsMap.get(key)!;
-        item.revenue += o.total_cents || 0;
-        item.orders++;
+        item.revenue += ev.amountCents;
+        item.orders += 1;
       }
     });
-
     leads.forEach((l) => {
-      const key = l.created_at.substring(0, 7);
+      const key = String(l.created_at || "").substring(0, 7);
       if (monthsMap.has(key)) {
-        const item = monthsMap.get(key)!;
-        item.leads++;
+        monthsMap.get(key)!.leads += 1;
       }
     });
-
-    campaigns.forEach((c) => {
-      const key = c.created_at ? c.created_at.substring(0, 7) : "";
+    normalizedCampaigns.forEach((c) => {
+      const key = c.createdAt.substring(0, 7);
       if (monthsMap.has(key)) {
-        const item = monthsMap.get(key)!;
-        item.adSpend += c.spent_cents || c.budget_cents || 0;
+        monthsMap.get(key)!.adSpend += c.spendCents;
       }
     });
 
@@ -4081,16 +5281,115 @@ export const calculateStoreLtvAndAdSpend = createServerFn({ method: "GET" }).han
       ordersCount: val.orders,
     }));
 
+    // 3. Breakdown por Campanha, Fonte e Pixel
+    const campaignStats = new Map<string, { title: string; spendCents: number; revenueCents: number; clicksCount: number; leads: Set<string> }>();
+    for (const c of normalizedCampaigns) {
+      campaignStats.set(c.key, {
+        title: c.title,
+        spendCents: c.spendCents,
+        revenueCents: 0,
+        clicksCount: c.clicksCount,
+        leads: new Set<string>(),
+      });
+    }
+    for (const tp of touchpoints) {
+      const ck = String(tp.campaign_id || tp.utm_campaign || "").trim();
+      if (!ck) continue;
+      const entry = campaignStats.get(ck) || { title: String(tp.utm_campaign || ck), spendCents: 0, revenueCents: 0, clicksCount: 0, leads: new Set<string>() };
+      entry.clicksCount += 1;
+      if (tp.lead_id) entry.leads.add(String(tp.lead_id));
+      campaignStats.set(ck, entry);
+    }
+    for (const l of leads) {
+      const attr = ((l.custom_fields || {}).attribution || {}) as Record<string, any>;
+      const ck = String(attr.campaign_id || attr.utm_campaign || attr.campaign || "").trim();
+      if (!ck) continue;
+      const entry = campaignStats.get(ck) || { title: String(attr.campaign_name || attr.utm_campaign || ck), spendCents: 0, revenueCents: 0, clicksCount: 0, leads: new Set<string>() };
+      entry.leads.add(String(l.id));
+      entry.revenueCents += revenueByLeadId.get(String(l.id)) || 0;
+      campaignStats.set(ck, entry);
+    }
+
+    const breakdownByCampaign = Array.from(campaignStats.entries())
+      .map(([campaignKey, st]) => ({
+        campaignKey,
+        title: st.title,
+        spendCents: st.spendCents,
+        revenueCents: st.revenueCents,
+        clicksCount: st.clicksCount,
+        leadsCount: st.leads.size,
+        roas: st.spendCents > 0 ? Number((st.revenueCents / st.spendCents).toFixed(2)) : null,
+        cplCents: st.leads.size > 0 && st.spendCents > 0 ? Math.round(st.spendCents / st.leads.size) : null,
+        cacCents: st.spendCents > 0 && st.revenueCents > 0 ? Math.round(st.spendCents / Math.max(1, st.leads.size)) : null,
+      }))
+      .slice(0, 12);
+
+    const sourceAgg = new Map<string, { leadsCount: number; touchpointsCount: number; revenueCents: number; spendCents: number }>();
+    for (const l of leads) {
+      const src = String(l.source || "balcao");
+      const entry = sourceAgg.get(src) || { leadsCount: 0, touchpointsCount: 0, revenueCents: 0, spendCents: 0 };
+      entry.leadsCount += 1;
+      entry.revenueCents += revenueByLeadId.get(String(l.id)) || 0;
+      sourceAgg.set(src, entry);
+    }
+    for (const tp of touchpoints) {
+      const src = String(tp.ad_platform || tp.utm_source || "whatsapp");
+      const entry = sourceAgg.get(src) || { leadsCount: 0, touchpointsCount: 0, revenueCents: 0, spendCents: 0 };
+      entry.touchpointsCount += 1;
+      sourceAgg.set(src, entry);
+    }
+    const breakdownBySource = Array.from(sourceAgg.entries()).map(([source, s]) => ({
+      source,
+      leadsCount: s.leadsCount,
+      touchpointsCount: s.touchpointsCount,
+      revenueCents: s.revenueCents,
+      spendCents: s.spendCents,
+      roas: s.spendCents > 0 ? Number((s.revenueCents / s.spendCents).toFixed(2)) : null,
+    }));
+
+    const pixelMetaMap = new Map<string, string>();
+    for (const px of sourcePixels) {
+      if (px?.id) pixelMetaMap.set(String(px.id), String(px.name || px.external_pixel_id));
+      if (px?.external_pixel_id) pixelMetaMap.set(String(px.external_pixel_id), String(px.name || px.external_pixel_id));
+    }
+    const pixelStatsMap = new Map<string, { name: string; delivered: number; failed: number; revCents: number }>();
+    for (const tel of telemetryLogs) {
+      const pxKey = String(tel.external_pixel_id || tel.source_pixel_id || "").trim();
+      if (!pxKey) continue;
+      const entry = pixelStatsMap.get(pxKey) || { name: pixelMetaMap.get(pxKey) || `Pixel ${pxKey}`, delivered: 0, failed: 0, revCents: 0 };
+      if (tel.status === "delivered" || tel.status === "dispatched") entry.delivered += 1;
+      else if (tel.status === "failed") entry.failed += 1;
+      if (tel.lead_id) entry.revCents += revenueByLeadId.get(String(tel.lead_id)) || 0;
+      pixelStatsMap.set(pxKey, entry);
+    }
+    const breakdownByPixel = Array.from(pixelStatsMap.entries()).map(([pixelId, st]) => ({
+      pixelId,
+      name: st.name,
+      deliveredEvents: st.delivered,
+      failedEvents: st.failed,
+      attributedRevenueCents: st.revCents,
+    }));
+
     return {
       totalAdSpendCents,
       totalRevenueCents,
+      attributedRevenueCents,
       roas,
       totalCustomers,
+      repeatCustomersCount,
+      repeatPurchaseRate,
       averageLtvCents,
       cacCents,
+      attributedCacCents,
       ltvToCacRatio,
       conversionRate,
+      totalClicksCount,
+      costPerClickCents,
+      costPerLeadCents,
       monthlyCohortData,
+      breakdownByCampaign,
+      breakdownBySource,
+      breakdownByPixel,
     };
   }
 );
@@ -4184,6 +5483,438 @@ export const listLeadActivitiesByLead = createServerFn({ method: "GET" })
       return [];
     }
     return data || [];
+  });
+
+export const updateLeadActivity = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      activityId: z.string().uuid(),
+      content: z.string().trim().min(1, "Conteúdo obrigatório").max(4000),
+    })
+  )
+  .handler(async ({ data }) => {
+    const { activityId, content } = data;
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"]);
+
+    const { data: existing, error: fetchErr } = await supabase
+      .from("lead_activities")
+      .select("id, store_id, author_id, type")
+      .eq("id", activityId)
+      .maybeSingle();
+
+    if (fetchErr || !existing) {
+      throw new Error("Atividade não encontrada.");
+    }
+    if (existing.store_id !== identity.store_id && identity.role !== "platform_admin") {
+      throw new Error("Acesso não autorizado para editar atividade de outra loja.");
+    }
+    const isManagerial = ["owner", "admin", "manager", "platform_admin"].includes(String(identity.role || ""));
+    if (existing.author_id && existing.author_id !== identity.id && !isManagerial) {
+      throw new Error("Apenas o autor ou gestor pode editar este registro.");
+    }
+    if (existing.type === "stage_change") {
+      throw new Error("Eventos automáticos de mudança de estágio são imutáveis.");
+    }
+
+    const { data: updated, error: updErr } = await supabase
+      .from("lead_activities")
+      .update({ content })
+      .eq("id", activityId)
+      .eq("store_id", existing.store_id)
+      .select()
+      .single();
+
+    if (updErr) {
+      throw new Error(`Erro ao atualizar registro da timeline: ${updErr.message}`);
+    }
+    return updated;
+  });
+
+export const deleteLeadActivity = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      activityId: z.string().uuid(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const { activityId } = data;
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"]);
+
+    const { data: existing, error: fetchErr } = await supabase
+      .from("lead_activities")
+      .select("id, store_id, author_id, type")
+      .eq("id", activityId)
+      .maybeSingle();
+
+    if (fetchErr || !existing) {
+      throw new Error("Atividade não encontrada.");
+    }
+    if (existing.store_id !== identity.store_id && identity.role !== "platform_admin") {
+      throw new Error("Acesso não autorizado para remover atividade de outra loja.");
+    }
+    const isManagerial = ["owner", "admin", "manager", "platform_admin"].includes(String(identity.role || ""));
+    if (existing.author_id && existing.author_id !== identity.id && !isManagerial) {
+      throw new Error("Apenas o autor ou gestor pode excluir este registro.");
+    }
+    if (existing.type === "stage_change") {
+      throw new Error("Eventos automáticos de mudança de estágio são imutáveis.");
+    }
+
+    const { error: delErr } = await supabase
+      .from("lead_activities")
+      .delete()
+      .eq("id", activityId)
+      .eq("store_id", existing.store_id);
+
+    if (delErr) {
+      throw new Error(`Erro ao remover registro da timeline: ${delErr.message}`);
+    }
+    return { success: true };
+  });
+
+export const transferLead = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      leadId: z.string().uuid(),
+      newOwnerId: z.string().uuid().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const { leadId, newOwnerId } = data;
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"]);
+
+    const { data: leadRow, error: fetchErr } = await supabase
+      .from("leads_crm")
+      .select("id, store_id, assigned_to, owner_id")
+      .eq("id", leadId)
+      .maybeSingle();
+
+    if (fetchErr || !leadRow) {
+      throw new Error("Lead não encontrado.");
+    }
+    assertStoreAccess(
+      identity,
+      ["owner", "admin", "manager", "seller", "support"],
+      leadRow.store_id
+    );
+
+    const prevOwnerId = leadRow.assigned_to || leadRow.owner_id || null;
+    if (prevOwnerId === newOwnerId) {
+      return { success: true, unchanged: true, fromName: null, toName: null };
+    }
+
+    const resolveName = async (profileId: string | null) => {
+      if (!profileId) return "Sem responsável";
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", profileId)
+        .maybeSingle();
+      return prof?.full_name || "Consultor";
+    };
+
+    const [fromName, toName] = await Promise.all([
+      resolveName(prevOwnerId),
+      resolveName(newOwnerId),
+    ]);
+
+    const { error: updErr } = await supabase
+      .from("leads_crm")
+      .update({
+        assigned_to: newOwnerId,
+        owner_id: newOwnerId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", leadId)
+      .eq("store_id", leadRow.store_id);
+
+    if (updErr) {
+      throw new Error(`Erro ao transferir responsável do lead: ${updErr.message}`);
+    }
+
+    await supabase.from("lead_activities").insert({
+      lead_id: leadId,
+      store_id: leadRow.store_id,
+      author_id: identity.id,
+      type: "note",
+      content: `Responsável alterado de "${fromName}" para "${toName}"`,
+      metadata: {
+        event: "lead_transfer",
+        from_owner_id: prevOwnerId,
+        to_owner_id: newOwnerId,
+      },
+    });
+
+    return { success: true, unchanged: false, fromName, toName };
+  });
+
+export const archiveLead = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      leadId: z.string().uuid(),
+      reason: z.string().max(300).optional(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const { leadId, reason } = data;
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
+
+    const { data: leadRow, error: fetchErr } = await supabase
+      .from("leads_crm")
+      .select("id, store_id, status, custom_fields")
+      .eq("id", leadId)
+      .maybeSingle();
+
+    if (fetchErr || !leadRow) {
+      throw new Error("Lead não encontrado.");
+    }
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller"], leadRow.store_id);
+
+    const prevStatus = leadRow.status && leadRow.status !== "archived" ? leadRow.status : "new";
+    const nextMeta = {
+      ...((leadRow.custom_fields as Record<string, unknown>) || {}),
+      archived_from_status: prevStatus,
+      archived_at: new Date().toISOString(),
+      archived_by: identity.id,
+      archived_reason: reason?.trim() || null,
+    };
+
+    const { error: updErr } = await supabase
+      .from("leads_crm")
+      .update({
+        status: "archived",
+        custom_fields: nextMeta as any,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", leadId)
+      .eq("store_id", leadRow.store_id);
+
+    if (updErr) {
+      throw new Error(`Erro ao arquivar lead: ${updErr.message}`);
+    }
+
+    await supabase.from("lead_activities").insert({
+      lead_id: leadId,
+      store_id: leadRow.store_id,
+      author_id: identity.id,
+      type: "stage_change",
+      content: reason?.trim() ? `Lead arquivado (${reason.trim()})` : "Lead arquivado",
+      metadata: { from: prevStatus, to: "archived" },
+    });
+
+    return { success: true, archivedFromStatus: prevStatus };
+  });
+
+export const listArchivedLeads = createServerFn({ method: "GET" }).handler(async () => {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"]);
+
+  const { data, error } = await supabase
+    .from("leads_crm")
+    .select("*")
+    .eq("store_id", identity.store_id)
+    .eq("status", "archived")
+    .order("updated_at", { ascending: false })
+    .limit(200);
+
+  if (error) {
+    throw new Error(`Erro ao listar leads arquivados: ${error.message}`);
+  }
+  return data || [];
+});
+
+export const restoreLead = createServerFn({ method: "POST" })
+  .validator(z.object({ leadId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const { leadId } = data;
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
+
+    const { data: leadRow, error: fetchErr } = await supabase
+      .from("leads_crm")
+      .select("id, store_id, status, custom_fields")
+      .eq("id", leadId)
+      .maybeSingle();
+
+    if (fetchErr || !leadRow) {
+      throw new Error("Lead não encontrado.");
+    }
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller"], leadRow.store_id);
+
+    const meta = { ...((leadRow.custom_fields as Record<string, unknown>) || {}) };
+    const prev =
+      typeof meta.archived_from_status === "string" &&
+      meta.archived_from_status !== "archived"
+        ? meta.archived_from_status
+        : "new";
+    delete meta.archived_from_status;
+    delete meta.archived_at;
+    delete meta.archived_by;
+    delete meta.archived_reason;
+
+    const { error: updErr } = await supabase
+      .from("leads_crm")
+      .update({
+        status: prev,
+        custom_fields: meta as any,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", leadId)
+      .eq("store_id", leadRow.store_id);
+
+    if (updErr) {
+      throw new Error(`Erro ao restaurar lead: ${updErr.message}`);
+    }
+
+    await supabase.from("lead_activities").insert({
+      lead_id: leadId,
+      store_id: leadRow.store_id,
+      author_id: identity.id,
+      type: "stage_change",
+      content: `Lead restaurado para "${prev}"`,
+      metadata: { from: "archived", to: prev },
+    });
+
+    return { success: true, restoredStatus: prev };
+  });
+
+export const mergeCustomers = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      sourceCustomerId: z.string().uuid(),
+      targetCustomerId: z.string().uuid(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const { sourceCustomerId, targetCustomerId } = data;
+    if (sourceCustomerId === targetCustomerId) {
+      throw new Error("Selecione um cliente diferente para mesclar.");
+    }
+
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertManagerAccess(identity);
+
+    const [{ data: sourceRow, error: srcErr }, { data: targetRow, error: tgtErr }] =
+      await Promise.all([
+        supabase
+          .from("customers_crm")
+          .select("id, store_id, full_name, name, email, phone, document, notes, tags, total_spent_cents, lifetime_lead_count, status")
+          .eq("id", sourceCustomerId)
+          .maybeSingle(),
+        supabase
+          .from("customers_crm")
+          .select("id, store_id, full_name, name, email, phone, document, notes, tags, total_spent_cents, lifetime_lead_count, status")
+          .eq("id", targetCustomerId)
+          .maybeSingle(),
+      ]);
+
+    if (srcErr || !sourceRow || tgtErr || !targetRow) {
+      throw new Error("Um ou ambos os cadastros de cliente não foram encontrados.");
+    }
+    if (sourceRow.store_id !== targetRow.store_id) {
+      throw new Error("Proibido mesclar clientes de lojas diferentes.");
+    }
+    assertManagerAccess(identity, targetRow.store_id);
+
+    if (sourceRow.status === "archived") {
+      throw new Error("O cadastro de origem já foi mesclado ou arquivado.");
+    }
+
+    const fkTables = [
+      "leads_crm",
+      "contracts",
+      "travel_contracts",
+      "tourism_trips",
+      "quotes",
+      "customer_documents",
+      "customer_credits",
+      "crm_clinical_records",
+      "chat_threads",
+      "booking_appointments",
+      "orders",
+      "support_tickets",
+    ] as const;
+
+    let reassignedCount = 0;
+    for (const table of fkTables) {
+      const { error: fkErr, count } = await supabase
+        .from(table)
+        .update({ customer_id: targetCustomerId }, { count: "exact" })
+        .eq("customer_id", sourceCustomerId);
+      if (!fkErr && typeof count === "number") {
+        reassignedCount += count;
+      }
+    }
+
+    const mergedTags = Array.from(
+      new Set([
+        ...(Array.isArray(targetRow.tags) ? targetRow.tags : []),
+        ...(Array.isArray(sourceRow.tags) ? sourceRow.tags : []),
+      ])
+    );
+    const mergedNotes = [
+      targetRow.notes?.trim() || "",
+      sourceRow.notes?.trim()
+        ? `[Mesclado de ${sourceRow.full_name || sourceRow.name || sourceCustomerId}]: ${sourceRow.notes.trim()}`
+        : "",
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+
+    const { error: targetUpdErr } = await supabase
+      .from("customers_crm")
+      .update({
+        email: targetRow.email || sourceRow.email,
+        phone: targetRow.phone || sourceRow.phone,
+        document: targetRow.document || sourceRow.document,
+        notes: mergedNotes || null,
+        tags: mergedTags,
+        total_spent_cents:
+          (Number(targetRow.total_spent_cents) || 0) +
+          (Number(sourceRow.total_spent_cents) || 0),
+        lifetime_lead_count:
+          (Number(targetRow.lifetime_lead_count) || 0) +
+          (Number(sourceRow.lifetime_lead_count) || 0),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", targetCustomerId)
+      .eq("store_id", targetRow.store_id);
+
+    if (targetUpdErr) {
+      throw new Error(`Erro ao consolidar cadastro de destino: ${targetUpdErr.message}`);
+    }
+
+    const { error: srcArchErr } = await supabase
+      .from("customers_crm")
+      .update({
+        status: "archived",
+        notes: `[Cadastro mesclado ao cliente ${targetCustomerId} em ${new Date().toISOString()}]`,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", sourceCustomerId)
+      .eq("store_id", targetRow.store_id);
+
+    if (srcArchErr) {
+      throw new Error(`Erro ao arquivar cadastro duplicado: ${srcArchErr.message}`);
+    }
+
+    return {
+      success: true,
+      targetCustomerId,
+      sourceCustomerId,
+      reassignedCount,
+    };
   });
 
 // ---------------------------------------------------------------------------

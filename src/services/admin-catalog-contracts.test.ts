@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { z } from "zod";
-import { getNicheSemantics } from "@/lib/niche-semantics";
-import { getNicheCatalogContext } from "@/lib/catalog-niche-context";
+import { getNicheSemantics } from "@/lib/niches/niche-semantics";
+import { getNicheCatalogContext } from "@/lib/niches/catalog-niche-context";
 import { resolveStoreIdWithFallback } from "@/services/admin-catalog.functions";
 
 // Schema canônico de validação de item no catálogo

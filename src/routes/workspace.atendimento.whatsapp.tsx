@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { ErrorState } from "@/components/state/states";
 import { toast } from "sonner";
@@ -49,12 +49,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { resetStoreChatHistoryLocal } from "@/services/chat.functions";
+import { getRealtimeChannel } from "@/services/realtime-channel";
 import { getStoreSettings } from "@/services/store.functions";
 import {
   deleteWorkspaceWhatsAppInstance,
   disconnectWhatsAppInstance,
   listWorkspaceWhatsAppInstances,
   syncWhatsAppChatsFromEvolution,
+  syncWhatsAppDeltaNow,
   syncWhatsAppInstanceStatus,
   updateWorkspaceWhatsAppInstanceMetadata,
   type WhatsAppChannelInstanceDTO,
@@ -132,6 +134,47 @@ function WorkspaceAtendimentoWhatsAppPage() {
   const [resetCode, setResetCode] = useState("");
   const [isResetting, setIsResetting] = useState(false);
 
+  useEffect(() => {
+    if (!store?.id) return;
+    const rt = getRealtimeChannel(`whatsapp-channels-${store.id}`);
+    if (!rt.channel) return;
+    void rt.ensureAuth?.();
+
+    const refreshQuietly = () => {
+      listWorkspaceWhatsAppInstances({ data: { store_id: store.id } })
+        .then((updated) => {
+          if (Array.isArray(updated)) setInstances(updated);
+        })
+        .catch(() => {});
+    };
+
+    rt.channel
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "whatsapp_channel_live_state", filter: `store_id=eq.${store.id}` },
+        refreshQuietly,
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "whatsapp_history_sync_jobs", filter: `store_id=eq.${store.id}` },
+        refreshQuietly,
+      )
+      .subscribe();
+
+    const deltaTimer = setTimeout(() => {
+      syncWhatsAppDeltaNow({ data: { storeId: store.id } })
+        .then((res) => {
+          if (res && !res.skipped) refreshQuietly();
+        })
+        .catch(() => {});
+    }, 900);
+
+    return () => {
+      clearTimeout(deltaTimer);
+      rt.unsubscribe();
+    };
+  }, [store?.id]);
+
   const reloadInstances = async () => {
     setIsRefreshing(true);
     try {
@@ -201,7 +244,9 @@ function WorkspaceAtendimentoWhatsAppPage() {
   const handleSyncInstance = async (inst: WhatsAppChannelInstanceDTO) => {
     try {
       const res = await syncWhatsAppInstanceStatus({ data: { id: inst.id } });
-      await syncWhatsAppChatsFromEvolution({ data: { storeId: store?.id, forceImport: true } });
+      await syncWhatsAppChatsFromEvolution({
+        data: { storeId: store?.id, instanceId: inst.id, forceImport: true },
+      });
       toast.success(`Canal sincronizado: ${res.state}`);
       await reloadInstances();
     } catch (err: any) {

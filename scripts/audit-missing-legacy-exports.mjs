@@ -14,15 +14,29 @@ const legacyServiceFiles = [
   "vouchers",
 ];
 
+function extractDeclaredExports(content) {
+  const names = [
+    ...content.matchAll(/export\s+(?:async\s+)?(?:const|type|function|interface|class|enum)\s+([a-zA-Z0-9_]+)/g),
+  ].map((m) => m[1]);
+
+  for (const braceMatch of content.matchAll(/export\s+(?:type\s+)?\{([^}]+)\}/g)) {
+    for (const part of braceMatch[1].split(",")) {
+      const cleaned = part.trim().replace(/^type\s+/, "");
+      if (!cleaned) continue;
+      const alias = cleaned.includes(" as ") ? cleaned.split(" as ").pop().trim() : cleaned;
+      if (alias) names.push(alias);
+    }
+  }
+  return names;
+}
+
 // 1. Coletar todos os nomes exportados de cada arquivo de serviço legado
 const exportsByFile = {};
 for (const f of legacyServiceFiles) {
   const filePath = path.join("src", "services", `${f}.ts`);
   if (fs.existsSync(filePath)) {
     const content = fs.readFileSync(filePath, "utf8");
-    const namedExports = [
-      ...content.matchAll(/export\s+(?:async\s+)?(?:const|type|function|interface)\s+([a-zA-Z0-9_]+)/g),
-    ].map((m) => m[1]);
+    const namedExports = extractDeclaredExports(content);
 
     // Seguir re-exportações: export * from './foo'
     const reexports = [...content.matchAll(/export\s+\*\s+from\s+['"]([^'"]+)['"]/g)].map((m) => m[1]);
@@ -30,10 +44,7 @@ for (const f of legacyServiceFiles) {
       let targetPath = path.join("src", "services", re.endsWith(".ts") ? re : `${re}.ts`);
       if (fs.existsSync(targetPath)) {
         const reContent = fs.readFileSync(targetPath, "utf8");
-        const reNamed = [
-          ...reContent.matchAll(/export\s+(?:async\s+)?(?:const|type|function|interface)\s+([a-zA-Z0-9_]+)/g),
-        ].map((m) => m[1]);
-        namedExports.push(...reNamed);
+        namedExports.push(...extractDeclaredExports(reContent));
       }
     }
     exportsByFile[f] = new Set(namedExports);

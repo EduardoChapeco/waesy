@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Bus, Clock, MapPin, Users, Ticket, ArrowRight, CheckCircle2, Calendar, ShieldCheck, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -47,7 +47,13 @@ export function BusTicketResultsRail({
   const [selectedSeat, setSelectedSeat] = useState<number>(12);
   const [isBooking, setIsBooking] = useState(false);
 
-  const effectiveDate = travelDate || new Date().toISOString().slice(0, 10);
+  const [clientToday, setClientToday] = useState<string>("");
+
+  useEffect(() => {
+    setClientToday(new Date().toISOString().slice(0, 10));
+  }, []);
+
+  const effectiveDate = travelDate || clientToday;
 
   const {
     data: schedules = [],
@@ -55,6 +61,7 @@ export function BusTicketResultsRail({
     refetch,
   } = useQuery({
     queryKey: ["intercity-bus-schedules", originCity, destinationCity, effectiveDate],
+    enabled: Boolean(effectiveDate),
     queryFn: () =>
       listIntercityBusSchedules({
         data: {

@@ -75,8 +75,16 @@ export const getSystemLogs = createServerFn({ method: "GET" })
     const { data, error } = await query;
 
     if (error) {
-      console.error("[getSystemLogs] Error fetching logs:", error);
-      return [];
+      try {
+        const { logSystemError } = await import("@/lib/logger");
+        logSystemError({
+          route: "admin-logs.getSystemLogs",
+          contractName: "getSystemLogs",
+          tableName: "system_error_logs",
+          error,
+        });
+      } catch {}
+      throw new Error(`Falha ao consultar tabela system_error_logs: ${error.message}`);
     }
 
     const logs = data || [];
@@ -125,14 +133,7 @@ export const getSystemLogsStats = createServerFn({ method: "GET" }).handler(
       .limit(500);
 
     if (error || !logs) {
-      return {
-        total: 0,
-        critical: 0,
-        errors: 0,
-        warnings: 0,
-        topRoutes: [],
-        lastErrorAt: null,
-      };
+      throw new Error(`Falha ao consultar estatísticas de logs em system_error_logs: ${error?.message || "retorno nulo"}`);
     }
 
     let critical = 0;
@@ -270,8 +271,7 @@ export const getForensicAuditEvents = createServerFn({ method: "GET" })
 
     const { data: rows, error } = await query;
     if (error || !rows) {
-      console.error("[getForensicAuditEvents] Erro ao buscar eventos forenses:", error);
-      return [];
+      throw new Error(`Falha ao consultar trilha forense em forensic_audit_events: ${error?.message || "retorno nulo"}`);
     }
 
     // Enriquece com nomes dos atores

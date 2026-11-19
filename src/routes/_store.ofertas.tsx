@@ -20,7 +20,7 @@ import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
 import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
-import { resolveNicheDepartments } from "@/lib/niche-helpers";
+import { resolveNicheDepartments } from "@/lib/niches/niche-helpers";
 
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 

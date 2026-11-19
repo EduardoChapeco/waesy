@@ -1238,7 +1238,7 @@ function AfiliadosPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {partnerStores.map((s: any) => {
                     const couponCode = `${referralHandle.toUpperCase().slice(0, 6)}10`;
-                    const storeUrl = `${siteUrl}/c/${s.slug}?ref=${referralHandle}&coupon=${couponCode}`;
+                    const storeUrl = `${siteUrl}/app/${s.slug}?ref=${referralHandle}&coupon=${couponCode}`;
                     const isConnected = connectedStoreIds.includes(s.id);
 
                     return (

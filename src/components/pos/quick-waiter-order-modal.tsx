@@ -9,7 +9,7 @@ import { Search, Plus, Minus, UtensilsCrossed, Send, Loader2 } from "lucide-reac
 import { listAdminProducts } from "@/services/admin-catalog.functions";
 import { addItemsToTableComanda } from "@/services/order.functions";
 import { formatMoney } from "@/lib/money";
-import { getNicheSemantics } from "@/lib/niche-semantics";
+import { getNicheSemantics } from "@/lib/niches/niche-semantics";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 

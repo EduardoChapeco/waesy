@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Store, Award, ArrowRightLeft, X } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { cn, isUuid } from "@/lib/utils";
 import { purgeCorporateContextCookies, setClientContextCookies } from "@/lib/context-auth";
 import { setTenantContext } from "@/services/identity.functions";
 
@@ -29,8 +29,7 @@ export function ActiveContextBanner({ session }: ActiveContextBannerProps) {
       const tenant = matchTenant ? decodeURIComponent(matchTenant[1].trim()) : null;
 
       // Auto-Heal: Se o criador for um UUID cru, sanitizar para evitar vazamento visual
-      const isUuid = creator && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(creator);
-      if (isUuid) {
+      if (isUuid(creator)) {
         // Tenta resolver com os dados da sessão do usuário
         const userMeta = session?.user?.user_metadata || {};
         const fallbackHandle = userMeta?.username || session?.profile?.handle || "criador";

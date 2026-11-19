@@ -831,6 +831,66 @@ export function buildFullProposalAdvisorContext(
       ? `\nPasseios listados:\n  ${proposal.tours.map((t: any) => `${t.title || t.name}${t.duration ? ` (${t.duration})` : ""}${t.included || t.is_included ? " [Incluso]" : ""}`).join(" | ")}`
       : "";
 
+  const webPage = proposal.web_page;
+  const webPageLines: string[] = [];
+  if (webPage) {
+    if (webPage.headline) {
+      webPageLines.push(`Chamada principal web: ${sanitizeUntrustedSnippet(webPage.headline, 240)}`);
+    }
+    if (webPage.availability_config?.enabled && Number(webPage.availability_config.spots_remaining) > 0) {
+      webPageLines.push(`Disponibilidade informada: restam ${webPage.availability_config.spots_remaining} vaga(s).`);
+    }
+    if (webPage.countdown_config?.enabled) {
+      const target =
+        webPage.countdown_config.mode === "custom" && webPage.countdown_config.custom_ends_at
+          ? webPage.countdown_config.custom_ends_at
+          : proposal.valid_until || webPage.countdown_config.custom_ends_at || "";
+      if (target) {
+        webPageLines.push(`Prazo regressivo exibido: até ${target}.`);
+      }
+    }
+    const payCfg = webPage.payment_display_config;
+    if (payCfg) {
+      const paySummary = [
+        payCfg.show_pix !== false
+          ? `PIX${payCfg.pix_discount_percent ? ` (${payCfg.pix_discount_percent}% desconto)` : ""}`
+          : "",
+        payCfg.show_card !== false
+          ? `Cartão até ${payCfg.max_installments || 10}x${payCfg.interest_free === false ? " (com acréscimo)" : " sem juros"}`
+          : "",
+        payCfg.show_boleto
+          ? `Boleto${payCfg.boleto_due_days ? ` (${payCfg.boleto_due_days} dias)` : ""}`
+          : "",
+        payCfg.show_financing ? `Financiamento${payCfg.financing_notes ? ` (${payCfg.financing_notes})` : ""}` : "",
+      ]
+        .filter(Boolean)
+        .join(" | ");
+      if (paySummary) {
+        webPageLines.push(`Formas de pagamento exibidas na página web: ${paySummary}`);
+      }
+    }
+    const visibleBlocks = Array.isArray(webPage.blocks)
+      ? webPage.blocks.filter((b) => b.visible)
+      : [];
+    for (const blk of visibleBlocks) {
+      if ((blk.type === "custom_text" || blk.type === "urgency_banner") && (blk.title || blk.body)) {
+        webPageLines.push(
+          `Bloco Web (${blk.title || blk.type}): ${sanitizeUntrustedSnippet(blk.body || blk.subtitle || "", 400)}`,
+        );
+      }
+      if (blk.type === "faq" && Array.isArray(blk.faqItems) && blk.faqItems.length > 0) {
+        const faqSummary = blk.faqItems
+          .slice(0, 8)
+          .map(
+            (q) =>
+              `P: ${sanitizeUntrustedSnippet(q.question, 160)} R: ${sanitizeUntrustedSnippet(q.answer, 260)}`,
+          )
+          .join(" ; ");
+        webPageLines.push(`Perguntas Frequentes da Página Web: ${faqSummary}`);
+      }
+    }
+  }
+
   return [
     `Título: ${proposal.title || "Proposta de Viagem"}`,
     `Destino: ${proposal.destination_city || proposal.destination || "Não informado"}`,
@@ -842,6 +902,7 @@ export function buildFullProposalAdvisorContext(
     globalItinerary,
     transfers,
     tours,
+    webPageLines.length > 0 ? `\nDetalhes Editoriais & Comerciais da Página Web:\n  ${webPageLines.join("\n  ")}` : "",
     proposal.special_notes ? `Observações da agência: ${sanitizeUntrustedSnippet(proposal.special_notes, 500)}` : "",
   ]
     .filter(Boolean)

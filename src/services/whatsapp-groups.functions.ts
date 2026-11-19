@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess, STAFF_ROLES, MANAGER_ROLES } from "@/lib/server-access";
 import { normalizeWhatsAppPhoneInput } from "@/lib/phone-links";
+import { slugify } from "@/lib/slug-utils";
 
 export type WhatsAppGroupDirectoryDTO = {
   id: string;
@@ -20,6 +21,11 @@ export type WhatsAppGroupDirectoryDTO = {
   max_capacity: number;
   is_announcement_only: boolean;
   is_archived: boolean;
+  group_role?: "unclassified" | "promo_offers" | "internal_team" | "client_vip" | "operational";
+  auto_publish_eligible?: boolean;
+  silence_lead_capture?: boolean;
+  default_instance_id?: string | null;
+  offer_dispatch_preferences?: Record<string, any>;
   last_synced_at: string | null;
   metadata: Record<string, any>;
   created_at: string;
@@ -157,14 +163,7 @@ export function detectRepeatedGroupMembers(
 }
 
 function slugifyCampaignSlug(raw: string): string {
-  const clean = String(raw || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9-]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 64);
-  return clean || `grupo-${Date.now().toString(36)}`;
+  return slugify(raw).slice(0, 64) || `grupo-${Date.now().toString(36)}`;
 }
 
 function normalizePhoneArray(phones: string[]): string[] {
@@ -1013,4 +1012,44 @@ export const resolvePublicGroupCampaignInvite = createServerFn({ method: "POST" 
       inviteUrl,
       rotated,
     };
+  });
+
+export const updateWhatsAppGroupRoleAndPrefsFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().uuid(),
+      groupId: z.string().uuid(),
+      groupRole: z.enum(["unclassified", "promo_offers", "internal_team", "client_vip", "operational"]),
+      autoPublishEligible: z.boolean().optional(),
+      silenceLeadCapture: z.boolean().optional(),
+      defaultInstanceId: z.string().uuid().optional().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, MANAGER_ROLES, data.storeId);
+    const db = getServerClient();
+
+    const isInternal = data.groupRole === "internal_team";
+    const silence = isInternal ? true : (data.silenceLeadCapture ?? false);
+    const autoPub = isInternal ? false : (data.autoPublishEligible ?? false);
+
+    const { data: updated, error } = await db
+      .from("whatsapp_groups_directory")
+      .update({
+        group_role: data.groupRole,
+        auto_publish_eligible: autoPub,
+        silence_lead_capture: silence,
+        default_instance_id: data.defaultInstanceId || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", data.groupId)
+      .eq("store_id", data.storeId)
+      .select("*")
+      .single();
+
+    if (error) {
+      throw new Error(`Falha ao atualizar papel do grupo WhatsApp: ${error.message}`);
+    }
+    return updated;
   });

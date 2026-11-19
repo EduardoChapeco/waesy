@@ -1,8 +1,13 @@
 import { ProposalShareWhatsappModal } from "@/components/tourism/studio/proposal-share-whatsapp-modal";
+import { HotOfferPublisherDialog } from "@/components/tourism/studio/hot-offer-publisher-dialog";
+import {
+  evaluateProposalHistoricalOfferEligibilityFn,
+  type HotOfferEligibilityEvaluationResult,
+} from "@/services/hot-offers.functions";
 import { createFileRoute, Link, redirect, useNavigate, useRouter } from "@tanstack/react-router";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Download, Image as ImageIcon, Send, Check, Loader2, Copy, FileCheck2, Compass, Maximize2, SlidersHorizontal, ExternalLink } from "lucide-react";
+import { ArrowLeft, Download, Image as ImageIcon, Send, Check, Loader2, Copy, FileCheck2, Compass, Maximize2, SlidersHorizontal, ExternalLink, FileText, Globe, Monitor, Smartphone, Flame, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Badge } from "@/components/ui/badge";
@@ -27,18 +32,20 @@ import { ADVANCED_CONTRACT_TEMPLATES } from "@/lib/data/advanced-contract-templa
 import { convertProposalToTrip } from "@/services/travel-lifecycle.functions";
 import { StudioFrame, CANVAS_DIMENSIONS } from "@/components/tourism/studio/studio-frame";
 import { ProposalCanvasRenderer } from "@/components/tourism/studio/proposal-canvas-renderer";
+import { ProposalWebShowcase } from "@/components/tourism/studio/proposal-web-showcase";
 import { StudioSidebarEditor } from "@/components/tourism/studio/studio-sidebar-editor";
 import { resolveProposalCanvasTheme } from "@/lib/tourism/proposal-theme-palettes";
 import { exportElementAsPdf, exportElementAsImage } from "@/lib/pdf-export";
+import { validateProposalForExport } from "@/lib/tourism/proposal-validation";
 import { DocumentExportMenu } from "@/components/documents/DocumentExportMenu";
 import { cn } from "@/lib/utils";
 
-type EditableProposalPatch = Omit<Partial<TravelProposalDTO>, "status"> & {
+type EditableProposalPatch = Omit<Partial<TravelProposalDTO>, "status" | "web_page"> & {
   status?: Exclude<TravelProposalDTO["status"], "approved">;
 };
 
 function toEditableProposalPatch(patch: Partial<TravelProposalDTO>): EditableProposalPatch {
-  const { status, selected_customer_label: _ignoredLabel, ...rest } = patch;
+  const { status, selected_customer_label: _ignoredLabel, web_page: _ignoredWebPage, ...rest } = patch;
   return status === "approved" ? rest : { ...rest, status };
 }
 
@@ -90,10 +97,52 @@ function WorkspaceProposalStudioPage() {
  const [isSaving, setIsSaving] = useState(false);
  const [whatsappModalOpen, setWhatsappModalOpen] = useState(false);
  const [isMobileEditorOpen, setIsMobileEditorOpen] = useState(false);
+ const [stageViewMode, setStageViewMode] = useState<"canvas" | "web">("canvas");
+ const [webViewport, setWebViewport] = useState<"desktop" | "mobile">("desktop");
+ const [sidebarTabOverride, setSidebarTabOverride] = useState<string | undefined>(undefined);
 
  // Zoom controls state
  const [zoomScale, setZoomScale] = useState<number | null>(null);
  const [autoFitScale, setAutoFitScale] = useState<number>(0.85);
+ const [isHotOfferDialogOpen, setIsHotOfferDialogOpen] = useState(false);
+ const [hotOfferEvaluation, setHotOfferEvaluation] = useState<HotOfferEligibilityEvaluationResult | null>(null);
+
+ useEffect(() => {
+   if (!proposal?.store_id || !proposal?.destination_city) return;
+   const totalCents = Math.max(0, Number(proposal.pricing?.total_price_cents || (proposal.pricing as any)?.final_total_cents || 0));
+   if (totalCents <= 0) return;
+
+   let cancelled = false;
+   evaluateProposalHistoricalOfferEligibilityFn({
+     data: {
+       storeId: proposal.store_id,
+       proposalId: proposal.id,
+       title: proposal.title,
+       destinationCity: proposal.destination_city,
+       originCity: proposal.flights?.[0]?.origin_city || null,
+       originIata: proposal.flights?.[0]?.origin_iata || (proposal.flights?.[0] as any)?.origin_code || null,
+       destinationIata: proposal.flights?.[0]?.destination_iata || (proposal.flights?.[0] as any)?.destination_code || null,
+       departureDate: proposal.travel_start_date || null,
+       returnDate: proposal.travel_end_date || null,
+       adultsCount: Math.max(1, proposal.adults_count || 2),
+       totalPriceCents: totalCents,
+       installmentsMax: Math.max(1, Number(proposal.pricing?.installments_options?.[0]?.installments_count || (proposal.pricing as any)?.installments_max || 10)),
+       hotelHeadline: proposal.hotels?.[0]?.hotel_name || null,
+       includesHeadline: proposal.includes || [],
+       excludeLeadId: proposal.lead_id || null,
+     },
+   })
+     .then((res) => {
+       if (!cancelled) setHotOfferEvaluation(res);
+     })
+     .catch(() => {
+       // Non-blocking background check
+     });
+
+   return () => {
+     cancelled = true;
+   };
+ }, [proposal?.id, proposal?.store_id, proposal?.destination_city, proposal?.pricing?.total_price_cents]);
 
  const syncProposalCaches = useCallback(async () => {
    await Promise.all([
@@ -167,7 +216,10 @@ function WorkspaceProposalStudioPage() {
  if (!proposal) return;
  const next = { ...proposal, ...patch };
  setProposal(next);
- saveMutation.mutate(patch);
+ const cleanPatch = toEditableProposalPatch(patch);
+ if (Object.keys(cleanPatch).length > 0) {
+   saveMutation.mutate(patch);
+ }
  },
  [proposal, saveMutation]
  );
@@ -240,7 +292,7 @@ function WorkspaceProposalStudioPage() {
  },
  });
  if (res?.success && res.tripId) {
- toast.success(`Viagem confirmada (${res.tripNumber})! Reserva, vouchers e contratos gerados com sucesso.`);
+ toast.success(`Viagem gerada (${res.tripNumber})! Aguardando emissões, uploads e assinatura de contrato.`);
  if (typeof window !== "undefined") {
  window.location.href = `/workspace/turismo/viagens/${res.tripId}`;
  }
@@ -286,8 +338,19 @@ function WorkspaceProposalStudioPage() {
  };
 
  const handleExportPdf = async () => {
- try {
- setIsExportingPdf(true);
+  const check = validateProposalForExport(proposal);
+  if (!check.ok) {
+    toast.error(check.errors[0]);
+    return;
+  }
+  try {
+    setIsExportingPdf(true);
+ if (stageViewMode !== "canvas") {
+   setStageViewMode("canvas");
+   await new Promise<void>((resolve) =>
+     requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+   );
+ }
  await exportElementAsPdf("proposal-canvas", `${proposal.title.replace(/\s+/g, "_")}.pdf`);
  toast.success("PDF gerado e baixado com sucesso!");
  } catch (err: any) {
@@ -300,6 +363,12 @@ function WorkspaceProposalStudioPage() {
  const handleExportImage = async () => {
  try {
  setIsExportingImage(true);
+ if (stageViewMode !== "canvas") {
+   setStageViewMode("canvas");
+   await new Promise<void>((resolve) =>
+     requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+   );
+ }
  await exportElementAsImage("proposal-canvas", `${proposal.title.replace(/\s+/g, "_")}.png`);
  toast.success("Imagem PNG gerada e baixada com sucesso!");
  } catch (err: any) {
@@ -371,11 +440,39 @@ function WorkspaceProposalStudioPage() {
  </div>
  </div>
 
- {/* Centro: Controles de Zoom do Canvas */}
+ {/* Centro: Seletor Lâmina PDF / Página Web + Zoom ou Viewport */}
  <div className="flex items-center gap-2">
+ <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/50">
+   <button
+     type="button"
+     onClick={() => setStageViewMode("canvas")}
+     className={cn(
+       "min-h-11 px-3 rounded-lg text-xs font-bold flex items-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring",
+       stageViewMode === "canvas" ? "bg-card text-foreground border border-border" : "text-muted-foreground hover:text-foreground",
+     )}
+     title="Visualizar e editar Lâmina PDF"
+   >
+     <FileText className="size-3.5" />
+     <span className="hidden waesy-expanded-flex">Lâmina PDF</span>
+   </button>
+   <button
+     type="button"
+     onClick={() => {
+       setStageViewMode("web");
+       setSidebarTabOverride("web");
+     }}
+     className={cn(
+       "min-h-11 px-3 rounded-lg text-xs font-bold flex items-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring",
+       stageViewMode === "web" ? "bg-card text-foreground border border-border" : "text-muted-foreground hover:text-foreground",
+     )}
+     title="Construir e visualizar Página Web"
+   >
+     <Globe className="size-3.5" />
+     <span className="hidden waesy-expanded-flex">Página Web</span>
+   </button>
+ </div>
 
-
- {/* Controles de Zoom */}
+ {stageViewMode === "canvas" ? (
  <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/50">
  <button
  type="button"
@@ -402,6 +499,34 @@ function WorkspaceProposalStudioPage() {
  +
  </button>
  </div>
+ ) : (
+ <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/50">
+   <button
+     type="button"
+     onClick={() => setWebViewport("desktop")}
+     aria-label="Preview Desktop"
+     className={cn(
+       "min-h-11 min-w-11 rounded-lg flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-ring",
+       webViewport === "desktop" ? "bg-card text-foreground border border-border" : "text-muted-foreground hover:text-foreground",
+     )}
+     title="Visualização Desktop"
+   >
+     <Monitor className="size-4" />
+   </button>
+   <button
+     type="button"
+     onClick={() => setWebViewport("mobile")}
+     aria-label="Preview Mobile"
+     className={cn(
+       "min-h-11 min-w-11 rounded-lg flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-ring",
+       webViewport === "mobile" ? "bg-card text-foreground border border-border" : "text-muted-foreground hover:text-foreground",
+     )}
+     title="Visualização Mobile"
+   >
+     <Smartphone className="size-4" />
+   </button>
+ </div>
+ )}
  </div>
 
  {/* Direita: Ações de Exportação, Contrato, WhatsApp */}
@@ -529,6 +654,18 @@ function WorkspaceProposalStudioPage() {
  </Button>
  )}
 
+ <Button
+ type="button"
+ size="sm"
+ variant="outline"
+ onClick={() => setIsHotOfferDialogOpen(true)}
+ className="rounded-lg text-xs font-bold gap-2 h-11 min-h-11 px-3 cursor-pointer"
+ title="Transformar em Oferta Pública / Story Hot"
+ >
+ <Flame className="size-3.5 text-primary" />
+ <span className="hidden waesy-expanded-flex">Oferta Hot</span>
+ </Button>
+
  <CrudActionsMenu
    entityName="Proposta"
    viewUrl={`/proposta/${proposal.public_token}`}
@@ -543,23 +680,79 @@ function WorkspaceProposalStudioPage() {
  </div>
  </header>
 
+ {hotOfferEvaluation?.isEligible ? (
+   <div className="px-4 py-2 border-b border-border/80 bg-muted/40 flex flex-wrap items-center justify-between gap-3 shrink-0 z-20">
+     <div className="flex items-center gap-2 text-xs text-foreground">
+       <TrendingDown className="size-4 text-primary shrink-0" />
+       <span>
+         {hotOfferEvaluation.historicalCheck.historicalSavingsPct &&
+         hotOfferEvaluation.historicalCheck.historicalSavingsPct >= 5
+           ? `Tarifa vantajosa detectada: ${Math.round(
+               hotOfferEvaluation.historicalCheck.historicalSavingsPct
+             )}% abaixo da média histórica para ${proposal.destination_city}`
+           : `Oportunidade detectada para ${proposal.destination_city}`}
+         {hotOfferEvaluation.matchedLeadsCount > 0
+           ? ` · ${hotOfferEvaluation.matchedLeadsCount} lead(s) compatível(is) no Radar IA.`
+           : "."}
+       </span>
+     </div>
+     <Button
+       type="button"
+       size="sm"
+       variant="outline"
+       onClick={() => setIsHotOfferDialogOpen(true)}
+       className="h-11 min-h-11 px-3 text-xs font-bold gap-2 cursor-pointer"
+     >
+       <Flame className="size-3.5 text-primary" />
+       Transformar em Oferta Pública / Story Hot
+     </Button>
+   </div>
+ ) : null}
+
  {/* ── 2. STUDIO WORKSPACE BODY (Bifurcação Desktop vs Mobile - V119) ── */}
  <div className="flex flex-1 min-h-0 overflow-hidden relative">
  {/* Editor Lateral no Desktop (md+) */}
  <aside className="hidden waesy-expanded-flex waesy-proposal-editor-pane shrink-0 border-r border-border/80 bg-card flex-col h-full overflow-hidden z-20">
- <StudioSidebarEditor proposal={proposal} onChange={handleChange} />
+ <StudioSidebarEditor
+   proposal={proposal}
+   onChange={handleChange}
+   activeTabOverride={sidebarTabOverride}
+   onTabChange={(tab) => {
+     setSidebarTabOverride(tab);
+     if (tab === "web") setStageViewMode("web");
+   }}
+ />
  </aside>
 
- {/* Truthful Preview Canvas Frame com Scroll Fluido (Full Width no Mobile) */}
+ {/* Truthful Preview Canvas Frame ou Vitrine Web Interativa */}
  <main className="flex-1 h-full overflow-hidden flex flex-col bg-muted/30 relative">
- <StudioFrame
- format={proposal.canvas_format}
- zoomScale={zoomScale}
- canvasBgColor={activeCanvasTheme.canvasBg}
- onAutoFitScaleCalculated={setAutoFitScale}
- >
- <ProposalCanvasRenderer proposal={proposal} />
- </StudioFrame>
+ {stageViewMode === "web" ? (
+   <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+     <div
+       className={cn(
+         "mx-auto",
+         webViewport === "mobile"
+           ? "max-w-sm rounded-2xl border border-border bg-background p-3"
+           : "max-w-5xl",
+       )}
+     >
+       <ProposalWebShowcase
+         proposal={proposal}
+         webPage={proposal.web_page}
+         compactPreview={webViewport === "mobile"}
+       />
+     </div>
+   </div>
+ ) : (
+   <StudioFrame
+     format={proposal.canvas_format}
+     zoomScale={zoomScale}
+     canvasBgColor={activeCanvasTheme.canvasBg}
+     onAutoFitScaleCalculated={setAutoFitScale}
+   >
+     <ProposalCanvasRenderer proposal={proposal} />
+   </StudioFrame>
+ )}
  </main>
 
  {/* FAB Mobile: Abre Editor em Bottom Sheet (< md) */}
@@ -575,7 +768,15 @@ function WorkspaceProposalStudioPage() {
  </SheetTrigger>
  <SheetContent side="bottom" className="waesy-sheet-responsive max-w-none p-0 overflow-hidden rounded-t-lg">
  <div className="h-full flex flex-col">
- <StudioSidebarEditor proposal={proposal} onChange={handleChange} />
+ <StudioSidebarEditor
+   proposal={proposal}
+   onChange={handleChange}
+   activeTabOverride={sidebarTabOverride}
+   onTabChange={(tab) => {
+     setSidebarTabOverride(tab);
+     if (tab === "web") setStageViewMode("web");
+   }}
+ />
  </div>
  </SheetContent>
  </Sheet>
@@ -583,6 +784,15 @@ function WorkspaceProposalStudioPage() {
    isOpen={whatsappModalOpen}
    onClose={() => setWhatsappModalOpen(false)}
    proposal={proposal}
+ />
+ <HotOfferPublisherDialog
+   open={isHotOfferDialogOpen}
+   onOpenChange={setIsHotOfferDialogOpen}
+   proposal={proposal}
+   initialEvaluation={hotOfferEvaluation}
+   onPublishedSuccess={() => {
+     void syncProposalCaches();
+   }}
  />
  <Dialog open={isContractDialogOpen} onOpenChange={setIsContractDialogOpen}>
    <DialogContent size="lg">

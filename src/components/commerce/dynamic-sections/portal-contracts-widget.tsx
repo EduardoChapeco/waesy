@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { EmptyState } from "@/components/state/states";
 import { cn } from "@/lib/utils";
 
 export interface PortalContractItem {
@@ -34,26 +35,7 @@ export function PortalContractsWidget({ content, design_tokens }: PortalContract
  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [contractsList, setContractsList] = useState<PortalContractItem[]>(
-    content?.contracts || [
-      {
-        id: "ct-001",
-        title: "Contrato de Prestação de Serviços e Pacote",
-        category: "Viagem & Turismo",
-        status: "pending_signature",
-        total_value_cents: 345000,
-        sha256_hash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      },
-      {
-        id: "ct-002",
-        title: "Termo de Adesão e Locação de Equipamentos",
-        category: "Locação",
-        status: "signed",
-        signed_at: "2026-08-20T14:30:00Z",
-        total_value_cents: 120000,
-        pdf_url: "#",
-        sha256_hash: "8f434346648f6b96df89dda901c5176b10a6d83961dd3c1ac88b59b2dc327aa4",
-      },
-    ],
+    content?.contracts || [],
   );
 
   const handleSign = () => {
@@ -115,8 +97,14 @@ export function PortalContractsWidget({ content, design_tokens }: PortalContract
  </Badge>
  </div>
 
-      <div className="grid grid-cols-1 gap-4">
-        {contractsList.map((ct) => (
+      {contractsList.length === 0 ? (
+        <EmptyState
+          title="Nenhum contrato disponível"
+          description="Contratos e termos emitidos pela empresa para você aparecerão aqui."
+        />
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          {contractsList.map((ct) => (
  <div
  key={ct.id}
  className="p-5 rounded-lg border border-border bg-card transition-colors flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
@@ -178,6 +166,7 @@ export function PortalContractsWidget({ content, design_tokens }: PortalContract
  </div>
  ))}
  </div>
+ )}
 
  {/* Modal de Assinatura Digital */}
  <Dialog open={isSigningModalOpen} onOpenChange={setIsSigningModalOpen}>

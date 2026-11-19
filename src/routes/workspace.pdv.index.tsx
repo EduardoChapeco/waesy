@@ -56,7 +56,9 @@ import { ProductModifiersModal, type SelectedModifier } from "@/components/pos/p
 import { listPriceTables, type PriceTableDTO } from "@/services/price-tables.functions";
 import { getStoreFloorPlan } from "@/services/reservations.functions";
 import { getStoreSettings } from "@/services/store.functions";
-import { getNicheSemantics } from "@/lib/niche-semantics";
+import { getNicheSemantics } from "@/lib/niches/niche-semantics";
+import { BarcodeScannerModal, useUSBScanner } from "@/components/scanner/barcode-scanner-modal";
+import { calcWeightedItemPriceCents, parseWeighableEan13 } from "@/lib/pos/weighable-barcode";
 
 function QuickOpenRegisterInlineCard() {
  const router = useRouter();
@@ -294,6 +296,11 @@ function PdvTerminal() {
     | null
   >(null);
   const [pendingDiscountCents, setPendingDiscountCents] = useState(0);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [suspendedSales, setSuspendedSales] = useState<
+    Array<{ id: string; label: string; items: CartItem[]; createdAt: string }>
+  >([]);
+  const [suspendedModalOpen, setSuspendedModalOpen] = useState(false);
   const floorPlan = (store as any)?.floor_plan || null;
 
   const handleRequestRemoveItem = (id: string) => {
@@ -549,6 +556,92 @@ function PdvTerminal() {
  },
  ];
  });
+ };
+
+ const handlePosBarcodeScan = (rawCode: string) => {
+   const trimmed = rawCode.trim();
+   if (!trimmed) return;
+
+   const weighable = parseWeighableEan13(trimmed);
+   const lookupKey = (weighable?.productCode || trimmed).toLowerCase();
+
+   const matched = flatProducts.find((item) => {
+     const sku = String(item.variant?.sku || "").toLowerCase();
+     const barcode = String(item.variant?.barcode || item.product?.barcode || "").toLowerCase();
+     const slug = String(item.product?.slug || "").toLowerCase();
+     return (
+       sku === lookupKey ||
+       barcode === lookupKey ||
+       sku === trimmed.toLowerCase() ||
+       barcode === trimmed.toLowerCase() ||
+       (weighable !== null && slug.includes(lookupKey))
+     );
+   });
+
+   if (!matched) {
+     setSearchQuery(trimmed);
+     toast.info(`Código "${trimmed}" filtrado na busca.`);
+     return;
+   }
+
+   if (weighable) {
+     const rawPrice = matched.variant?.price_override_cents ?? matched.product?.price_cents ?? 0;
+     const perKgCents = calculateTablePrice(rawPrice);
+     const totalCents = calcWeightedItemPriceCents({
+       pricePerKgCents: perKgCents,
+       weightKg: weighable.weightKg,
+     });
+     setCart((prev) => [
+       ...prev,
+       {
+         id: crypto.randomUUID(),
+         product: matched.product,
+         variant: matched.variant,
+         qty: 1,
+         selectedModifiers: [],
+         notes: `${weighable.weightKg.toFixed(3)} kg × ${formatMoney(perKgCents)}/kg`,
+         unitPriceCents: totalCents,
+       },
+     ]);
+     toast.success(
+       `${matched.product.title || matched.product.name} (${weighable.weightKg.toFixed(3)} kg) adicionado.`
+     );
+     return;
+   }
+
+   handleProductClick(matched.product, matched.variant);
+   toast.success(`${matched.product.title || matched.product.name} adicionado via leitor.`);
+ };
+
+ useUSBScanner({
+   enabled: !checkoutOpen && !scannerOpen && !managerOverrideOpen && !suspendedModalOpen,
+   onScan: (res) => handlePosBarcodeScan(res.raw),
+ });
+
+ const handleSuspendCurrentCart = () => {
+   if (cart.length === 0) return;
+   const nextEntry = {
+     id: crypto.randomUUID(),
+     label: tableOrComandaNumber?.trim() || `Venda #${suspendedSales.length + 1}`,
+     items: cart,
+     createdAt: new Date().toLocaleTimeString("pt-BR", {
+       hour: "2-digit",
+       minute: "2-digit",
+     }),
+   };
+   setSuspendedSales((prev) => [nextEntry, ...prev]);
+   setCart([]);
+   setTableOrComandaNumber("");
+   toast.success(`"${nextEntry.label}" suspensa. Caixa liberado para novo cliente.`);
+ };
+
+ const handleResumeSuspendedSale = (entryId: string) => {
+   const found = suspendedSales.find((s) => s.id === entryId);
+   if (!found) return;
+   setCart(found.items);
+   setSuspendedSales((prev) => prev.filter((s) => s.id !== entryId));
+   setSuspendedModalOpen(false);
+   toast.success(`"${found.label}" retomada no ticket.`);
  };
 
  const updateQty = (id: string, delta: number) => {
@@ -1111,8 +1204,8 @@ function PdvTerminal() {
  <div className="flex flex-col h-full max-h-screen overflow-hidden bg-background rounded-lg border border-border/80 shadow-xs">
  {/* ── BARRA SUPERIOR OPERACIONAL (POS Header) ── */}
  <header className="p-3 px-4 border-b border-border/70 bg-card flex flex-wrap items-center justify-between gap-3 shrink-0">
- <div className="flex items-center gap-3 flex-1 min-w-72 max-w-xl">
- <div className="relative w-full">
+ <div className="flex items-center gap-2 flex-1 min-w-72 max-w-xl">
+ <div className="relative flex-1">
  <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
  <Input
  ref={searchInputRef}
@@ -1123,6 +1216,17 @@ function PdvTerminal() {
  autoFocus
  />
  </div>
+ <Button
+ type="button"
+ variant="outline"
+ onClick={() => setScannerOpen(true)}
+ title="Scanner de Código de Barras / Balança EAN-13"
+ aria-label="Abrir leitor de código de barras"
+ className="h-11 min-h-11 shrink-0 rounded-lg px-3 gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ >
+ <Barcode className="size-4 text-primary" aria-hidden="true" />
+ <span className="hidden 2xl:inline text-xs font-semibold">Leitor</span>
+ </Button>
  </div>
 
  {/* Seletor de Modo de Atendimento Dinâmico por Nicho */}
@@ -1166,6 +1270,32 @@ function PdvTerminal() {
 
  {/* Ações Rápidas de Operação */}
  <div className="flex items-center gap-2">
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={handleSuspendCurrentCart}
+ disabled={cart.length === 0}
+ className="h-11 min-h-11 sm:h-9 rounded-lg text-xs font-bold gap-2 px-3 focus-visible:ring-2"
+ title="Suspender atendimento atual"
+ >
+ <MonitorPause className="size-3.5 text-warning" aria-hidden="true" />
+ <span className="hidden xl:inline">Suspender</span>
+ </Button>
+
+ {suspendedSales.length > 0 ? (
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={() => setSuspendedModalOpen(true)}
+ className="h-11 min-h-11 sm:h-9 rounded-lg text-xs font-bold gap-2 px-3 border-primary/40 text-primary focus-visible:ring-2"
+ >
+ <Clock className="size-3.5" aria-hidden="true" />
+ <span>Suspensas ({suspendedSales.length})</span>
+ </Button>
+ ) : null}
+
  <Button
  variant="outline"
  size="sm"
@@ -1484,52 +1614,49 @@ function PdvTerminal() {
           </DialogHeader>
 
           <div className="p-5 space-y-4 max-h-160 overflow-y-auto">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {((floorPlan?.tables as any[]) || [
-                { id: "m1", label: "Mesa 01", seats: 4 },
-                { id: "m2", label: "Mesa 02", seats: 2 },
-                { id: "m3", label: "Mesa 03", seats: 4 },
-                { id: "m4", label: "Mesa 04", seats: 6 },
-                { id: "m5", label: "Mesa 05", seats: 4 },
-                { id: "m6", label: "Mesa 06", seats: 4 },
-                { id: "m7", label: "Mesa 07", seats: 8 },
-                { id: "m8", label: "Mesa 08", seats: 2 },
-                { id: "m9", label: "Mesa 09", seats: 4 },
-                { id: "m10", label: "Mesa 10", seats: 4 },
-                { id: "m11", label: "Mesa 11", seats: 4 },
-                { id: "m12", label: "Mesa 12", seats: 6 },
-              ]).map((table: any) => {
-                const isSelected = tableOrComandaNumber === table.label;
-                return (
-                  <button
-                    key={table.id || table.label}
-                    type="button"
-                    onClick={() => {
-                      setServiceMode("table");
-                      setTableOrComandaNumber(table.label);
-                      setIsFloorPlanModalOpen(false);
-                      toast.success(`${table.label} selecionada para atendimento`);
-                    }}
-                    className={`flex flex-col items-center justify-center p-4 rounded-lg border text-center transition-colors duration-200 cursor-pointer min-h-24 ${
-                      isSelected
-                        ? "bg-primary/10 border-primary text-primary shadow-xs ring-2 ring-primary/20"
-                        : "bg-card border-border/70 hover:border-primary/50 hover:bg-muted/30 text-foreground"
-                    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
-                  >
-                    <Armchair className={`size-6 mb-2 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
-                    <span className="font-bold text-xs">{table.label}</span>
-                    <span className="text-xs text-muted-foreground font-mono mt-1">
-                      {table.seats ? `${table.seats} lugares` : "4 lugares"}
-                    </span>
-                    {isSelected && (
-                      <Badge variant="outline" className="mt-1 text-xs font-bold border-primary text-primary px-2 py-0">
-                        Ativa
-                      </Badge>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+            {Array.isArray(floorPlan?.tables) && floorPlan.tables.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {floorPlan.tables.map((table: any) => {
+                  const isSelected = tableOrComandaNumber === table.label;
+                  return (
+                    <button
+                      key={table.id || table.label}
+                      type="button"
+                      onClick={() => {
+                        setServiceMode("table");
+                        setTableOrComandaNumber(table.label);
+                        setIsFloorPlanModalOpen(false);
+                        toast.success(`${table.label} selecionada para atendimento`);
+                      }}
+                      className={`flex flex-col items-center justify-center p-4 rounded-lg border text-center transition-colors duration-200 cursor-pointer min-h-24 ${
+                        isSelected
+                          ? "bg-primary/10 border-primary text-primary shadow-xs ring-2 ring-primary/20"
+                          : "bg-card border-border/70 hover:border-primary/50 hover:bg-muted/30 text-foreground"
+                      } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+                    >
+                      <Armchair className={`size-6 mb-2 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
+                      <span className="font-bold text-xs">{table.label}</span>
+                      <span className="text-xs text-muted-foreground font-mono mt-1">
+                        {table.seats ? `${table.seats} lugares` : "4 lugares"}
+                      </span>
+                      {isSelected && (
+                        <Badge variant="outline" className="mt-1 text-xs font-bold border-primary text-primary px-2 py-0">
+                          Ativa
+                        </Badge>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="p-8 text-center space-y-3 rounded-xl border border-dashed border-border/60 bg-muted/10">
+                <Armchair className="size-8 text-muted-foreground mx-auto" />
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold text-foreground">Nenhuma mesa cadastrada no salão</p>
+                  <p className="text-2xs text-muted-foreground">Cadastre as mesas e layout do restaurante nas configurações do salão.</p>
+                </div>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
@@ -2018,6 +2145,79 @@ function PdvTerminal() {
           </Button>
         </div>
       )}
+
+      {/* ── MODAL LEITOR CÓDIGO DE BARRAS & BALANÇA ── */}
+      <BarcodeScannerModal
+        open={scannerOpen}
+        onOpenChange={setScannerOpen}
+        onScan={(res) => handlePosBarcodeScan(res.raw)}
+        title="Leitor PDV (SKU e Balança EAN-13)"
+      />
+
+      {/* ── DIALOG VENDAS SUSPENSAS ── */}
+      <Dialog open={suspendedModalOpen} onOpenChange={setSuspendedModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Vendas Suspensas</DialogTitle>
+            <DialogDescription>
+              Retome um ticket em espera ou descarte registros antigos.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-72 space-y-2 overflow-y-auto">
+            {suspendedSales.length === 0 ? (
+              <p className="py-6 text-center text-xs text-muted-foreground">
+                Nenhuma venda suspensa no caixa
+              </p>
+            ) : (
+              suspendedSales.map((sale) => {
+                const saleTotal = sale.items.reduce(
+                  (acc, it) => acc + it.unitPriceCents * it.qty,
+                  0
+                );
+                return (
+                  <div
+                    key={sale.id}
+                    className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-foreground">
+                        {sale.label}
+                      </p>
+                      <p className="text-xs text-muted-foreground tabular-nums">
+                        {sale.items.length} itens • {formatMoney(saleTotal)} • {sale.createdAt}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        aria-label={`Descartar ${sale.label}`}
+                        onClick={() =>
+                          setSuspendedSales((prev) =>
+                            prev.filter((s) => s.id !== sale.id)
+                          )
+                        }
+                        className="h-11 w-11 p-0 text-destructive focus-visible:ring-2"
+                      >
+                        <Trash2 className="size-4" aria-hidden="true" />
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => handleResumeSuspendedSale(sale.id)}
+                        className="h-11 min-h-11 px-3 focus-visible:ring-2"
+                      >
+                        Retomar
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* ── SHEET DESLIZANTE DO TICKET MOBILE ── */}
       <Sheet open={mobileTicketOpen} onOpenChange={setMobileTicketOpen}>

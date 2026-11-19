@@ -29,6 +29,7 @@ import { uploadProfileMediaDirect } from "@/services/storage.functions";
 import { toast } from "sonner";
 import { Link, useRouter } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+import { maskCpf, maskPhone, normalizeGenderValue } from "@/lib/formatters";
 import {
   User,
   Briefcase,
@@ -78,30 +79,6 @@ const SHOWCASE_SECTION_LABELS: Record<string, string> = {
   products: "Produtos Recomendados Fixados",
   events: "Agenda & Eventos",
 };
-
-function maskCpf(value: string): string {
-  const digits = value.replace(/\D/g, "").slice(0, 11);
-  return digits
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
-    .replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/, "$1.$2.$3-$4");
-}
-
-function maskPhone(value: string): string {
-  const digits = value.replace(/\D/g, "").slice(0, 11);
-  if (digits.length <= 10) {
-    return digits.replace(/(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3").trim();
-  }
-  return digits.replace(/(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3").trim();
-}
-
-function normalizeGenderValue(g?: string): "feminino" | "masculino" | "outro" | "prefiro_nao_dizer" {
-  if (!g || g === "not_informed") return "prefiro_nao_dizer";
-  if (g === "female" || g === "feminino") return "feminino";
-  if (g === "male" || g === "masculino") return "masculino";
-  if (g === "other" || g === "non_binary" || g === "outro") return "outro";
-  return "prefiro_nao_dizer";
-}
 
 export function ProfileInPageEditor({
   isOpen,

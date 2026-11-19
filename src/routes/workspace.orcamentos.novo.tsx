@@ -24,7 +24,15 @@ import {
   type HotelOptionDTO,
   type ItineraryDayDTO,
   type PricingBreakdownDTO,
+  type TourOptionDTO,
+  type TransferDTO,
 } from "@/services/travel-proposal.functions";
+import {
+  normalizeHotelsList,
+  normalizeToursList,
+  normalizeTransfersList,
+  type ProposalWebPageDTO,
+} from "@/lib/tourism/proposal-normalization";
 import { createQuote, type QuoteItemInput } from "@/services/quotes.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { listCustomers, getLeadById } from "@/services/crm.functions";
@@ -43,7 +51,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { MasterCatalogSearchDialog } from "@/components/admin/catalog/master-catalog-search-dialog";
 import { ServiceSearchDialog } from "@/components/admin/services/service-search-dialog";
-import { CANONICAL_DESTINATIONS, type CanonicalDestination } from "@/lib/destinations-catalog";
+import { CANONICAL_DESTINATIONS, type CanonicalDestination } from "@/lib/tourism/destinations-catalog";
 
 export const Route = createFileRoute("/workspace/orcamentos/novo")({
  head: () => ({ meta: [{ title: "Novo Orçamento Comercial | Workspace Waesy" }] }),
@@ -168,7 +176,10 @@ function NovoOrcamentoTravelosPage({
  const [activeTab, setActiveTab] = useState<"geral" | "voos" | "hospedagem" | "roteiro" | "financeiro">("geral");
  const [isSubmitting, setIsSubmitting] = useState(false);
  const [linkedListingId, setLinkedListingId] = useState<string | undefined>(prefillListingId);
- const [linkedListingOrigin, setLinkedListingOrigin] = useState<"product" | "classified" | undefined>(undefined);
+ const [linkedListingOrigin, setLinkedListingOrigin] = useState<"product" | "classified" | "experience" | undefined>(undefined);
+ const [transfers, setTransfers] = useState<TransferDTO[]>([]);
+ const [tours, setTours] = useState<TourOptionDTO[]>([]);
+ const [importedWebPageConfig, setImportedWebPageConfig] = useState<ProposalWebPageDTO | null>(null);
  const [customFieldEntries, setCustomFieldEntries] = useState<Array<{ key: string; value: string }>>([]);
  const [newTravelCustomKey, setNewTravelCustomKey] = useState("");
  const [newTravelCustomVal, setNewTravelCustomVal] = useState("");
@@ -257,6 +268,8 @@ function NovoOrcamentoTravelosPage({
      subtitle: item.description ? item.description.slice(0, 140) : prev.subtitle,
      destinationCity: item.destination || prev.destinationCity,
      coverImageUrl: item.heroImageUrl || prev.coverImageUrl,
+     travelStartDate: item.departureDate ? String(item.departureDate).split("T")[0] : prev.travelStartDate,
+     travelEndDate: item.returnDate ? String(item.returnDate).split("T")[0] : prev.travelEndDate,
    }));
 
    if (Array.isArray(item.includes) && item.includes.length > 0) {
@@ -279,54 +292,73 @@ function NovoOrcamentoTravelosPage({
            day_number: Number(d.day) || idx + 1,
            title: d.title || `Dia ${idx + 1}`,
            description: d.description || "",
+           location: d.location || undefined,
            image_url: singleImg || dayImages[0],
            images: dayImages,
-           included_meals: Array.isArray(d.meals)
-             ? d.meals
-             : d.meals
-               ? [String(d.meals)]
-               : [],
+           media: Array.isArray(d.media) ? d.media : undefined,
+           video_url: d.videoUrl || d.video_url || undefined,
+           included_meals: Array.isArray(d.included_meals)
+             ? d.included_meals
+             : Array.isArray(d.meals)
+               ? d.meals
+               : d.meals
+                 ? [String(d.meals)]
+                 : [],
          };
        }),
      );
    }
-   if (Array.isArray(item.lodgings) && item.lodgings.length > 0) {
+   const sourceHotels =
+     Array.isArray(item.hotels) && item.hotels.length > 0
+       ? item.hotels
+       : Array.isArray(item.lodgings)
+         ? item.lodgings
+         : [];
+   if (sourceHotels.length > 0) {
      setHotels(
-       item.lodgings.map((h: any) => {
-         const hotelImg = h.image_url || h.featured_image_url || undefined;
-         const hotelImages = Array.isArray(h.images) && h.images.length > 0
-           ? h.images.filter(Boolean)
-           : hotelImg
-             ? [hotelImg]
-             : [];
-         return {
-           id: crypto.randomUUID(),
-           hotel_name: h.hotelName || h.name || "Hospedagem",
-           destination: h.city || h.location || item.destination || "",
-           room_type: h.roomType || h.room_type || "Suíte Standard",
-           board_basis: h.boardBasis || h.meal_plan || "breakfast",
-           nights_count: 3,
-           image_url: hotelImg || hotelImages[0],
-           images: hotelImages,
-         };
-       }),
+       normalizeHotelsList(
+         sourceHotels.map((h: any) => ({
+           id: h.id || crypto.randomUUID(),
+           hotel_name: h.hotel_name || h.hotelName || h.name || "Hospedagem",
+           destination: h.destination || h.city || h.location || item.destination || "",
+           room_type: h.room_type || h.roomType || "Suíte Standard",
+           board_basis: h.board_basis || h.boardBasis || h.meal_plan || "breakfast",
+           checkin_date: h.checkin_date || h.check_in || undefined,
+           checkout_date: h.checkout_date || h.check_out || undefined,
+           nights_count: Number(h.nights_count || 3),
+           image_url: h.image_url || h.featured_image_url || undefined,
+           images: Array.isArray(h.images) ? h.images : Array.isArray(h.photos) ? h.photos : undefined,
+           media: Array.isArray(h.media) ? h.media : undefined,
+         })),
+       ) as HotelOptionDTO[],
      );
    }
-   const primaryFlight = item.flights?.[0];
-   if (primaryFlight?.airline_name || primaryFlight?.origin_iata || primaryFlight?.destination_iata) {
-     setFlights([
-       {
-         id: crypto.randomUUID(),
-         type: "outbound",
-         airline_name: primaryFlight.airline_name || "Companhia Aérea",
-         origin_iata: primaryFlight.origin_iata || originIata,
-         origin_city: primaryFlight.origin_city || item.originCity || originCity,
-         destination_iata: primaryFlight.destination_iata || destinationIata,
-         destination_city: primaryFlight.destination_city || item.destination || "",
-         baggage_included: primaryFlight.baggage_included || "1x 23kg",
-         cabin_class: (primaryFlight as any).cabin_class || "Econômica",
-       },
-     ]);
+   if (Array.isArray(item.transfers) && item.transfers.length > 0) {
+     setTransfers(normalizeTransfersList(item.transfers) as TransferDTO[]);
+   }
+   if (Array.isArray(item.tours) && item.tours.length > 0) {
+     setTours(normalizeToursList(item.tours) as TourOptionDTO[]);
+   }
+   if (item.webPageConfig) {
+     setImportedWebPageConfig(item.webPageConfig);
+   }
+   if (Array.isArray(item.flights) && item.flights.length > 0) {
+     setFlights(
+       item.flights.map((f: any) => ({
+         id: f.id || crypto.randomUUID(),
+         type: f.type === "return" || f.leg === "volta" ? "return" : "outbound",
+         airline_name: f.airline_name || f.airline || "Companhia Aérea",
+         flight_number: f.flight_number || undefined,
+         origin_iata: f.origin_iata || originIata,
+         origin_city: f.origin_city || item.originCity || originCity,
+         destination_iata: f.destination_iata || destinationIata,
+         destination_city: f.destination_city || item.destination || "",
+         departure_time: f.departure_time || undefined,
+         arrival_time: f.arrival_time || undefined,
+         baggage_included: f.baggage_included || "1x 23kg",
+         cabin_class: (f as any).cabin_class || "Econômica",
+       })),
+     );
    }
 
    const mergedEntriesMap = normalizeCustomFieldMap({
@@ -554,6 +586,8 @@ function NovoOrcamentoTravelosPage({
  clientEmail: proposalData.clientEmail || undefined,
  title: proposalData.title,
  destinationCity: proposalData.destinationCity || "Destino Especial",
+ createWebPage: openStudio || Boolean(importedWebPageConfig),
+ webPageConfig: importedWebPageConfig || undefined,
  },
  });
 
@@ -580,6 +614,8 @@ function NovoOrcamentoTravelosPage({
  children_count: proposalData.childrenCount,
  flights,
  hotels,
+ transfers,
+ tours,
  itinerary,
  rooms: [
    {
@@ -1677,7 +1713,7 @@ function NovoOrcamentoTravelosPage({
  <div className="flex items-center gap-2">
  <p className="text-xs font-bold text-foreground truncate">{item.title}</p>
  <Badge variant="outline" className="text-2xs shrink-0">
- {item.origin === "classified" ? "Anúncio" : "Produto CMS"}
+ {item.origin === "experience" ? "Excursão" : item.origin === "classified" ? "Anúncio" : "Produto CMS"}
  </Badge>
  </div>
  <p className="text-2xs text-muted-foreground truncate">
@@ -1737,7 +1773,10 @@ function NovoOrcamentoComercialUniversalPage({
  store?.niche_id || store?.niche || store?.segment || store?.settings?.niche || "general_deal";
  const [linkedNicheId, setLinkedNicheId] = useState<string>(storeNicheHint);
  const [linkedListingId, setLinkedListingId] = useState<string | undefined>(prefillListingId);
- const [linkedListingOrigin, setLinkedListingOrigin] = useState<"product" | "classified" | undefined>(undefined);
+ const [linkedListingOrigin, setLinkedListingOrigin] = useState<"product" | "classified" | "experience" | undefined>(undefined);
+ const [transfers, setTransfers] = useState<TransferDTO[]>([]);
+ const [tours, setTours] = useState<TourOptionDTO[]>([]);
+ const [importedWebPageConfig, setImportedWebPageConfig] = useState<ProposalWebPageDTO | null>(null);
  const [customFieldEntries, setCustomFieldEntries] = useState<Array<{ key: string; value: string }>>([]);
  const [newCustomKey, setNewCustomKey] = useState("");
  const [newCustomVal, setNewCustomVal] = useState("");

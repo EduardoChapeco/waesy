@@ -1,10 +1,27 @@
 import React from "react";
-import type { ProposalCanvasFormat } from "@/services/travel-proposal.functions";
+import { Car, Ship } from "lucide-react";
+import type { ProposalCanvasFormat, CruiseDTO } from "@/services/travel-proposal.functions";
 import type { ResolvedProposalCanvasTheme } from "@/lib/tourism/proposal-theme-palettes";
 import type { ProposalRoomBreakdownItem } from "@/lib/tourism/pricing";
+import { FlightRouteSvgMap } from "@/components/tourism/shared/FlightRouteSvgMap";
+import { CruiseItinerarySection } from "@/components/tourism/shared/CruiseItinerarySection";
+import type { FlightSegmentRouteInput } from "@/lib/tourism/flight-route-geometry";
+import {
+  aspectPresetToCssValue,
+  normalizeEntityMediaList,
+  resolveTransferDisplayTitle,
+  resolveTransferKindBadge,
+  type ProposalMediaItem,
+} from "@/lib/tourism/proposal-normalization";
 
-export function getTransferBadgeLabel(type?: string | null): string {
+export function getTransferTitle(t: Record<string, any>, idx = 0): string {
+  return resolveTransferDisplayTitle(t, idx);
+}
+
+export function getTransferBadgeLabel(type?: string | null, kind?: string | null): string {
+  if (kind) return resolveTransferKindBadge(kind);
   if (type === "shared") return "Regular";
+  if (type === "in_out") return "Ida e Volta";
   if (!type || type === "private") return "Privativo";
   return type;
 }
@@ -247,29 +264,95 @@ export function ProposalItineraryMediaGrid({
   }
 
   return (
-    <div className={`mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 h-52 ${className}`}>
-      <div className="sm:col-span-2 rounded-xl overflow-hidden border p-border-subtle h-full">
-        <ProposalAdaptiveImage
-          src={validImages[0]}
-          alt={`${title || "Etapa"} - Principal`}
-          objectPosition={objectPosition}
-          scale={scale}
-          className="w-full h-full"
-        />
-      </div>
-      <div className="sm:col-span-1 flex flex-col gap-3 h-full">
-        {validImages.slice(1, 3).map((img, idx) => (
-          <div key={idx} className="flex-1 rounded-xl overflow-hidden border p-border-subtle min-h-0">
-            <ProposalAdaptiveImage
-              src={img}
-              alt={`${title || "Etapa"} - ${idx + 2}`}
-              objectPosition={objectPosition}
-              scale={scale}
-              className="w-full h-full"
-            />
-          </div>
-        ))}
-      </div>
+    <div className={`mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 ${className}`}>
+      {validImages.slice(0, 6).map((img, idx) => (
+        <div
+          key={idx}
+          className={`rounded-xl overflow-hidden border p-border-subtle ${
+            validImages.length === 3 && idx === 0 ? "sm:col-span-2 h-56" : "h-44"
+          }`}
+        >
+          <ProposalAdaptiveImage
+            src={img}
+            alt={`${title || "Etapa"} - ${idx + 1}`}
+            objectPosition={objectPosition}
+            scale={scale}
+            className="w-full h-full"
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Galeria dedicada para seções de Hospedagem em todas as lâminas e PDFs.
+ * Exibe todas as fotos reais cadastradas no hotel (1 a 6+), respeitando o recorte
+ * individual e proporção configurada, omitindo-se limpo se não houver fotos (B.33).
+ */
+export function ProposalHotelMediaGallery({
+  images,
+  media,
+  title,
+  objectPosition,
+  scale = 1,
+  className = "",
+}: {
+  images?: string[] | null;
+  media?: ProposalMediaItem[] | null;
+  title?: string;
+  objectPosition?: string;
+  scale?: number;
+  className?: string;
+}) {
+  const normalized = normalizeEntityMediaList({
+    media,
+    images,
+    object_position: objectPosition,
+    image_scale: scale,
+  }).filter((item) => item.type === "image");
+
+  if (normalized.length === 0) return null;
+
+  const displayed = normalized.slice(0, 6);
+
+  return (
+    <div
+      className={`mt-4 grid gap-3 ${
+        displayed.length === 1
+          ? "grid-cols-1"
+          : displayed.length === 2
+            ? "grid-cols-1 sm:grid-cols-2"
+            : "grid-cols-2 sm:grid-cols-3"
+      } ${className}`}
+    >
+      {displayed.map((item, idx) => {
+        const aspectRatio = aspectPresetToCssValue(item.aspectPreset) || (displayed.length === 1 ? "16 / 9" : "4 / 3");
+        return (
+          <figure
+            key={item.id || idx}
+            className={`rounded-lg overflow-hidden border p-border-subtle p-surface-subtle ${
+              displayed.length === 4 && idx === 0 ? "col-span-2 sm:col-span-1" : ""
+            }`}
+          >
+            <div style={{ aspectRatio }} className="w-full overflow-hidden">
+              <ProposalAdaptiveImage
+                src={item.url}
+                alt={item.caption || `${title || "Hospedagem"} — Foto ${idx + 1}`}
+                objectPosition={item.objectPosition || objectPosition}
+                scale={item.scale ?? scale}
+                fit={item.fit || "cover"}
+                className="w-full h-full"
+              />
+            </div>
+            {item.caption && (
+              <figcaption className="px-2 py-1 text-xs p-text-muted break-words">
+                {item.caption}
+              </figcaption>
+            )}
+          </figure>
+        );
+      })}
     </div>
   );
 }
@@ -507,6 +590,172 @@ export function DocumentPage({
       style={pageStyle}
     >
       {children}
+    </div>
+  );
+}
+
+/**
+ * Bloco CORS-safe de Mapa Geodésico de Rota Aérea para Templates PDF & PNG.
+ */
+export function ProposalFlightMapBlock({
+  flights,
+  theme,
+  showMap = true,
+  capturedMapUrl,
+  className = "",
+}: {
+  flights?: FlightSegmentRouteInput[] | null;
+  theme: ResolvedProposalCanvasTheme;
+  showMap?: boolean;
+  capturedMapUrl?: string | null;
+  className?: string;
+}) {
+  if (!showMap || !Array.isArray(flights) || flights.length === 0) {
+    return null;
+  }
+  return (
+    <div className={`break-inside-avoid pt-2 ${className}`}>
+      <FlightRouteSvgMap
+        segments={flights}
+        tone={theme.tone}
+        accentColor={theme.brandAccent}
+        capturedMapUrl={capturedMapUrl}
+      />
+    </div>
+  );
+}
+
+/**
+ * Bloco Canônico de Traslados & Receptivo em Formato de Linhas / Lista Completa.
+ * Erradica cards comprimidos/espremidos; preserva largura total (Full-Width),
+ * exibe detalhes sem truncamento e suporta miniatura de imagem do transfer.
+ */
+export function ProposalTransferListBlock({
+  transfers,
+  formatDateFn,
+  theme,
+  className = "",
+}: {
+  transfers?: Array<Record<string, any>> | null;
+  formatDateFn: (d?: string | null) => string;
+  theme?: ResolvedProposalCanvasTheme;
+  className?: string;
+}) {
+  if (!Array.isArray(transfers) || transfers.length === 0) return null;
+
+  return (
+    <div className={`w-full flex flex-col gap-4 ${className}`}>
+      {transfers.map((t, idx) => {
+        const title = getTransferTitle(t, idx);
+        const metaLine = getTransferMetaLine(t, formatDateFn);
+        const seq = String(t.sequence_number ?? idx + 1).padStart(2, "0");
+        const badgeLabel = getTransferBadgeLabel(t.type, t.kind);
+        const hasImg = Boolean(t.image_url);
+
+        return (
+          <div
+            key={t.id || idx}
+            className="w-full p-4 sm:p-5 rounded-2xl border p-border-main p-surface-card break-inside-avoid flex flex-col sm:flex-row sm:items-start justify-between gap-4 transition-colors"
+          >
+            {/* Lado Esquerdo: Conteúdo textual completo em largura total */}
+            <div className="flex-1 space-y-3 min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-mono text-xs font-bold px-2 py-1 rounded-md p-surface-brand-soft p-text-brand border p-border-brand shrink-0">
+                  {seq}
+                </span>
+                <span className="p-2 rounded-lg p-surface-subtle p-text-brand shrink-0">
+                  <Car className="size-4" />
+                </span>
+                <h3 className="text-base font-bold p-text-ink break-words leading-tight">
+                  {title}
+                </h3>
+              </div>
+
+              {/* Badges de categoria e modalidade */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider p-surface-brand-soft border p-border-brand p-text-brand shrink-0">
+                  {badgeLabel}
+                </span>
+                {t.vehicle && (
+                  <span className="px-3 py-1 rounded-full text-xs font-medium p-surface-subtle border p-border-subtle p-text-muted shrink-0">
+                    Veículo: {t.vehicle}
+                  </span>
+                )}
+                {t.is_private !== undefined && (
+                  <span className="px-3 py-1 rounded-full text-xs font-medium p-surface-subtle border p-border-subtle p-text-muted shrink-0">
+                    {t.is_private ? "Privativo" : "Regular"}
+                  </span>
+                )}
+                <span className="px-3 py-1 rounded-full text-xs font-semibold p-surface-subtle border p-border-subtle p-text-muted shrink-0">
+                  {t.included !== false ? "Incluso no pacote" : "Opcional"}
+                </span>
+              </div>
+
+              {/* Metadados detalhados em linha */}
+              {metaLine && (
+                <p className="text-xs p-text-muted leading-relaxed font-medium">
+                  {metaLine}
+                </p>
+              )}
+
+              {/* Ponto de encontro ou bagagem */}
+              {(t.meeting_point || t.luggage_notes) && (
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs p-text-faint">
+                  {t.meeting_point && <span>Ponto de Encontro: {t.meeting_point}</span>}
+                  {t.luggage_notes && <span>Bagagem: {t.luggage_notes}</span>}
+                </div>
+              )}
+
+              {/* Observações completas sem truncamento */}
+              {t.notes && (
+                <p className="text-xs p-text-faint whitespace-pre-line leading-relaxed pt-1 border-t p-border-subtle">
+                  {t.notes}
+                </p>
+              )}
+            </div>
+
+            {/* Lado Direito: Imagem opcional do veículo / receptivo sem comprimir textos */}
+            {hasImg && (
+              <div className="w-full sm:w-44 h-28 rounded-xl overflow-hidden border p-border-subtle shrink-0">
+                <img
+                  src={t.image_url}
+                  alt={title}
+                  className="w-full h-full object-cover"
+                  crossOrigin="anonymous"
+                />
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * Bloco de Cruzeiros Marítimos com Rota Náutica Costeira e Itinerário Dia a Dia.
+ */
+export function ProposalCruiseBlock({
+  cruises,
+  theme,
+  className = "",
+}: {
+  cruises?: CruiseDTO[] | any[] | null;
+  theme: ResolvedProposalCanvasTheme;
+  className?: string;
+}) {
+  if (!Array.isArray(cruises) || cruises.length === 0) return null;
+
+  return (
+    <div className={`space-y-6 break-inside-avoid ${className}`}>
+      {cruises.map((cruise, idx) => (
+        <CruiseItinerarySection
+          key={cruise.id || idx}
+          cruise={cruise}
+          tone={theme.tone}
+          accentColor={theme.brandAccent}
+        />
+      ))}
     </div>
   );
 }

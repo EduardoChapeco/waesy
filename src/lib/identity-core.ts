@@ -51,11 +51,30 @@ export const STAFF_ROLES = [
   "manager",
   "gerente",
   "seller",
+  "cashier",
   "finance",
   "content",
   "support",
   "stock",
+  "waiter",
+  "driver",
+  "collaborator",
 ] as const;
+
+export function hasWorkspaceAccessSession(session: any): boolean {
+  if (!session) return false;
+  if (Array.isArray(session.memberships) && session.memberships.length > 0) return true;
+  if (Boolean(session.store_id)) return true;
+  if (session.isMaster || session.isPlatformAdmin) return true;
+  const role = String(session.role || "").trim().toLowerCase();
+  return (
+    (STAFF_ROLES as readonly string[]).includes(role) ||
+    role === "platform_admin" ||
+    role === "master" ||
+    role === "admin_master" ||
+    role === "superadmin"
+  );
+}
 
 export const OWNER_ROLES = [
   "owner",

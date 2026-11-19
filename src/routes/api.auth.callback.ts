@@ -30,6 +30,25 @@ export const Route = createFileRoute("/api/auth/callback")({
             console.error("[api.auth.callback] Falha no exchangeCodeForSession:", error.message);
           }
           if (!error && data.session) {
+            let resolvedDestination = next;
+            let memberStoreId: string | null = null;
+            try {
+              const { getServerClient } = await import("@/lib/supabase");
+              const adminDb = getServerClient();
+              const wmRes = await adminDb
+                .from("workspace_members")
+                .select("store_id")
+                .or(`profile_id.eq.${data.session.user.id},user_id.eq.${data.session.user.id}`)
+                .limit(1)
+                .maybeSingle();
+              memberStoreId = wmRes?.data?.store_id || null;
+              if (memberStoreId && (!resolvedDestination || resolvedDestination === "/")) {
+                resolvedDestination = "/auth/portal-selector";
+              }
+            } catch (wmErr) {
+              console.warn("[api.auth.callback] Aviso ao verificar vínculo workspace_members:", wmErr);
+            }
+
             try {
               const { clearIdentityCache } = await import("@/lib/server-access");
               clearIdentityCache();
@@ -47,7 +66,15 @@ export const Route = createFileRoute("/api/auth/callback")({
             }
 
             const headers = new Headers();
-            headers.set("Location", next);
+            headers.set("Location", resolvedDestination);
+            if (memberStoreId) {
+              const isProd = process.env.NODE_ENV === "production";
+              const secureAttr = isProd ? "; Secure" : "";
+              const maxAge = 60 * 60 * 24 * 365;
+              headers.append("Set-Cookie", `waesy_active_context=store; Path=/; Max-Age=${maxAge}; SameSite=Lax${secureAttr}`);
+              headers.append("Set-Cookie", `waesy_active_tenant=${encodeURIComponent(memberStoreId)}; Path=/; Max-Age=${maxAge}; SameSite=Lax${secureAttr}`);
+              headers.append("Set-Cookie", `waesy_store_id=${encodeURIComponent(memberStoreId)}; Path=/; Max-Age=${maxAge}; SameSite=Lax${secureAttr}`);
+            }
             try {
               const resHeaders = capturedResHeaders || getResponseHeaders();
               if (resHeaders) {

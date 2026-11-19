@@ -67,7 +67,8 @@ export type Tour = {
 };
 
 import type { ItineraryDay } from "@/types/travel-package";
-export type { ItineraryDay };
+import type { CruiseDTO } from "./travel-proposal.functions";
+export type { ItineraryDay, CruiseDTO };
 
 export type ProposalOption = {
   id: string;
@@ -78,6 +79,7 @@ export type ProposalOption = {
   flights: Flight[];
   hotels: Hotel[];
   transfers: Transfer[];
+  cruises?: CruiseDTO[];
   tours: Tour[];
   itinerary: ItineraryDay[];
   includes: string[];
@@ -111,6 +113,7 @@ export type Proposal = {
   flights: Flight[];
   hotels: Hotel[];
   transfers: Transfer[];
+  cruises?: CruiseDTO[];
   tours: Tour[];
   itinerary: ItineraryDay[];
   includes: string[];
@@ -141,29 +144,6 @@ export type Proposal = {
   agency_logo_url?: string;
   agency_brand_color?: string;
 };
-
-
-/**
- * Busca histórico de alterações da proposta
- */
-export async function fetchProposalHistory(proposalId: string): Promise<any[]> {
-  return [
-    {
-      id: "hist-1",
-      proposal_id: proposalId,
-      action: "created",
-      title: "Proposta criada pelo agente",
-      created_at: new Date(Date.now() - 3600000 * 24).toISOString(),
-    },
-    {
-      id: "hist-2",
-      proposal_id: proposalId,
-      action: "updated",
-      title: "Roteiro e valores atualizados",
-      created_at: new Date().toISOString(),
-    },
-  ];
-}
 
 /**
  * Sugestões inteligentes de inclusões e exclusões para propostas

@@ -452,6 +452,16 @@ function CustomerTripsPage() {
                   key={agencyTrip.id}
                   className="p-4 sm:p-6 rounded-lg bg-card border border-border/70 flex flex-col md:flex-row gap-4 sm:gap-5 items-start md:items-center justify-between hover:border-foreground/20 transition-colors"
                 >
+                  {(agencyTrip.portal_content?.cover_image_url || agencyTrip.cover_image_url) && (
+                    <div className="w-full md:w-36 aspect-video md:aspect-square rounded-lg overflow-hidden border border-border/60 bg-muted shrink-0">
+                      <img
+                        src={agencyTrip.portal_content?.cover_image_url || agencyTrip.cover_image_url}
+                        alt={agencyTrip.destination_city || agencyTrip.title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
                   <div className="space-y-3 flex-1 min-w-0 w-full">
                     {/* Linha de Badges: Agência Emissora + Número + Status + Voucher */}
                     <div className="flex flex-wrap items-center gap-2">
@@ -505,7 +515,8 @@ function CustomerTripsPage() {
                         <div className="flex items-center gap-2 font-medium min-w-0">
                           <Buildings size={14} className="text-primary shrink-0" />
                           <span className="truncate">
-                            {agencyTrip.hotels[0].name || agencyTrip.hotels[0].hotel_name} (
+                            {agencyTrip.hotels[0].name || agencyTrip.hotels[0].hotel_name}
+                            {agencyTrip.hotels.length > 1 ? ` (+${agencyTrip.hotels.length - 1})` : ""} (
                             {agencyTrip.hotels[0].city || agencyTrip.hotels[0].destination || "Hospedagem"})
                           </span>
                         </div>
@@ -918,6 +929,19 @@ function CustomerTripsPage() {
                   </div>
 
                   <div className="flex flex-row md:flex-col gap-2 w-full md:w-auto shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-border">
+                    {booking.experience_id && (
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="flex-1 md:flex-initial rounded-lg font-bold text-xs gap-2 h-11 min-h-11 border-border cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <Link to={"/turismo/$id" as any} params={{ id: String(booking.experience_id) } as any}>
+                          <ArrowUpRight size={16} weight="bold" className="text-primary" />
+                          <span>Ver Roteiro</span>
+                        </Link>
+                      </Button>
+                    )}
+
                     <Button
                       onClick={() => handleOpenVoucher(booking)}
                       className="flex-1 md:flex-initial rounded-lg font-bold text-xs gap-2 h-11 min-h-11 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"

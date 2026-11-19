@@ -9,7 +9,7 @@
  * MASTER PROMPT V138: Micro-Copy Metamorphosis & Niche Design Tokenization.
  */
 
-import { getNicheSemantics, NicheSemantics } from "@/lib/niche-semantics";
+import { getNicheSemantics, NicheSemantics } from "./niche-semantics";
 
 export type NicheTermKey =
   | "client"

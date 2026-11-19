@@ -19,6 +19,14 @@ import {
   buildVisibleProposalCustomFieldEntries,
   sanitizeProposalCustomFields,
 } from "@/lib/tourism/proposal-custom-fields";
+import {
+  normalizeEntityMediaList,
+  normalizeHotelsList,
+  normalizeToursList,
+  normalizeTransfersList,
+  resolveTransferDisplayTitle,
+  resolveTransferKindBadge,
+} from "@/lib/tourism/proposal-normalization";
 
 function isValidMediaUrl(url: unknown): url is string {
   if (typeof url !== "string") return false;
@@ -194,10 +202,10 @@ function collectRealProposalImages(proposal: TravelProposalDTO): string[] {
  */
 export function proposalToEditorialClassified(proposal: TravelProposalDTO) {
   const flights = Array.isArray(proposal.flights) ? proposal.flights : [];
-  const hotels = Array.isArray(proposal.hotels) ? proposal.hotels : [];
+  const hotels = normalizeHotelsList(proposal.hotels) as HotelDTO[];
   const itinerary = Array.isArray(proposal.itinerary) ? proposal.itinerary : [];
-  const transfers = Array.isArray(proposal.transfers) ? proposal.transfers : [];
-  const tours = Array.isArray(proposal.tours) ? proposal.tours : [];
+  const transfers = normalizeTransfersList(proposal.transfers) as TransferDTO[];
+  const tours = normalizeToursList(proposal.tours) as TourOptionDTO[];
   const includes = Array.isArray(proposal.includes) ? proposal.includes.filter(Boolean) : [];
   const excludes = Array.isArray(proposal.excludes) ? proposal.excludes.filter(Boolean) : [];
   const customFields = (proposal.custom_fields || {}) as Record<string, any>;
@@ -280,9 +288,19 @@ export function proposalToEditorialClassified(proposal: TravelProposalDTO) {
         : null;
 
   const lodgings = hotels.map((h: HotelDTO, idx: number) => {
+    const mediaList = normalizeEntityMediaList({
+      media: h.media,
+      featured_image_url: h.featured_image_url,
+      image_url: h.image_url,
+      images: h.images,
+      video_url: h.video_url,
+      object_position: h.object_position,
+      image_scale: h.image_scale,
+    });
     const hotelImages = Array.from(
       new Set(
         [
+          ...mediaList.filter((m) => m.type === "image").map((m) => m.url),
           h.featured_image_url,
           h.image_url,
           ...(Array.isArray(h.images) ? h.images : []),
@@ -309,6 +327,9 @@ export function proposalToEditorialClassified(proposal: TravelProposalDTO) {
       regime: h.board_basis || undefined,
       room_category: h.room_type || undefined,
       images: hotelImages,
+      media: mediaList,
+      checkin_date: h.checkin_date || h.check_in || undefined,
+      checkout_date: h.checkout_date || h.check_out || undefined,
       checkin_time: checkinShort ? `14:00 (${checkinShort})` : "14:00",
       checkout_time: checkoutShort ? `11:00 (${checkoutShort})` : "11:00",
       description: descriptionParts.length > 0 ? descriptionParts.join(" • ") : undefined,
@@ -319,9 +340,10 @@ export function proposalToEditorialClassified(proposal: TravelProposalDTO) {
   const mappedTransfersAndTours = [
     ...transfers.map((tr: TransferDTO, idx: number) => ({
       id: tr.id || `transfer-${idx}`,
-      title: tr.route || tr.route_name || tr.type || "Transfer & Receptivo",
-      type: "included" as const,
+      title: resolveTransferDisplayTitle(tr as Record<string, any>, idx),
+      type: tr.included === false || tr.is_included === false ? ("optional" as const) : ("included" as const),
       description: [
+        resolveTransferKindBadge(tr.kind || tr.type),
         tr.vehicle || tr.vehicle_type,
         tr.is_private ? "Privativo" : undefined,
         tr.pickup_time ? `Saída às ${tr.pickup_time}` : undefined,
@@ -335,15 +357,35 @@ export function proposalToEditorialClassified(proposal: TravelProposalDTO) {
       id: tour.id || `tour-${idx}`,
       title: tour.title || `Passeio ${idx + 1}`,
       type: tour.included === false || tour.is_included === false ? ("optional" as const) : ("included" as const),
-      description: [tour.duration, tour.description].filter(Boolean).join(" — "),
-      image_url: isValidMediaUrl(tour.image_url) ? tour.image_url : undefined,
+      description: [
+        tour.date ? formatDateBr(tour.date) : undefined,
+        tour.duration,
+        tour.description,
+      ]
+        .filter(Boolean)
+        .join(" — "),
+      image_url: isValidMediaUrl(tour.image_url)
+        ? tour.image_url
+        : Array.isArray(tour.images) && isValidMediaUrl(tour.images[0])
+          ? tour.images[0]
+          : undefined,
+      images: Array.isArray(tour.images) ? tour.images.filter(isValidMediaUrl) : undefined,
     })),
   ];
 
   const mappedItineraryDays = itinerary.map((day: ItineraryDayDTO, idx: number) => {
+    const dayMedia = normalizeEntityMediaList({
+      media: day.media,
+      image_url: day.image_url,
+      images: day.images,
+      video_url: day.video_url,
+      object_position: day.object_position,
+      image_scale: day.image_scale,
+    });
     const dayImages = Array.from(
       new Set(
         [
+          ...dayMedia.filter((m) => m.type === "image").map((m) => m.url),
           day.image_url,
           ...(Array.isArray(day.images) ? day.images : []),
         ].filter(isValidMediaUrl),
@@ -355,6 +397,8 @@ export function proposalToEditorialClassified(proposal: TravelProposalDTO) {
       title: day.title || `Dia ${day.day_number || idx + 1}`,
       description: day.description || "",
       images: dayImages,
+      media: dayMedia,
+      video_url: day.video_url || dayMedia.find((m) => m.type === "video")?.url || undefined,
       hotel_name: day.location || undefined,
       meals_included: Array.isArray(day.included_meals)
         ? day.included_meals.map(normalizeMealTag)

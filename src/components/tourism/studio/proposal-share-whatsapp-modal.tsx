@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Send, Copy, Download, Image as ImageIcon, Check, FileText, Phone, Layers, X } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
+import { Send, Copy, Download, Image as ImageIcon, Check, Phone, TrendingUp, ArrowRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,10 +11,23 @@ import type { TravelProposalDTO } from '@/services/travel-proposal.functions';
 import { exportElementAsPdf, exportElementAsImage } from '@/lib/pdf-export';
 import { formatMoney } from '@/lib/money';
 
+export interface ProposalRadarMatchedLeadPreview {
+  leadId?: string | null;
+  fullName: string;
+  matchScore: number;
+  requiresChildRequote?: boolean;
+  effectiveTotalCents: number;
+  historicalVerdict?: string;
+  historicalSavingsPct?: number | null;
+  roomsSummary?: string | null;
+  reasons?: string[];
+}
+
 interface ProposalShareWhatsappModalProps {
  isOpen: boolean;
  onClose: () => void;
  proposal: TravelProposalDTO;
+ matchedLeads?: ProposalRadarMatchedLeadPreview[];
  onExportPdf?: () => Promise<void> | void;
  onExportPng?: () => Promise<void> | void;
 }
@@ -21,6 +36,7 @@ export function ProposalShareWhatsappModal({
  isOpen,
  onClose,
  proposal,
+ matchedLeads = [],
  onExportPdf,
  onExportPng,
 }: ProposalShareWhatsappModalProps) {
@@ -197,6 +213,51 @@ Ficamos à disposição para tirar dúvidas e confirmar disponibilidade e próxi
  </Button>
  </div>
  </div>
+
+ {matchedLeads.length > 0 && (
+   <div className="p-4 rounded-lg bg-primary/5 border border-primary/25 space-y-3">
+     <div className="flex items-center justify-between gap-2">
+       <span className="text-xs font-bold text-foreground flex items-center gap-2">
+         <TrendingUp className="size-4 text-primary" />
+         <span>Outros leads compatíveis ({matchedLeads.length})</span>
+       </span>
+       <Link
+         to="/workspace/turismo/oportunidades"
+         onClick={onClose}
+         className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm"
+       >
+         <span>Ver Radar</span>
+         <ArrowRight className="size-3" />
+       </Link>
+     </div>
+     <div className="space-y-2">
+       {matchedLeads.slice(0, 4).map((ml, idx) => (
+         <div
+           key={ml.leadId || `${ml.fullName}-${idx}`}
+           className="p-3 rounded-lg bg-card border border-border/70 flex flex-wrap items-center justify-between gap-2 text-xs"
+         >
+           <div className="min-w-0">
+             <p className="font-semibold text-foreground truncate">{ml.fullName}</p>
+             <p className="text-muted-foreground truncate">
+               {ml.roomsSummary || ml.reasons?.[0] || 'Compatível com destino e período'}
+             </p>
+           </div>
+           <div className="flex items-center gap-2 shrink-0">
+             {ml.requiresChildRequote && (
+               <Badge variant="warning" className="text-xs">Simulação CHD</Badge>
+             )}
+             <Badge variant="success" className="text-xs tabular-nums">
+               {Math.round(ml.matchScore)}%
+             </Badge>
+             <span className="font-mono font-semibold text-foreground">
+               {formatMoney(ml.effectiveTotalCents || 0)}
+             </span>
+           </div>
+         </div>
+       ))}
+     </div>
+   </div>
+ )}
  </div>
 
  <DialogFooter className="p-4 border-t border-border/70 bg-muted/10 flex items-center justify-between sm:justify-between">

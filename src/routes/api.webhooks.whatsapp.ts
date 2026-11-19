@@ -5,12 +5,14 @@ import { decryptSecret } from "@/lib/crypto-vault.server";
 import { encryptConversationMessageForThread, redactWhatsAppWebhookPayload } from "@/lib/conversation-crypto.server";
 import { dispatchWhatsAppInboundFlows, resolveWhatsAppIdentity } from "@/services/whatsapp-automation-runtime.server";
 import { WHATSAPP_CREDENTIAL_PROVIDER, WHATSAPP_META_CHANNEL_PROVIDER } from "@/services/whatsapp-provider-contract";
+import { resolveContactCaptureSuppression } from "@/lib/whatsapp-contact-suppression.server";
 import {
   extractWhatsAppReferralAndTokens,
   correlateAndPersistInboundWhatsAppAttribution,
   normalizePhoneE164,
 } from "@/services/omnichannel-attribution.server";
 import { createHash } from "node:crypto";
+import { noStoreJsonResponse as jsonResponse } from "@/lib/utils";
 
 const MAX_WEBHOOK_BODY_BYTES = 1_048_576;
 
@@ -20,16 +22,6 @@ type IntegrationCredential = {
   public_metadata: Record<string, unknown> | null;
   secret_payload_encrypted: string | null;
 };
-
-function jsonResponse(payload: Record<string, unknown>, status = 200): Response {
-  return new Response(JSON.stringify(payload), {
-    status,
-    headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "no-store",
-    },
-  });
-}
 
 function envValue(...names: string[]): string | undefined {
   if (typeof process === "undefined" || !process.env) return undefined;
@@ -230,10 +222,13 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
           }
 
           const storeByPhoneNumberId = new Map<string, string>();
+          const tokenByPhoneNumberId = new Map<string, string>();
           for (const credential of matchingCredentials) {
             const phoneNumberId = payloadValue(credential.public_metadata || credential.token_payload, "phone_number_id");
             if (phoneNumberId && !storeByPhoneNumberId.has(phoneNumberId)) {
               storeByPhoneNumberId.set(phoneNumberId, credential.store_id);
+              const token = payloadValue(connectionSecrets(credential), "access_token");
+              if (token) tokenByPhoneNumberId.set(phoneNumberId, token);
             }
           }
 
@@ -335,42 +330,50 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                 });
                 if (!channelIdentity) continue;
 
-                const { data: existingLead } = await supabase
-                  .from("whatsapp_lead_conversions")
-                  .select("id, notes")
-                  .eq("store_id", targetStoreId)
-                  .or(`phone_target.eq.${senderPhone},phone_target.eq.${normalizedSenderPhone},lead_phone_e164.eq.${normalizedSenderPhone}`)
-                  .limit(1)
-                  .maybeSingle();
+                const contactSuppression = await resolveContactCaptureSuppression(supabase, {
+                  storeId: targetStoreId,
+                  identityRow: channelIdentity,
+                  phone: normalizedSenderPhone,
+                });
 
-                if (existingLead) {
-                  const updatedNotes = `${existingLead.notes || ""}\n[Cliente ${occurredAt}]: ${messageText}`.trim();
-                  await supabase
+                if (!contactSuppression.suppressed) {
+                  const { data: existingLead } = await supabase
                     .from("whatsapp_lead_conversions")
-                    .update({ status: "responded", notes: updatedNotes.slice(-1500) })
-                    .eq("id", existingLead.id);
-                } else {
-                  await supabase.rpc("record_whatsapp_lead", {
-                    p_store_id: targetStoreId,
-                    p_entity_type: "store",
-                    p_entity_id: referralAttr?.ad_id || null,
-                    p_entity_title: referralAttr?.ad_headline || customerName,
-                    p_phone_target: normalizedSenderPhone,
-                    p_origin_url: referralAttr?.source_url || "whatsapp://cloud-api/inbound",
-                    p_utm_source: referralAttr?.utm_source || referralAttr?.platform || "whatsapp",
-                    p_utm_medium: referralAttr?.utm_medium || (referralAttr?.ctwa_clid ? "ctwa" : "inbound"),
-                    p_utm_campaign: referralAttr?.utm_campaign || referralAttr?.campaign || referralAttr?.ad_headline || null,
-                    p_visitor_id: null,
-                    p_user_id: null,
-                    p_device_type: "mobile",
-                    p_metadata: {
-                      channel: WHATSAPP_META_CHANNEL_PROVIDER,
-                      phone_number_id: phoneNumberId,
-                      message_id: String(message.id),
-                      message_type: messageType,
-                      ...(referralAttr ? { referral: referralAttr } : {}),
-                    },
-                  });
+                    .select("id, notes")
+                    .eq("store_id", targetStoreId)
+                    .or(`phone_target.eq.${senderPhone},phone_target.eq.${normalizedSenderPhone},lead_phone_e164.eq.${normalizedSenderPhone}`)
+                    .limit(1)
+                    .maybeSingle();
+
+                  if (existingLead) {
+                    const updatedNotes = `${existingLead.notes || ""}\n[Cliente ${occurredAt}]: ${messageText}`.trim();
+                    await supabase
+                      .from("whatsapp_lead_conversions")
+                      .update({ status: "responded", notes: updatedNotes.slice(-1500) })
+                      .eq("id", existingLead.id);
+                  } else {
+                    await supabase.rpc("record_whatsapp_lead", {
+                      p_store_id: targetStoreId,
+                      p_entity_type: "store",
+                      p_entity_id: referralAttr?.ad_id || null,
+                      p_entity_title: referralAttr?.ad_headline || customerName,
+                      p_phone_target: normalizedSenderPhone,
+                      p_origin_url: referralAttr?.source_url || "whatsapp://cloud-api/inbound",
+                      p_utm_source: referralAttr?.utm_source || referralAttr?.platform || "whatsapp",
+                      p_utm_medium: referralAttr?.utm_medium || (referralAttr?.ctwa_clid ? "ctwa" : "inbound"),
+                      p_utm_campaign: referralAttr?.utm_campaign || referralAttr?.campaign || referralAttr?.ad_headline || null,
+                      p_visitor_id: null,
+                      p_user_id: null,
+                      p_device_type: "mobile",
+                      p_metadata: {
+                        channel: WHATSAPP_META_CHANNEL_PROVIDER,
+                        phone_number_id: phoneNumberId,
+                        message_id: String(message.id),
+                        message_type: messageType,
+                        ...(referralAttr ? { referral: referralAttr } : {}),
+                      },
+                    });
+                  }
                 }
 
                 const entityId = `${phoneNumberId}:${senderPhone}`;
@@ -393,6 +396,7 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                       primary_phone_e164: normalizedSenderPhone,
                       last_message_text: messageText.slice(0, 200),
                       last_message_at: occurredAt,
+                      last_customer_message_at: occurredAt,
                       status: "open",
                       updated_at: new Date().toISOString(),
                     })
@@ -419,6 +423,7 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                       metadata: currentThreadMeta,
                       last_message_text: messageText.slice(0, 200),
                       last_message_at: occurredAt,
+                      last_customer_message_at: occurredAt,
                       internal_notes: `Canal: WhatsApp Cloud API | Phone Number ID: ${phoneNumberId}`,
                       created_at: occurredAt,
                       updated_at: new Date().toISOString(),
@@ -439,34 +444,83 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                   .filter("payload->>message_id", "eq", String(message.id))
                   .maybeSingle();
 
+                const mediaRawMeta =
+                  messageType && typeof message?.[messageType] === "object"
+                    ? (message[messageType] as Record<string, any>)
+                    : null;
+                const externalMediaId =
+                  mediaRawMeta && typeof mediaRawMeta.id === "string" ? mediaRawMeta.id.trim() : null;
+
                 if (!duplicateMessage) {
-                  const { error: chatMessageError } = await supabase.from("chat_messages").insert({
-                    thread_id: threadId,
-                    channel_identity_id: channelIdentity.id,
-                    message: messageText,
-                    message_type: messageType,
-                    is_staff_reply: false,
-                    is_encrypted: false,
-                    encryption_version: 1,
-                    channel: "whatsapp",
-                    external_message_id: String(message.id),
-                    delivery_status: "delivered",
-                    sent_at: occurredAt,
-                    delivered_at: occurredAt,
-                    payload: {
+                  const { data: insertedCloudMsg, error: chatMessageError } = await supabase
+                    .from("chat_messages")
+                    .insert({
+                      thread_id: threadId,
+                      channel_identity_id: channelIdentity.id,
+                      message: messageText,
+                      message_type: messageType,
+                      is_staff_reply: false,
+                      is_encrypted: false,
+                      encryption_version: 1,
                       channel: "whatsapp",
-                      provider: WHATSAPP_META_CHANNEL_PROVIDER,
-                      phone_number_id: phoneNumberId,
-                      from: normalizedSenderPhone,
-                      sender_phone: normalizedSenderPhone,
-                      sender_name: customerName,
-                      message_id: String(message.id),
-                      timestamp: message.timestamp,
-                      ...(referralAttr ? { referral: referralAttr } : {}),
-                    },
-                    created_at: occurredAt,
-                  });
+                      external_message_id: String(message.id),
+                      delivery_status: "delivered",
+                      sent_at: occurredAt,
+                      delivered_at: occurredAt,
+                      payload: {
+                        channel: "whatsapp",
+                        provider: WHATSAPP_META_CHANNEL_PROVIDER,
+                        phone_number_id: phoneNumberId,
+                        from: normalizedSenderPhone,
+                        sender_phone: normalizedSenderPhone,
+                        sender_name: customerName,
+                        message_id: String(message.id),
+                        timestamp: message.timestamp,
+                        ...(externalMediaId
+                          ? {
+                              media: {
+                                type: messageType,
+                                external_media_id: externalMediaId,
+                                mimetype: mediaRawMeta?.mime_type || null,
+                                fileName: mediaRawMeta?.filename || null,
+                                caption: mediaRawMeta?.caption || null,
+                              },
+                            }
+                          : {}),
+                        ...(referralAttr ? { referral: referralAttr } : {}),
+                      },
+                      created_at: occurredAt,
+                    })
+                    .select("id")
+                    .maybeSingle();
                   if (chatMessageError && !/duplicate|unique/i.test(chatMessageError.message)) throw chatMessageError;
+
+                  const cloudAccessToken = tokenByPhoneNumberId.get(phoneNumberId) || null;
+                  if (insertedCloudMsg?.id && externalMediaId && cloudAccessToken) {
+                    const { hydrateMetaCloudMediaToStorage } = await import("@/services/whatsapp-media.server");
+                    await hydrateMetaCloudMediaToStorage({
+                      db: supabase,
+                      storeId: targetStoreId,
+                      accessToken: cloudAccessToken,
+                      mediaId: externalMediaId,
+                      threadId,
+                      messageId: insertedCloudMsg.id,
+                      externalMessageId: String(message.id),
+                      messageType,
+                      preferredMime: mediaRawMeta?.mime_type || null,
+                      fileName: mediaRawMeta?.filename || null,
+                    }).catch(() => null);
+
+                    if (messageType === "audio") {
+                      const { transcribeAudioMediaServer } = await import("@/services/whatsapp-media-intelligence.server");
+                      await transcribeAudioMediaServer({
+                        db: supabase,
+                        storeId: targetStoreId,
+                        threadId,
+                        messageId: insertedCloudMsg.id,
+                      }).catch(() => null);
+                    }
+                  }
                 }
 
                 await correlateAndPersistInboundWhatsAppAttribution(supabase, {

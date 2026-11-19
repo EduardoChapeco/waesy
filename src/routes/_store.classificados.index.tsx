@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Tag, RefreshCw } from "lucide-react";
+import { Tag } from "lucide-react";
 import { buildUniversalHead } from "@/lib/seo/universal-seo-head";
-import { Button } from "@/components/ui/button";
+import { RouteErrorFallback } from "@/components/state/route-error-fallback";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
@@ -72,40 +72,18 @@ export const Route = createFileRoute("/_store/classificados/")({
       return { banners: [], hotpages: [], classifieds: [] };
     }
   },
-  errorComponent: ClassifiedsIndexErrorComponent,
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorFallback
+      error={error}
+      reset={reset}
+      icon={Tag}
+      title="Falha ao Carregar Classificados"
+      description="Não foi possível sincronizar o catálogo de classificados e desapegos no momento."
+      showErrorDetails
+    />
+  ),
   component: ClassifiedsMasterPage,
 });
-
-function ClassifiedsIndexErrorComponent({ error }: { error: any }) {
-  return (
-    <div className="mx-auto max-w-xl px-4 py-16 text-center space-y-4">
-      <div className="inline-flex size-14 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-1">
-        <Tag className="size-7" />
-      </div>
-      <div className="space-y-1">
-        <h1 className="text-xl font-bold text-foreground">Falha ao Carregar Classificados</h1>
-        <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
-          Não foi possível sincronizar o catálogo de classificados e desapegos no momento.
-        </p>
-      </div>
-      {error?.message && (
-        <pre className="mt-2 rounded-lg bg-muted/40 border border-border/50 p-3 text-xs text-muted-foreground overflow-auto max-h-32 text-left font-mono">
-          {error.message}
-        </pre>
-      )}
-      <div className="pt-2 flex items-center justify-center gap-3">
-        <Button
-          variant="default"
-          className="rounded-lg text-xs h-11 px-5 font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-          onClick={() => window.location.reload()} /* focus-visible: */
-        >
-          <RefreshCw className="size-3.5 mr-2" />
-          <span>Tentar Novamente</span>
-        </Button>
-      </div>
-    </div>
-  );
-}
 
 function ClassifiedsMasterPage() {
   const { banners = [], hotpages = [], classifieds: initialClassifieds = [], surfaceExperience = null } = (Route.useLoaderData() as any) || {};

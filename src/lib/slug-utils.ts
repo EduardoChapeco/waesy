@@ -4,16 +4,18 @@
  * Erradica sufixos numéricos aleatórios (ex: -1721) e garante unicidade com elegância.
  */
 
-export function generateSlug(name: string): string {
-  const base = name
-    .toLowerCase()
+export function slugify(text: string): string {
+  return String(text || "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9\s-]/g, "")
+    .toLowerCase()
     .trim()
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
-  return base || "empresa";
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export function generateSlug(name: string): string {
+  return slugify(name) || "empresa";
 }
 
 /**

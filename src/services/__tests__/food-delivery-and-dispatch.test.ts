@@ -33,7 +33,7 @@ describe("Canais de Delivery BR, Despacho Externo & Separação — Contrato E2E
     const webhookRouteTs = readWorkspaceFile(
       "src/routes/api.webhooks.marketplaces.ts",
     );
-    const kdsTsx = readWorkspaceFile("src/routes/workspace.pedidos.gestor.tsx");
+    const kdsTsx = readWorkspaceFile("src/components/workspace/orders/kds-order-manager.tsx");
 
     const foodChannels = [
       "ifood",

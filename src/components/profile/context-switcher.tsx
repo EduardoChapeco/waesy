@@ -410,7 +410,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
         {stores.length > 0 && (
           <div className="mt-2 space-y-1">
             <span className="px-3 py-1 text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
-              Minhas Empresas e Lojas
+              Workspaces e Unidades
             </span>
 
             {stores.map((store) => {

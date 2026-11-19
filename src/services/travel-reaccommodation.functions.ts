@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { getServerClient } from '@/lib/supabase';
 import { getServerIdentity, assertStoreAccess } from '@/lib/server-access';
+import { analyzeFlightDifferences } from '@/lib/tourism/flight-connections';
 import type {
   TravelFlightChangeCase,
   ChangeReason,
@@ -125,14 +126,16 @@ export const updateChangeCaseWorkflow = createServerFn({ method: 'POST' })
   )
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ['owner', 'admin', 'manager', 'seller']);
+    if (!identity?.id) {
+      throw new Error("Autenticação obrigatória.");
+    }
 
     const db = getServerClient();
 
-    // Valida se o caso pertence à loja gerenciada
+    // Valida se o caso pertence à loja gerenciada ou ao viajante titular em caso de aceite/recusa
     const { data: flightCase, error: fetchErr } = await db
       .from('travel_flight_change_cases')
-      .select('id, store_id')
+      .select('id, store_id, trip_id')
       .eq('id', data.id)
       .single();
 
@@ -140,8 +143,33 @@ export const updateChangeCaseWorkflow = createServerFn({ method: 'POST' })
       throw new Error("Caso de reacomodação não encontrado.");
     }
 
-    if (flightCase.store_id !== identity.store_id && !(identity.role === "platform_admin")) {
-      throw new Error("Acesso não autorizado para esta loja.");
+    const isStaff =
+      identity.role === "platform_admin" ||
+      (identity.role !== "customer" &&
+        ['owner', 'admin', 'manager', 'seller'].includes(String(identity.role || '')) &&
+        flightCase.store_id === identity.store_id);
+
+    if (!isStaff) {
+      const isClientDecision =
+        data.workflow_status === 'client_accepted' || data.workflow_status === 'client_rejected';
+      if (!isClientDecision || !flightCase.trip_id) {
+        throw new Error("Acesso não autorizado para atualizar caso de reacomodação.");
+      }
+      const { data: tripRow } = await db
+        .from('tourism_trips')
+        .select('id, customer_id, client_email')
+        .eq('id', flightCase.trip_id)
+        .maybeSingle();
+      if (!tripRow) {
+        throw new Error("Acesso não autorizado para esta loja.");
+      }
+      const userEmail = String(identity.email || '').trim().toLowerCase();
+      const ownsTrip =
+        tripRow.customer_id === identity.id ||
+        (Boolean(userEmail) && String(tripRow.client_email || '').trim().toLowerCase() === userEmail);
+      if (!ownsTrip) {
+        throw new Error("Acesso não autorizado para esta loja.");
+      }
     }
 
     const { error } = await db
@@ -155,4 +183,192 @@ export const updateChangeCaseWorkflow = createServerFn({ method: 'POST' })
 
     if (error) throw new Error(`Erro ao atualizar caso: ${error.message}`);
     return { success: true };
+  });
+
+export const createFlightAlternative = createServerFn({ method: 'POST' })
+  .validator(
+    z.object({
+      changeCaseId: z.string().uuid(),
+      itineraryId: z.string().uuid().optional().nullable(),
+      source: z.enum(['manual', 'operator', 'ai']).default('manual'),
+      differenceSummary: z.string().max(1000).optional().nullable(),
+      costDifference: z.number().default(0),
+      isSelected: z.boolean().default(false),
+    })
+  )
+  .handler(async ({ data }) => {
+    const { changeCaseId, itineraryId, source, differenceSummary, costDifference, isSelected } = data;
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ['owner', 'admin', 'manager', 'seller']);
+    const db = getServerClient();
+
+    const { data: flightCase, error: caseErr } = await db
+      .from('travel_flight_change_cases')
+      .select('id, store_id, original_itinerary_id')
+      .eq('id', changeCaseId)
+      .maybeSingle();
+
+    if (caseErr || !flightCase) {
+      throw new Error('Caso de reacomodação não encontrado.');
+    }
+    if (flightCase.store_id !== identity.store_id && identity.role !== 'platform_admin') {
+      throw new Error('Acesso não autorizado para esta loja.');
+    }
+
+    let computedSummary = differenceSummary ?? null;
+    if (!computedSummary && flightCase.original_itinerary_id && itineraryId) {
+      const [origRes, altRes] = await Promise.all([
+        db
+          .from('travel_flight_segments')
+          .select('*')
+          .eq('itinerary_id', flightCase.original_itinerary_id)
+          .eq('store_id', flightCase.store_id),
+        db
+          .from('travel_flight_segments')
+          .select('*')
+          .eq('itinerary_id', itineraryId)
+          .eq('store_id', flightCase.store_id),
+      ]);
+      if (origRes.data?.length && altRes.data?.length) {
+        const diff = analyzeFlightDifferences(origRes.data as any[], altRes.data as any[]);
+        computedSummary = diff.deterministic_summary;
+      }
+    }
+
+    const { data: created, error: insErr } = await db
+      .from('travel_flight_alternatives')
+      .insert({
+        store_id: flightCase.store_id,
+        change_case_id: changeCaseId,
+        itinerary_id: itineraryId ?? null,
+        source,
+        is_selected: isSelected,
+        difference_summary: computedSummary,
+        cost_difference: costDifference,
+      })
+      .select()
+      .single();
+
+    if (insErr) {
+      throw new Error(`Erro ao adicionar alternativa de voo: ${insErr.message}`);
+    }
+    return created;
+  });
+
+export const selectFlightAlternative = createServerFn({ method: 'POST' })
+  .validator(
+    z.object({
+      alternativeId: z.string().uuid(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const { alternativeId } = data;
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ['owner', 'admin', 'manager', 'seller']);
+    const db = getServerClient();
+
+    const { data: alt, error: altErr } = await db
+      .from('travel_flight_alternatives')
+      .select('id, store_id, change_case_id')
+      .eq('id', alternativeId)
+      .maybeSingle();
+
+    if (altErr || !alt) {
+      throw new Error('Alternativa de voo não encontrada.');
+    }
+    if (alt.store_id !== identity.store_id && identity.role !== 'platform_admin') {
+      throw new Error('Acesso não autorizado para esta loja.');
+    }
+
+    const { error: resetErr } = await db
+      .from('travel_flight_alternatives')
+      .update({ is_selected: false, updated_at: new Date().toISOString() })
+      .eq('change_case_id', alt.change_case_id)
+      .eq('store_id', alt.store_id);
+    if (resetErr) {
+      throw new Error(`Erro ao desmarcar alternativas anteriores: ${resetErr.message}`);
+    }
+
+    const { data: updated, error: selErr } = await db
+      .from('travel_flight_alternatives')
+      .update({ is_selected: true, updated_at: new Date().toISOString() })
+      .eq('id', alt.id)
+      .eq('store_id', alt.store_id)
+      .select()
+      .single();
+    if (selErr) {
+      throw new Error(`Erro ao selecionar alternativa de voo: ${selErr.message}`);
+    }
+
+    return updated;
+  });
+
+export const resolveChangeCaseWithItinerary = createServerFn({ method: 'POST' })
+  .validator(
+    z.object({
+      caseId: z.string().uuid(),
+      confirmedItineraryId: z.string().uuid().optional().nullable(),
+      notes: z.string().max(1000).optional().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const { caseId, confirmedItineraryId, notes } = data;
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ['owner', 'admin', 'manager', 'seller']);
+    const db = getServerClient();
+
+    const { data: flightCase, error: caseErr } = await db
+      .from('travel_flight_change_cases')
+      .select('id, store_id, original_itinerary_id')
+      .eq('id', caseId)
+      .maybeSingle();
+
+    if (caseErr || !flightCase) {
+      throw new Error('Caso de reacomodação não encontrado.');
+    }
+    if (flightCase.store_id !== identity.store_id && identity.role !== 'platform_admin') {
+      throw new Error('Acesso não autorizado para esta loja.');
+    }
+
+    if (confirmedItineraryId) {
+      if (flightCase.original_itinerary_id && flightCase.original_itinerary_id !== confirmedItineraryId) {
+        const { error: archErr } = await db
+          .from('travel_flight_itineraries')
+          .update({ status: 'archived', updated_at: new Date().toISOString() })
+          .eq('id', flightCase.original_itinerary_id)
+          .eq('store_id', flightCase.store_id);
+        if (archErr) {
+          throw new Error(`Erro ao arquivar itinerário original: ${archErr.message}`);
+        }
+      }
+
+      const { error: actErr } = await db
+        .from('travel_flight_itineraries')
+        .update({ status: 'active', itinerary_type: 'confirmed', updated_at: new Date().toISOString() })
+        .eq('id', confirmedItineraryId)
+        .eq('store_id', flightCase.store_id);
+      if (actErr) {
+        throw new Error(`Erro ao ativar itinerário confirmado: ${actErr.message}`);
+      }
+    }
+
+    const patch: Record<string, any> = {
+      workflow_status: 'rebooking_confirmed',
+      updated_at: new Date().toISOString(),
+    };
+    if (notes !== undefined && notes !== null) {
+      patch.internal_notes = notes;
+    }
+
+    const { error: resolveErr } = await db
+      .from('travel_flight_change_cases')
+      .update(patch)
+      .eq('id', caseId)
+      .eq('store_id', flightCase.store_id);
+
+    if (resolveErr) {
+      throw new Error(`Erro ao resolver caso de reacomodação: ${resolveErr.message}`);
+    }
+
+    return { success: true, caseId, confirmedItineraryId: confirmedItineraryId ?? null };
   });

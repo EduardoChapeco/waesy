@@ -7,10 +7,11 @@ import { inflateSync, inflateRawSync } from "node:zlib";
 
 function decodeHexPdfString(hex: string): string {
   if (!hex) return "";
-  // Se for múltiplo de 4 e parecer UTF-16BE (caractere nulo no byte alto)
-  if (hex.length >= 4 && hex.length % 4 === 0 && hex.startsWith("00")) {
+  // Se for múltiplo de 4 e parecer UTF-16BE (caractere nulo no byte alto ou BOM)
+  if (hex.length >= 4 && (hex.startsWith("feff") || hex.startsWith("FEFF") || hex.startsWith("00"))) {
     let utf16 = "";
-    for (let i = 0; i < hex.length; i += 4) {
+    const startIdx = (hex.startsWith("feff") || hex.startsWith("FEFF")) ? 4 : 0;
+    for (let i = startIdx; i < hex.length; i += 4) {
       const code = parseInt(hex.substring(i, i + 4), 16);
       if (code >= 32 && code <= 65535) {
         utf16 += String.fromCharCode(code);
@@ -33,6 +34,25 @@ function decodeHexPdfString(hex: string): string {
   return latin;
 }
 
+function unescapePdfLiteralString(str: string): string {
+  if (!str) return "";
+  return str
+    // 1. Decodificar sequências octais \ddd (ex: \341 = á, \351 = é, \363 = ó, \347 = ç, \343 = ã, \040 = espaço)
+    .replace(/\\([0-7]{1,3})/g, (_, oct) => {
+      const code = parseInt(oct, 8);
+      return String.fromCharCode(code);
+    })
+    // 2. Decodificar escapes de controle padrão do PDF
+    .replace(/\\n/g, "\n")
+    .replace(/\\r/g, "\r")
+    .replace(/\\t/g, "\t")
+    .replace(/\\b/g, "\b")
+    .replace(/\\f/g, "\f")
+    .replace(/\\\(/g, "(")
+    .replace(/\\\)/g, ")")
+    .replace(/\\\\/g, "\\");
+}
+
 function extractPdfTextPureNode(pdfBuffer: Buffer): string {
   const chunks: string[] = [];
   const rawLatin = pdfBuffer.toString("latin1");
@@ -44,7 +64,7 @@ function extractPdfTextPureNode(pdfBuffer: Buffer): string {
     const tjRegex = /\(([^()\\]*(?:\\.[^()\\]*)*)\)\s*(?:Tj|'|")/g;
     let m: RegExpExecArray | null;
     while ((m = tjRegex.exec(content)) !== null) {
-      chunks.push(m[1].replace(/\\([nrtbf()\\])/g, "$1"));
+      chunks.push(unescapePdfLiteralString(m[1]));
     }
 
     // Operadores Tj com strings hexadecimais entre sinais de menor e maior <HEX>
@@ -58,15 +78,21 @@ function extractPdfTextPureNode(pdfBuffer: Buffer): string {
     const tjArrRegex = /\[([^\]]+)\]\s*TJ/g;
     while ((m = tjArrRegex.exec(content)) !== null) {
       const inner = m[1];
-      const partRegex = /\(([^()\\]*(?:\\.[^()\\]*)*)\)|<([0-9a-fA-F]+)>/g;
+      const tokenRegex = /\(([^()\\]*(?:\\.[^()\\]*)*)\)|<([0-9a-fA-F]+)>|(-?\d+(?:\.\d+)?)/g;
       let sm: RegExpExecArray | null;
       const lineParts: string[] = [];
-      while ((sm = partRegex.exec(inner)) !== null) {
+      while ((sm = tokenRegex.exec(inner)) !== null) {
         if (sm[1] !== undefined) {
-          lineParts.push(sm[1].replace(/\\([nrtbf()\\])/g, "$1"));
+          lineParts.push(unescapePdfLiteralString(sm[1]));
         } else if (sm[2] !== undefined) {
           const decoded = decodeHexPdfString(sm[2]);
           if (decoded) lineParts.push(decoded);
+        } else if (sm[3] !== undefined) {
+          // Deslocamento de kerning negativo representa espaço entre palavras
+          const kern = parseFloat(sm[3]);
+          if (kern < -150) {
+            lineParts.push(" ");
+          }
         }
       }
       if (lineParts.length > 0) chunks.push(lineParts.join(""));
@@ -93,6 +119,15 @@ function extractPdfTextPureNode(pdfBuffer: Buffer): string {
     }
   }
 
+  // Fallback: Se streams inflados não forneceram texto suficiente, varre blocos BT ... ET no rawLatin
+  if (chunks.length === 0) {
+    const btRegex = /BT([\s\S]*?)ET/g;
+    let btm: RegExpExecArray | null;
+    while ((btm = btRegex.exec(rawLatin)) !== null) {
+      extractStringsFromContent(btm[1]);
+    }
+  }
+
   return normalizeText(chunks.join(" ").replace(/\s+/g, " "));
 }
 
@@ -100,11 +135,35 @@ function extractPdfTextPureNode(pdfBuffer: Buffer): string {
 const execFileAsync = promisify(execFile);
 
 export interface MechanicalDocumentExtraction {
-  method: "pdftotext" | "tesseract" | "unavailable";
+  method: "pdftotext" | "tesseract" | "pure_node" | "embedded_jpeg" | "unavailable";
   text: string;
   pageCount?: number;
+  imageBuffer?: Buffer;
+  imageMime?: string;
+  imageBase64?: string;
   metadata: Record<string, string | number | boolean | undefined>;
   needsVisionModel: boolean;
+}
+
+export function extractFirstEmbeddedJpegFromPdf(pdfBuffer: Buffer): Buffer | null {
+  const soi = Buffer.from([0xff, 0xd8, 0xff]);
+  const eoi = Buffer.from([0xff, 0xd9]);
+
+  let startIdx = pdfBuffer.indexOf(soi);
+  while (startIdx !== -1) {
+    const endIdx = pdfBuffer.indexOf(eoi, startIdx + 3);
+    if (endIdx !== -1) {
+      const jpegLen = endIdx + 2 - startIdx;
+      // Cotações e prints escaneados contidos em PDF possuem normalmente >= 8KB
+      if (jpegLen >= 8192) {
+        return pdfBuffer.subarray(startIdx, endIdx + 2);
+      }
+      startIdx = pdfBuffer.indexOf(soi, endIdx + 2);
+    } else {
+      break;
+    }
+  }
+  return null;
 }
 
 function normalizeText(value: string): string {
@@ -128,7 +187,9 @@ export async function extractDocumentMechanically(input: {
   if (!allowedMimeTypes.has(input.mimeType)) {
     return { method: "unavailable", text: "", metadata: { reason: "unsupported_mime_type", mimeType: input.mimeType }, needsVisionModel: true };
   }
-  const bytes = Buffer.from(input.base64, "base64");
+  const rawBase64 = input.base64 || "";
+  const cleanB64 = rawBase64.includes(",") ? rawBase64.split(",")[1].trim() : rawBase64.trim();
+  const bytes = Buffer.from(cleanB64, "base64");
   if (!bytes.length) {
     return { method: "unavailable", text: "", metadata: { reason: "empty_file" }, needsVisionModel: true };
   }
@@ -166,6 +227,18 @@ export async function extractDocumentMechanically(input: {
             text: fallbackText,
             metadata: { fileName: input.name, mimeType: input.mimeType, extractedCharacters: fallbackText.length, engine: "pure_node_zlib" },
             needsVisionModel: false,
+          };
+        }
+        const embeddedJpeg = extractFirstEmbeddedJpegFromPdf(bytes);
+        if (embeddedJpeg) {
+          return {
+            method: "embedded_jpeg",
+            text: "",
+            imageBuffer: embeddedJpeg,
+            imageMime: "image/jpeg",
+            imageBase64: embeddedJpeg.toString("base64"),
+            metadata: { fileName: input.name, mimeType: input.mimeType, engine: "embedded_jpeg_stream", jpegBytes: embeddedJpeg.length },
+            needsVisionModel: true,
           };
         }
         return {

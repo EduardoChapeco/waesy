@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { getRealtimeChannel } from "@/services/realtime-channel";
 import { toast } from "sonner";
 import { ErrorState } from "@/components/state/states";
 import {
@@ -153,6 +154,34 @@ function WorkspaceAtendimentoFilasPage() {
       toast.error(err?.message || "Erro ao recarregar setores.");
     }
   };
+
+  useEffect(() => {
+    setDepartments(loaderData.departments || []);
+  }, [loaderData.departments]);
+
+  useEffect(() => {
+    const storeId = store?.id;
+    if (!storeId) return;
+    let debounceTimer: number | null = null;
+    const refreshLive = () => {
+      if (debounceTimer !== null) window.clearTimeout(debounceTimer);
+      debounceTimer = window.setTimeout(() => {
+        debounceTimer = null;
+        void reloadDepartments();
+        void router.invalidate();
+      }, 600);
+    };
+    const filter = `store_id=eq.${storeId}`;
+    const { channel, unsubscribe } = getRealtimeChannel(`atendimento-filas:${storeId}`);
+    channel
+      ?.on("postgres_changes", { event: "*", schema: "public", table: "chat_departments", filter }, refreshLive)
+      .on("postgres_changes", { event: "*", schema: "public", table: "whatsapp_channel_live_state", filter }, refreshLive)
+      .subscribe();
+    return () => {
+      if (debounceTimer !== null) window.clearTimeout(debounceTimer);
+      unsubscribe();
+    };
+  }, [store?.id, router]);
 
   const handleOpenCreate = () => {
     setEditingId(undefined);

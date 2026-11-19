@@ -235,6 +235,15 @@ export const saveUserResume = createServerFn({ method: "POST" })
       }
     }
 
+    // Sincroniza avaliações corporativas com employer_reviews de forma unificada
+    if (Array.isArray((input.data as any)?.experiences)) {
+      const { syncEmployerReviewsForUser } = await import("@/lib/careers/employer-reviews.server");
+      await syncEmployerReviewsForUser(supabase, identity.id!, (input.data as any).experiences, {
+        route: "resumes.saveUserResume",
+        defaultAnonymous: true,
+      });
+    }
+
     return {
       success: true,
       resumeId: resumeRecord?.id || input.id || "default-resume",

@@ -10,7 +10,7 @@ import {
   TaskSpec,
   DecompositionResult,
   NormalizedPrd,
-} from '@/lib/prd-decomposer';
+} from '@/lib/ai/prd-decomposer';
 
 describe('Skill decompose-prd & Hierarchical DAG Engine', () => {
   const sampleTasks: TaskSpec[] = [

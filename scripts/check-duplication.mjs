@@ -33,66 +33,99 @@ const ROOT = path.resolve(__dirname, '..');
 // ── Campos Semânticos Canônicos e seus Donos Esperados ──────────────────────
 // Formato: { id, pattern, expectedOwner, description }
 // expectedOwner: caminho relativo do arquivo dono único (null = sem dono definido ainda)
+function makeDeclPattern(symbolName) {
+  return new RegExp(`(?:^|[\\r\\n])\\s*(?:export\\s+)?(?:const|let|var|function|async\\s+function)\\s+${symbolName}\\b`);
+}
+
 const CANONICAL_FIELDS = [
   // Parcelamento
   {
     id: 'F01',
-    pattern: /\bMAX_INSTALLMENTS\b/,
+    pattern: makeDeclPattern('MAX_INSTALLMENTS'),
     expectedOwner: 'src/lib/payment/installment-calculator.ts',
     description: 'Constante máximo de parcelas',
   },
   {
     id: 'F02',
-    pattern: /\bcalcInstallments\b/,
+    pattern: makeDeclPattern('calcInstallments'),
     expectedOwner: 'src/lib/payment/installment-calculator.ts',
     description: 'Função calculadora de parcelas',
   },
   // NCM/Fiscal
   {
     id: 'F03',
-    pattern: /\bNCM_REGISTRY\b/,
+    pattern: makeDeclPattern('NCM_REGISTRY'),
     expectedOwner: 'src/lib/fiscal/ncm-registry.ts',
     description: 'Registry canônico de NCM',
   },
   {
     id: 'F04',
-    pattern: /\bCFOP_TABLE\b/,
+    pattern: makeDeclPattern('CFOP_TABLE'),
     expectedOwner: 'src/lib/fiscal/ncm-registry.ts',
     description: 'Tabela de CFOPs',
   },
   // Preço
   {
     id: 'F05',
-    pattern: /\bcalcDiscountPix\b/,
+    pattern: makeDeclPattern('calcDiscountPix'),
     expectedOwner: 'src/lib/pricing/price-calculator.ts',
     description: 'Calculadora de desconto PIX',
   },
   {
     id: 'F06',
-    pattern: /\bcalcMargin\b/,
+    pattern: makeDeclPattern('calcMargin'),
     expectedOwner: 'src/lib/pricing/price-calculator.ts',
     description: 'Calculadora de margem',
   },
   // Estoque
   {
     id: 'F07',
-    pattern: /\bupdateStockLedger\b/,
+    pattern: makeDeclPattern('updateStockLedger'),
     expectedOwner: 'src/services/canonical-stock-ledger.functions.ts',
     description: 'Mutação de ledger de estoque',
   },
   // Galeria
   {
     id: 'F08',
-    pattern: /\bGALLERY_MANAGER\b/,
+    pattern: makeDeclPattern('GALLERY_MANAGER'),
     expectedOwner: 'src/lib/media/gallery-manager.ts',
     description: 'Manager de galeria/mídia',
   },
   // Políticas
   {
     id: 'F09',
-    pattern: /\bCANCELLATION_POLICY_REGISTRY\b/,
+    pattern: makeDeclPattern('CANCELLATION_POLICY_REGISTRY'),
     expectedOwner: 'src/lib/policies/cancellation-policy-registry.ts',
     description: 'Registry de políticas de cancelamento',
+  },
+  // Helpers transversais reais mapeados na Onda 0 (alvo de unificação na Onda 2)
+  {
+    id: 'W01',
+    pattern: makeDeclPattern('isVideoUrl'),
+    expectedOwner: 'src/lib/media-utils.ts',
+    description: 'Detector canônico de URL de vídeo',
+    advisoryOnly: true,
+  },
+  {
+    id: 'W02',
+    pattern: makeDeclPattern('slugify'),
+    expectedOwner: 'src/lib/slug-utils.ts',
+    description: 'Normalizador canônico de slug',
+    advisoryOnly: true,
+  },
+  {
+    id: 'W03',
+    pattern: makeDeclPattern('escapeHtml'),
+    expectedOwner: 'src/lib/sanitize.ts',
+    description: 'Escapamento HTML canônico',
+    advisoryOnly: true,
+  },
+  {
+    id: 'W04',
+    pattern: makeDeclPattern('maskCpf'),
+    expectedOwner: 'src/lib/formatters.ts',
+    description: 'Máscara canônica de CPF',
+    advisoryOnly: true,
   },
 ];
 
@@ -178,13 +211,16 @@ for (const field of CANONICAL_FIELDS) {
     return Boolean(f === expectedOwner) === false && Boolean(f.endsWith(expectedOwner)) === false;
   });
 
-  if (matchingFiles.length > 1 && spuriousFiles.length > 0) {
+  const blocking = args.includes('--strict-watchlist') || !field.advisoryOnly;
+  if (matchingFiles.length > 1 && spuriousFiles.length > 0 && blocking) {
     violations.push({
       field,
       matchingFiles,
       spuriousFiles,
       hasExpectedOwner,
     });
+  } else if (matchingFiles.length > 1 && spuriousFiles.length > 0) {
+    console.log(`  [WATCHLIST ${field.id}] ${field.description}: declarado em ${spuriousFiles.length} arquivo(s) além do dono ${expectedOwner}`);
   }
 
   reports.push({ field, matchingFiles, hasExpectedOwner });

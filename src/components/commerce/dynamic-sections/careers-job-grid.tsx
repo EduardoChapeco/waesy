@@ -19,42 +19,11 @@ export function CareersJobGrid({ content, design_tokens }: CareersJobGridProps) 
  const [selectedJob, setSelectedJob] = useState<JobPostingItem | null>(null);
  const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
 
- const jobs: JobPostingItem[] = content?.jobs || [
- {
- id: "job-1",
- title: "Consultor de Vendas e Turismo Senior",
- department: "Comercial & Vendas",
- location: "São Paulo, SP",
- work_model: "hybrid",
- employment_type: "clt",
- salary_range: "R$ 4.500 - R$ 7.000 + Comissões",
- description_markdown: "Responsável por atendimento consultivo a clientes, montagem de pacotes personalizados e fechamento de contratos.",
- },
- {
- id: "job-2",
- title: "Desenvolvedor Full-Stack React / Node",
- department: "Engenharia & Produto",
- location: "Remoto (Brasil)",
- work_model: "remote",
- employment_type: "pj",
- salary_range: "R$ 9.000 - R$ 14.000",
- description_markdown: "Atuação direta na evolução do motor de experiências e Server Functions do ecossistema Waesy.",
- },
- {
- id: "job-3",
- title: "Analista de Expedição e WMS",
- department: "Operações & Logística",
- location: "Campinas, SP",
- work_model: "on_site",
- employment_type: "clt",
- salary_range: "R$ 3.200 - R$ 4.000",
- description_markdown: "Separação de pedidos com leitor de código de barras, conferência e emissão de romaneio de transporte.",
- },
- ];
-
+ const jobs: JobPostingItem[] = Array.isArray(content?.jobs) ? content.jobs : [];
  return (
- <div className={cn("w-full max-w-5xl mx-auto py-6 px-4", design_tokens?.className)}>
- <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div className={cn("w-full max-w-5xl mx-auto py-6 px-4", design_tokens?.className)}>
+   {jobs.length > 0 ? (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
  {jobs.map((job) => (
  <div
  key={job.id}
@@ -110,6 +79,17 @@ export function CareersJobGrid({ content, design_tokens }: CareersJobGridProps) 
  </div>
  ))}
  </div>
+ ) : (
+ <div className="py-12 px-4 text-center rounded-xl border border-dashed border-border/60 bg-muted/10 space-y-3">
+  <Briefcase className="size-8 text-muted-foreground mx-auto" />
+  <div className="space-y-1">
+   <h4 className="text-sm font-semibold text-foreground">Nenhuma vaga aberta no momento</h4>
+   <p className="text-xs text-muted-foreground max-w-md mx-auto">
+    Esta empresa ainda não possui oportunidades ativas publicadas. Volte em breve para novas posições.
+   </p>
+  </div>
+ </div>
+ )}
 
  <CareersApplicationForm
  job={selectedJob}

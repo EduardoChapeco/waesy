@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import * as apiOrchestrator from "./api-orchestrator.functions";
 import { internalRefineSlideTextWithAI } from "./studio.functions";
 import { sendWhatsAppNotification } from "./integrations.functions";
 
@@ -9,6 +10,42 @@ describe("Central Integrations Hub & Universal AI Tests", () => {
 
   describe("Studio AI Text Refinement (internalRefineSlideTextWithAI)", () => {
     it("should generate 3 structured variants for a slide headline and body", async () => {
+      vi.spyOn(apiOrchestrator, "executeUnifiedAiCall").mockResolvedValueOnce({
+        text: JSON.stringify({
+          variants: [
+            {
+              tone: "Impacto & Curto",
+              badge: "EDITAL",
+              kicker: "TRANSPARÊNCIA",
+              headline: "Licitação de R$ 2,5 milhões abre reformas em escolas",
+              body: "Obras emergenciais contemplam escolas municipais e creches.",
+              cta_text: "Ver Edital",
+              rationale: "Direto ao ponto com dado financeiro no título.",
+            },
+            {
+              tone: "Jornalístico & Editorial",
+              badge: "OFICIAL",
+              kicker: "EDUCAÇÃO",
+              headline: "Prefeitura abre edital de R$ 2,5 milhões para creches",
+              body: "Documento detalha prazos para reformas na rede municipal.",
+              cta_text: "Ler Matéria",
+              rationale: "Linguagem informativa de portal público.",
+            },
+            {
+              tone: "Persuasivo & CTA",
+              badge: "ATENÇÃO",
+              kicker: "OPORTUNIDADE",
+              headline: "Confira os detalhes da licitação de R$ 2,5 milhões",
+              body: "Acompanhe as unidades contempladas na região oeste.",
+              cta_text: "Acessar Agora",
+              rationale: "Estimula leitura do detalhamento.",
+            },
+          ],
+        }),
+        provider: "gemini",
+        model: "gemini-2.5-flash",
+      } as any);
+
       const result = await internalRefineSlideTextWithAI({
         headline: "Prefeitura abre licitação de R$ 2,5 milhões para reformas",
         body: "Edital prevê reformas emergenciais em escolas municipais e creches da região oeste.",
@@ -20,7 +57,7 @@ describe("Central Integrations Hub & Universal AI Tests", () => {
       });
 
       expect(Array.isArray(result)).toBe(true);
-      expect(result.length).toBeGreaterThanOrEqual(3);
+      expect(result.length).toBe(3);
 
       for (const variant of result) {
         expect(variant).toHaveProperty("tone");
@@ -34,17 +71,16 @@ describe("Central Integrations Hub & Universal AI Tests", () => {
       }
     });
 
-    it("should handle minimal input gracefully with defensive fallback variants", async () => {
-      const result = await internalRefineSlideTextWithAI({
-        headline: "Ofertas de Inverno",
-      });
+    it("deve propagar erro explícito quando a IA falhar em vez de inventar texto fake", async () => {
+      vi.spyOn(apiOrchestrator, "executeUnifiedAiCall").mockRejectedValueOnce(
+        new Error("Provedor Gemini sem cota"),
+      );
 
-      expect(Array.isArray(result)).toBe(true);
-      expect(result.length).toBe(3);
-      expect(result[0].headline).toContain("Ofertas de Inverno");
-      expect(result[0].tone).toBe("Impacto & Curto");
-      expect(result[1].tone).toBe("Jornalístico & Editorial");
-      expect(result[2].tone).toBe("Persuasivo & Engajamento");
+      await expect(
+        internalRefineSlideTextWithAI({
+          headline: "Ofertas de Inverno",
+        }),
+      ).rejects.toThrow(/Falha ao refinar slide com IA/i);
     });
   });
 

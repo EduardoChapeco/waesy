@@ -1,13 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect, useId } from "react";
 import { AirplaneTilt, MapPin, CalendarDots, Users, ArrowsLeftRight, CheckCircle, Clock, SuitcaseSimple, ShieldCheck, WhatsappLogo, Plus, Minus, X, CaretRight } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AirportCombobox } from "@/components/ui/airport-combobox";
-import { CANONICAL_AIRPORTS, searchAirports, type AirportItem } from "@/lib/airports-data";
+import type { TourismQuotePrefill } from "@/components/tourism/tourism-dynamic-search-panel";
+import type { GuestRoomOccupancy } from "@/components/tourism/tourism-multi-room-picker";
 import { requestTravelQuote, type TravelTripType } from "@/services/tourism.functions";
+import { buildAttributionCustomFields, collectClientAttribution } from "@/lib/attribution-collector";
 import { toast } from "sonner";
 
 interface TravelQuoteModalProps {
@@ -17,6 +20,9 @@ interface TravelQuoteModalProps {
  defaultDestination?: string;
  initialDestination?: string;
  defaultTripType?: TravelTripType;
+ prefill?: TourismQuotePrefill | null;
+ storeId?: string;
+ storeName?: string;
 }
 
 export function TravelQuoteModal({
@@ -26,6 +32,9 @@ export function TravelQuoteModal({
  defaultDestination = "",
  initialDestination = "",
  defaultTripType = "air_package",
+ prefill = null,
+ storeId,
+ storeName,
 }: TravelQuoteModalProps) {
  const handleOpenChange = (nextOpen: boolean) => {
   if (!nextOpen && onClose) onClose();
@@ -50,6 +59,7 @@ export function TravelQuoteModal({
  const [adultsCount, setAdultsCount] = useState(2);
  const [childrenCount, setChildrenCount] = useState(0);
  const [childrenAges, setChildrenAges] = useState<number[]>([]);
+ const [prefilledRooms, setPrefilledRooms] = useState<GuestRoomOccupancy[] | null>(null);
 
  const [tripType, setTripType] = useState<TravelTripType>(defaultTripType);
  const [contactName, setContactName] = useState("");
@@ -58,12 +68,27 @@ export function TravelQuoteModal({
  const [isSubmitting, setIsSubmitting] = useState(false);
  const [isCompleted, setIsCompleted] = useState(false);
 
- // Busca e Autocomplete de Aeroportos
- const [showOriginSearch, setShowOriginSearch] = useState(false);
- const [showDestSearch, setShowDestSearch] = useState(false);
- const [airportQuery, setAirportQuery] = useState("");
-
- const filteredAirports = searchAirports(airportQuery);
+ useEffect(() => {
+  if (!open) return;
+  const targetDest = prefill?.destination || effectiveDestination;
+  if (targetDest) setDestination(targetDest);
+  if (prefill?.destinationIata) setDestinationIata(prefill.destinationIata);
+  if (prefill?.origin) setOrigin(prefill.origin);
+  if (prefill?.originIata) setOriginIata(prefill.originIata);
+  if (prefill?.departureDate) setDepartureDate(prefill.departureDate);
+  if (prefill?.returnDate) setReturnDate(prefill.returnDate);
+  if (prefill?.tripType) setTripType(prefill.tripType as TravelTripType);
+  if (prefill?.specialNotes) setSpecialNotes(prefill.specialNotes);
+  if (Array.isArray(prefill?.rooms) && prefill.rooms.length > 0) {
+   setPrefilledRooms(prefill.rooms);
+   setRoomsCount(prefill.rooms.length);
+   const totalAdults = prefill.rooms.reduce((s, r) => s + (r.adults || 1), 0);
+   const ages = prefill.rooms.flatMap((r) => r.childrenAges || []);
+   setAdultsCount(Math.max(1, totalAdults));
+   setChildrenCount(ages.length);
+   setChildrenAges(ages);
+  }
+ }, [open, prefill, effectiveDestination]);
 
  const handleSwapLocations = () => {
  const tempName = origin;
@@ -99,23 +124,39 @@ export function TravelQuoteModal({
 
  setIsSubmitting(true);
  try {
+ const safeRooms = Math.max(1, roomsCount);
+ const roomOccupancies =
+  prefilledRooms && prefilledRooms.length === safeRooms
+   ? prefilledRooms
+   : Array.from({ length: safeRooms }, (_, roomIdx) => {
+      const baseAdults = Math.floor(adultsCount / safeRooms);
+      const extraAdult = roomIdx < adultsCount % safeRooms ? 1 : 0;
+      const assignedAges = childrenAges.filter((_, ageIdx) => ageIdx % safeRooms === roomIdx);
+      return {
+       adults: Math.max(1, baseAdults + extraAdult),
+       childrenAges: assignedAges,
+      };
+     });
  await requestTravelQuote({
  data: {
+ store_id: storeId,
  origin_city: origin,
  origin_iata: originIata,
  destination_city: destination,
  destination_iata: destinationIata,
  departure_date: departureDate || undefined,
  return_date: returnDate || undefined,
- rooms_count: roomsCount,
+ rooms_count: safeRooms,
  adults_count: adultsCount,
  children_count: childrenCount,
  children_ages: childrenAges,
+ room_occupancies: roomOccupancies,
  trip_type: tripType,
  flexible_dates: flexibleDates,
  contact_name: contactName.trim(),
  contact_whatsapp: contactWhatsapp.trim(),
  special_notes: specialNotes.trim() || undefined,
+ attribution: buildAttributionCustomFields(collectClientAttribution()),
  },
  });
 
@@ -140,8 +181,8 @@ export function TravelQuoteModal({
  {/* Header de Cotação de Viagem */}
  <div className="bg-card border-b border-border text-foreground p-5 space-y-1 relative">
  <div className="flex items-center justify-between">
- <span className="text-2xs font-mono font-black uppercase tracking-wider bg-muted border border-border px-3 py-1 rounded-full">
- Cotação Especial de Viagem
+ <span className="text-xs font-mono font-black uppercase tracking-wider bg-muted border border-border px-3 py-1 rounded-full">
+ {storeName ? `Cotação · ${storeName}` : "Cotação Especial de Viagem"}
  </span>
  <span className="text-xs font-mono font-bold opacity-80">
  Etapa {step} de 4
@@ -234,7 +275,7 @@ export function TravelQuoteModal({
 
               {/* Buscas Recentes Rápidas */}
  <div className="pt-2 space-y-2">
- <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider block">
+ <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
  Destinos Populares
  </span>
  <div className="flex flex-wrap gap-2">
@@ -243,7 +284,7 @@ export function TravelQuoteModal({
  key={d}
  type="button"
  onClick={() => setDestination(d)}
- className="px-3 py-1 rounded-lg bg-muted/60 hover:bg-muted text-2xs font-semibold text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="px-3 py-2 min-h-11 sm:min-h-0 rounded-lg bg-muted/60 hover:bg-muted text-xs font-semibold text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {d}
  </button>
@@ -288,7 +329,7 @@ export function TravelQuoteModal({
  />
  <div className="text-xs">
  <p className="font-bold text-foreground">Tenho flexibilidade de datas (+/- 3 dias)</p>
- <p className="text-muted-foreground text-2xs">Ajuda a encontrar tarifas aéreas e pacotes mais baratos.</p>
+ <p className="text-muted-foreground text-xs">Ajuda a encontrar tarifas aéreas e pacotes mais baratos.</p>
  </div>
  </label>
  </div>
@@ -301,7 +342,7 @@ export function TravelQuoteModal({
  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
  <div>
  <p className="text-xs font-bold text-foreground">Quartos de Hotel</p>
- <p className="text-2xs text-muted-foreground">Número de acomodações</p>
+ <p className="text-xs text-muted-foreground">Número de acomodações</p>
  </div>
  <div className="flex items-center gap-3">
  <Button
@@ -330,7 +371,7 @@ export function TravelQuoteModal({
  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
  <div>
  <p className="text-xs font-bold text-foreground">Adultos</p>
- <p className="text-2xs text-muted-foreground">18 anos ou mais</p>
+ <p className="text-xs text-muted-foreground">18 anos ou mais</p>
  </div>
  <div className="flex items-center gap-3">
  <Button
@@ -359,7 +400,7 @@ export function TravelQuoteModal({
  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
  <div>
  <p className="text-xs font-bold text-foreground">Crianças e Bebês</p>
- <p className="text-2xs text-muted-foreground">De 0 a 17 anos</p>
+ <p className="text-xs text-muted-foreground">De 0 a 17 anos</p>
  </div>
  <div className="flex items-center gap-3">
  <Button
@@ -387,13 +428,13 @@ export function TravelQuoteModal({
  {/* Seleção individual da idade de cada criança */}
  {childrenCount > 0 && (
  <div className="p-3 rounded-lg border border-primary/30 bg-primary/5 space-y-3">
- <span className="text-2xs font-bold text-primary uppercase tracking-wider block">
+ <span className="text-xs font-bold text-primary uppercase tracking-wider block">
  Idade de cada criança no momento da viagem:
  </span>
  <div className="grid grid-cols-2 gap-2">
  {childrenAges.map((age, idx) => (
  <div key={idx} className="space-y-1">
- <label className="text-2xs font-bold text-muted-foreground">
+ <label className="text-xs font-bold text-muted-foreground">
  {idx + 1}ª Criança
  </label>
  <select
@@ -440,7 +481,7 @@ export function TravelQuoteModal({
  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <p className="text-xs font-bold">{t.label}</p>
- <p className="text-2xs opacity-80">{t.desc}</p>
+ <p className="text-xs opacity-80">{t.desc}</p>
  </button>
  ))}
  </div>
@@ -472,7 +513,7 @@ export function TravelQuoteModal({
  </div>
 
  {/* Disclaimer Transparente de Turismo & Agências */}
- <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1 text-2xs text-muted-foreground leading-relaxed">
+ <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1 text-xs text-muted-foreground leading-relaxed">
  <span className="font-bold text-foreground block">
  ℹ️ Transparência de Valores & Disponibilidade:
  </span>

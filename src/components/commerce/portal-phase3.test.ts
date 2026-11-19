@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { builderRegistry } from "@/lib/builder-registry";
+import { builderRegistry } from "@/lib/builder/builder-registry";
 
 describe("Fase 3: Portal do Cliente 360 & Widgets Dinâmicos", () => {
  it("builderRegistry deve registrar portal_contracts com manifest estrito", () => {

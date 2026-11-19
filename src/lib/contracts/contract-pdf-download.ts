@@ -1,5 +1,6 @@
 import { formatDate } from "@/lib/datetime";
 import { TOKEN_HEX } from "@/lib/design-tokens";
+import { escapeHtml } from "@/lib/sanitize";
 
 export interface PrintableContractSigner {
   name: string;
@@ -25,14 +26,6 @@ export interface ContractPdfPackageInput {
   sourceFileSignedUrl?: string | null;
   sourceFileName?: string | null;
   signers: PrintableContractSigner[];
-}
-
-function escapeHtml(text: string): string {
-  return String(text || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }
 
 function renderSimpleMarkdownToPrintHtml(markdown: string): string {

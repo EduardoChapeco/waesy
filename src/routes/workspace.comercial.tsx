@@ -1,4 +1,5 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
+import { openOrCreateWhatsAppThreadForLead } from "@/services/chat-quick-actions.functions";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Kanban, Bus, MessageSquare, Pencil, Users, Plus, Search, DollarSign, Phone, Mail, UserCheck, CheckCircle2, Clock, MoreVertical, Plane, Edit3, Calendar, MapPin, Tag, CheckSquare, Square, AlertTriangle, ChevronRight, ChevronLeft, X, Trash2, Layers, Upload, Calculator, FileText, ExternalLink, BarChart3, Settings2, Brain, FileSignature, History, Copy, Check, Star } from "lucide-react";
@@ -35,6 +36,17 @@ import { CommercialBudgetPadSheet } from "@/components/documents/CommercialBudge
 import { TourismPipeCardDossier } from "@/components/tourism/crm/TourismPipeCardDossier";
 import { UniversalKanbanCard } from "@/components/workspace/kanban/universal-kanban-card";
 import { listAgencyTravelProposals } from "@/services/travel-proposal.functions";
+import { DestinationTagsPicker } from "@/components/tourism/shared/destination-tags-picker";
+import { TravelPeriodTagsPicker } from "@/components/tourism/shared/travel-period-tags-picker";
+import { RoomOccupancyBuilder } from "@/components/tourism/shared/room-occupancy-builder";
+import { TravelIntentAiImporter } from "@/components/tourism/shared/travel-intent-ai-importer";
+import { AdvancedLeadTagsPicker } from "@/components/tourism/crm/advanced-lead-tags-picker";
+import { LeadRemindersManager, type LeadReminderItem } from "@/components/tourism/crm/lead-reminders-manager";
+import type {
+  StructuredDestinationTag,
+  StructuredPeriodSpec,
+  StructuredRoomOccupancy,
+} from "@/lib/travel/opportunity-matching-engine";
 import { listKanbanStages, type KanbanStageDTO } from "@/services/kanban-config.functions";
 import {
   getNicheContractBlueprint,
@@ -268,9 +280,28 @@ const COMERCIAL_TOUR_SLIDES: TourSlide[] = [
 function WorkspaceComercialPage() {
   const { leads: initialLeads = [], team = [], store = null, proposals: initialProposals = [], kanbanStages = [], loadError = null } = ((Route.useLoaderData?.() as any) || {});
   const router = useRouter();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const routeSearch = Route.useSearch();
   const storeId = store?.id || "";
+
+  const handleOpenInternalWhatsAppChat = async (leadId: string) => {
+    try {
+      const res = await openOrCreateWhatsAppThreadForLead({
+        data: { storeId: storeId || undefined, leadId },
+      });
+      toast.success(
+        res.created ? "Conversa WhatsApp criada e vinculada ao lead!" : "Abrindo conversa WhatsApp vinculada ao lead...",
+      );
+      setSelectedLead(null);
+      await navigate({
+        to: "/workspace/atendimento/chat" as any,
+        search: { threadId: res.threadId, leadId } as any,
+      });
+    } catch (err: any) {
+      toast.error(err?.message || "Nao foi possivel abrir o WhatsApp Waesy para este lead.");
+    }
+  };
 
   const { data: proposals = initialProposals } = useQuery({
     queryKey: ["agency-proposals"],
@@ -302,7 +333,6 @@ function WorkspaceComercialPage() {
   const [isNewLeadOpen, setIsNewLeadOpen] = useState(false);
   const [newLeadTargetStage, setNewLeadTargetStage] = useState<LeadStage>("new");
   const [isSubmittingNew, setIsSubmittingNew] = useState(false);
-  const [isUpdatingLead, setIsUpdatingLead] = useState(false);
 
   // Deep modular states (Transplanted Organs)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -379,49 +409,20 @@ function WorkspaceComercialPage() {
   };
 
   const [newLeadForm, setNewLeadForm] = useState(initialNewLeadState);
-
-  // Formulário de Edição do Lead Selecionado (Ficha 360°)
-  const [editLeadForm, setEditLeadForm] = useState<{
-    destination: string;
-    interest_type: string;
-    interest_period: string;
-    travel_start: string;
-    travel_end: string;
-    pax_adults: number;
-    pax_children: number;
-    pax_infants: number;
-    pax_ages_str: string;
-    estimated_value_cents: number;
-    notes: string;
-    status: string;
-    source: string;
-    lead_source_detail: string;
-    assigned_to: string;
-    tags: string[];
-    checklist: Array<{ id: string; text: string; done: boolean }>;
-    lost_reason: string;
-  }>({
-    destination: "",
-    interest_type: "",
-    interest_period: "",
-    travel_start: "",
-    travel_end: "",
-    pax_adults: 1,
-    pax_children: 0,
-    pax_infants: 0,
-    pax_ages_str: "",
-    estimated_value_cents: 0,
-    notes: "",
-    status: "new",
-    source: "whatsapp",
-    lead_source_detail: "",
-    assigned_to: "",
-    tags: [],
-    checklist: [],
-    lost_reason: "",
+  const [newLeadDestTags, setNewLeadDestTags] = useState<StructuredDestinationTag[]>([]);
+  const [newLeadPeriodSpec, setNewLeadPeriodSpec] = useState<StructuredPeriodSpec>({
+    mode: "unspecified",
+    flexibilityDays: 3,
+    targetMonths: [],
+    seasonTags: [],
+    flexibleAnytime: false,
   });
-
-  const [newChecklistItemText, setNewChecklistItemText] = useState("");
+  const [newLeadRooms, setNewLeadRooms] = useState<StructuredRoomOccupancy[]>([
+    { roomNumber: 1, roomLabel: "Quarto 1", adultsCount: 2, childrenCount: 0, childrenAges: [] },
+  ]);
+  const [newLeadRawMarkdown, setNewLeadRawMarkdown] = useState("");
+  const [newLeadReminders, setNewLeadReminders] = useState<LeadReminderItem[]>([]);
+  const [newLeadFollowUpAt, setNewLeadFollowUpAt] = useState<string | null>(null);
   const [activeTabDetail, setActiveTabDetail] = useState<"viagem" | "cliente360" | "contratos" | "telemetria" | "checklist" | "comercial" | "notas">("viagem");
   const [selectedOnboardingFormSlug, setSelectedOnboardingFormSlug] = useState<string>("");
   const [budgetPadLeadOpen, setBudgetPadLeadOpen] = useState(false);
@@ -499,27 +500,6 @@ function WorkspaceComercialPage() {
 
   const openLeadDetails = (lead: any) => {
     setSelectedLead(lead);
-    const paxAgesStr = Array.isArray(lead.pax_ages) ? lead.pax_ages.join(", ") : "";
-    setEditLeadForm({
-      destination: lead.destination || "",
-      interest_type: lead.interest_type || "",
-      interest_period: lead.interest_period || "",
-      travel_start: lead.travel_start || "",
-      travel_end: lead.travel_end || "",
-      pax_adults: lead.pax_adults || 1,
-      pax_children: lead.pax_children || 0,
-      pax_infants: lead.pax_infants || 0,
-      pax_ages_str: paxAgesStr,
-      estimated_value_cents: lead.estimated_value_cents || 0,
-      notes: lead.notes || lead.message || "",
-      status: lead.status || "new",
-      source: lead.source || "whatsapp",
-      lead_source_detail: lead.lead_source_detail || "",
-      assigned_to: lead.assigned_to || "",
-      tags: Array.isArray(lead.tags) ? lead.tags : [],
-      checklist: Array.isArray(lead.checklist) ? lead.checklist : DEFAULT_CHECKLIST_TEMPLATE,
-      lost_reason: lead.lost_reason || "",
-    });
     setContractForm({
       title: lead.destination ? `Contrato de Viagem - ${lead.destination}` : `Contrato de Prestação de Serviços - ${lead.full_name || "Cliente"}`,
       packageSummary: lead.destination ? `Pacote Turístico completo para ${lead.destination}.` : "Prestação de serviços turísticos conforme proposta comercial.",
@@ -592,6 +572,22 @@ function WorkspaceComercialPage() {
       returnDate: leadObj.returnDate || leadObj.travel_end || undefined,
       adultsCount: leadObj.adultsCount ?? leadObj.pax_adults ?? 2,
       childrenCount: leadObj.childrenCount ?? leadObj.pax_children ?? 0,
+      childrenAges:
+        Array.isArray(leadObj.childrenAges) && leadObj.childrenAges.length > 0
+          ? leadObj.childrenAges
+          : Array.isArray(leadObj.pax_ages)
+            ? leadObj.pax_ages
+            : Array.isArray(cf.children_ages)
+              ? cf.children_ages
+              : undefined,
+      roomOccupancies:
+        Array.isArray(leadObj.roomOccupancies) && leadObj.roomOccupancies.length > 0
+          ? leadObj.roomOccupancies
+          : Array.isArray(leadObj.room_occupancies)
+            ? leadObj.room_occupancies
+            : Array.isArray(cf.room_occupancies)
+              ? cf.room_occupancies
+              : undefined,
       notes: leadObj.notes || leadObj.message || "",
       customFields: cf,
       sourceListingId: leadObj.sourceListingId || leadObj.source_listing_id || cf.source_listing_id || "",
@@ -792,7 +788,11 @@ function WorkspaceComercialPage() {
   const handlePromoteToCustomer = async (leadId: string) => {
     try {
       const res = await promoteLeadToCustomer({ data: { leadId } });
-      toast.success("Lead promovido com sucesso para a Carteira de Clientes!");
+      toast.success(
+        res.isAlreadyCustomer
+          ? "Lead vinculado com sucesso ao cliente existente!"
+          : "Lead promovido com sucesso para a Carteira de Clientes!"
+      );
       if (selectedLead?.id === leadId) {
         setSelectedLead((prev: any) => (prev ? { ...prev, customer_id: res.customerId } : null));
         try {
@@ -803,8 +803,10 @@ function WorkspaceComercialPage() {
         }
       }
       router.invalidate();
+      return res;
     } catch (err: any) {
       toast.error(err.message || "Erro ao converter lead.");
+      throw err;
     }
   };
 
@@ -816,86 +818,81 @@ function WorkspaceComercialPage() {
     }
     setIsSubmittingNew(true);
     try {
-      const paxAges = (newLeadForm.paxAgesStr || "")
-        .split(",")
-        .map((s) => parseInt(s.trim()))
-        .filter((n) => !isNaN(n));
+      const roomAdults = newLeadRooms.reduce((sum, r) => sum + (r.adultsCount || 1), 0);
+      const roomAges = newLeadRooms.flatMap((r) => r.childrenAges || []);
+      const paxAges =
+        roomAges.length > 0
+          ? roomAges
+          : (newLeadForm.paxAgesStr || "")
+              .split(",")
+              .map((s) => parseInt(s.trim()))
+              .filter((n) => !isNaN(n) && n >= 0 && n <= 17);
 
-      await createLead({
+      const destText =
+        newLeadDestTags.length > 0
+          ? newLeadDestTags.map((d) => d.label).join(", ")
+          : newLeadForm.destination.trim() || null;
+
+      const createRes = await createLead({
         data: {
           fullName: newLeadForm.name.trim(),
           email: newLeadForm.email.trim() || null,
           phone: newLeadForm.phone.trim() || null,
-          destination: newLeadForm.destination.trim() || null,
+          destination: destText,
+          destinationTags: newLeadDestTags,
           interestType: newLeadForm.interestType || null,
-          interestPeriod: newLeadForm.interestPeriod.trim() || null,
-          travelStart: newLeadForm.travelStart || null,
-          travelEnd: newLeadForm.travelEnd || null,
-          paxAdults: Number(newLeadForm.paxAdults) || 1,
-          paxChildren: Number(newLeadForm.paxChildren) || 0,
-          paxInfants: Number(newLeadForm.paxInfants) || 0,
+          interestPeriod: newLeadPeriodSpec.displayLabel || newLeadForm.interestPeriod.trim() || null,
+          periodTags: newLeadPeriodSpec.seasonTags,
+          targetMonths: newLeadPeriodSpec.targetMonths,
+          flexibilityDays: newLeadPeriodSpec.flexibilityDays,
+          dateFlexibilityMode: newLeadPeriodSpec.mode,
+          travelStart: newLeadPeriodSpec.startDate || newLeadForm.travelStart || null,
+          travelEnd: newLeadPeriodSpec.endDate || newLeadForm.travelEnd || null,
+          roomOccupancies: newLeadRooms,
+          paxAdults: roomAdults || Number(newLeadForm.paxAdults) || 1,
+          paxChildren: paxAges.length || Number(newLeadForm.paxChildren) || 0,
+          paxInfants: paxAges.filter((a) => a <= 1).length || Number(newLeadForm.paxInfants) || 0,
           paxAges,
+          rawIntentMarkdown: newLeadRawMarkdown.trim() || null,
           estimatedValueCents: newLeadForm.estimatedValueCents || 0,
           source: newLeadForm.source,
           leadSourceDetail: newLeadForm.leadSourceDetail.trim() || null,
           status: newLeadTargetStage,
           assignedTo: newLeadForm.assignedTo || null,
+          followUpAt: newLeadFollowUpAt,
+          reminders: newLeadReminders,
           tags: newLeadForm.tags,
           checklist: newLeadForm.customChecklist,
           notes: newLeadForm.notes.trim() || null,
         },
       });
 
-      toast.success("Oportunidade adicionada com sucesso ao funil comercial!");
+      toast.success(
+        createRes?.linkedThreadIds && createRes.linkedThreadIds.length > 0
+          ? "Oportunidade adicionada e conversa WhatsApp vinculada automaticamente!"
+          : "Oportunidade adicionada com sucesso ao funil comercial!",
+      );
       setIsNewLeadOpen(false);
       setNewLeadForm(initialNewLeadState);
+      setNewLeadDestTags([]);
+      setNewLeadReminders([]);
+      setNewLeadFollowUpAt(null);
+      setNewLeadPeriodSpec({
+        mode: "unspecified",
+        flexibilityDays: 3,
+        targetMonths: [],
+        seasonTags: [],
+        flexibleAnytime: false,
+      });
+      setNewLeadRooms([
+        { roomNumber: 1, roomLabel: "Quarto 1", adultsCount: 2, childrenCount: 0, childrenAges: [] },
+      ]);
+      setNewLeadRawMarkdown("");
       router.invalidate();
     } catch (err: any) {
       toast.error(err.message || "Erro ao criar oportunidade.");
     } finally {
       setIsSubmittingNew(false);
-    }
-  };
-
-  const handleSaveLeadDetails = async () => {
-    if (!selectedLead) return;
-    setIsUpdatingLead(true);
-    try {
-      const paxAges = (editLeadForm.pax_ages_str || "")
-        .split(",")
-        .map((s) => parseInt(s.trim()))
-        .filter((n) => !isNaN(n));
-
-      await updateLeadDetails({
-        data: {
-          leadId: selectedLead.id,
-          destination: editLeadForm.destination || null,
-          interestType: editLeadForm.interest_type || null,
-          interestPeriod: editLeadForm.interest_period || null,
-          travelStart: editLeadForm.travel_start || null,
-          travelEnd: editLeadForm.travel_end || null,
-          paxAdults: Number(editLeadForm.pax_adults) || 1,
-          paxChildren: Number(editLeadForm.pax_children) || 0,
-          paxInfants: Number(editLeadForm.pax_infants) || 0,
-          paxAges,
-          estimated_value_cents: editLeadForm.estimated_value_cents,
-          notes: editLeadForm.notes,
-          status: editLeadForm.status as any,
-          source: editLeadForm.source,
-          lead_source_detail: editLeadForm.lead_source_detail || null,
-          assigned_to: editLeadForm.assigned_to || null,
-          tags: editLeadForm.tags,
-          checklist: editLeadForm.checklist,
-          lost_reason: editLeadForm.lost_reason || null,
-        },
-      });
-      toast.success("Detalhes do lead atualizados com sucesso!");
-      setSelectedLead(null);
-      router.invalidate();
-    } catch (err: any) {
-      toast.error(err.message || "Erro ao salvar alterações.");
-    } finally {
-      setIsUpdatingLead(false);
     }
   };
 
@@ -909,12 +906,21 @@ function WorkspaceComercialPage() {
           phone: updatedData.phone?.trim() || undefined,
           email: updatedData.email?.trim() || undefined,
           destination: updatedData.destination || null,
+          destinationTags: updatedData.destination_tags,
           interestType: updatedData.interest_type || null,
+          interestPeriod: updatedData.interest_period || undefined,
+          periodTags: updatedData.period_tags,
+          targetMonths: updatedData.target_months,
+          flexibilityDays: updatedData.flexibility_days,
+          dateFlexibilityMode: updatedData.date_flexibility_mode,
           travelStart: updatedData.travel_start || null,
           travelEnd: updatedData.travel_end || null,
+          roomOccupancies: updatedData.room_occupancies,
           paxAdults: Number(updatedData.pax_adults) || 1,
           paxChildren: Number(updatedData.pax_children) || 0,
           paxInfants: Number(updatedData.pax_infants) || 0,
+          paxAges: updatedData.pax_ages,
+          rawIntentMarkdown: updatedData.raw_intent_markdown,
           source: updatedData.source || null,
           lead_source_detail: updatedData.lead_source_detail || null,
           estimated_value_cents: updatedData.estimated_value_cents,
@@ -952,44 +958,12 @@ function WorkspaceComercialPage() {
         },
       });
       if (res.checklist) {
-        setEditLeadForm((prev) => ({ ...prev, checklist: res.checklist }));
         setSelectedLead((prev: any) => (prev ? { ...prev, checklist: res.checklist } : null));
       }
       router.invalidate();
     } catch (err: any) {
       toast.error(err.message || "Erro ao atualizar checklist.");
     }
-  };
-
-  const handleAddChecklistItem = () => {
-    if (!newChecklistItemText.trim()) return;
-    const newItem = {
-      id: `custom-${Date.now()}`,
-      text: newChecklistItemText.trim(),
-      done: false,
-    };
-    setEditLeadForm((prev) => ({
-      ...prev,
-      checklist: [...prev.checklist, newItem],
-    }));
-    setNewChecklistItemText("");
-  };
-
-  const handleRemoveChecklistItem = (id: string) => {
-    setEditLeadForm((prev) => ({
-      ...prev,
-      checklist: prev.checklist.filter((i) => i.id !== id),
-    }));
-  };
-
-  const handleToggleTag = (tagStr: string) => {
-    setEditLeadForm((prev) => {
-      const exists = prev.tags.includes(tagStr);
-      return {
-        ...prev,
-        tags: exists ? prev.tags.filter((t) => t !== tagStr) : [...prev.tags, tagStr],
-      };
-    });
   };
 
   const handleToggleNewLeadTag = (tagStr: string) => {
@@ -1346,23 +1320,56 @@ function WorkspaceComercialPage() {
                   <MapPin className="size-3.5 text-primary" />
                   <span>Destino e Período</span>
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1 sm:col-span-2">
-                    <Label className="text-xs text-muted-foreground/75 font-semibold">Destino de Interesse</Label>
-                    <Input
-                      value={newLeadForm.destination}
-                      onChange={(e) => setNewLeadForm((prev) => ({ ...prev, destination: e.target.value }))}
-                      placeholder="Ex: Maceió, AL ou Paris, França"
-                      className="h-8 text-xs rounded-lg"
-                    />
-                  </div>
+                <div className="space-y-4">
+                  <TravelIntentAiImporter
+                    mode="lead_intent"
+                    onApply={(parsed) => {
+                      if (parsed.destinations.length > 0) setNewLeadDestTags(parsed.destinations);
+                      if (parsed.period.mode !== "unspecified") setNewLeadPeriodSpec(parsed.period);
+                      if (parsed.rooms.length > 0) setNewLeadRooms(parsed.rooms);
+                      setNewLeadRawMarkdown(parsed.rawMarkdownPreserved);
+                      setNewLeadForm((prev) => ({
+                        ...prev,
+                        name: parsed.contact.fullName || prev.name,
+                        phone: parsed.contact.whatsapp || prev.phone,
+                        email: parsed.contact.email || prev.email,
+                        destination:
+                          parsed.destinations.length > 0
+                            ? parsed.destinations.map((d) => d.label).join(", ")
+                            : prev.destination,
+                        interestPeriod: parsed.period.displayLabel || prev.interestPeriod,
+                        travelStart: parsed.period.startDate || prev.travelStart,
+                        travelEnd: parsed.period.endDate || prev.travelEnd,
+                        paxAdults: parsed.adultsCount,
+                        paxChildren: parsed.childrenAges.length,
+                        paxInfants: parsed.childrenAges.filter((a) => a <= 1).length,
+                        paxAgesStr: parsed.childrenAges.join(", "),
+                        estimatedValueCents: parsed.budget.maxTotalBudgetCents || prev.estimatedValueCents,
+                        notes: prev.notes || parsed.rawMarkdownPreserved,
+                      }));
+                      toast.success("Dados extraídos com sucesso! Revise os campos abaixo.");
+                    }}
+                  />
+
+                  <DestinationTagsPicker
+                    value={newLeadDestTags}
+                    legacyText={newLeadForm.destination}
+                    onChange={(tags) => {
+                      setNewLeadDestTags(tags);
+                      setNewLeadForm((prev) => ({
+                        ...prev,
+                        destination: tags.map((t) => t.label).join(", "),
+                      }));
+                    }}
+                  />
+
                   <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground/75 font-semibold">Tipo de Interesse</Label>
+                    <Label className="text-xs text-muted-foreground font-semibold">Tipo de Interesse</Label>
                     <Select
                       value={newLeadForm.interestType}
                       onValueChange={(val) => setNewLeadForm((prev) => ({ ...prev, interestType: val }))}
                     >
-                      <SelectTrigger className="h-8 text-xs rounded-lg">
+                      <SelectTrigger className="h-11 min-h-11 text-xs rounded-lg">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="rounded-lg">
@@ -1374,88 +1381,39 @@ function WorkspaceComercialPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground/75 font-semibold">Período Flexível</Label>
-                    <Input
-                      value={newLeadForm.interestPeriod}
-                      onChange={(e) => setNewLeadForm((prev) => ({ ...prev, interestPeriod: e.target.value }))}
-                      placeholder="Ex: Julho de 2026, Réveillon"
-                      className="h-8 text-xs rounded-lg"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground/75 font-semibold">Data Prevista de Ida</Label>
-                    <Input
-                      type="date"
-                      value={newLeadForm.travelStart}
-                      onChange={(e) => setNewLeadForm((prev) => ({ ...prev, travelStart: e.target.value }))}
-                      className="h-8 text-xs rounded-lg"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground/75 font-semibold">Data Prevista de Volta</Label>
-                    <Input
-                      type="date"
-                      value={newLeadForm.travelEnd}
-                      onChange={(e) => setNewLeadForm((prev) => ({ ...prev, travelEnd: e.target.value }))}
-                      className="h-8 text-xs rounded-lg"
-                    />
-                  </div>
+
+                  <TravelPeriodTagsPicker
+                    value={newLeadPeriodSpec}
+                    onChange={(nextPeriod) => {
+                      setNewLeadPeriodSpec(nextPeriod);
+                      setNewLeadForm((prev) => ({
+                        ...prev,
+                        travelStart: nextPeriod.startDate || "",
+                        travelEnd: nextPeriod.endDate || "",
+                        interestPeriod: nextPeriod.displayLabel || "",
+                      }));
+                    }}
+                  />
                 </div>
               </div>
 
-              {/* Bloco 3: Passageiros */}
+              {/* Bloco 3: Quartos & Idades (0 a 17 anos) */}
               <div className="space-y-3 p-4 rounded-lg border border-border/60 bg-muted/20">
-                <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
-                  <Plane className="size-3.5 text-primary" />
-                  <span>Passageiros</span>
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground/75 font-semibold">Adultos</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      value={newLeadForm.paxAdults}
-                      onChange={(e) => setNewLeadForm((prev) => ({ ...prev, paxAdults: Number(e.target.value) || 1 }))}
-                      className="h-8 text-xs rounded-lg font-mono"
-                    />
-                    <span className="text-xs text-muted-foreground block">A partir de 12 anos</span>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground/75 font-semibold">Crianças</Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={newLeadForm.paxChildren}
-                      onChange={(e) => setNewLeadForm((prev) => ({ ...prev, paxChildren: Number(e.target.value) || 0 }))}
-                      className="h-8 text-xs rounded-lg font-mono"
-                    />
-                    <span className="text-xs text-muted-foreground block">2 a 11 anos</span>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground/75 font-semibold">Bebês</Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={newLeadForm.paxInfants}
-                      onChange={(e) => setNewLeadForm((prev) => ({ ...prev, paxInfants: Number(e.target.value) || 0 }))}
-                      className="h-8 text-xs rounded-lg font-mono"
-                    />
-                    <span className="text-xs text-muted-foreground block">Até 23 meses</span>
-                  </div>
-                </div>
-                {newLeadForm.paxChildren > 0 && (
-                  <div className="space-y-1 pt-1">
-                    <Label className="text-xs text-muted-foreground/75 font-semibold">Idades das Crianças</Label>
-                    <Input
-                      value={newLeadForm.paxAgesStr}
-                      onChange={(e) => setNewLeadForm((prev) => ({ ...prev, paxAgesStr: e.target.value }))}
-                      placeholder="Ex: 4, 8 (separadas por vírgula)"
-                      className="h-8 text-xs rounded-lg"
-                    />
-                  </div>
-                )}
+                <RoomOccupancyBuilder
+                  value={newLeadRooms}
+                  onChange={(nextRooms) => {
+                    setNewLeadRooms(nextRooms);
+                    const totalAdt = nextRooms.reduce((sum, r) => sum + (r.adultsCount || 1), 0);
+                    const allAges = nextRooms.flatMap((r) => r.childrenAges || []);
+                    setNewLeadForm((prev) => ({
+                      ...prev,
+                      paxAdults: totalAdt,
+                      paxChildren: allAges.length,
+                      paxInfants: allAges.filter((a) => a <= 1).length,
+                      paxAgesStr: allAges.join(", "),
+                    }));
+                  }}
+                />
               </div>
 
               {/* Bloco 4: Condições Comerciais */}
@@ -1496,30 +1454,26 @@ function WorkspaceComercialPage() {
                   </div>
                 </div>
 
-                {/* Seleção de Tags Populares */}
-                <div className="space-y-2 pt-1">
-                  <Label className="text-xs text-muted-foreground/75 font-semibold">Tags de Segmentação</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {POPULAR_TAGS.map((t) => {
-                      const tagStr = `${t.name}:${t.tone}`;
-                      const isSelected = newLeadForm.tags.includes(tagStr);
-                      return (
-                        <button
-                          key={tagStr}
-                          type="button"
-                          onClick={() => handleToggleNewLeadTag(tagStr)}
-                          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                            "text-xs font-bold uppercase px-2 min-h-11 rounded-md transition-colors duration-200 cursor-pointer",
-                            isSelected
-                              ? TAG_TONE_CLASSES[t.tone]
-                              : "text-muted-foreground bg-background hover:bg-muted"
-                          )}
-                        >
-                          {t.name}
-                        </button>
-                      );
-                    })}
-                  </div>
+                {/* Tags Avançadas de Segmentação */}
+                <div className="space-y-1 pt-1">
+                  <Label className="text-xs text-muted-foreground/75 font-semibold">Tags de Segmentação & Interesses</Label>
+                  <AdvancedLeadTagsPicker
+                    tags={newLeadForm.tags}
+                    onChange={(nextTags) => setNewLeadForm((prev) => ({ ...prev, tags: nextTags }))}
+                  />
+                </div>
+
+                {/* Lembretes, Alarmes & Follow-up Imediato */}
+                <div className="space-y-1 pt-1">
+                  <LeadRemindersManager
+                    reminders={newLeadReminders}
+                    onChange={(nextReminders, nextFollowUp) => {
+                      setNewLeadReminders(nextReminders);
+                      if (nextFollowUp !== undefined) {
+                        setNewLeadFollowUpAt(nextFollowUp);
+                      }
+                    }}
+                  />
                 </div>
 
                 <div className="space-y-1 pt-1">
@@ -1595,6 +1549,7 @@ function WorkspaceComercialPage() {
                 navigator.clipboard.writeText(`${window.location.origin}/contrato/${publicToken}`);
                 toast.success("Link de assinatura digital copiado!");
               }}
+              onOpenInternalWhatsAppChat={handleOpenInternalWhatsAppChat}
               onToggleChecklist={(itemId) => handleToggleChecklist(itemId)}
               customer360Data={customer360Data}
               activeOnboardingForm={activeOnboardingForm}

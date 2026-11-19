@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { getServerIdentity, assertStoreAccess, assertManagerAccess } from "@/lib/server-access";
 import { TOKEN_HEX } from "@/lib/design-tokens";
 import type { 
  KdsStation, 
@@ -581,7 +581,8 @@ export const processPosMultiPayment = createServerFn({ method: "POST" })
       },
       updated_at: new Date().toISOString(),
     })
-    .eq("id", data.orderId);
+    .eq("id", data.orderId)
+    .eq("store_id", identity.store_id);
 
  // 5. Liberar mesa caso informada
  if (data.tableId) {
@@ -594,7 +595,8 @@ export const processPosMultiPayment = createServerFn({ method: "POST" })
  current_guests_count: 0,
  updated_at: new Date().toISOString(),
  })
- .eq("id", data.tableId);
+ .eq("id", data.tableId)
+ .eq("store_id", identity.store_id);
  }
 
  return {
@@ -603,3 +605,175 @@ export const processPosMultiPayment = createServerFn({ method: "POST" })
  payments: insertedPayments as PosMultiPayment[],
  };
  });
+
+// ---------------------------------------------------------------------------
+// 5. CRUD COMPLETO DE PRAÇAS KDS, MESAS & CONFIGURAÇÕES PDV
+// ---------------------------------------------------------------------------
+export const deleteKdsStation = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      stationId: z.string().uuid(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertManagerAccess(identity);
+
+    const { error } = await supabase
+      .from("kds_stations")
+      .update({
+        is_active: false,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", data.stationId)
+      .eq("store_id", identity.store_id);
+
+    if (error) {
+      throw new Error(`Erro ao desativar praça KDS: ${error.message}`);
+    }
+    return { status: "success" as const };
+  });
+
+export const saveRestaurantTable = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      tableNumber: z.number().int().min(1),
+      tableName: z.string().max(80).optional().nullable(),
+      zone: z.string().min(1).default("salao"),
+      capacity: z.number().int().min(1).max(60).default(4),
+      shape: z.enum(["square", "round", "rectangle"]).default("square"),
+      posX: z.number().min(0).default(0),
+      posY: z.number().min(0).default(0),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertManagerAccess(identity);
+
+    const payload = {
+      store_id: identity.store_id,
+      table_number: data.tableNumber,
+      table_name: data.tableName?.trim() || null,
+      zone: data.zone,
+      capacity: data.capacity,
+      pos_x: data.posX,
+      pos_y: data.posY,
+      metadata: { shape: data.shape },
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.id) {
+      const { data: updated, error } = await supabase
+        .from("restaurant_tables")
+        .update(payload)
+        .eq("id", data.id)
+        .eq("store_id", identity.store_id)
+        .select()
+        .single();
+      if (error) throw new Error(`Erro ao atualizar mesa: ${error.message}`);
+      return { status: "success" as const, table: updated as RestaurantTable };
+    }
+
+    const { data: created, error } = await supabase
+      .from("restaurant_tables")
+      .insert({ ...payload, status: "available" })
+      .select()
+      .single();
+    if (error) throw new Error(`Erro ao criar mesa: ${error.message}`);
+    return { status: "success" as const, table: created as RestaurantTable };
+  });
+
+export const deleteRestaurantTable = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      tableId: z.string().uuid(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertManagerAccess(identity);
+
+    const { data: existing, error: fetchErr } = await supabase
+      .from("restaurant_tables")
+      .select("id, status, store_id")
+      .eq("id", data.tableId)
+      .eq("store_id", identity.store_id)
+      .maybeSingle();
+
+    if (fetchErr || !existing) {
+      throw new Error("Mesa não encontrada.");
+    }
+    if (existing.status === "occupied" || existing.status === "billing") {
+      throw new Error("Finalize a comanda antes de excluir esta mesa.");
+    }
+
+    const { error } = await supabase
+      .from("restaurant_tables")
+      .delete()
+      .eq("id", data.tableId)
+      .eq("store_id", identity.store_id);
+
+    if (error) throw new Error(`Erro ao excluir mesa: ${error.message}`);
+    return { status: "success" as const };
+  });
+
+export const getPosSettings = createServerFn({ method: "GET" }).handler(async () => {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ["owner", "admin", "manager", "cashier", "seller"]);
+
+  const { data, error } = await supabase
+    .from("pos_settings")
+    .select("*")
+    .eq("store_id", identity.store_id)
+    .maybeSingle();
+
+  if (error) throw new Error(`Erro ao carregar regras de PDV: ${error.message}`);
+  return (
+    data || {
+      store_id: identity.store_id,
+      max_discount_without_pin: 5,
+      require_pin_for_discount: true,
+      require_pin_for_refund: true,
+      require_pin_for_void: true,
+    }
+  );
+});
+
+export const savePosSettings = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      maxDiscountWithoutPin: z.number().min(0).max(100),
+      requirePinForDiscount: z.boolean(),
+      requirePinForRefund: z.boolean(),
+      requirePinForVoid: z.boolean(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertManagerAccess(identity);
+
+    const { data: saved, error } = await supabase
+      .from("pos_settings")
+      .upsert(
+        {
+          store_id: identity.store_id,
+          max_discount_without_pin: data.maxDiscountWithoutPin,
+          require_pin_for_discount: data.requirePinForDiscount,
+          require_pin_for_refund: data.requirePinForRefund,
+          require_pin_for_void: data.requirePinForVoid,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "store_id" }
+      )
+      .select()
+      .single();
+
+    if (error) throw new Error(`Erro ao salvar regras de PDV: ${error.message}`);
+    return { status: "success" as const, settings: saved };
+  });

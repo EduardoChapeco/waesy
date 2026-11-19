@@ -5,9 +5,12 @@
 
 export const LEAD_SOURCES = [
   { value: "whatsapp", label: "WhatsApp" },
-  { value: "balcao", label: "Balcão / Loja Física" },
-  { value: "instagram", label: "Instagram" },
+  { value: "meta_ads", label: "Meta Ads (CTWA / Formulário)" },
+  { value: "lead_form", label: "Formulário / Quiz" },
   { value: "google_ads", label: "Google Ads" },
+  { value: "instagram", label: "Instagram" },
+  { value: "tiktok_ads", label: "TikTok Ads" },
+  { value: "balcao", label: "Balcão / Loja Física" },
   { value: "indicacao", label: "Indicação" },
   { value: "site", label: "Site / Biolink" },
   { value: "outros", label: "Outros" },

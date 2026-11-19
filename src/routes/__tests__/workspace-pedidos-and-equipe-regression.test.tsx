@@ -73,7 +73,7 @@ vi.mock("@/components/ui/image-upload", () => ({
   ImageUpload: () => null,
 }));
 
-import { KDSPage } from "@/routes/workspace.pedidos.gestor";
+import { KDSPage } from "@/components/workspace/orders/kds-order-manager";
 import WorkspaceTeamPage from "@/routes/workspace.configuracoes.equipe";
 
 describe("Regressão /workspace/pedidos (KDSPage) & /workspace/configuracoes/equipe", () => {

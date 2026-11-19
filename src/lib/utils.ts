@@ -125,3 +125,75 @@ export function extractErrorMessage(err: unknown, fallback = "Ocorreu um erro in
   }
   return fallback;
 }
+
+export const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Type guard canônico para UUID padrão (PostgreSQL `uuid`).
+ */
+export function isUuid(value: unknown): value is string {
+  return typeof value === "string" && UUID_REGEX.test(value.trim());
+}
+
+/**
+ * Restringe um valor numérico ao intervalo inclusivo [min, max].
+ */
+export function clamp(val: number, min: number, max: number): number {
+  if (!Number.isFinite(val)) return min;
+  return Math.min(max, Math.max(min, val));
+}
+
+/**
+ * Faz o parse defensivo de campos JSON (suporta JSON duplamente serializado).
+ */
+export function parseJsonField<T>(value: unknown, fallback: T): T {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === "object") return value as T;
+  if (typeof value === "string") {
+    try {
+      let parsed: unknown = JSON.parse(value);
+      if (typeof parsed === "string") {
+        parsed = JSON.parse(parsed);
+      }
+      return (parsed || fallback) as T;
+    } catch {
+      return fallback;
+    }
+  }
+  return fallback;
+}
+
+/**
+ * Retorna o primeiro valor string não vazio (com trim), ou null caso ausente.
+ */
+export function firstNonEmptyString(...values: unknown[]): string | null {
+  return (
+    values
+      .find((v): v is string => typeof v === "string" && v.trim().length > 0)
+      ?.trim() || null
+  );
+}
+
+/**
+ * Remove acentos, converte para minúsculas e aplica trim para comparações/buscas.
+ */
+export function normalizeDiacriticText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+/**
+ * Cria Response JSON padronizada sem cache para endpoints/webhooks HTTP.
+ */
+export function noStoreJsonResponse(payload: Record<string, unknown>, status = 200): Response {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store",
+    },
+  });
+}

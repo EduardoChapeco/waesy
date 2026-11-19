@@ -1,10 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { timingSafeEqual } from "node:crypto";
+import { getEnvVar } from "@/lib/env";
+import { hasValidWorkerToken } from "@/lib/ai/worker-auth";
 import { runWhatsAppOutboxWorker } from "@/services/whatsapp-outbox.worker";
 
 function authorized(request: Request): boolean {
-  const expected = process.env.WHATSAPP_WORKER_TOKEN;
-  const received = request.headers.get("x-waesy-worker-token") || "";
+  if (hasValidWorkerToken(request)) return true;
+  const expected =
+    getEnvVar("WHATSAPP_WORKER_TOKEN") ||
+    (typeof process !== "undefined" ? process.env?.WHATSAPP_WORKER_TOKEN : "") ||
+    "";
+  const auth = (request.headers.get("authorization") || "").trim();
+  const bearer = auth.startsWith("Bearer ") ? auth.slice(7).trim() : auth;
+  const received = (request.headers.get("x-waesy-worker-token") || "").trim() || bearer;
   if (!expected || !received) return false;
   const a = Buffer.from(expected);
   const b = Buffer.from(received);

@@ -7,7 +7,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity, requireStaff } from "@/lib/server-access";
+import { getServerIdentity, requireStaff, assertStoreAccess } from "@/lib/server-access";
 import type {
   AgencyCorporateCapabilityDTO,
   CorporateTravelAccountDTO,
@@ -1469,4 +1469,158 @@ export const generateCorporateTravelerMagicLink = createServerFn({ method: "POST
       expiresAt,
       travelerName: traveler.full_name,
     };
+  });
+
+// ─── 18. Solicitações RFP Corporativas (Nativizado B2B) ────────────────────────
+
+async function resolveAgencyAndOrgForStore(
+  supabase: ReturnType<typeof getServerClient>,
+  storeId: string
+): Promise<{ agencyId: string | null; organizationId: string | null }> {
+  const { data: agencyRow } = await supabase
+    .from("agencies")
+    .select("id, organization_id")
+    .eq("store_id", storeId)
+    .maybeSingle();
+
+  if (agencyRow) {
+    return {
+      agencyId: agencyRow.id,
+      organizationId: agencyRow.organization_id || null,
+    };
+  }
+
+  const { data: storeRow } = await supabase
+    .from("stores")
+    .select("organization_id")
+    .eq("id", storeId)
+    .maybeSingle();
+
+  return {
+    agencyId: null,
+    organizationId: storeRow?.organization_id || null,
+  };
+}
+
+export const listCorporateRfps = createServerFn({ method: "GET" })
+  .validator(z.object({ storeId: z.string().uuid().optional() }).optional())
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    const targetStoreId = data?.storeId || identity.store_id;
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"], targetStoreId);
+
+    const scope = await resolveAgencyAndOrgForStore(supabase, targetStoreId!);
+    let query = supabase
+      .from("corporate_rfps")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (scope.agencyId && scope.organizationId) {
+      query = query.or(
+        `agency_id.eq.${scope.agencyId},organization_id.eq.${scope.organizationId}`
+      );
+    } else if (scope.agencyId) {
+      query = query.eq("agency_id", scope.agencyId);
+    } else if (scope.organizationId) {
+      query = query.eq("organization_id", scope.organizationId);
+    } else {
+      return [];
+    }
+
+    const { data: rows, error } = await query;
+    if (error) {
+      throw new Error(`Erro ao carregar RFPs corporativas: ${error.message}`);
+    }
+    return rows || [];
+  });
+
+export const createCorporateRfp = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().uuid().optional(),
+      companyName: z.string().min(2),
+      destination: z.string().min(2),
+      passengerName: z.string().optional().nullable(),
+      travelDates: z.string().optional().nullable(),
+      budget: z.number().nonnegative().optional().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    const targetStoreId = data.storeId || identity.store_id;
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller"], targetStoreId);
+
+    const scope = await resolveAgencyAndOrgForStore(supabase, targetStoreId!);
+    if (!scope.agencyId && !scope.organizationId) {
+      throw new Error("Agência não vinculada a uma organização corporativa.");
+    }
+
+    const { data: created, error } = await supabase
+      .from("corporate_rfps")
+      .insert({
+        agency_id: scope.agencyId,
+        organization_id: scope.organizationId,
+        company_name: data.companyName.trim(),
+        destination: data.destination.trim(),
+        passenger_name: data.passengerName?.trim() || null,
+        travel_dates: data.travelDates?.trim() || null,
+        budget: data.budget ?? null,
+        status: "pending",
+      })
+      .select("*")
+      .single();
+
+    if (error || !created) {
+      throw new Error(`Erro ao registrar RFP corporativa: ${error?.message || ""}`);
+    }
+    return created;
+  });
+
+export const updateCorporateRfpStatus = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().uuid().optional(),
+      rfpId: z.string().uuid(),
+      status: z.enum(["pending", "quoted", "won", "cancelled"]),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    const targetStoreId = data.storeId || identity.store_id;
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller"], targetStoreId);
+
+    const scope = await resolveAgencyAndOrgForStore(supabase, targetStoreId!);
+    const { data: existing, error: fetchErr } = await supabase
+      .from("corporate_rfps")
+      .select("id, agency_id, organization_id")
+      .eq("id", data.rfpId)
+      .maybeSingle();
+
+    if (fetchErr || !existing) {
+      throw new Error("RFP não encontrada.");
+    }
+    const ownsAgency = scope.agencyId && existing.agency_id === scope.agencyId;
+    const ownsOrg = scope.organizationId && existing.organization_id === scope.organizationId;
+    if (!ownsAgency && !ownsOrg && identity.role !== "platform_admin") {
+      throw new Error("Acesso não autorizado para alterar esta RFP.");
+    }
+
+    const { data: updated, error } = await supabase
+      .from("corporate_rfps")
+      .update({
+        status: data.status,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", data.rfpId)
+      .select("*")
+      .single();
+
+    if (error) {
+      throw new Error(`Erro ao atualizar status da RFP: ${error.message}`);
+    }
+    return updated;
   });

@@ -5,6 +5,7 @@ import { errorRegistry } from "./lib/telemetry/error-correlator";
 import { renderErrorPage } from "./lib/error-page";
 import { resolveBrandContextFromHost } from "./lib/multi-brand-engine";
 import { resolveSubsystemFromHost } from "./lib/vertical-subsystems";
+import { resolveCustomDomainAppRequest } from "./lib/custom-domain-routing.server";
 import {
   buildAgentApiHeaders,
   buildStructuredApiErrorResponse,
@@ -18,15 +19,15 @@ type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
 };
 
-let serverEntryPromise: Promise<ServerEntry> | undefined;
+let cachedServerEntry: ServerEntry | undefined;
 
 async function getServerEntry(): Promise<ServerEntry> {
-  if (!serverEntryPromise) {
-    serverEntryPromise = import("@tanstack/react-start/server-entry").then(
-      (m) => (m.default ?? m) as ServerEntry,
-    );
+  if (cachedServerEntry) {
+    return cachedServerEntry;
   }
-  return serverEntryPromise;
+  const mod = await import("@tanstack/react-start/server-entry");
+  cachedServerEntry = (mod.default ?? mod) as ServerEntry;
+  return cachedServerEntry;
 }
 
 // h3 swallows in-handler throws into a normal 500 Response with body
@@ -70,11 +71,11 @@ export default {
         (globalThis as any).__env__ = env;
       }
 
-      // Resolução de subdomínio corporativo e subsistemas verticais (*.waesy.com.br)
+      // Resolução de Domínio Próprio do App Oficial + Subdomínios Corporativos (*.waesy.com.br)
       let effectiveRequest = request;
       try {
         const url = new URL(request.url);
-        const host = (request.headers.get("host") || url.host || "").toLowerCase();
+        const host = (request.headers.get("x-forwarded-host") || request.headers.get("host") || url.host || "").toLowerCase();
         const isPainelSubdomain =
           host.startsWith("painel.") ||
           host.startsWith("painel-") ||
@@ -92,44 +93,49 @@ export default {
           enrichedHeaders.set("x-waesy-target-path", subsystem.targetPath);
         }
 
-        const isRootPath = url.pathname === "/" || url.pathname === "";
-        const isFunctionalAppSub =
-          subsystem &&
-          subsystem.id !== "waesy" &&
-          (subsystem.category === "public_app" || subsystem.category === "admin") &&
-          subsystem.targetPath !== "/";
-        const targetSubsystemRewrite = isFunctionalAppSub ? subsystem.targetPath : null;
+        const customDomainRewritten = await resolveCustomDomainAppRequest(request, enrichedHeaders);
+        if (customDomainRewritten) {
+          effectiveRequest = customDomainRewritten;
+        } else {
+          const isRootPath = url.pathname === "/" || url.pathname === "";
+          const isFunctionalAppSub =
+            subsystem &&
+            subsystem.id !== "waesy" &&
+            (subsystem.category === "public_app" || subsystem.category === "admin") &&
+            subsystem.targetPath !== "/";
+          const targetSubsystemRewrite = isFunctionalAppSub ? subsystem.targetPath : null;
 
-        if (isRootPath && isPainelSubdomain && !host.startsWith("pro.") && !host.startsWith("studio.")) {
-          const rewrittenUrl = new URL(request.url);
-          rewrittenUrl.pathname = "/painel";
-          effectiveRequest = new Request(rewrittenUrl.toString(), {
-            method: request.method,
-            headers: enrichedHeaders,
-            body: request.body,
-          });
-        } else if (isRootPath && targetSubsystemRewrite) {
-          const rewrittenUrl = new URL(request.url);
-          rewrittenUrl.pathname = targetSubsystemRewrite;
-          effectiveRequest = new Request(rewrittenUrl.toString(), {
-            method: request.method,
-            headers: enrichedHeaders,
-            body: request.body,
-          });
-        } else if (isRootPath && !subsystem && brandContext.isStandaloneSaas) {
-          const rewrittenUrl = new URL(request.url);
-          rewrittenUrl.pathname = brandContext.id === "waesy_copilot" ? "/copilot" : `/sistemas/${brandContext.id}`;
-          effectiveRequest = new Request(rewrittenUrl.toString(), {
-            method: request.method,
-            headers: enrichedHeaders,
-            body: request.body,
-          });
-        } else if (brandContext.id !== "waesy" || Boolean(subsystem)) {
-          effectiveRequest = new Request(request.url, {
-            method: request.method,
-            headers: enrichedHeaders,
-            body: request.body,
-          });
+          if (isRootPath && isPainelSubdomain && !host.startsWith("pro.") && !host.startsWith("studio.")) {
+            const rewrittenUrl = new URL(request.url);
+            rewrittenUrl.pathname = "/painel";
+            effectiveRequest = new Request(rewrittenUrl.toString(), {
+              method: request.method,
+              headers: enrichedHeaders,
+              body: request.body,
+            });
+          } else if (isRootPath && targetSubsystemRewrite) {
+            const rewrittenUrl = new URL(request.url);
+            rewrittenUrl.pathname = targetSubsystemRewrite;
+            effectiveRequest = new Request(rewrittenUrl.toString(), {
+              method: request.method,
+              headers: enrichedHeaders,
+              body: request.body,
+            });
+          } else if (isRootPath && !subsystem && brandContext.isStandaloneSaas) {
+            const rewrittenUrl = new URL(request.url);
+            rewrittenUrl.pathname = brandContext.id === "waesy_copilot" ? "/copilot" : `/sistemas/${brandContext.id}`;
+            effectiveRequest = new Request(rewrittenUrl.toString(), {
+              method: request.method,
+              headers: enrichedHeaders,
+              body: request.body,
+            });
+          } else if (brandContext.id !== "waesy" || Boolean(subsystem)) {
+            effectiveRequest = new Request(request.url, {
+              method: request.method,
+              headers: enrichedHeaders,
+              body: request.body,
+            });
+          }
         }
       } catch {
         effectiveRequest = request;

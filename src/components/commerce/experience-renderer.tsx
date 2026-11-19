@@ -8,8 +8,8 @@ function resolveAnimationClasses(designTokens?: Record<string, any>, layoutRules
 }
 
 import * as React from "react";
-import { ExperienceNode } from "@/lib/builder-types";
-import { builderRegistry } from "@/lib/builder-registry";
+import { ExperienceNode } from "@/lib/builder/builder-types";
+import { builderRegistry } from "@/lib/builder/builder-registry";
 import type { OmniPageDocument } from "@/types/omni-builder";
 import { omniPageToExperienceNodes, OMNI_EXPERIENCE_NODE_PREFIX } from "@/lib/builder/omni-experience-adapter";
 import { getSiteBlockByIdStrict } from "@/components/builder/registry";

@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { User, Save, MapPin, ShieldCheck, FileText, Mail, Phone, AlertTriangle, Gift, HeartPulse, Calendar, CreditCard, History, Tag, TrendingUp, Plane, Users2, Smartphone, ExternalLink, Copy, Award, Luggage, QrCode, CheckCircle2, ChevronRight, Share2, Compass, Armchair, Utensils, Receipt, Megaphone, Lock, Plus, Trash2, Printer, Check, MoreHorizontal } from "lucide-react";
+import { User, Save, MapPin, ShieldCheck, FileText, Mail, Phone, AlertTriangle, Gift, HeartPulse, Calendar, CreditCard, History, Tag, TrendingUp, Plane, Users2, Smartphone, ExternalLink, Copy, Award, Luggage, QrCode, CheckCircle2, ChevronRight, Share2, Compass, Armchair, Utensils, Receipt, Megaphone, Lock, Plus, Trash2, Printer, Check, MoreHorizontal, GitMerge } from "lucide-react";
 import { CommercialBudgetPadSheet } from "@/components/documents/CommercialBudgetPadSheet";
+import { MergeCustomerDialog } from "@/components/crm/merge-customer-dialog";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,12 +22,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/state/states";
+import { MediaUploader } from "@/components/ui/media-uploader";
 import { getCustomer360, updateCustomer, updateCustomerCrm, addCustomerClinicalRecord, grantCustomerStoreCredit, saveTravelerPreferences } from "@/services/crm.functions";
 import { DocumentsPanel } from "@/components/crm/DocumentsPanel";
 import { formatMoney } from "@/lib/money";
 import { exportElementAsPdf } from "@/lib/pdf-export";
 import { Customer360PrintableDossier } from "@/components/dossier/customer-360-printable-dossier";
 import { recordLeadOrCustomerConsent, revokeConsentAction } from "@/services/legal-telemetry.functions";
+import { generateCustomerAppMagicAccessFn } from "@/services/branded-app.functions";
 import { CANONICAL_LEGAL_POLICIES, type LegalPolicyType, type ConsentRecordItem } from "@/types/legal-consent";
 
 export const Route = createFileRoute("/workspace/clientes/$id")({
@@ -160,6 +163,7 @@ function CustomerDetailPage() {
   const [isPcd, setIsPcd] = useState(Boolean(data?.travelerPreferences?.special_assistance?.pcd));
   const [isWheelchair, setIsWheelchair] = useState(Boolean(data?.travelerPreferences?.special_assistance?.wheelchair));
   const [isSavingTraveler, setIsSavingTraveler] = useState(false);
+  const [isMergeModalOpen, setIsMergeModalOpen] = useState(false);
 
   // ── Guard defensivo: loader pode retornar null em falha ─────────────────────
   if (!data?.profile) {
@@ -451,11 +455,44 @@ function CustomerDetailPage() {
                   Copiar Link
                 </DropdownMenuItem>
                 <DropdownMenuItem
+                  onClick={async () => {
+                    try {
+                      const res = await generateCustomerAppMagicAccessFn({
+                        data: {
+                          storeId: data?.profile?.store_id || null,
+                          customerId: data?.profile?.id || id,
+                          crmCustomerId: data?.crm?.id || null,
+                          customerName: data?.profile?.name || null,
+                          customerPhone: data?.profile?.phone || null,
+                          customerDocument: data?.profile?.taxId || null,
+                          customerEmail: data?.profile?.email || null,
+                          originHint: typeof window !== "undefined" ? window.location.origin : "https://waesy.com.br",
+                        },
+                      });
+                      await navigator.clipboard.writeText(res.portal_url);
+                      toast.success(`Magic Link (${res.client_code}) do App Oficial copiado!`);
+                    } catch (err: any) {
+                      toast.error(err?.message || "Não foi possível gerar o Magic Link do App.");
+                    }
+                  }}
+                  className="gap-2 text-xs font-semibold py-2 cursor-pointer"
+                >
+                  <Smartphone className="size-4 text-primary" />
+                  Magic Link App Oficial
+                </DropdownMenuItem>
+                <DropdownMenuItem
                   onClick={() => setIsClinicalModalOpen(true)}
                   className="gap-2 text-xs font-semibold py-2 cursor-pointer"
                 >
                   <HeartPulse className="size-4" />
                   Atendimento Clínico
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setIsMergeModalOpen(true)}
+                  className="gap-2 text-xs font-semibold py-2 cursor-pointer"
+                >
+                  <GitMerge className="size-4 text-primary" />
+                  Mesclar Duplicata
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -971,11 +1008,90 @@ function CustomerDetailPage() {
                 </div>
               )}
 
+              {/* Termômetro Histórico & Oportunidades Verificadas pelo Radar */}
+              {(data as any).historicalBenchmark && (
+                <div className="p-4 rounded-lg bg-muted/40 flex flex-wrap items-center justify-between gap-3">
+                  <div className="space-y-1 min-w-0">
+                    <span className="text-xs font-bold text-foreground block">
+                      Benchmark Histórico de Tarifas
+                    </span>
+                    <span className="text-xs text-muted-foreground block">
+                      {(data as any).historicalBenchmark.verdictLabelPt}
+                    </span>
+                  </div>
+                  <Badge
+                    variant={(data as any).historicalBenchmark.verdict === "great_deal" ? "success" : "secondary"}
+                    className="text-xs shrink-0"
+                  >
+                    {(data as any).historicalBenchmark.sampleCount >= 2 &&
+                    (data as any).historicalBenchmark.historicalSavingsPct != null
+                      ? `${(data as any).historicalBenchmark.historicalSavingsPct > 0 ? "-" : "+"}${Math.abs(Math.round((data as any).historicalBenchmark.historicalSavingsPct))}% histórico`
+                      : `${(data as any).historicalBenchmark.sampleCount} amostras`}
+                  </Badge>
+                </div>
+              )}
+
+              {Array.isArray((data as any).verifiedOpportunities) && (data as any).verifiedOpportunities.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 pt-2">
+                    <TrendingUp className="size-3.5 text-primary" />
+                    Oportunidades Verificadas pelo Radar ({(data as any).verifiedOpportunities.length})
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {(data as any).verifiedOpportunities.map((opp: any) => (
+                      <div
+                        key={opp.id}
+                        className="p-4 rounded-lg bg-card border border-border/60 flex flex-col justify-between gap-3"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <h4 className="font-bold text-sm text-foreground truncate">
+                              {opp.offerTitle || opp.destinationCity}
+                            </h4>
+                            <p className="text-xs text-muted-foreground">
+                              Destino: {opp.destinationCity}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {opp.alreadyProposedRecently && (
+                              <Badge variant="outline" className="text-xs text-warning-strong border-warning/40">
+                                Recente
+                              </Badge>
+                            )}
+                            <Badge variant="success" className="text-xs tabular-nums">
+                              {Math.round(Number(opp.matchScore || 0))}% Match
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap items-center justify-between gap-2 text-xs bg-muted/30 px-3 py-2 rounded-lg">
+                          <span className="text-muted-foreground">
+                            {opp.requiresChildRequote ? "Valor simulado (c/ crianças)" : "Valor compatível"}
+                          </span>
+                          <span className="font-mono font-bold text-foreground">
+                            {formatMoney(opp.effectiveTotalCents || opp.quotedTotalCents || 0)}
+                          </span>
+                        </div>
+                        {Array.isArray(opp.matchReasons) && opp.matchReasons.length > 0 && (
+                          <p className="text-xs text-muted-foreground line-clamp-2">
+                            {opp.matchReasons.slice(0, 2).join(" · ")}
+                          </p>
+                        )}
+                        {Array.isArray(opp.warnings) && opp.warnings.length > 0 && (
+                          <p className="text-2xs text-warning-strong">
+                            {opp.warnings[0]}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Contratos Digitais */}
               {(data.contracts || []).length > 0 && (
                 <div className="space-y-3">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 pt-2">
-                    <ShieldCheck className="size-3.5 text-emerald-500" />
+                    <ShieldCheck className="size-3.5 text-success" />
                     Contratos Digitais Emitidos ({data.contracts.length})
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -988,7 +1104,7 @@ function CustomerDetailPage() {
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex items-center gap-3">
-                              <div className="size-10 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                              <div className="size-10 rounded-lg bg-success/10 text-success flex items-center justify-center shrink-0">
                                 <ShieldCheck className="size-5" />
                               </div>
                               <div className="min-w-0">
@@ -1041,7 +1157,7 @@ function CustomerDetailPage() {
               {(data.commercialLeads || []).length > 0 && (
                 <div className="space-y-3">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 pt-2">
-                    <TrendingUp className="size-3.5 text-emerald-500" />
+                    <TrendingUp className="size-3.5 text-success" />
                     Propostas & Oportunidades no Funil ({data.commercialLeads.length})
                   </h3>
                   <div className="space-y-2">
@@ -2135,12 +2251,15 @@ function CustomerDetailPage() {
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs font-semibold">URL / Link do Documento Escaneado (Opcional)</Label>
-              <Input
-                value={physicalProofUrl}
-                onChange={(e) => setPhysicalProofUrl(e.target.value)}
-                placeholder="https://... termo_assinado.pdf"
-                className="text-xs h-11"
+              <MediaUploader
+                value={physicalProofUrl ? [physicalProofUrl] : []}
+                onChange={(urls) => setPhysicalProofUrl(urls[0] || "")}
+                maxFiles={1}
+                bucket="legal-documents"
+                folder="physical-consents"
+                label="Documento Escaneado (Opcional — Bucket)"
+                showExternalUrlOption={false}
+                enableCrop={false}
               />
             </div>
 
@@ -2169,6 +2288,14 @@ function CustomerDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <MergeCustomerDialog
+        open={isMergeModalOpen}
+        onOpenChange={setIsMergeModalOpen}
+        targetCustomerId={id}
+        targetCustomerName={data?.profile?.name || "este cliente"}
+        onMerged={() => router.invalidate()}
+      />
     </div>
   );
 }

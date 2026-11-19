@@ -30,6 +30,12 @@ export const CreateTravelSupplierSchema = z.object({
   kind: supplierKindEnum.default('operator'),
   document: z.string().nullable().optional(),
   commission_rate: z.number().min(0).max(100).default(0),
+  base_agency_commission_pct: z.number().min(0).max(100).optional(),
+  over_retention_pct_when_financed: z.number().min(0).max(100).optional(),
+  billing_cycle: z.enum(['semanal', 'quinzenal', 'mensal', 'por_venda']).optional(),
+  default_settlement_method: z.string().optional(),
+  financial_email: z.string().email().nullable().optional().or(z.literal('')),
+  nfse_required: z.boolean().optional(),
   notes: z.string().nullable().optional(),
   email: z.string().email().nullable().optional().or(z.literal('')),
   phone: z.string().nullable().optional(),
@@ -46,6 +52,12 @@ export const UpdateTravelSupplierSchema = z.object({
     kind: supplierKindEnum.optional(),
     document: z.string().nullable().optional(),
     commission_rate: z.number().min(0).max(100).optional(),
+    base_agency_commission_pct: z.number().min(0).max(100).optional(),
+    over_retention_pct_when_financed: z.number().min(0).max(100).optional(),
+    billing_cycle: z.enum(['semanal', 'quinzenal', 'mensal', 'por_venda']).optional(),
+    default_settlement_method: z.string().optional(),
+    financial_email: z.string().nullable().optional().or(z.literal('')),
+    nfse_required: z.boolean().optional(),
     notes: z.string().nullable().optional(),
     email: z.string().nullable().optional().or(z.literal('')),
     phone: z.string().nullable().optional(),
@@ -79,15 +91,18 @@ export const listTravelSuppliers = createServerFn({ method: 'GET' })
     return (rows || []) as TravelSupplierDTO[];
   });
 
+const SUPPLIER_WRITE_ROLES = ['owner', 'admin', 'manager', 'finance', 'gerente', 'financeiro', 'diretor'];
+
 export const createTravelSupplier = createServerFn({ method: 'POST' })
   .validator(CreateTravelSupplierSchema)
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
     const storeId = data.store_id || identity.store_id;
     if (!storeId) throw new Error("Loja não selecionada.");
-    assertStoreAccess(identity);
+    assertStoreAccess(identity, SUPPLIER_WRITE_ROLES, storeId);
 
     const db = getServerClient();
+    const effectiveBasePct = data.base_agency_commission_pct ?? data.commission_rate ?? 0;
     const { data: row, error } = await db
       .from('travel_suppliers')
       .insert({
@@ -96,7 +111,13 @@ export const createTravelSupplier = createServerFn({ method: 'POST' })
         legal_name: data.legal_name || null,
         kind: data.kind || 'operator',
         document: data.document || null,
-        commission_rate: data.commission_rate || 0,
+        commission_rate: effectiveBasePct,
+        base_agency_commission_pct: effectiveBasePct,
+        over_retention_pct_when_financed: data.over_retention_pct_when_financed ?? 0,
+        billing_cycle: data.billing_cycle || 'mensal',
+        default_settlement_method: data.default_settlement_method || 'fatura_abatida',
+        financial_email: data.financial_email || null,
+        nfse_required: data.nfse_required ?? true,
         notes: data.notes || null,
         email: data.email || null,
         phone: data.phone || null,
@@ -117,15 +138,19 @@ export const updateTravelSupplier = createServerFn({ method: 'POST' })
     const identity = await getServerIdentity();
     const storeId = identity.store_id;
     if (!storeId) throw new Error("Loja não selecionada.");
-    assertStoreAccess(identity);
+    assertStoreAccess(identity, SUPPLIER_WRITE_ROLES, storeId);
 
     const db = getServerClient();
+    const patchPayload: Record<string, any> = {
+      ...data.patch,
+      updated_at: new Date().toISOString(),
+    };
+    if (data.patch.commission_rate !== undefined && data.patch.base_agency_commission_pct === undefined) {
+      patchPayload.base_agency_commission_pct = data.patch.commission_rate;
+    }
     const { data: row, error } = await db
       .from('travel_suppliers')
-      .update({
-        ...data.patch,
-        updated_at: new Date().toISOString(),
-      })
+      .update(patchPayload)
       .eq('id', data.id)
       .eq('store_id', storeId)
       .select('*')
@@ -141,7 +166,7 @@ export const deleteTravelSupplier = createServerFn({ method: 'POST' })
     const identity = await getServerIdentity();
     const storeId = identity.store_id;
     if (!storeId) throw new Error("Loja não selecionada.");
-    assertStoreAccess(identity);
+    assertStoreAccess(identity, SUPPLIER_WRITE_ROLES, storeId);
 
     const db = getServerClient();
     const { error } = await db

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { builderRegistry } from '../lib/builder-registry';
+import { builderRegistry } from '../lib/builder/builder-registry';
 
 describe('ONDA 4: ESTÚDIOS CRIATIVOS, BUILDER & CLOUDBLOCK', () => {
 

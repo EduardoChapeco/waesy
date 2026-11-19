@@ -364,27 +364,34 @@ export const listHeroSquircleCards = createServerFn({ method: "GET" }).handler(
 );
 
 export const getHotpageBySlug = createServerFn({ method: "GET" })
-  .validator(z.object({ slug: z.string() }))
-  .handler(async ({ data: { slug } }): Promise<HotpageDTO | null> => {
+  .validator(z.object({ slug: z.string(), city: z.string().optional() }))
+  .handler(async ({ data: { slug, city } }): Promise<HotpageDTO | null> => {
     const supabase = getAnonServerClient();
     const { data, error } = await supabase
       .from("hotpages")
       .select("*")
       .eq("slug", slug)
       .eq("is_active", true)
-      .single();
+      .maybeSingle();
 
     if (error || !data) {
       return null;
     }
 
-    return {
-      ...data,
-      show_title: data.show_title !== false,
-      show_description: data.show_description !== false,
-      show_overlay: data.show_overlay !== false,
-      show_badge: data.show_badge !== false,
-    } as HotpageDTO;
+    if (!isCampaignActive(data)) {
+      return null;
+    }
+
+    const cleanCity =
+      city && city !== "Global" && city !== "all" && city !== "Todas" && city !== "Todas as Cidades"
+        ? city.trim().toLowerCase()
+        : null;
+    const rowCity = typeof (data as any).city_filter === "string" ? (data as any).city_filter.trim().toLowerCase() : "";
+    if (cleanCity && rowCity && rowCity !== "all" && rowCity !== "todas" && rowCity !== cleanCity) {
+      return null;
+    }
+
+    return mapHotpageDTO(data);
   });
 
 export const saveUserPreferences = createServerFn({ method: "POST" })

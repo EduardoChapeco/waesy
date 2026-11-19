@@ -101,7 +101,8 @@ export type CopilotQuickToolMode =
   | "website_builder"
   | "interactive_map"
   | "document"
-  | "creative_post";
+  | "creative_post"
+  | "hot_offer";
 
 export interface ChatSourceItem {
   id: string;

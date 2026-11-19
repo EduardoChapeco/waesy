@@ -574,9 +574,9 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                             </div>
                           </Link>
 
-                          {/* Tile 3: Perfil Marca */}
+                          {/* Tile 3: Gestão de Marca */}
                           <Link
-                            to="/conta/empresa"
+                            to={memberships.length > 0 ? "/workspace" : "/criar-negocio"}
                             onClick={() => setIsAccountOpen(false)}
                             className="p-3 rounded-lg bg-card border border-border hover:bg-muted transition-colors flex flex-col justify-between min-h-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
@@ -587,8 +587,8 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                               <ArrowUpRight className="size-3.5 text-muted-foreground" />
                             </div>
                             <div className="mt-2 min-w-0">
-                              <div className="text-xs font-bold text-foreground truncate">Perfil Marca</div>
-                              <div className="text-xs text-muted-foreground truncate">Presença e Marca</div>
+                              <div className="text-xs font-bold text-foreground truncate">{memberships.length > 0 ? "Workspace" : "Criar Marca"}</div>
+                              <div className="text-xs text-muted-foreground truncate">{memberships.length > 0 ? "Painel do Negócio" : "Cadastrar Loja"}</div>
                             </div>
                           </Link>
 
@@ -655,7 +655,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                         <div className="space-y-2">
                           <div className="flex items-center justify-between px-1">
                             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                              Minhas Empresas ({memberships.length})
+                              Unidades e Negócios ({memberships.length})
                             </span>
                             <Link
                               to="/criar-negocio"

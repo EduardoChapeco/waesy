@@ -7,26 +7,9 @@ import {
   IngestOperatorSyncBatchInputSchema,
   reconcileOperatorSyncBatch,
 } from "@/services/travel-operator-sync.server";
-import { normalizeOperatorCode } from "@/lib/travel-operator-sync";
+import { buildIngestCorsHeaders as cors, normalizeOperatorCode } from "@/lib/travel-operator-sync";
 
 const MAX_BODY_BYTES = 1024 * 1024; // 1MB
-
-function cors(request: Request): Record<string, string> {
-  const origin = request.headers.get("origin") || "";
-  const isAllowed =
-    origin.startsWith("chrome-extension://") ||
-    origin.includes("localhost") ||
-    origin.includes("127.0.0.1") ||
-    origin.includes("waesy.com.br") ||
-    origin.includes("usewaesy.pages.dev");
-
-  return {
-    "access-control-allow-origin": isAllowed ? origin : "null",
-    "access-control-allow-headers": "authorization, content-type",
-    "access-control-allow-methods": "POST, OPTIONS",
-    vary: "Origin",
-  };
-}
 
 export const Route = createFileRoute("/api/v1/ingest/infotravel-reservations")({
   server: {
@@ -49,7 +32,7 @@ export const Route = createFileRoute("/api/v1/ingest/infotravel-reservations")({
           targetStoreId = auth.storeId;
         } else {
           try {
-            const { getServerIdentity } = await import("@/lib/identity.server");
+            const { getServerIdentity } = await import("@/lib/server-access");
             const identity = await getServerIdentity();
             if (identity?.id && identity?.store_id) {
               targetStoreId = identity.store_id;

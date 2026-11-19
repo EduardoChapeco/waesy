@@ -175,14 +175,49 @@ export const compileContractFromQuote = createServerFn({ method: "POST" })
             ),
           });
         }
-      } else if (Array.isArray((travelProp as any)?.hotels) && (travelProp as any).hotels.length > 0) {
-        for (const h of (travelProp as any).hotels) {
+      } else if (
+        (Array.isArray((travelProp as any)?.hotels) && (travelProp as any).hotels.length > 0) ||
+        (Array.isArray((travelProp as any)?.transfers) && (travelProp as any).transfers.length > 0) ||
+        (Array.isArray((travelProp as any)?.tours) && (travelProp as any).tours.length > 0)
+      ) {
+        const qHotels = Array.isArray((travelProp as any)?.hotels) ? (travelProp as any).hotels : [];
+        const qTransfers = Array.isArray((travelProp as any)?.transfers) ? (travelProp as any).transfers : [];
+        const qTours = Array.isArray((travelProp as any)?.tours) ? (travelProp as any).tours : [];
+        items.push({
+          title: String(travelMeta.title || (travelProp as any)?.title || `Pacote Turístico ${quote.destination || ""}`).trim(),
+          unit: "pacote",
+          quantity: 1,
+          unitPriceCents: Number(quote.total_cents || 0),
+          totalPriceCents: Number(quote.total_cents || 0),
+        });
+        for (const h of qHotels) {
+          const hPrice = Number(h.price_cents || 0);
           items.push({
             title: `Hospedagem: ${h.hotel_name || h.name || "Hotel Selecionado"}`,
-            unit: "pacote",
+            unit: h.nights_count ? `${h.nights_count} noite(s)` : "incluso",
             quantity: 1,
-            unitPriceCents: Number(quote.total_cents || 0),
-            totalPriceCents: Number(quote.total_cents || 0),
+            unitPriceCents: hPrice,
+            totalPriceCents: hPrice,
+          });
+        }
+        for (const tr of qTransfers) {
+          const tPrice = Number(tr.price_cents || 0);
+          items.push({
+            title: `Traslado: ${tr.name || tr.title || tr.route_name || tr.route || tr.description || "Receptivo Terrestre"}`,
+            unit: tr.vehicle || tr.vehicle_type || "trecho",
+            quantity: 1,
+            unitPriceCents: tPrice,
+            totalPriceCents: tPrice,
+          });
+        }
+        for (const tu of qTours) {
+          const tuPrice = Number(tu.price_cents || 0);
+          items.push({
+            title: `Passeio: ${tu.title || tu.name || tu.description || "Experiência"}`,
+            unit: tu.duration || "passeio",
+            quantity: 1,
+            unitPriceCents: tuPrice,
+            totalPriceCents: tuPrice,
           });
         }
       } else {
@@ -552,17 +587,40 @@ export const issueCustomizedContractFromProposal = createServerFn({ method: "POS
         ...(((propRow as any)?.pricing?.custom_fields as Record<string, unknown>) || {}),
       });
 
-      const flights = Array.isArray((propRow as any)?.flights) ? (propRow as any).flights : [];
-      const hotels = Array.isArray((propRow as any)?.hotels) ? (propRow as any).hotels : [];
+      const propOptions = Array.isArray((propRow as any)?.options) ? (propRow as any).options : [];
+      const selectedOpt = meta.selected_option_id
+        ? propOptions.find((o: any) => o?.id === meta.selected_option_id)
+        : null;
+      const flights = Array.isArray(selectedOpt?.flights) && selectedOpt.flights.length > 0
+        ? selectedOpt.flights
+        : Array.isArray((propRow as any)?.flights) ? (propRow as any).flights : [];
+      const hotels = Array.isArray(selectedOpt?.hotels) && selectedOpt.hotels.length > 0
+        ? selectedOpt.hotels
+        : Array.isArray((propRow as any)?.hotels) ? (propRow as any).hotels : [];
+      const transfers = Array.isArray(selectedOpt?.transfers) && selectedOpt.transfers.length > 0
+        ? selectedOpt.transfers
+        : Array.isArray((propRow as any)?.transfers) ? (propRow as any).transfers : [];
+      const tours = Array.isArray(selectedOpt?.tours) && selectedOpt.tours.length > 0
+        ? selectedOpt.tours
+        : Array.isArray((propRow as any)?.tours) ? (propRow as any).tours : [];
+      const totalValueCents = Number(meta.total_value_cents || 0);
       const items: CompiledContractItemRow[] = [];
+
+      items.push({
+        title: String(propRow?.title || meta.destination || "Pacote Turístico Contratado"),
+        unit: "pacote",
+        quantity: 1,
+        unitPriceCents: totalValueCents,
+        totalPriceCents: totalValueCents,
+      });
 
       for (const h of hotels) {
         items.push({
-          title: `Hospedagem: ${h.hotel_name || h.name || "Hotel Selecionado"}${h.board_basis ? ` (${h.board_basis})` : ""}`,
-          unit: h.nights_count ? `${h.nights_count} noite(s)` : "estadia",
+          title: `Hospedagem: ${h.hotel_name || h.name || "Hotel Selecionado"}${h.board_basis || h.meal_plan ? ` (${h.board_basis || h.meal_plan})` : ""}`,
+          unit: h.nights_count ? `${h.nights_count} noite(s)` : "incluso",
           quantity: 1,
-          unitPriceCents: Number(meta.total_value_cents || 0),
-          totalPriceCents: Number(meta.total_value_cents || 0),
+          unitPriceCents: 0,
+          totalPriceCents: 0,
         });
       }
       for (const f of flights) {
@@ -574,13 +632,22 @@ export const issueCustomizedContractFromProposal = createServerFn({ method: "POS
           totalPriceCents: 0,
         });
       }
-      if (items.length === 0) {
+      for (const tr of transfers) {
         items.push({
-          title: String(propRow?.title || meta.destination || "Pacote Turístico Contratado"),
-          unit: "pacote",
+          title: `Traslado: ${tr.name || tr.title || tr.route_name || tr.route || tr.description || "Receptivo Terrestre"}${tr.vehicle || tr.vehicle_type ? ` (${tr.vehicle || tr.vehicle_type})` : ""}`,
+          unit: tr.is_private ? "privativo" : "incluso",
           quantity: 1,
-          unitPriceCents: Number(meta.total_value_cents || 0),
-          totalPriceCents: Number(meta.total_value_cents || 0),
+          unitPriceCents: 0,
+          totalPriceCents: 0,
+        });
+      }
+      for (const tu of tours) {
+        items.push({
+          title: `Passeio: ${tu.title || tu.name || tu.description || "Experiência Local"}${tu.date ? ` (${tu.date})` : ""}`,
+          unit: tu.duration || (tu.included === false ? "opcional" : "incluso"),
+          quantity: 1,
+          unitPriceCents: 0,
+          totalPriceCents: 0,
         });
       }
 
@@ -588,6 +655,9 @@ export const issueCustomizedContractFromProposal = createServerFn({ method: "POS
       if (meta.destination) specs.push({ label: "Destino", value: String(meta.destination) });
       if (meta.travel_start_date) specs.push({ label: "Embarque", value: String(meta.travel_start_date) });
       if (meta.travel_end_date) specs.push({ label: "Retorno", value: String(meta.travel_end_date) });
+      if (Array.isArray((propRow as any)?.children_ages) && (propRow as any).children_ages.length > 0) {
+        specs.push({ label: "Idades das Crianças", value: (propRow as any).children_ages.map((a: number) => `${a} anos`).join(", ") });
+      }
       if (Array.isArray((propRow as any)?.includes) && (propRow as any).includes.length > 0) {
         specs.push({ label: "Servicos Inclusos", value: (propRow as any).includes.join(", ") });
       }

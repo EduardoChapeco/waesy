@@ -4,11 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import getCroppedImg, {
   getCroppedCanvasBlob,
+  generateProportionalAppIconSet,
   getCanonicalDimensions,
   type TargetPlatform,
   type CanonicalDimensions,
+  type ProportionalAppIconSetBlobs,
 } from "@/lib/crop-image";
+import { TOKEN_HEX } from "@/lib/design-tokens";
 import { Crop, ZoomIn, ZoomOut, RotateCw, Check, Maximize, Minimize, Info } from "lucide-react";
+import { toast } from "sonner";
 
 const Cropper = lazy(() => import("react-easy-crop"));
 
@@ -23,8 +27,18 @@ export interface ImageCropperDialogProps {
   targetPlatform?: TargetPlatform;
   title?: string;
   description?: string;
+  appLogoMode?: boolean;
+  initialLogoBgColor?: string;
   onCropCompleteAction?: (croppedBase64: string) => void;
   onCropComplete?: (croppedBlob: Blob) => void | Promise<void>;
+  onCropWithMetadata?: (payload: {
+    blob: Blob;
+    cropPixels: { x: number; y: number; width: number; height: number };
+    aspect?: number;
+    zoom: number;
+    rotation: number;
+  }) => void | Promise<void>;
+  onAppIconSetComplete?: (bundle: ProportionalAppIconSetBlobs) => void | Promise<void>;
 }
 
 const ASPECT_PRESETS: Array<{ label: string; value: number | undefined }> = [
@@ -49,27 +63,36 @@ export function ImageCropperDialog({
   lockAspect = false,
   targetPlatform = "universal",
   title = "Enquadrar Imagem",
+  appLogoMode = false,
+  initialLogoBgColor = TOKEN_HEX.white,
   onCropCompleteAction,
   onCropComplete: onCropCompleteProp,
+  onCropWithMetadata,
+  onAppIconSetComplete,
 }: ImageCropperDialogProps) {
-  const defaultAspect = cropShape === "round" ? 1 : (initialAspect ?? aspectRatio ?? 4 / 3);
+  const defaultAspect = cropShape === "round" || appLogoMode ? 1 : (initialAspect ?? aspectRatio ?? 4 / 3);
   const [selectedAspect, setSelectedAspect] = useState<number | undefined>(defaultAspect);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(appLogoMode ? 0.9 : 1);
   const [rotation, setRotation] = useState(0);
-  const [objectFit, setObjectFit] = useState<"contain" | "cover" | "horizontal-cover" | "vertical-cover">("cover");
+  const [objectFit, setObjectFit] = useState<"contain" | "cover" | "horizontal-cover" | "vertical-cover">(
+    appLogoMode ? "contain" : "cover"
+  );
+  const [logoBgColor, setLogoBgColor] = useState<string>(initialLogoBgColor || TOKEN_HEX.white);
+  const [logoPaddingPct, setLogoPaddingPct] = useState<number>(appLogoMode ? 0.08 : 0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   React.useEffect(() => {
     if (open) {
       setCrop({ x: 0, y: 0 });
-      setZoom(1);
+      setZoom(appLogoMode ? 0.9 : 1);
       setRotation(0);
-      setObjectFit("cover");
-      setSelectedAspect(cropShape === "round" ? 1 : (initialAspect ?? aspectRatio ?? 4 / 3));
+      setObjectFit(appLogoMode ? "contain" : "cover");
+      setLogoPaddingPct(appLogoMode ? 0.08 : 0);
+      setSelectedAspect(cropShape === "round" || appLogoMode ? 1 : (initialAspect ?? aspectRatio ?? 4 / 3));
     }
-  }, [open, initialAspect, aspectRatio, cropShape]);
+  }, [open, initialAspect, aspectRatio, cropShape, appLogoMode]);
 
   // Atalhos de teclado Desktop para ajuste fino milimétrico (estilo Figma/Canva)
   React.useEffect(() => {
@@ -93,7 +116,8 @@ export function ImageCropperDialog({
         setZoom((prev) => Math.min(5, Number((prev + 0.1).toFixed(2))));
       } else if (e.key === "-" || e.key === "_") {
         e.preventDefault();
-        setZoom((prev) => Math.max(0.8, Number((prev - 0.1).toFixed(2))));
+        const minZ = appLogoMode ? 0.5 : 0.8;
+        setZoom((prev) => Math.max(minZ, Number((prev - 0.1).toFixed(2))));
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -112,6 +136,10 @@ export function ImageCropperDialog({
     if (!imageSrc || !croppedAreaPixels) return;
     setIsProcessing(true);
     try {
+      const cropOpts = appLogoMode
+        ? { backgroundColor: logoBgColor, paddingPct: logoPaddingPct }
+        : undefined;
+
       // 1. Renderiza e grava fisicamente no Canvas com as dimensões canônicas exatas (Zero-Drift)
       const croppedBlob = await getCroppedCanvasBlob(
         imageSrc,
@@ -119,10 +147,36 @@ export function ImageCropperDialog({
         rotation,
         { horizontal: false, vertical: false },
         "image/png",
-        canonicalDims
+        canonicalDims,
+        cropOpts
       );
 
-      // 2. Notifica callbacks: Blob físico e Base64
+      // 1.1 Se modo App Logo, gera também o pacote 192/512/maskable proporcionalizado
+      if (appLogoMode && onAppIconSetComplete) {
+        const iconBundle = await generateProportionalAppIconSet(
+          imageSrc,
+          croppedAreaPixels,
+          rotation,
+          { backgroundColor: logoBgColor, logoPaddingPct }
+        );
+        await onAppIconSetComplete(iconBundle);
+      }
+
+      // 2. Notifica callbacks: Blob físico, metadados do recorte e Base64
+      if (onCropWithMetadata && croppedAreaPixels) {
+        await onCropWithMetadata({
+          blob: croppedBlob,
+          cropPixels: {
+            x: Math.round(croppedAreaPixels.x || 0),
+            y: Math.round(croppedAreaPixels.y || 0),
+            width: Math.round(croppedAreaPixels.width || 0),
+            height: Math.round(croppedAreaPixels.height || 0),
+          },
+          aspect: selectedAspect,
+          zoom,
+          rotation,
+        });
+      }
       if (onCropCompleteProp) {
         await onCropCompleteProp(croppedBlob);
       }
@@ -138,13 +192,21 @@ export function ImageCropperDialog({
       onOpenChange(false);
     } catch (e) {
       console.error("Erro ao recortar imagem no Canvas:", e);
+      toast.error(
+        e instanceof Error && e.message
+          ? e.message
+          : "Não foi possível processar o recorte desta imagem. Tente enviar o arquivo novamente.",
+      );
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleZoomIn = () => setZoom((prev) => Math.min(5, Number((prev + 0.2).toFixed(2))));
-  const handleZoomOut = () => setZoom((prev) => Math.max(0.8, Number((prev - 0.2).toFixed(2))));
+  const handleZoomOut = () => {
+    const minZ = appLogoMode ? 0.5 : 0.8;
+    setZoom((prev) => Math.max(minZ, Number((prev - 0.2).toFixed(2))));
+  };
   const handleRotate = () => setRotation((prev) => (prev + 90) % 360);
 
   const isRound = cropShape === "round";
@@ -257,7 +319,8 @@ export function ImageCropperDialog({
                   cropShape={cropShape}
                   showGrid={true}
                   objectFit={objectFit}
-                  minZoom={0.8}
+                  restrictPosition={!appLogoMode}
+                  minZoom={appLogoMode ? 0.5 : 0.8}
                   maxZoom={5}
                   zoomWithScroll={true}
                   zoomSpeed={0.1}
@@ -275,6 +338,55 @@ export function ImageCropperDialog({
               </Suspense>
             </div>
 
+            {appLogoMode && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-xl border border-border/50 bg-muted/20 p-3">
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-foreground">Margem de Segurança (Logo)</span>
+                    <span className="font-mono text-muted-foreground">{Math.round(logoPaddingPct * 100)}%</span>
+                  </div>
+                  <Slider
+                    value={[Math.round(logoPaddingPct * 100)]}
+                    min={0}
+                    max={25}
+                    step={1}
+                    onValueChange={(vals) => setLogoPaddingPct((vals[0] ?? 8) / 100)}
+                    aria-label="Margem de segurança da logo"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs font-semibold text-foreground block">Fundo do Ícone PWA</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setLogoBgColor(TOKEN_HEX.white)}
+                      className={`h-9 min-h-11 sm:min-h-0 px-3 rounded-lg border text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-ring ${
+                        logoBgColor === TOKEN_HEX.white ? "border-primary bg-primary/10 text-foreground" : "border-border bg-card text-muted-foreground"
+                      }`}
+                    >
+                      Claro
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLogoBgColor(TOKEN_HEX.neutral950)}
+                      className={`h-9 min-h-11 sm:min-h-0 px-3 rounded-lg border text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-ring ${
+                        logoBgColor === TOKEN_HEX.neutral950 ? "border-primary bg-primary/10 text-foreground" : "border-border bg-card text-muted-foreground"
+                      }`}
+                    >
+                      Escuro
+                    </button>
+                    <input
+                      type="color"
+                      value={logoBgColor}
+                      onChange={(e) => setLogoBgColor(e.target.value)}
+                      aria-label="Cor de fundo personalizada do ícone"
+                      className="h-9 w-11 rounded-lg border border-border bg-card p-1 cursor-pointer"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Controles de Zoom */}
             <div className="flex items-center gap-2 px-1 pt-1 bg-muted/20 p-2 rounded-xl border border-border/30">
               <Button
@@ -290,7 +402,7 @@ export function ImageCropperDialog({
 
               <Slider
                 value={[zoom]}
-                min={0.8}
+                min={appLogoMode ? 0.5 : 0.8}
                 max={5}
                 step={0.02}
                 onValueChange={(vals) => setZoom(vals[0])}

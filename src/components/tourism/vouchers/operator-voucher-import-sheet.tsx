@@ -71,7 +71,7 @@ export function OperatorVoucherImportSheet({
         setDocuments((prev) => [
           ...prev,
           {
-            id: Math.random().toString(36).substring(2, 9),
+            id: crypto.randomUUID().slice(0, 8),
             name: file.name,
             size: file.size,
             type: file.type || "application/pdf",
@@ -102,7 +102,7 @@ export function OperatorVoucherImportSheet({
           setDocuments((prev) => [
             ...prev,
             {
-              id: Math.random().toString(36).substring(2, 9),
+              id: crypto.randomUUID().slice(0, 8),
               name: file.name || "voucher_clipboard.png",
               size: file.size,
               type: file.type || "image/png",

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   ArrowUp,
   Plus,
@@ -13,6 +13,7 @@ import {
   Palette,
   Square,
   Paperclip,
+  Flame,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -73,7 +74,60 @@ const QUICK_TOOL_LABELS: Record<CopilotQuickToolMode, string> = {
   interactive_map: "Mapas",
   document: "Documento",
   creative_post: "Post criativo",
+  hot_offer: "@oferta Hot",
 };
+
+interface AtToolPluginItem {
+  id: string;
+  prefix: string;
+  title: string;
+  subtitle: string;
+  icon: React.ComponentType<{ className?: string }>;
+  mode: CopilotQuickToolMode;
+}
+
+const AT_TOOL_PLUGINS: AtToolPluginItem[] = [
+  {
+    id: "hot_offer",
+    prefix: "@oferta",
+    title: "@oferta Hot & Stories",
+    subtitle: "Criar Oferta Quente, Story Hot, Grupos WhatsApp & Radar IA",
+    icon: Flame,
+    mode: "hot_offer",
+  },
+  {
+    id: "website_builder",
+    prefix: "@site",
+    title: "@site (Criar site)",
+    subtitle: "Gerador de páginas e vitrines comerciais",
+    icon: Globe,
+    mode: "website_builder",
+  },
+  {
+    id: "interactive_map",
+    prefix: "@mapa",
+    title: "@mapa (Mapas)",
+    subtitle: "Mapas interativos e turismo",
+    icon: MapPin,
+    mode: "interactive_map",
+  },
+  {
+    id: "document",
+    prefix: "@documento",
+    title: "@documento",
+    subtitle: "Proposta comercial ou contrato",
+    icon: FileText,
+    mode: "document",
+  },
+  {
+    id: "creative_post",
+    prefix: "@post",
+    title: "@post (Post criativo)",
+    subtitle: "Copywriting e arte para redes sociais",
+    icon: Palette,
+    mode: "creative_post",
+  },
+];
 
 export function ChatComposer({
   onSendMessage,
@@ -151,6 +205,41 @@ export function ChatComposer({
     };
   }, [isRecording]);
 
+  const [atQuery, setAtQuery] = useState<string | null>(null);
+  const [atIndex, setAtIndex] = useState(0);
+
+  const handleTextChange = (val: string) => {
+    setText(val);
+    const lastWord = val.split(/\s+/).pop() || "";
+    if (lastWord.startsWith("@")) {
+      setAtQuery(lastWord.slice(1).toLowerCase());
+      setAtIndex(0);
+    } else {
+      setAtQuery(null);
+    }
+  };
+
+  const filteredAtTools = useMemo(() => {
+    if (atQuery === null) return [];
+    if (!atQuery) return AT_TOOL_PLUGINS;
+    return AT_TOOL_PLUGINS.filter(
+      (item) =>
+        item.prefix.toLowerCase().includes(atQuery) ||
+        item.title.toLowerCase().includes(atQuery)
+    );
+  }, [atQuery]);
+
+  const applyAtTool = (item: AtToolPluginItem) => {
+    const words = text.split(/\s+/);
+    words.pop();
+    const prefixStr = words.length > 0 ? `${words.join(" ")} ` : "";
+    const newText = `${prefixStr}${item.prefix} `;
+    setText(newText);
+    selectQuickMode(item.mode);
+    setAtQuery(null);
+    requestAnimationFrame(() => textareaRef.current?.focus());
+  };
+
   const handleSend = async (e?: React.FormEvent) => {
     if (Boolean(e) === true && e) e.preventDefault();
     const trimmed = text.trim();
@@ -161,13 +250,29 @@ export function ChatComposer({
     const currentAttachments = attachments.map((a) => a.dataUrl);
     setText("");
     setAttachments([]);
+    setAtQuery(null);
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
     }
 
     if (onCancelReply) onCancelReply();
 
-    await onSendMessage(currentText, currentAttachments, currentReplyId, quickToolMode);
+    const effectiveMode =
+      quickToolMode !== "default"
+        ? quickToolMode
+        : trimmed.toLowerCase().includes("@oferta")
+          ? "hot_offer"
+          : trimmed.toLowerCase().includes("@site")
+            ? "website_builder"
+            : trimmed.toLowerCase().includes("@mapa")
+              ? "interactive_map"
+              : trimmed.toLowerCase().includes("@documento")
+                ? "document"
+                : trimmed.toLowerCase().includes("@post")
+                  ? "creative_post"
+                  : "default";
+
+    await onSendMessage(currentText, currentAttachments, currentReplyId, effectiveMode);
   };
 
   const handleFilesPicked = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -221,6 +326,32 @@ export function ChatComposer({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (filteredAtTools.length > 0) {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setAtIndex((prev) => (prev + 1) % filteredAtTools.length);
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setAtIndex((prev) => (prev - 1 + filteredAtTools.length) % filteredAtTools.length);
+        return;
+      }
+      if (e.key === "Enter" || e.key === "Tab") {
+        e.preventDefault();
+        const selected = filteredAtTools[atIndex] || filteredAtTools[0];
+        if (selected) {
+          applyAtTool(selected);
+        }
+        return;
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setAtQuery(null);
+        return;
+      }
+    }
+
     if (e.key === "Enter" && Boolean(e.shiftKey) === false) {
       e.preventDefault();
       handleSend();
@@ -412,6 +543,49 @@ export function ChatComposer({
           tabIndex={-1}
         />
 
+        {/* Popover flutuante de ferramentas @ */}
+        {filteredAtTools.length > 0 && (
+          <div
+            role="listbox"
+            aria-label="Ferramentas e plugins @ do Copilot"
+            className="mb-2 rounded-xl border border-border bg-card p-1 space-y-1 z-40 max-h-56 overflow-y-auto"
+          >
+            <div className="px-3 py-1 text-2xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border/40">
+              Ferramentas Copilot (@)
+            </div>
+            {filteredAtTools.map((tool: any, idx: number) => {
+              const Icon = tool.icon;
+              const isHighlighted = idx === atIndex;
+              return (
+                <button
+                  key={tool.id}
+                  type="button"
+                  onClick={() => applyAtTool(tool)}
+                  className={cn(
+                    "w-full px-3 py-2 rounded-lg text-left flex items-center justify-between gap-3 text-xs transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    isHighlighted
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-muted text-foreground"
+                  )}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Icon className={cn("size-4 shrink-0", isHighlighted ? "text-primary-foreground" : "text-primary")} />
+                    <div className="min-w-0">
+                      <span className="font-bold block truncate">{tool.title}</span>
+                      <span className={cn("text-2xs truncate block", isHighlighted ? "text-primary-foreground/80" : "text-muted-foreground")}>
+                        {tool.subtitle}
+                      </span>
+                    </div>
+                  </div>
+                  <kbd className={cn("text-2xs font-mono px-2 py-1 rounded border shrink-0", isHighlighted ? "border-primary-foreground/40 bg-primary-foreground/20" : "border-border bg-muted/40")}>
+                    Tab
+                  </kbd>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {/* Pílula Matte ChatGPT Desktop */}
         <div className="rounded-2xl bg-card border border-border/60 px-3 pt-3 pb-2 transition-colors focus-within:border-border">
           {isRecording ? (
@@ -439,7 +613,7 @@ export function ChatComposer({
             <textarea
               ref={textareaRef}
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={(e) => handleTextChange(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={disabled || isSending}
               placeholder={placeholder}
@@ -480,6 +654,13 @@ export function ChatComposer({
                       <span>Anexar arquivo</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => selectQuickMode("hot_offer")}
+                      className="min-h-11 gap-2 cursor-pointer"
+                    >
+                      <Flame className="size-4 text-warning" />
+                      <span>@oferta Hot & Stories</span>
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => selectQuickMode("website_builder")}
                       className="min-h-11 gap-2 cursor-pointer"
@@ -544,6 +725,15 @@ export function ChatComposer({
                     </Button>
                   ) : (
                     <>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => selectQuickMode("hot_offer")}
+                        className="hidden sm:inline-flex min-h-11 px-3 rounded-xl text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 gap-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <Flame className="size-3.5 text-warning" />
+                        <span>@oferta</span>
+                      </Button>
                       <Button
                         type="button"
                         variant="ghost"

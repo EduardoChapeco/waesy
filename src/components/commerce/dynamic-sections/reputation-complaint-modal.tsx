@@ -6,14 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { submitModerationReport } from "@/services/moderation.functions";
 
 interface ReputationComplaintModalProps {
  isOpen: boolean;
  onClose: () => void;
  companyName: string;
+ entityId?: string;
 }
 
-export function ReputationComplaintModal({ isOpen, onClose, companyName }: ReputationComplaintModalProps) {
+export function ReputationComplaintModal({ isOpen, onClose, companyName, entityId }: ReputationComplaintModalProps) {
  const [name, setName] = useState("");
  const [cpf, setCpf] = useState("");
  const [email, setEmail] = useState("");
@@ -21,7 +23,7 @@ export function ReputationComplaintModal({ isOpen, onClose, companyName }: Reput
  const [description, setDescription] = useState("");
  const [isSubmitting, setIsSubmitting] = useState(false);
 
- const handleSubmit = (e: React.FormEvent) => {
+ const handleSubmit = async (e: React.FormEvent) => {
  e.preventDefault();
  if (!name.trim() || !cpf.trim() || !email.trim() || !title.trim() || !description.trim()) {
  toast.error("Por favor, preencha todos os campos obrigatórios.");
@@ -29,16 +31,28 @@ export function ReputationComplaintModal({ isOpen, onClose, companyName }: Reput
  }
 
  setIsSubmitting(true);
- setTimeout(() => {
- setIsSubmitting(false);
- onClose();
- toast.success("Protocolo gerado com sucesso! A empresa foi notificada e tem prazo para responder.");
- setName("");
- setCpf("");
- setEmail("");
- setTitle("");
- setDescription("");
- }, 800);
+ try {
+   const res = await submitModerationReport({
+     data: {
+       entityType: "profile",
+       entityId: (entityId || companyName || "empresa").trim(),
+       entityTitle: `${companyName} — ${title.trim()}`,
+       reason: "other",
+       description: `Reclamante: ${name.trim()} | Doc: ${cpf.trim()} | E-mail: ${email.trim()} | Relato: ${description.trim()}`.slice(0, 1000),
+     },
+   });
+   onClose();
+   toast.success(`Protocolo ${String(res.reportId || "").slice(0, 8)} registrado com sucesso.`);
+   setName("");
+   setCpf("");
+   setEmail("");
+   setTitle("");
+   setDescription("");
+ } catch (err: any) {
+   toast.error(err?.message || "Não foi possível registrar a manifestação no servidor.");
+ } finally {
+   setIsSubmitting(false);
+ }
  };
 
  return (

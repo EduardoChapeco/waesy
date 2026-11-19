@@ -1,12 +1,6 @@
 /**
- * destinations-catalog.ts — Catálogo Canônico de Destinos Brasileiros & Aeroportos IATA
- * Padrão BigTech | Fonte Canônica de Verdade | Autocomplete de 1 Toque
+ * destinations-catalog.ts — Catálogo Canônico de Destinos Brasileiros & Presets
  */
-
-import {
-  GLOBAL_AIRPORTS_CATALOG,
-  getAirportByIata,
-} from "@/lib/data/airports-catalog";
 
 export interface CanonicalDestination {
   id: string;
@@ -60,14 +54,6 @@ export const BRAZIL_STATES = [
   { uf: "TO", name: "Tocantins" },
   { uf: "INT", name: "Internacional" },
 ];
-
-export const MAJOR_IATA_AIRPORTS = GLOBAL_AIRPORTS_CATALOG.map((a) => ({
-  code: a.iata_code,
-  name: `${a.city} (${a.name})`,
-  city: a.city,
-  uf: a.country_code === "BR" ? a.state_province || "BR" : "INT",
-  country: a.country,
-}));
 
 export const CANONICAL_DESTINATIONS: CanonicalDestination[] = [
   {
@@ -429,18 +415,6 @@ export const TOURISM_TAGS_PRESETS = [
 
 export function getDestinationsByState(uf: string): CanonicalDestination[] {
   return CANONICAL_DESTINATIONS.filter((d) => d.state === uf);
-}
-
-export function findAirportByIata(iata: string) {
-  const rec = getAirportByIata(iata);
-  if (!rec) return undefined;
-  return {
-    code: rec.iata_code,
-    name: `${rec.city} (${rec.name})`,
-    city: rec.city,
-    uf: rec.country_code === "BR" ? rec.state_province || "BR" : "INT",
-    country: rec.country,
-  };
 }
 
 export function searchCanonicalDestinations(query: string): CanonicalDestination[] {

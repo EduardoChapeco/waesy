@@ -41,6 +41,7 @@ import { DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { ScheduleWhatsAppMessageModal } from "@/components/chat/ScheduleWhatsAppMessageModal";
+import { CorporateRfpSheet } from "@/components/corporate/corporate-rfp-sheet";
 
 export const Route = createFileRoute("/workspace/turismo/corporativo")({
   head: () => ({ meta: [{ title: "Viagens Corporativas & Gestão B2B | Workspace" }] }),
@@ -94,6 +95,7 @@ export default function AgencyCorporateCockpitPage() {
   const [whatsappRecipientPhone, setWhatsappRecipientPhone] = useState("");
   const [whatsappRecipientName, setWhatsappRecipientName] = useState("");
   const [selectedInvoice, setSelectedInvoice] = useState<any | null>(null);
+  const [rfpSheetOpen, setRfpSheetOpen] = useState(false);
 
   const handleRefreshSupport = async () => {
     setIsRefreshingSupport(true);
@@ -289,6 +291,16 @@ export default function AgencyCorporateCockpitPage() {
     <div className="flex flex-col min-h-dvh bg-background text-foreground">
       <WorkspaceCanonicalToolbar title="Gestão de Viagens Corporativas & B2B">
         <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setRfpSheetOpen(true)}
+            className="h-11 min-h-11 gap-2 rounded-lg px-4 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <FileText className="size-4 text-primary" aria-hidden="true" />
+            <span>Solicitações RFP</span>
+          </Button>
           <Badge variant="outline" className="text-xs font-mono">
             Agência Homologada
           </Badge>
@@ -879,6 +891,12 @@ export default function AgencyCorporateCockpitPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <CorporateRfpSheet
+        open={rfpSheetOpen}
+        onOpenChange={setRfpSheetOpen}
+        storeId={agencyId}
+      />
     </div>
   );
 }

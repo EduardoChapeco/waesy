@@ -6,7 +6,16 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
-import { getServerIdentity } from "@/lib/server-access";
+import { getServerIdentity, requireStaff } from "@/lib/server-access";
+import { parseExperienceMetaDescription } from "@/lib/tourism/travel-blueprint";
+import {
+  normalizeEntityMediaList,
+  normalizeHotelsList,
+  normalizeToursList,
+  normalizeTransfersList,
+  type ProposalMediaItem,
+  type ProposalWebPageDTO,
+} from "@/lib/tourism/proposal-normalization";
 
 // ─── Tipagens Canônicas de Grupos Terrestres ──────────────────────────────────
 
@@ -42,6 +51,7 @@ export interface GroupTourDTO {
  id: string;
  store_id: string | null;
  title: string;
+ subtitle?: string | null;
  destination: string;
  departure_city: string;
  departure_date: string;
@@ -57,6 +67,7 @@ export interface GroupTourDTO {
  rooms: HotelRoomAllocationDTO[];
  price_cents: number;
  included_items: string[];
+ excluded_items?: string[];
  status: GroupTourStatus;
  notes?: string | null;
  cover_image_url?: string | null;
@@ -64,6 +75,14 @@ export interface GroupTourDTO {
  payment_conditions?: string | null;
  vehicle_layout_id?: string | null;
  vehicle_layout_name?: string | null;
+ hotels?: any[];
+ transfers?: any[];
+ tours?: any[];
+ itinerary?: any[];
+ media?: ProposalMediaItem[];
+ pricing_tiers?: any[];
+ extra_options?: any[];
+ web_page_config?: ProposalWebPageDTO | null;
  created_at: string;
  updated_at: string;
 }
@@ -137,6 +156,11 @@ export const createGroupTour = createServerFn({ method: "POST" })
       pricingTiers: z.array(z.any()).default([]),
       extraOptions: z.array(z.any()).default([]),
       itinerary: z.array(z.any()).default([]),
+      hotels: z.array(z.any()).optional().default([]),
+      transfers: z.array(z.any()).optional().default([]),
+      tours: z.array(z.any()).optional().default([]),
+      media: z.array(z.any()).optional().default([]),
+      webPageConfig: z.any().optional().nullable(),
       isPublic: z.boolean().default(true),
       viewTemplate: z.enum(["standard", "instagram_editorial"]).default("instagram_editorial").optional(),
       status: z.enum(["open", "confirmed", "closed", "completed", "cancelled"]).default("open"),
@@ -236,6 +260,30 @@ export const createGroupTour = createServerFn({ method: "POST" })
       }
     }
 
+    const normalizedHotels = normalizeHotelsList(
+      Array.isArray(input.hotels) && input.hotels.length > 0
+        ? input.hotels
+        : input.hotelDetails && (input.hotelDetails.name || input.hotelDetails.hotel_name)
+          ? [{
+              id: "hotel-1",
+              hotel_name: input.hotelDetails.hotel_name || input.hotelDetails.name,
+              stars: Number(input.hotelDetails.stars || 3),
+              checkin_date: input.hotelDetails.check_in || input.hotelDetails.checkIn || undefined,
+              checkout_date: input.hotelDetails.check_out || input.hotelDetails.checkOut || undefined,
+              amenities: Array.isArray(input.hotelDetails.amenities) ? input.hotelDetails.amenities : [],
+              images: Array.isArray(input.hotelDetails.gallery) ? input.hotelDetails.gallery : [],
+            }]
+          : [],
+    );
+    const normalizedTransfers = normalizeTransfersList(input.transfers || []);
+    const normalizedTours = normalizeToursList(input.tours || []);
+    const normalizedMedia = normalizeEntityMediaList({
+      media: input.media,
+      featured_image_url: input.coverImageUrl || undefined,
+      images: Array.isArray(input.hotelDetails?.gallery) ? input.hotelDetails.gallery : [],
+      video_url: input.promoMedia?.youtube_url || input.promoMedia?.youtubeUrl || undefined,
+    });
+
     const metaPayload = {
       slug: input.slug || null,
       cover_image_url: input.coverImageUrl || null,
@@ -290,6 +338,18 @@ export const createGroupTour = createServerFn({ method: "POST" })
         cover_image_url: input.coverImageUrl || null,
         image_url: input.coverImageUrl || null,
         notes: input.notes?.trim() || null,
+        vehicle_layout_id: input.vehicleLayoutId || null,
+        vehicle_layout_name: input.vehicleLayoutName || null,
+        payment_conditions: input.paymentConditions || null,
+        boarding_points: input.boardingPoints || [],
+        pricing_tiers: input.pricingTiers || [],
+        extra_options: input.extraOptions || [],
+        itinerary: input.itinerary || [],
+        hotels: normalizedHotels,
+        transfers: normalizedTransfers,
+        tours: normalizedTours,
+        media: normalizedMedia,
+        web_page_config: input.webPageConfig || null,
         status: input.status,
         description: JSON.stringify(metaPayload),
       })
@@ -379,11 +439,7 @@ export const getGroupTourById = createServerFn({ method: "GET" })
  .validator(z.object({ id: z.string().uuid("ID de excursão inválido.") }))
  .handler(async ({ data }): Promise<GroupTourDTO | null> => {
  const supabase = getServerClient();
- const identity = await getServerIdentity();
-
- if (!identity?.id) {
- throw new Error("Não autorizado.");
- }
+ const identity = await requireStaff();
 
  const { data: row, error } = await supabase
  .from("tourism_experiences")
@@ -391,21 +447,37 @@ export const getGroupTourById = createServerFn({ method: "GET" })
  .eq("id", data.id)
  .maybeSingle();
 
- if (error || !row) {
- return null;
+ if (error) {
+   throw new Error(`Erro ao carregar excursão: ${error.message}`);
+ }
+ if (!row) {
+   return null;
+ }
+ if (row.store_id !== identity.store_id && identity.role !== "platform_admin") {
+   throw new Error("Acesso negado: excursão pertence a outra agência.");
  }
 
- let meta: any = {};
- try {
- meta = typeof row.description === "string" && row.description.startsWith("{") ? JSON.parse(row.description) : {};
- } catch {
- meta = {};
- }
+ const { meta, humanText } = parseExperienceMetaDescription(row.description);
+
+ const hotelsList = Array.isArray(row.hotels) && row.hotels.length > 0
+   ? normalizeHotelsList(row.hotels)
+   : meta.hotel_details && (meta.hotel_details.name || meta.hotel_details.hotel_name)
+     ? normalizeHotelsList([{
+         id: "hotel-1",
+         hotel_name: meta.hotel_details.hotel_name || meta.hotel_details.name,
+         stars: Number(meta.hotel_details.stars || 3),
+         checkin_date: meta.hotel_details.checkIn || undefined,
+         checkout_date: meta.hotel_details.checkOut || undefined,
+         amenities: Array.isArray(meta.hotel_details.amenities) ? meta.hotel_details.amenities : [],
+         images: Array.isArray(meta.hotel_details.gallery) ? meta.hotel_details.gallery : [],
+       }])
+     : [];
 
  return {
  id: row.id,
  store_id: row.store_id,
  title: row.title,
+ subtitle: row.subtitle || null,
  destination: row.destination || row.location || meta.destination || "Destino",
  departure_city: row.departure_city || meta.departure_city || "Origem",
  departure_date: row.departure_date ? new Date(row.departure_date).toISOString().split("T")[0] : (meta.departure_date || row.created_at?.split("T")[0]),
@@ -421,13 +493,26 @@ export const getGroupTourById = createServerFn({ method: "GET" })
  rooms: (Array.isArray(row.rooms) ? row.rooms : (meta.rooms || [])),
  price_cents: Number(row.price_cents) || 0,
  included_items: row.included_items || [],
+ excluded_items: Array.isArray(row.excluded_items) ? row.excluded_items : [],
  status: (row.status === "published" ? "open" : row.status) || "open",
- notes: row.notes || meta.notes || null,
- cover_image_url: meta.cover_image_url || null,
- boarding_points: meta.boarding_points || [],
- payment_conditions: meta.payment_conditions || null,
- vehicle_layout_id: meta.vehicle_layout_id || null,
- vehicle_layout_name: meta.vehicle_layout_name || null,
+ notes: row.notes || humanText || null,
+ cover_image_url: row.cover_image_url || meta.cover_image_url || row.image_url || null,
+ boarding_points: Array.isArray(row.boarding_points) && row.boarding_points.length > 0 ? row.boarding_points : (meta.boarding_points || []),
+ payment_conditions: row.payment_conditions || meta.payment_conditions || null,
+ vehicle_layout_id: row.vehicle_layout_id || meta.vehicle_layout_id || null,
+ vehicle_layout_name: row.vehicle_layout_name || meta.vehicle_layout_name || null,
+ hotels: hotelsList,
+ transfers: normalizeTransfersList(Array.isArray(row.transfers) && row.transfers.length > 0 ? row.transfers : (meta.transfers || [])),
+ tours: normalizeToursList(Array.isArray(row.tours) && row.tours.length > 0 ? row.tours : (meta.tours || [])),
+ itinerary: Array.isArray(row.itinerary) && row.itinerary.length > 0 ? row.itinerary : (meta.itinerary || []),
+ media: normalizeEntityMediaList({
+   media: Array.isArray(row.media) && row.media.length > 0 ? row.media : meta.media,
+   featured_image_url: row.cover_image_url || meta.cover_image_url || row.image_url || undefined,
+   video_url: meta.promo_media?.youtube_url || meta.promo_media?.youtubeUrl || undefined,
+ }),
+ pricing_tiers: Array.isArray(row.pricing_tiers) && row.pricing_tiers.length > 0 ? row.pricing_tiers : (meta.pricing_tiers || []),
+ extra_options: Array.isArray(row.extra_options) && row.extra_options.length > 0 ? row.extra_options : (meta.extra_options || []),
+ web_page_config: row.web_page_config || meta.web_page_config || null,
  created_at: row.created_at,
  updated_at: row.updated_at,
  };
@@ -450,10 +535,18 @@ export const updateGroupTourAllocations = createServerFn({ method: "POST" })
  )
  .handler(async ({ data }): Promise<{ success: boolean }> => {
  const supabase = getServerClient();
- const identity = await getServerIdentity();
+ const identity = await requireStaff();
 
- if (!identity?.id) {
- throw new Error("Não autorizado.");
+ const { data: existingTour, error: fetchErr } = await supabase
+   .from("tourism_experiences")
+   .select("id, store_id")
+   .eq("id", data.id)
+   .maybeSingle();
+ if (fetchErr || !existingTour) {
+   throw new Error("Excursão não encontrada.");
+ }
+ if (existingTour.store_id !== identity.store_id && identity.role !== "platform_admin") {
+   throw new Error("Acesso negado para atualizar excursão de outra agência.");
  }
 
  const patch: any = {
@@ -470,7 +563,8 @@ export const updateGroupTourAllocations = createServerFn({ method: "POST" })
  const { error } = await supabase
  .from("tourism_experiences")
  .update(patch)
- .eq("id", data.id);
+ .eq("id", data.id)
+ .eq("store_id", existingTour.store_id);
 
  if (error) {
  console.error("[group-tours.functions] Erro ao atualizar alocações:", error);
@@ -532,17 +626,27 @@ export const listAgencyGroupTours = createServerFn({ method: "GET" })
  if (!rows) return [];
 
  return rows.map((row: any) => {
- let meta: any = {};
- try {
- meta = typeof row.description === "string" && row.description.startsWith("{") ? JSON.parse(row.description) : {};
- } catch {
- meta = {};
- }
+ const { meta, humanText } = parseExperienceMetaDescription(row.description);
+
+ const hotelsList = Array.isArray(row.hotels) && row.hotels.length > 0
+   ? normalizeHotelsList(row.hotels)
+   : meta.hotel_details && (meta.hotel_details.name || meta.hotel_details.hotel_name)
+     ? normalizeHotelsList([{
+         id: "hotel-1",
+         hotel_name: meta.hotel_details.hotel_name || meta.hotel_details.name,
+         stars: Number(meta.hotel_details.stars || 3),
+         checkin_date: meta.hotel_details.checkIn || undefined,
+         checkout_date: meta.hotel_details.checkOut || undefined,
+         amenities: Array.isArray(meta.hotel_details.amenities) ? meta.hotel_details.amenities : [],
+         images: Array.isArray(meta.hotel_details.gallery) ? meta.hotel_details.gallery : [],
+       }])
+     : [];
 
  return {
  id: row.id,
  store_id: row.store_id,
  title: row.title,
+ subtitle: row.subtitle || null,
  destination: row.destination || row.location || meta.destination || "Destino",
  departure_city: row.departure_city || meta.departure_city || "Origem",
  departure_date: row.departure_date ? new Date(row.departure_date).toISOString().split("T")[0] : (meta.departure_date || row.created_at?.split("T")[0]),
@@ -558,13 +662,26 @@ export const listAgencyGroupTours = createServerFn({ method: "GET" })
  rooms: (Array.isArray(row.rooms) ? row.rooms : (meta.rooms || [])),
  price_cents: Number(row.price_cents) || 0,
  included_items: row.included_items || [],
+ excluded_items: Array.isArray(row.excluded_items) ? row.excluded_items : [],
  status: (row.status === "published" ? "open" : row.status) || "open",
- notes: row.notes || meta.notes || null,
- cover_image_url: meta.cover_image_url || null,
- boarding_points: meta.boarding_points || [],
- payment_conditions: meta.payment_conditions || null,
- vehicle_layout_id: meta.vehicle_layout_id || null,
- vehicle_layout_name: meta.vehicle_layout_name || null,
+ notes: row.notes || humanText || null,
+ cover_image_url: row.cover_image_url || meta.cover_image_url || row.image_url || null,
+ boarding_points: Array.isArray(row.boarding_points) && row.boarding_points.length > 0 ? row.boarding_points : (meta.boarding_points || []),
+ payment_conditions: row.payment_conditions || meta.payment_conditions || null,
+ vehicle_layout_id: row.vehicle_layout_id || meta.vehicle_layout_id || null,
+ vehicle_layout_name: row.vehicle_layout_name || meta.vehicle_layout_name || null,
+ hotels: hotelsList,
+ transfers: normalizeTransfersList(Array.isArray(row.transfers) && row.transfers.length > 0 ? row.transfers : (meta.transfers || [])),
+ tours: normalizeToursList(Array.isArray(row.tours) && row.tours.length > 0 ? row.tours : (meta.tours || [])),
+ itinerary: Array.isArray(row.itinerary) && row.itinerary.length > 0 ? row.itinerary : (meta.itinerary || []),
+ media: normalizeEntityMediaList({
+   media: Array.isArray(row.media) && row.media.length > 0 ? row.media : meta.media,
+   featured_image_url: row.cover_image_url || meta.cover_image_url || row.image_url || undefined,
+   video_url: meta.promo_media?.youtube_url || meta.promo_media?.youtubeUrl || undefined,
+ }),
+ pricing_tiers: Array.isArray(row.pricing_tiers) && row.pricing_tiers.length > 0 ? row.pricing_tiers : (meta.pricing_tiers || []),
+ extra_options: Array.isArray(row.extra_options) && row.extra_options.length > 0 ? row.extra_options : (meta.extra_options || []),
+ web_page_config: row.web_page_config || meta.web_page_config || null,
  created_at: row.created_at,
  updated_at: row.updated_at,
  };
@@ -587,8 +704,17 @@ export const listGroupTourCosts = createServerFn({ method: "GET" })
  .validator(z.object({ tour_id: z.string().uuid() }))
  .handler(async ({ data }): Promise<GroupTourCostItem[]> => {
  const supabase = getServerClient();
- const identity = await getServerIdentity();
- if (!identity?.id) throw new Error("Não autorizado.");
+ const identity = await requireStaff();
+
+ const { data: tourRow, error: tourErr } = await supabase
+   .from("tourism_experiences")
+   .select("id, store_id")
+   .eq("id", data.tour_id)
+   .maybeSingle();
+ if (tourErr || !tourRow) throw new Error("Excursão não encontrada.");
+ if (tourRow.store_id !== identity.store_id && identity.role !== "platform_admin") {
+   throw new Error("Acesso negado aos custos desta excursão.");
+ }
 
  const { data: costs, error } = await supabase
  .from("group_tour_costs")
@@ -612,8 +738,17 @@ export const createGroupTourCost = createServerFn({ method: "POST" })
  )
  .handler(async ({ data }) => {
  const supabase = getServerClient();
- const identity = await getServerIdentity();
- if (!identity?.id) throw new Error("Não autorizado.");
+ const identity = await requireStaff();
+
+ const { data: tourRow, error: tourErr } = await supabase
+   .from("tourism_experiences")
+   .select("id, store_id")
+   .eq("id", data.tour_id)
+   .maybeSingle();
+ if (tourErr || !tourRow) throw new Error("Excursão não encontrada.");
+ if (tourRow.store_id !== identity.store_id && identity.role !== "platform_admin") {
+   throw new Error("Acesso negado para registrar custo em excursão de outra agência.");
+ }
 
  const { data: created, error } = await supabase
  .from("group_tour_costs")
@@ -635,8 +770,23 @@ export const deleteGroupTourCost = createServerFn({ method: "POST" })
  .validator(z.object({ cost_id: z.string().uuid() }))
  .handler(async ({ data }) => {
  const supabase = getServerClient();
- const identity = await getServerIdentity();
- if (!identity?.id) throw new Error("Não autorizado.");
+ const identity = await requireStaff();
+
+ const { data: costRow, error: cErr } = await supabase
+   .from("group_tour_costs")
+   .select("id, tour_id")
+   .eq("id", data.cost_id)
+   .maybeSingle();
+ if (cErr || !costRow) throw new Error("Item de custo não encontrado.");
+
+ const { data: tourRow } = await supabase
+   .from("tourism_experiences")
+   .select("id, store_id")
+   .eq("id", costRow.tour_id)
+   .maybeSingle();
+ if (!tourRow || (tourRow.store_id !== identity.store_id && identity.role !== "platform_admin")) {
+   throw new Error("Acesso negado para excluir custo de outra agência.");
+ }
 
  const { error } = await supabase
  .from("group_tour_costs")
@@ -651,8 +801,17 @@ export const getGroupTourBudgetSummary = createServerFn({ method: "GET" })
  .validator(z.object({ tour_id: z.string().uuid(), price_cents: z.number().int() }))
  .handler(async ({ data }) => {
  const supabase = getServerClient();
- const identity = await getServerIdentity();
- if (!identity?.id) throw new Error("Não autorizado.");
+ const identity = await requireStaff();
+
+ const { data: tourRow, error: tourErr } = await supabase
+   .from("tourism_experiences")
+   .select("id, store_id")
+   .eq("id", data.tour_id)
+   .maybeSingle();
+ if (tourErr || !tourRow) throw new Error("Excursão não encontrada.");
+ if (tourRow.store_id !== identity.store_id && identity.role !== "platform_admin") {
+   throw new Error("Acesso negado ao orçamento desta excursão.");
+ }
 
  const { data: costs, error } = await supabase
  .from("group_tour_costs")
@@ -704,11 +863,13 @@ export const deleteGroupTour = createServerFn({ method: "POST" })
 export const listGroupTours = createServerFn({ method: "GET" })
   .validator(z.object({ search: z.string().optional() }).optional())
   .handler(async ({ data }): Promise<GroupTourDTO[]> => {
+    const identity = await requireStaff();
     const supabase = getServerClient();
     let q = supabase
       .from("tourism_experiences")
       .select("*")
       .eq("category", "group_tour")
+      .eq("store_id", identity.store_id)
       .order("created_at", { ascending: false });
 
     if (data?.search && data.search.trim()) {
@@ -716,7 +877,10 @@ export const listGroupTours = createServerFn({ method: "GET" })
     }
 
     const { data: rows, error } = await q;
-    if (error || !rows) return [];
+    if (error) {
+      throw new Error(`Erro ao listar excursões da agência: ${error.message}`);
+    }
+    if (!rows) return [];
 
     return rows.map((row) => ({
       id: row.id,
@@ -756,16 +920,18 @@ export const updateGroupTourSettings = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     const supabase = getServerClient();
-    const identity = await getServerIdentity();
-    if (!identity?.id) throw new Error("Não autorizado.");
+    const identity = await requireStaff();
 
     const { data: tour, error: fetchErr } = await supabase
       .from("tourism_experiences")
-      .select("id, description")
+      .select("id, store_id, description")
       .eq("id", data.id)
       .single();
 
     if (fetchErr || !tour) throw new Error("Excursão não encontrada.");
+    if (tour.store_id !== identity.store_id && identity.role !== "platform_admin") {
+      throw new Error("Acesso negado para alterar configurações de outra agência.");
+    }
 
     let meta: any = {};
     try {
@@ -954,20 +1120,25 @@ export const bookGroupTourReservation = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<{
     success: boolean;
     reservationCode: string;
+    tripId?: string | null;
     totalCents: number;
     companionTokens: string[];
     message: string;
   }> => {
     const supabase = getServerClient();
-    const { tourId, primaryContact, adultsCount, childrenCount, roomPreference, selectedSeats, delegateCompanionForms, paymentMethod } = data;
+    const { tourId, primaryContact, adultsCount, childrenCount, childrenAges, roomPreference, selectedSeats, delegateCompanionForms, paymentMethod, notes } = data;
 
     const { data: tour, error } = await supabase
       .from("tourism_experiences")
-      .select("id, title, destination, price_cents, total_seats, available_seats, seats, rooms, description, store_id")
+      .select("id, title, destination, status, price_cents, total_seats, available_seats, seats, rooms, description, store_id, departure_date, return_date, hotels, transfers, tours, itinerary, included_items, excluded_items, cover_image_url, image_url")
       .eq("id", tourId)
       .single();
 
     if (error || !tour) throw new Error("Excursão não encontrada.");
+    if ((tour as any).status === "cancelled" || (tour as any).status === "closed") {
+      throw new Error("Esta excursão não está mais recebendo reservas.");
+    }
+    const identity = await getServerIdentity().catch(() => null);
 
     let meta: any = {};
     try {
@@ -988,8 +1159,8 @@ export const bookGroupTourReservation = createServerFn({ method: "POST" })
     selectedSeats.forEach((seatNum, idx) => {
       const sIdx = updatedSeats.findIndex((s) => s.seat_number === seatNum);
       if (sIdx >= 0) {
-        if (updatedSeats[sIdx].status === "reserved") {
-          throw new Error("A poltrona " + seatNum + " já foi reservada. Selecione outro assento livre.");
+        if (updatedSeats[sIdx].status === "reserved" || updatedSeats[sIdx].status === "blocked") {
+          throw new Error("A poltrona " + seatNum + " está indisponível. Selecione outro assento livre.");
         }
         updatedSeats[sIdx] = {
           ...updatedSeats[sIdx],
@@ -1003,7 +1174,7 @@ export const bookGroupTourReservation = createServerFn({ method: "POST" })
 
     const newAvailable = Math.max(0, (tour.available_seats || tour.total_seats || 46) - totalPax);
 
-    await supabase
+    const { error: seatUpdErr } = await supabase
       .from("tourism_experiences")
       .update({
         seats: updatedSeats,
@@ -1011,6 +1182,10 @@ export const bookGroupTourReservation = createServerFn({ method: "POST" })
         updated_at: new Date().toISOString(),
       })
       .eq("id", tourId);
+
+    if (seatUpdErr) {
+      throw new Error(`Erro ao atualizar disponibilidade de assentos: ${seatUpdErr.message}`);
+    }
 
     // Geração de tokens de formulário para acompanhantes
     const companionTokens: string[] = [];
@@ -1035,13 +1210,226 @@ export const bookGroupTourReservation = createServerFn({ method: "POST" })
       }
     }
 
-    const reservationCode = "#EXC-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+    const reservationCode = "EXC-" + crypto.randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase();
+    const tAny = tour as any;
+
+    let createdTripId: string | null = null;
+    if (tour.store_id) {
+      const { data: insertedTrip, error: tripErr } = await supabase
+        .from("tourism_trips")
+        .insert({
+          store_id: tour.store_id,
+          created_by_profile_id: identity?.id || null,
+          customer_id: identity?.id || null,
+          trip_number: reservationCode,
+          title: tour.title || `Excursão ${tour.destination || ""}`.trim(),
+          destination_city: tour.destination || "Destino Nacional",
+          travel_start_date: tAny.departure_date || meta.departure_date || null,
+          travel_end_date: tAny.return_date || meta.return_date || null,
+          adults_count: adultsCount,
+          children_count: childrenCount,
+          currency: "BRL",
+          total_cents: totalCents,
+          status: "confirmed",
+          payment_method: paymentMethod,
+          client_name: primaryContact.name,
+          client_whatsapp: primaryContact.phone,
+          client_email: primaryContact.email,
+          client_document: primaryContact.document || null,
+          cover_image_url: tAny.cover_image_url || tAny.image_url || null,
+          flights: [],
+          hotels: Array.isArray(tAny.hotels) ? tAny.hotels : [],
+          transfers: Array.isArray(tAny.transfers) ? tAny.transfers : [],
+          tours: Array.isArray(tAny.tours) ? tAny.tours : [],
+          insurance: {},
+          itinerary: Array.isArray(tAny.itinerary) ? tAny.itinerary : [],
+          rooms: Array.isArray(tour.rooms) ? tour.rooms : [],
+          includes: Array.isArray(tAny.included_items) ? tAny.included_items : [],
+          excludes: Array.isArray(tAny.excluded_items) ? tAny.excluded_items : [],
+          notes: [
+            `Reserva de Excursão (${reservationCode}) · Poltronas: ${selectedSeats.join(", ") || "A definir"}`,
+            notes ? `Observações: ${notes}` : "",
+          ]
+            .filter(Boolean)
+            .join("\n"),
+          portal_content: {
+            source_type: "group_tour",
+            group_tour_id: tourId,
+            selected_seats: selectedSeats,
+            children_ages: childrenAges,
+            payment_method: paymentMethod,
+          },
+        })
+        .select("id")
+        .maybeSingle();
+
+      if (tripErr) {
+        throw new Error(`Erro ao registrar viagem da excursão: ${tripErr.message}`);
+      }
+      createdTripId = insertedTrip?.id || null;
+
+      if (createdTripId) {
+        const { error: paxErr } = await supabase.from("trip_passengers").insert({
+          trip_id: createdTripId,
+          store_id: tour.store_id,
+          full_name: primaryContact.name,
+          document: primaryContact.document || null,
+          email: primaryContact.email,
+          phone: primaryContact.phone,
+          seat_number: selectedSeats[0] ? String(selectedSeats[0]) : null,
+          is_lead_passenger: true,
+        });
+        if (paxErr) {
+          throw new Error(`Viagem da excursão criada parcialmente; falha ao registrar passageiro: ${paxErr.message}`);
+        }
+      }
+    }
 
     return {
       success: true,
       reservationCode,
+      tripId: createdTripId,
       totalCents,
       companionTokens,
       message: "Reserva confirmada com sucesso! Vagas garantidas na excursão " + tour.title + ".",
     };
+  });
+
+export const UpdateGroupTourContentSchema = z.object({
+  id: z.string().uuid("ID de excursão inválido."),
+  title: z.string().min(3).optional().nullable(),
+  subtitle: z.string().optional().nullable(),
+  destination: z.string().min(2).optional().nullable(),
+  departureCity: z.string().optional().nullable(),
+  departureDate: z.string().optional().nullable(),
+  departureTime: z.string().optional().nullable(),
+  returnDate: z.string().optional().nullable(),
+  returnTime: z.string().optional().nullable(),
+  priceCents: z.number().int().min(0).optional().nullable(),
+  notes: z.string().optional().nullable(),
+  coverImageUrl: z.string().optional().nullable(),
+  includedItems: z.array(z.string()).optional().nullable(),
+  excludedItems: z.array(z.string()).optional().nullable(),
+  boardingPoints: z.array(z.any()).optional().nullable(),
+  hotels: z.array(z.any()).optional().nullable(),
+  transfers: z.array(z.any()).optional().nullable(),
+  tours: z.array(z.any()).optional().nullable(),
+  itinerary: z.array(z.any()).optional().nullable(),
+  media: z.array(z.any()).optional().nullable(),
+  pricingTiers: z.array(z.any()).optional().nullable(),
+  extraOptions: z.array(z.any()).optional().nullable(),
+  paymentConditions: z.string().optional().nullable(),
+  webPageConfig: z.any().optional().nullable(),
+  status: z.enum(["open", "confirmed", "closed", "completed", "cancelled"]).optional().nullable(),
+});
+
+export const updateGroupTourContent = createServerFn({ method: "POST" })
+  .validator(UpdateGroupTourContentSchema)
+  .handler(async ({ data }): Promise<{ success: boolean }> => {
+    const supabase = getServerClient();
+    const identity = await requireStaff();
+
+    const { data: existing, error: fetchErr } = await supabase
+      .from("tourism_experiences")
+      .select("id, store_id, author_profile_id")
+      .eq("id", data.id)
+      .maybeSingle();
+
+    if (fetchErr || !existing) {
+      throw new Error("Excursão não encontrada.");
+    }
+
+    if (existing.store_id && identity.store_id && existing.store_id !== identity.store_id) {
+      throw new Error("Sem permissão para editar excursão de outra loja.");
+    }
+
+    const patch: Record<string, any> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.title !== undefined && data.title !== null) patch.title = data.title.trim();
+    if (data.subtitle !== undefined) patch.subtitle = data.subtitle;
+    if (data.destination !== undefined && data.destination !== null) {
+      patch.destination = data.destination.trim();
+      patch.destination_city = data.destination.trim();
+      patch.location = data.destination.trim();
+    }
+    if (data.departureCity !== undefined && data.departureCity !== null) {
+      patch.departure_city = data.departureCity.trim();
+    }
+    if (data.departureDate !== undefined && data.departureDate !== null) {
+      patch.departure_date = data.departureDate;
+    }
+    if (data.departureTime !== undefined && data.departureTime !== null) {
+      patch.departure_time = data.departureTime;
+    }
+    if (data.returnDate !== undefined && data.returnDate !== null) {
+      patch.return_date = data.returnDate;
+    }
+    if (data.returnTime !== undefined && data.returnTime !== null) {
+      patch.return_time = data.returnTime;
+    }
+    if (data.priceCents !== undefined && data.priceCents !== null) {
+      patch.price_cents = data.priceCents;
+      patch.price_display =
+        data.priceCents > 0
+          ? (data.priceCents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+          : "Sob Consulta";
+    }
+    if (data.notes !== undefined) patch.notes = data.notes;
+    if (data.coverImageUrl !== undefined) {
+      patch.cover_image_url = data.coverImageUrl;
+      patch.image_url = data.coverImageUrl;
+    }
+    if (data.includedItems !== undefined && data.includedItems !== null) {
+      patch.included_items = data.includedItems;
+    }
+    if (data.excludedItems !== undefined && data.excludedItems !== null) {
+      patch.excluded_items = data.excludedItems;
+    }
+    if (data.boardingPoints !== undefined && data.boardingPoints !== null) {
+      patch.boarding_points = data.boardingPoints;
+    }
+    if (data.hotels !== undefined && data.hotels !== null) {
+      patch.hotels = normalizeHotelsList(data.hotels);
+    }
+    if (data.transfers !== undefined && data.transfers !== null) {
+      patch.transfers = normalizeTransfersList(data.transfers);
+    }
+    if (data.tours !== undefined && data.tours !== null) {
+      patch.tours = normalizeToursList(data.tours);
+    }
+    if (data.itinerary !== undefined && data.itinerary !== null) {
+      patch.itinerary = data.itinerary;
+    }
+    if (data.media !== undefined && data.media !== null) {
+      patch.media = normalizeEntityMediaList({ media: data.media });
+    }
+    if (data.pricingTiers !== undefined && data.pricingTiers !== null) {
+      patch.pricing_tiers = data.pricingTiers;
+    }
+    if (data.extraOptions !== undefined && data.extraOptions !== null) {
+      patch.extra_options = data.extraOptions;
+    }
+    if (data.paymentConditions !== undefined) {
+      patch.payment_conditions = data.paymentConditions;
+    }
+    if (data.webPageConfig !== undefined) {
+      patch.web_page_config = data.webPageConfig;
+    }
+    if (data.status !== undefined && data.status !== null) {
+      patch.status = data.status;
+    }
+
+    const { error: updateErr } = await supabase
+      .from("tourism_experiences")
+      .update(patch)
+      .eq("id", data.id);
+
+    if (updateErr) {
+      console.error("[group-tours.functions] Erro em updateGroupTourContent:", updateErr);
+      throw new Error(`Falha ao salvar conteúdo da excursão: ${updateErr.message}`);
+    }
+
+    return { success: true };
   });

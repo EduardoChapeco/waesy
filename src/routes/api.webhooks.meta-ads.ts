@@ -180,6 +180,76 @@ export const Route = createFileRoute("/api/webhooks/meta-ads")({
                 });
                 if (ingestError || !ingested) throw new Error(`Falha ao persistir lead Meta: ${ingestError?.message || "RPC sem retorno"}`);
 
+                // Enriquece metadados da campanha Meta + dedup CRM + dispara CAPI multi-pixel
+                try {
+                  const resolvedAdId = String(leadPayload.ad_id || adId || "").trim() || null;
+                  const resolvedCampaignId = String(leadPayload.campaign_id || "").trim() || null;
+                  const resolvedFormId = String(leadPayload.form_id || formId || "").trim() || null;
+                  const { resolveAndEnrichMetaAdMetadata, formatReadableCampaignDetail } = await import(
+                    "@/services/meta-ad-enrichment.server"
+                  );
+                  const enrichedMeta = await resolveAndEnrichMetaAdMetadata(supabase, {
+                    storeId: targetStoreId,
+                    adId: resolvedAdId,
+                    campaignId: resolvedCampaignId,
+                    adsetId: String(leadPayload.adset_id || "").trim() || null,
+                  }).catch(() => null);
+
+                  const humanAnswers = Object.fromEntries(
+                    Object.entries(fieldData).filter(
+                      ([k]) => !["full_name", "name", "nome", "email", "e-mail", "phone_number", "phone", "telefone"].includes(k.toLowerCase()),
+                    ),
+                  );
+                  const readableDetail = enrichedMeta
+                    ? formatReadableCampaignDetail({
+                        campaignName: enrichedMeta.campaignName,
+                        adsetName: enrichedMeta.adsetName,
+                        adName: enrichedMeta.adName,
+                        adHeadline: enrichedMeta.adHeadline,
+                        adId: resolvedAdId,
+                      })
+                    : null;
+
+                  const { ingestOmnichannelLead } = await import("@/services/omnichannel-lead-ingestion");
+                  const mergedLead = await ingestOmnichannelLead(supabase, {
+                    storeId: targetStoreId,
+                    source: "meta_ads",
+                    sourceDetail: readableDetail || (resolvedFormId ? `Meta Form #${resolvedFormId}` : "Meta Lead Ads"),
+                    fullName,
+                    phone,
+                    email,
+                    sourceFormId: resolvedFormId,
+                    customFields: {
+                      ...customFields,
+                      ...humanAnswers,
+                      meta_atomic_id: typeof ingested === "string" ? ingested : ingested?.id || null,
+                      ...(enrichedMeta?.campaignName ? { campaign_name: enrichedMeta.campaignName, utm_campaign: enrichedMeta.campaignName } : {}),
+                      ...(enrichedMeta?.adsetName ? { adset_name: enrichedMeta.adsetName } : {}),
+                      ...(enrichedMeta?.adName ? { ad_name: enrichedMeta.adName } : {}),
+                      ...(enrichedMeta?.adHeadline ? { ad_headline: enrichedMeta.adHeadline } : {}),
+                      ...(enrichedMeta?.sourcePixelId ? { source_pixel_id: enrichedMeta.sourcePixelId } : {}),
+                    },
+                  }).catch(() => null);
+
+                  const { dispatchServerSidePixelConversion } = await import(
+                    "@/services/omnichannel-attribution.server"
+                  );
+                  await dispatchServerSidePixelConversion(supabase, {
+                    storeId: targetStoreId,
+                    eventName: "Lead",
+                    eventId: `meta_leadgen_${leadgenId}`,
+                    eventSource: "meta_leadgen_webhook",
+                    leadId: mergedLead?.leadId || (typeof ingested === "string" ? ingested : ingested?.id || null),
+                    phone,
+                    email,
+                    fullName,
+                    campaignId: resolvedCampaignId,
+                    adId: resolvedAdId,
+                    formId: resolvedFormId,
+                    sourcePixelId: enrichedMeta?.sourcePixelId || null,
+                  }).catch(() => null);
+                } catch {}
+
                 if (inboxRecord?.id) {
                   await supabase
                     .from("marketplace_webhook_events")

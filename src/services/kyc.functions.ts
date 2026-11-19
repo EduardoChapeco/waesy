@@ -39,7 +39,7 @@ export const auditKycVerificationSchema = z.object({
  */
 export const getMyKycStatus = createServerFn({ method: "GET" }).handler(async () => {
  const identity = await getServerIdentity();
- if (!identity) throw new Error("Não autenticado");
+ if (!identity?.id) throw new Error("Não autenticado");
 
  const supabase = getServerClient();
  const { data: kyc, error } = await supabase
@@ -60,7 +60,7 @@ export const submitKycVerification = createServerFn({ method: "POST" })
  .validator(submitKycVerificationSchema)
  .handler(async ({ data }) => {
  const identity = await getServerIdentity();
- if (!identity) throw new Error("Não autenticado");
+ if (!identity?.id) throw new Error("Não autenticado");
 
  const supabase = getServerClient();
  const { data: kyc, error } = await supabase
@@ -95,7 +95,7 @@ export const listKycVerificationsForAdmin = createServerFn({ method: "GET" })
  .validator(z.object({ status: z.string().optional() }).optional())
  .handler(async ({ data }) => {
  const identity = await getServerIdentity();
- if (!identity || (!identity.isPlatformAdmin && !["master", "platform_admin", "admin_master", "superadmin"].includes(identity.role))) {
+ if (!identity?.id || (!identity.isPlatformAdmin && !["master", "platform_admin", "admin_master", "superadmin"].includes(identity.role))) {
  throw new Error("Acesso restrito à governança master");
  }
 
@@ -121,7 +121,7 @@ export const auditKycVerification = createServerFn({ method: "POST" })
  .validator(auditKycVerificationSchema)
  .handler(async ({ data }) => {
  const identity = await getServerIdentity();
- if (!identity || (!identity.isPlatformAdmin && !["master", "platform_admin", "admin_master", "superadmin"].includes(identity.role))) {
+ if (!identity?.id || (!identity.isPlatformAdmin && !["master", "platform_admin", "admin_master", "superadmin"].includes(identity.role))) {
  throw new Error("Acesso restrito à governança master");
  }
 

@@ -33,31 +33,110 @@ export function calculateInstallmentPlan(
 export const listBookingInstallments = createServerFn({ method: 'GET' })
   .validator(
     z.object({
-      storeId: z.string().uuid().optional(),
-      tripId: z.string().uuid().optional(),
+      storeId: z.string().uuid().optional().nullable(),
+      tripId: z.string().uuid().optional().nullable(),
     }).optional()
   )
   .handler(async ({ data }): Promise<TravelBookingInstallment[]> => {
+    const { storeId, tripId } = data || {};
     const identity = await getServerIdentity();
-    const effectiveStoreId = data?.storeId || identity.store_id;
+    assertStoreAccess(identity, ['owner', 'admin', 'manager', 'seller']);
+
+    if (storeId && identity.role !== 'platform_admin' && storeId !== identity.store_id) {
+      throw new Error('Acesso não autorizado para listar parcelas de outra agência.');
+    }
+
+    const effectiveStoreId = storeId || identity.store_id;
     if (!effectiveStoreId) {
-      throw new Error("Identificador da loja não fornecido.");
+      throw new Error('Identificador da loja não fornecido.');
     }
 
     const db = getServerClient();
-    let query = db
+
+    // 1. Fonte canônica unificada (travel_trip_installment_boletos)
+    let canonicalQuery = db
+      .from('travel_trip_installment_boletos')
+      .select('*')
+      .eq('store_id', effectiveStoreId)
+      .order('due_date', { ascending: true });
+    if (tripId) {
+      canonicalQuery = canonicalQuery.eq('trip_id', tripId);
+    }
+    const { data: canonicalRows, error: canonicalErr } = await canonicalQuery;
+    if (canonicalErr) {
+      throw new Error(`Erro ao listar boletos canônicos: ${canonicalErr.message}`);
+    }
+
+    const tripIds = Array.from(
+      new Set((canonicalRows || []).map((r: any) => r.trip_id).filter(Boolean))
+    );
+    const tripClientNameById = new Map<string, string>();
+    if (tripIds.length > 0) {
+      const { data: tripsData } = await db
+        .from('tourism_trips')
+        .select('id, client_name')
+        .eq('store_id', effectiveStoreId)
+        .in('id', tripIds);
+      for (const t of tripsData || []) {
+        if (t?.id && t?.client_name) {
+          tripClientNameById.set(String(t.id), String(t.client_name));
+        }
+      }
+    }
+
+    const canonicalMapped: TravelBookingInstallment[] = (canonicalRows || []).map((b: any) => ({
+      id: b.id,
+      store_id: b.store_id,
+      trip_id: b.trip_id,
+      client_id: null,
+      passenger_name: tripClientNameById.get(String(b.trip_id)) || 'Titular da Viagem',
+      installment_number: Number(b.installment_number || 1),
+      total_installments: Number(b.total_installments || 1),
+      amount: Math.round(Number(b.amount_cents || 0)) / 100,
+      due_date: String(b.due_date || ''),
+      status:
+        b.status === 'reconciled'
+          ? 'paid'
+          : b.status === 'cancelled'
+            ? 'canceled'
+            : b.status === 'overdue'
+              ? 'late'
+              : 'pending',
+      paid_at: b.status === 'reconciled' ? b.updated_at || null : null,
+      payment_method:
+        b.payment_channel === 'credit_card'
+          ? 'cartao'
+          : b.payment_channel === 'boleto_bancario'
+            ? 'boleto'
+            : 'pix',
+      transaction_reference: b.digitable_line || null,
+      receipt_url: b.receipt_file_url || null,
+      created_at: b.created_at,
+      updated_at: b.updated_at,
+    }));
+
+    // 2. Fallback read-through para registros históricos legados ainda não migrados
+    let legacyQuery = db
       .from('travel_booking_installments')
       .select('*')
       .eq('store_id', effectiveStoreId)
       .order('due_date', { ascending: true });
-
-    if (data?.tripId) {
-      query = query.eq('trip_id', data.tripId);
+    if (tripId) {
+      legacyQuery = legacyQuery.eq('trip_id', tripId);
+    }
+    const { data: legacyRows, error: legacyErr } = await legacyQuery;
+    if (legacyErr) {
+      throw new Error(`Erro ao listar parcelas do carnê: ${legacyErr.message}`);
     }
 
-    const { data: rows, error } = await query;
-    if (error) throw new Error(`Erro ao listar parcelas do carnê: ${error.message}`);
-    return (rows as any[]) || [];
+    const seenIds = new Set(canonicalMapped.map((item) => item.id));
+    const merged: TravelBookingInstallment[] = [...canonicalMapped];
+    for (const row of (legacyRows as TravelBookingInstallment[]) || []) {
+      if (!seenIds.has(row.id)) {
+        merged.push(row);
+      }
+    }
+    return merged.sort((a, b) => String(a.due_date || '').localeCompare(String(b.due_date || '')));
   });
 
 export const markInstallmentPaid = createServerFn({ method: 'POST' })
@@ -69,36 +148,73 @@ export const markInstallmentPaid = createServerFn({ method: 'POST' })
     })
   )
   .handler(async ({ data }): Promise<{ success: boolean }> => {
+    const { id, payment_method, transaction_reference } = data;
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ['owner', 'admin', 'manager', 'seller']);
 
     const db = getServerClient();
+    const nowIso = new Date().toISOString();
 
-    // 1. Busca parcela para garantir que pertence à loja sob gestão
+    // 1. Tenta liquidar primeiro na tabela canônica unificada
+    const { data: canonicalBoleto } = await db
+      .from('travel_trip_installment_boletos')
+      .select('id, store_id')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (canonicalBoleto) {
+      if (canonicalBoleto.store_id !== identity.store_id && identity.role !== 'platform_admin') {
+        throw new Error('Acesso não autorizado para esta loja.');
+      }
+      const { error: updCanErr } = await db
+        .from('travel_trip_installment_boletos')
+        .update({
+          status: 'reconciled',
+          payment_channel:
+            payment_method === 'cartao'
+              ? 'credit_card'
+              : payment_method === 'boleto'
+                ? 'boleto_bancario'
+                : 'agency_pix',
+          ...(transaction_reference
+            ? { customer_notes: `Ref. Liquidação: ${transaction_reference}` }
+            : {}),
+          ocr_extracted_date: nowIso.slice(0, 10),
+          reconciled_at: nowIso,
+          updated_at: nowIso,
+        })
+        .eq('id', id)
+        .eq('store_id', canonicalBoleto.store_id);
+      if (updCanErr) throw new Error(`Erro ao baixar boleto canônico: ${updCanErr.message}`);
+      return { success: true };
+    }
+
+    // 2. Caso seja parcela legada em travel_booking_installments, exige mesmo tenant check
     const { data: installment, error: fetchErr } = await db
       .from('travel_booking_installments')
       .select('id, store_id')
-      .eq('id', data.id)
+      .eq('id', id)
       .single();
 
     if (fetchErr || !installment) {
-      throw new Error("Parcela não encontrada.");
+      throw new Error('Parcela não encontrada.');
     }
 
-    if (installment.store_id !== identity.store_id && !(identity.role === "platform_admin")) {
-      throw new Error("Acesso não autorizado para esta loja.");
+    if (installment.store_id !== identity.store_id && identity.role !== 'platform_admin') {
+      throw new Error('Acesso não autorizado para esta loja.');
     }
 
     const { error } = await db
       .from('travel_booking_installments')
       .update({
         status: 'paid',
-        paid_at: new Date().toISOString(),
-        payment_method: data.payment_method,
-        transaction_reference: data.transaction_reference,
-        updated_at: new Date().toISOString(),
+        paid_at: nowIso,
+        payment_method,
+        transaction_reference: transaction_reference ?? null,
+        updated_at: nowIso,
       })
-      .eq('id', data.id);
+      .eq('id', id)
+      .eq('store_id', installment.store_id);
 
     if (error) throw new Error(`Erro ao baixar parcela: ${error.message}`);
     return { success: true };

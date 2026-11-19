@@ -1,0 +1,4351 @@
+{
+  "generatedAt": "2026-11-18T18:34:08.033Z",
+  "summary": {
+    "totalSrcFiles": 2990,
+    "nonTestSrcFiles": 2401,
+    "runtimeReachableCount": 2151,
+    "unreachableNonTestCount": 252,
+    "dormantCapabilitiesCount": 210,
+    "deprecatedOrShimUnreachableCount": 27,
+    "supersededCandidateCount": 15,
+    "brokenImportsCount": 0,
+    "layerViolationsCount": 38,
+    "astCloneClustersCount": 10,
+    "watchlistedDuplicateHelpersCount": 1,
+    "deprecatedFilesCount": 4,
+    "monoliths800PlusCount": 316,
+    "totalLocNonTestSrc": 1098347,
+    "monolithsTop20LocSharePct": 8.8,
+    "routeRedirectTrapsCount": 0,
+    "quarantineFilesCount": 0,
+    "migrationsCount": 653,
+    "referenceMigrationsCount": 271
+  },
+  "brokenImports": [],
+  "layerViolations": [
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/lib/auth-guards.server.ts",
+      "count": 2,
+      "tables": [
+        "profiles"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/lib/builder/builder-auth.server.ts",
+      "count": 12,
+      "tables": [
+        "stores",
+        "organizations",
+        "workspace_members",
+        "experience_documents"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/lib/careers/employer-reviews.server.ts",
+      "count": 2,
+      "tables": [
+        "employer_reviews"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/lib/conversation-crypto.server.ts",
+      "count": 8,
+      "tables": [
+        "chat_conversation_keys",
+        "chat_threads"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/lib/custom-domain-routing.server.ts",
+      "count": 3,
+      "tables": [
+        "store_pwa_configs",
+        "stores"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/lib/engines/module-auditor.ts",
+      "count": 5,
+      "tables": [
+        "stores",
+        "restaurant_tables",
+        "events",
+        "employees",
+        "payment_methods"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/lib/identity.server.ts",
+      "count": 8,
+      "tables": [
+        "profiles",
+        "workspace_members",
+        "stores"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/lib/legal-consent.server.ts",
+      "count": 2,
+      "tables": [
+        "legal_terms_acceptances",
+        "forensic_audit_events"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/lib/logger.ts",
+      "count": 1,
+      "tables": [
+        "system_error_logs"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/lib/marketplace-vault.server.ts",
+      "count": 8,
+      "tables": [
+        "marketplace_connectors",
+        "integration_credentials",
+        "stores",
+        "orders",
+        "marketplace_external_orders"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/lib/mining/scraper-utils.ts",
+      "count": 2,
+      "tables": [
+        "domain_cooldowns"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/lib/mining/sitemap-crawler.engine.ts",
+      "count": 1,
+      "tables": [
+        "crawl_queue"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/lib/session-audit.server.ts",
+      "count": 4,
+      "tables": [
+        "device_registry",
+        "session_audit_logs"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/lib/slug-utils.ts",
+      "count": 2,
+      "tables": [
+        "stores",
+        "organizations"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/lib/tenant.server.ts",
+      "count": 1,
+      "tables": [
+        "stores"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/lib/whatsapp-contact-suppression.server.ts",
+      "count": 5,
+      "tables": [
+        "whatsapp_groups_directory",
+        "whatsapp_contact_identities",
+        "workspace_members",
+        "profiles"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/registries/mcp-tool-registry.ts",
+      "count": 49,
+      "tables": [
+        "products",
+        "master_products",
+        "categories",
+        "product_variants",
+        "stores",
+        "orders",
+        "deliveries",
+        "service_schedules",
+        "tourism_trips",
+        "tourism_proposals",
+        "travel_departures_kanban",
+        "commercial_proposals",
+        "digital_contracts",
+        "cash_registers",
+        "workspace_members",
+        "fiscal_invoices",
+        "store_marketplace_integrations",
+        "chat_threads",
+        "rma_requests",
+        "audit_logs",
+        "leads_crm",
+        "customers_crm",
+        "unified_listings_view",
+        "deals",
+        "hotels_bank",
+        "mined_tenders",
+        "news_articles",
+        "store_pixel_configs",
+        "marketing_source_pixels",
+        "integration_credentials",
+        "store_ad_campaigns",
+        "lead_conversion_telemetry",
+        "mined_articles",
+        "jobs_catalog",
+        "events",
+        "scraped_businesses"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/routes/api.ai.jobs.process.ts",
+      "count": 4,
+      "tables": [
+        "copilot-uploads",
+        "ai_async_jobs"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/routes/api.auth.ads.callback.ts",
+      "count": 7,
+      "tables": [
+        "stores",
+        "store_ad_accounts"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/routes/api.auth.callback.ts",
+      "count": 1,
+      "tables": [
+        "workspace_members"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/routes/api.auth.govbr.callback.ts",
+      "count": 3,
+      "tables": [
+        "signature_envelopes",
+        "integration_credentials"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/routes/api.auth.linkedin.callback.ts",
+      "count": 4,
+      "tables": [
+        "linkedin_master_credentials",
+        "oauth_integrations",
+        "profiles"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/routes/api.auth.marketplace.callback.ts",
+      "count": 4,
+      "tables": [
+        "marketplace_connectors",
+        "stores",
+        "marketplace_sync_logs"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/routes/api.cron.ai-scheduled-tasks.ts",
+      "count": 2,
+      "tables": [
+        "ai_scheduled_tasks"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/routes/api.cron.ai-tasks.ts",
+      "count": 2,
+      "tables": [
+        "copilot_executions"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/routes/api.cron.whatsapp-sync.ts",
+      "count": 4,
+      "tables": [
+        "whatsapp_channel_instances"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/routes/api.feed.meta[.]csv.ts",
+      "count": 2,
+      "tables": [
+        "stores",
+        "products"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/routes/api.feed.xml.ts",
+      "count": 4,
+      "tables": [
+        "stores",
+        "integration_credentials",
+        "marketplace_connectors",
+        "products"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/routes/api.pwa.manifest[.]json.ts",
+      "count": 3,
+      "tables": [
+        "platform_brand_settings",
+        "stores",
+        "store_pwa_configs"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/routes/api.webhooks.marketplaces.ts",
+      "count": 2,
+      "tables": [
+        "marketplace_connectors",
+        "stores"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/routes/api.webhooks.meta-ads.ts",
+      "count": 11,
+      "tables": [
+        "marketplace_webhook_events",
+        "store_ad_campaigns",
+        "integration_credentials"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/routes/api.webhooks.whatsapp.ts",
+      "count": 20,
+      "tables": [
+        "integration_credentials",
+        "whatsapp_webhook_inbox",
+        "chat_messages",
+        "whatsapp_channel_instances",
+        "whatsapp_lead_conversions",
+        "chat_threads",
+        "whatsapp_delivery_events",
+        "whatsapp_campaign_recipients"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/routes/sitemap-classificados[.]xml.ts",
+      "count": 1,
+      "tables": [
+        "classifieds"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/routes/sitemap-empresas[.]xml.ts",
+      "count": 2,
+      "tables": [
+        "stores",
+        "directory_listings"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/routes/sitemap-news[.]xml.ts",
+      "count": 2,
+      "tables": [
+        "news_articles"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/routes/sitemap-products[.]xml.ts",
+      "count": 1,
+      "tables": [
+        "products"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/routes/sitemap-produtos[.]xml.ts",
+      "count": 1,
+      "tables": [
+        "products"
+      ]
+    },
+    {
+      "rule": "NON_SERVICE_DIRECT_DB_QUERY",
+      "file": "src/routes/sitemap[.]xml.ts",
+      "count": 17,
+      "tables": [
+        "pages",
+        "products",
+        "classifieds",
+        "tourism_experiences",
+        "destinations",
+        "global_hotels",
+        "jobs",
+        "news_articles",
+        "stores",
+        "directory_listings",
+        "events",
+        "mined_raw_extractions",
+        "experience_documents",
+        "lead_forms",
+        "link_in_bio",
+        "communities",
+        "raffles"
+      ]
+    }
+  ],
+  "watchlistedDuplicates": [
+    {
+      "name": "formatMoney",
+      "count": 5,
+      "uniqueFiles": [
+        "src/components/tourism/CommissionAwardReceiptModal.tsx",
+        "src/components/tourism/EmployeeCommercialProfilePanel.tsx",
+        "src/components/tourism/OperatorBillingPanel.tsx",
+        "src/lib/money.ts",
+        "src/routes/workspace.turismo.minhas-vendas.tsx"
+      ],
+      "occurrences": [
+        "src/components/tourism/CommissionAwardReceiptModal.tsx:63",
+        "src/components/tourism/EmployeeCommercialProfilePanel.tsx:30",
+        "src/components/tourism/OperatorBillingPanel.tsx:30",
+        "src/lib/money.ts:21",
+        "src/routes/workspace.turismo.minhas-vendas.tsx:66"
+      ]
+    }
+  ],
+  "astClones": [
+    {
+      "hash": "a633fa80eb264203",
+      "count": 5,
+      "uniqueFilesCount": 5,
+      "sampleName": "formatMoney",
+      "items": [
+        {
+          "name": "formatMoney",
+          "relPath": "src/components/tourism/CommissionAwardReceiptModal.tsx",
+          "line": 63,
+          "loc": 6,
+          "exported": false,
+          "isWatchlisted": true,
+          "statementCount": 1,
+          "tokenCount": 22,
+          "branchCount": 0,
+          "hasJsx": false,
+          "hash": "a633fa80eb264203"
+        },
+        {
+          "name": "formatMoney",
+          "relPath": "src/components/tourism/EmployeeCommercialProfilePanel.tsx",
+          "line": 30,
+          "loc": 6,
+          "exported": false,
+          "isWatchlisted": true,
+          "statementCount": 1,
+          "tokenCount": 22,
+          "branchCount": 0,
+          "hasJsx": false,
+          "hash": "a633fa80eb264203"
+        },
+        {
+          "name": "formatMoney",
+          "relPath": "src/components/tourism/OperatorBillingPanel.tsx",
+          "line": 30,
+          "loc": 6,
+          "exported": false,
+          "isWatchlisted": true,
+          "statementCount": 1,
+          "tokenCount": 22,
+          "branchCount": 0,
+          "hasJsx": false,
+          "hash": "a633fa80eb264203"
+        },
+        {
+          "name": "formatCurrencyBRL",
+          "relPath": "src/lib/pricing/price-calculator.ts",
+          "line": 142,
+          "loc": 6,
+          "exported": true,
+          "isWatchlisted": false,
+          "statementCount": 1,
+          "tokenCount": 22,
+          "branchCount": 0,
+          "hasJsx": false,
+          "hash": "a633fa80eb264203"
+        },
+        {
+          "name": "formatMoney",
+          "relPath": "src/routes/workspace.turismo.minhas-vendas.tsx",
+          "line": 66,
+          "loc": 6,
+          "exported": false,
+          "isWatchlisted": true,
+          "statementCount": 1,
+          "tokenCount": 22,
+          "branchCount": 0,
+          "hasJsx": false,
+          "hash": "a633fa80eb264203"
+        }
+      ]
+    },
+    {
+      "hash": "5c0b49c09587e3b9",
+      "count": 3,
+      "uniqueFilesCount": 3,
+      "sampleName": "resolveNatureLabel",
+      "items": [
+        {
+          "name": "resolveNatureLabel",
+          "relPath": "src/components/tourism/CommissionAwardReceiptModal.tsx",
+          "line": 70,
+          "loc": 6,
+          "exported": false,
+          "isWatchlisted": false,
+          "statementCount": 7,
+          "tokenCount": 24,
+          "branchCount": 3,
+          "hasJsx": false,
+          "hash": "5c0b49c09587e3b9"
+        },
+        {
+          "name": "inferFunnelStage",
+          "relPath": "src/lib/builder/studio-catalog.ts",
+          "line": 136,
+          "loc": 6,
+          "exported": false,
+          "isWatchlisted": false,
+          "statementCount": 7,
+          "tokenCount": 24,
+          "branchCount": 3,
+          "hasJsx": false,
+          "hash": "5c0b49c09587e3b9"
+        },
+        {
+          "name": "mapHistoricalVerdictToTemperature",
+          "relPath": "src/services/opportunity-radar.functions.ts",
+          "line": 402,
+          "loc": 8,
+          "exported": false,
+          "isWatchlisted": false,
+          "statementCount": 7,
+          "tokenCount": 24,
+          "branchCount": 3,
+          "hasJsx": false,
+          "hash": "5c0b49c09587e3b9"
+        }
+      ]
+    },
+    {
+      "hash": "0ebda35ac5debbba",
+      "count": 3,
+      "uniqueFilesCount": 3,
+      "sampleName": "useCarousel",
+      "items": [
+        {
+          "name": "useCarousel",
+          "relPath": "src/components/ui/carousel.tsx",
+          "line": 31,
+          "loc": 9,
+          "exported": false,
+          "isWatchlisted": false,
+          "statementCount": 4,
+          "tokenCount": 20,
+          "branchCount": 1,
+          "hasJsx": false,
+          "hash": "0ebda35ac5debbba"
+        },
+        {
+          "name": "useChart",
+          "relPath": "src/components/ui/chart.tsx",
+          "line": 25,
+          "loc": 9,
+          "exported": false,
+          "isWatchlisted": false,
+          "statementCount": 4,
+          "tokenCount": 20,
+          "branchCount": 1,
+          "hasJsx": false,
+          "hash": "0ebda35ac5debbba"
+        },
+        {
+          "name": "useSidebar",
+          "relPath": "src/components/ui/sidebar.tsx",
+          "line": 34,
+          "loc": 8,
+          "exported": false,
+          "isWatchlisted": false,
+          "statementCount": 4,
+          "tokenCount": 20,
+          "branchCount": 1,
+          "hasJsx": false,
+          "hash": "0ebda35ac5debbba"
+        }
+      ]
+    },
+    {
+      "hash": "01ce31bd45687dc5",
+      "count": 3,
+      "uniqueFilesCount": 3,
+      "sampleName": "throwIfQueryFailed",
+      "items": [
+        {
+          "name": "throwIfQueryFailed",
+          "relPath": "src/services/b2b-portfolio-routes.functions.ts",
+          "line": 7,
+          "loc": 5,
+          "exported": false,
+          "isWatchlisted": false,
+          "statementCount": 2,
+          "tokenCount": 24,
+          "branchCount": 2,
+          "hasJsx": false,
+          "hash": "01ce31bd45687dc5"
+        },
+        {
+          "name": "throwIfQueryFailed",
+          "relPath": "src/services/marketing.functions.ts",
+          "line": 9,
+          "loc": 5,
+          "exported": false,
+          "isWatchlisted": false,
+          "statementCount": 2,
+          "tokenCount": 24,
+          "branchCount": 2,
+          "hasJsx": false,
+          "hash": "01ce31bd45687dc5"
+        },
+        {
+          "name": "throwIfQueryFailed",
+          "relPath": "src/services/match-engine.functions.ts",
+          "line": 7,
+          "loc": 5,
+          "exported": false,
+          "isWatchlisted": false,
+          "statementCount": 2,
+          "tokenCount": 24,
+          "branchCount": 2,
+          "hasJsx": false,
+          "hash": "01ce31bd45687dc5"
+        }
+      ]
+    },
+    {
+      "hash": "121f0b8e70ed5a4d",
+      "count": 3,
+      "uniqueFilesCount": 2,
+      "sampleName": "presenceLabel",
+      "items": [
+        {
+          "name": "presenceLabel",
+          "relPath": "src/components/atendimento/AtendimentoOverviewView.tsx",
+          "line": 41,
+          "loc": 12,
+          "exported": false,
+          "isWatchlisted": false,
+          "statementCount": 5,
+          "tokenCount": 19,
+          "branchCount": 1,
+          "hasJsx": false,
+          "hash": "121f0b8e70ed5a4d"
+        },
+        {
+          "name": "priorityBadgeClass",
+          "relPath": "src/routes/workspace.turismo.incidentes.tsx",
+          "line": 69,
+          "loc": 8,
+          "exported": false,
+          "isWatchlisted": false,
+          "statementCount": 5,
+          "tokenCount": 19,
+          "branchCount": 1,
+          "hasJsx": false,
+          "hash": "121f0b8e70ed5a4d"
+        },
+        {
+          "name": "priorityLabel",
+          "relPath": "src/routes/workspace.turismo.incidentes.tsx",
+          "line": 78,
+          "loc": 8,
+          "exported": false,
+          "isWatchlisted": false,
+          "statementCount": 5,
+          "tokenCount": 19,
+          "branchCount": 1,
+          "hasJsx": false,
+          "hash": "121f0b8e70ed5a4d"
+        }
+      ]
+    },
+    {
+      "hash": "b2e2926a3a1ca169",
+      "count": 2,
+      "uniqueFilesCount": 2,
+      "sampleName": "getDynamicDataSourceForBlock",
+      "items": [
+        {
+          "name": "getDynamicDataSourceForBlock",
+          "relPath": "src/components/builder/universal-block-inspector.tsx",
+          "line": 86,
+          "loc": 20,
+          "exported": false,
+          "isWatchlisted": false,
+          "statementCount": 9,
+          "tokenCount": 35,
+          "branchCount": 1,
+          "hasJsx": false,
+          "hash": "b2e2926a3a1ca169"
+        },
+        {
+          "name": "getNichePrizePlaceholder",
+          "relPath": "src/routes/workspace.marketing.concursos.tsx",
+          "line": 36,
+          "loc": 20,
+          "exported": false,
+          "isWatchlisted": false,
+          "statementCount": 9,
+          "tokenCount": 35,
+          "branchCount": 1,
+          "hasJsx": false,
+          "hash": "b2e2926a3a1ca169"
+        }
+      ]
+    },
+    {
+      "hash": "54cf44d5d0c912e0",
+      "count": 2,
+      "uniqueFilesCount": 2,
+      "sampleName": "getCommercialTemplateById",
+      "items": [
+        {
+          "name": "getCommercialTemplateById",
+          "relPath": "src/components/documents/registry.ts",
+          "line": 39,
+          "loc": 4,
+          "exported": true,
+          "isWatchlisted": false,
+          "statementCount": 2,
+          "tokenCount": 26,
+          "branchCount": 0,
+          "hasJsx": false,
+          "hash": "54cf44d5d0c912e0"
+        },
+        {
+          "name": "getSocialTemplateById",
+          "relPath": "src/components/social-templates/registry.ts",
+          "line": 152,
+          "loc": 4,
+          "exported": true,
+          "isWatchlisted": false,
+          "statementCount": 2,
+          "tokenCount": 26,
+          "branchCount": 0,
+          "hasJsx": false,
+          "hash": "54cf44d5d0c912e0"
+        }
+      ]
+    },
+    {
+      "hash": "280401e666c1b89f",
+      "count": 2,
+      "uniqueFilesCount": 2,
+      "sampleName": "resolveTransferKindBadge",
+      "items": [
+        {
+          "name": "resolveTransferKindBadge",
+          "relPath": "src/lib/tourism/proposal-normalization.ts",
+          "line": 412,
+          "loc": 18,
+          "exported": true,
+          "isWatchlisted": false,
+          "statementCount": 8,
+          "tokenCount": 31,
+          "branchCount": 1,
+          "hasJsx": false,
+          "hash": "280401e666c1b89f"
+        },
+        {
+          "name": "getRoleLabel",
+          "relPath": "src/routes/auth.portal-selector.tsx",
+          "line": 66,
+          "loc": 18,
+          "exported": false,
+          "isWatchlisted": false,
+          "statementCount": 8,
+          "tokenCount": 31,
+          "branchCount": 1,
+          "hasJsx": false,
+          "hash": "280401e666c1b89f"
+        }
+      ]
+    },
+    {
+      "hash": "fdc96562f85267a2",
+      "count": 2,
+      "uniqueFilesCount": 2,
+      "sampleName": "getStatusBadge",
+      "items": [
+        {
+          "name": "getStatusBadge",
+          "relPath": "src/routes/workspace.pedidos.trocas.tsx",
+          "line": 43,
+          "loc": 16,
+          "exported": false,
+          "isWatchlisted": false,
+          "statementCount": 6,
+          "tokenCount": 23,
+          "branchCount": 1,
+          "hasJsx": false,
+          "hash": "fdc96562f85267a2"
+        },
+        {
+          "name": "mapIncidentTypeToAnacReason",
+          "relPath": "src/services/tourism-incidents.functions.ts",
+          "line": 87,
+          "loc": 9,
+          "exported": false,
+          "isWatchlisted": false,
+          "statementCount": 6,
+          "tokenCount": 23,
+          "branchCount": 1,
+          "hasJsx": false,
+          "hash": "fdc96562f85267a2"
+        }
+      ]
+    },
+    {
+      "hash": "f5934d4431b03332",
+      "count": 2,
+      "uniqueFilesCount": 2,
+      "sampleName": "traceHomeQuery",
+      "items": [
+        {
+          "name": "traceHomeQuery",
+          "relPath": "src/routes/_store.index.tsx",
+          "line": 34,
+          "loc": 13,
+          "exported": false,
+          "isWatchlisted": false,
+          "statementCount": 5,
+          "tokenCount": 56,
+          "branchCount": 1,
+          "hasJsx": false,
+          "hash": "f5934d4431b03332"
+        },
+        {
+          "name": "traceLayoutQuery",
+          "relPath": "src/routes/_store.tsx",
+          "line": 19,
+          "loc": 13,
+          "exported": false,
+          "isWatchlisted": false,
+          "statementCount": 5,
+          "tokenCount": 56,
+          "branchCount": 1,
+          "hasJsx": false,
+          "hash": "f5934d4431b03332"
+        }
+      ]
+    }
+  ],
+  "deprecatedWithCallers": [
+    {
+      "relPath": "src/lib/ai/openrouter.ts",
+      "fileLevel": false,
+      "deprecatedSymbols": [
+        "callOpenRouter"
+      ],
+      "nonTestCallersCount": 2,
+      "nonTestCallersSample": [
+        "src/lib/ai/index.ts",
+        "src/services/ai-sdr.functions.ts"
+      ]
+    },
+    {
+      "relPath": "src/lib/identity-core.ts",
+      "fileLevel": false,
+      "deprecatedSymbols": [
+        "STAFF_ROLES"
+      ],
+      "nonTestCallersCount": 17,
+      "nonTestCallersSample": [
+        "src/components/admin/tenant-switcher.tsx",
+        "src/lib/identity.server.ts",
+        "src/lib/server-access.ts",
+        "src/services/admin-catalog.functions.ts",
+        "src/services/ads.functions.ts",
+        "src/services/affiliates.functions.ts",
+        "src/services/ai-quotas-and-byok.functions.ts",
+        "src/services/audit.functions.ts",
+        "src/services/classifieds.functions.ts",
+        "src/services/courier-verification.functions.ts"
+      ]
+    },
+    {
+      "relPath": "src/services/ai-conversations.functions.ts",
+      "fileLevel": false,
+      "deprecatedSymbols": [
+        "resolveAiPipelineSteps"
+      ],
+      "nonTestCallersCount": 9,
+      "nonTestCallersSample": [
+        "src/components/chat/copilot-approval-panel.tsx",
+        "src/components/chat/waesy-copilot-drawer.tsx",
+        "src/components/workspace/workspace-quick-chat-dock.tsx",
+        "src/hooks/use-copilot-session.ts",
+        "src/lib/copilot-action-dispatcher.ts",
+        "src/routes/api.ai.stream.ts",
+        "src/routes/api.cron.ai-tasks.ts",
+        "src/routes/workspace.copilot.tsx",
+        "src/routes/_store.copilot.tsx"
+      ]
+    },
+    {
+      "relPath": "src/types/omni-builder.ts",
+      "fileLevel": true,
+      "deprecatedSymbols": [],
+      "nonTestCallersCount": 29,
+      "nonTestCallersSample": [
+        "src/components/admin/builder/BuilderCodeExplorerModal.tsx",
+        "src/components/admin/builder/BuilderWixStudioPanels.tsx",
+        "src/components/builder/blocks/PrometheeNewsAdSlotBlock.tsx",
+        "src/components/builder/blocks/PrometheeNewsArticleReaderBlock.tsx",
+        "src/components/builder/blocks/PrometheeNewsBreakingBlock.tsx",
+        "src/components/builder/blocks/PrometheeNewsFeedBlock.tsx",
+        "src/components/builder/blocks/PrometheeNewsFooterBlock.tsx",
+        "src/components/builder/blocks/PrometheeNewsHeaderBlock.tsx",
+        "src/components/builder/blocks/PrometheeNewsNavBlock.tsx",
+        "src/components/builder/blocks/PrometheeNewsPortalBlock.tsx"
+      ]
+    }
+  ],
+  "unreachableFiles": [
+    {
+      "relPath": "src/components/ad-engine/editor/index.ts",
+      "loc": 12,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ad-engine/editor/listing-full-editor.tsx",
+      "loc": 288,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 2,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ad-engine/editor/listing-precheck-dialog.tsx",
+      "loc": 252,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 2,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ad-engine/editor/listing-quick-editor.tsx",
+      "loc": 250,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 2,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ad-engine/editor/sections/listing-fiscal-section.tsx",
+      "loc": 166,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 2,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ad-engine/editor/sections/listing-media-section.tsx",
+      "loc": 223,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 3,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ad-engine/editor/sections/listing-modifiers-section.tsx",
+      "loc": 204,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 2,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ad-engine/editor/sections/listing-pricing-section.tsx",
+      "loc": 317,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 2,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ad-engine/editor/sections/listing-scope-section.tsx",
+      "loc": 301,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 2,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ad-engine/editor/sections/listing-template-selector.tsx",
+      "loc": 183,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 2,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ad-engine/editor/sections/listing-variants-section.tsx",
+      "loc": 290,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 2,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ad-engine/editor/unified-listing-editor.tsx",
+      "loc": 413,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
+      "loc": 224,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ad-engine/public/canonical-listing-view.tsx",
+      "loc": 801,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ad-engine/public/listing-empty-state.tsx",
+      "loc": 171,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/admin/admin-shell.tsx",
+      "loc": 688,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/admin/builder/builder-canvas.tsx",
+      "loc": 270,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/admin/builder/builder-floating-action-bar.tsx",
+      "loc": 114,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/admin/index.ts",
+      "loc": 4,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/admin/services/service-bom-card.tsx",
+      "loc": 246,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/admin/tenant-switcher.tsx",
+      "loc": 139,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 2,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/admin/working-hours-editor.tsx",
+      "loc": 37,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/builder/GiftCardCommerceBlocks.tsx",
+      "loc": 172,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/builder/index.ts",
+      "loc": 8,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/chat/index.ts",
+      "loc": 13,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/classifieds/ad-details.tsx",
+      "loc": 19,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/classifieds/classified-basic-info-section.tsx",
+      "loc": 131,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/classifieds/classified-editor-navigation.tsx",
+      "loc": 216,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/classifieds/classified-pricing-lifecycle-section.tsx",
+      "loc": 291,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/commerce/bottom-nav.tsx",
+      "loc": 13,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/commerce/classified-form.tsx",
+      "loc": 285,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/commerce/ifood/index.ts",
+      "loc": 11,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/commerce/index.ts",
+      "loc": 10,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/commerce/master-hero-cards.tsx",
+      "loc": 326,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/commerce/master-squircle-hero.tsx",
+      "loc": 203,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/commerce/post-theme-selector.tsx",
+      "loc": 75,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/commerce/presentation-renderer.tsx",
+      "loc": 158,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/commerce/public-header.tsx",
+      "loc": 197,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/commerce/quick-create-modal.tsx",
+      "loc": 267,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/commerce/return-modal.tsx",
+      "loc": 27,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/commerce/slim-action-banner.tsx",
+      "loc": 181,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/commerce/SupermarketCatalogGrid.tsx",
+      "loc": 271,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/community/CommunitySpacesView.tsx",
+      "loc": 507,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/community/index.ts",
+      "loc": 18,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/community/post-creation-drawer.tsx",
+      "loc": 717,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 2,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/courier/courier-earnings-panel.tsx",
+      "loc": 178,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/courier/CourierDashboardHeader.tsx",
+      "loc": 303,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/courier/index.ts",
+      "loc": 2,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/design-system/actions-family.tsx",
+      "loc": 165,
+      "verdict": "CANDIDATE_DUPLICATE_OR_SUPERSEDED",
+      "reason": "Símbolos/tabelas já cobertos por módulos canônicos ativos no runtime",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/design-system/design-system-header.tsx",
+      "loc": 65,
+      "verdict": "CANDIDATE_DUPLICATE_OR_SUPERSEDED",
+      "reason": "Símbolos/tabelas já cobertos por módulos canônicos ativos no runtime",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/design-system/design-system-types.ts",
+      "loc": 8,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 9,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/design-system/ds4-showcase.tsx",
+      "loc": 692,
+      "verdict": "CANDIDATE_DUPLICATE_OR_SUPERSEDED",
+      "reason": "Símbolos/tabelas já cobertos por módulos canônicos ativos no runtime",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/design-system/forms-family.tsx",
+      "loc": 197,
+      "verdict": "CANDIDATE_DUPLICATE_OR_SUPERSEDED",
+      "reason": "Símbolos/tabelas já cobertos por módulos canônicos ativos no runtime",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/design-system/media-showcase-family.tsx",
+      "loc": 135,
+      "verdict": "CANDIDATE_DUPLICATE_OR_SUPERSEDED",
+      "reason": "Símbolos/tabelas já cobertos por módulos canônicos ativos no runtime",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/design-system/navigation-family.tsx",
+      "loc": 174,
+      "verdict": "CANDIDATE_DUPLICATE_OR_SUPERSEDED",
+      "reason": "Símbolos/tabelas já cobertos por módulos canônicos ativos no runtime",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/design-system/overlays-family.tsx",
+      "loc": 174,
+      "verdict": "CANDIDATE_DUPLICATE_OR_SUPERSEDED",
+      "reason": "Símbolos/tabelas já cobertos por módulos canônicos ativos no runtime",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/design-system/state-card.tsx",
+      "loc": 52,
+      "verdict": "CANDIDATE_DUPLICATE_OR_SUPERSEDED",
+      "reason": "Símbolos/tabelas já cobertos por módulos canônicos ativos no runtime",
+      "nonTestDirectCallers": 7,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/design-system/surfaces-family.tsx",
+      "loc": 197,
+      "verdict": "CANDIDATE_DUPLICATE_OR_SUPERSEDED",
+      "reason": "Símbolos/tabelas já cobertos por módulos canônicos ativos no runtime",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/design-system/viewports-family.tsx",
+      "loc": 138,
+      "verdict": "CANDIDATE_DUPLICATE_OR_SUPERSEDED",
+      "reason": "Símbolos/tabelas já cobertos por módulos canônicos ativos no runtime",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/documents/index.ts",
+      "loc": 7,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/eventos/index.ts",
+      "loc": 15,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/finance/PaymentReviewDrawer.tsx",
+      "loc": 187,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/home/CuratedVerticalRails.tsx",
+      "loc": 77,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/home/TopGreetingSearchBar.tsx",
+      "loc": 99,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/landing/founder-smartphone-mockup.tsx",
+      "loc": 276,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 2,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/landing/index.ts",
+      "loc": 6,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/landing/launch-carousel.tsx",
+      "loc": 86,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 2,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/landing/launch-home-view.tsx",
+      "loc": 495,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/marketplace/marketplace-hub.tsx",
+      "loc": 292,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/news/article-ad-config-modal.tsx",
+      "loc": 396,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/news/economic-indicators-bar.tsx",
+      "loc": 127,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/pos/kds-order-card.tsx",
+      "loc": 212,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/profile/biolink-themes-selector.tsx",
+      "loc": 244,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/profile/curriculo-generator-modal.tsx",
+      "loc": 685,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/profile/index.ts",
+      "loc": 9,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/profile/profile-events-manager.tsx",
+      "loc": 426,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/profile/universal-profile-editor.tsx",
+      "loc": 314,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/pwa/AppHomeFeed.tsx",
+      "loc": 178,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/pwa/CategoryGrid.tsx",
+      "loc": 77,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/pwa/MobileBottomNav.tsx",
+      "loc": 74,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/pwa/QuickCheckoutButton.tsx",
+      "loc": 45,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/search/instant-search-dialog.tsx",
+      "loc": 316,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/shell/admin-contextual-bar.tsx",
+      "loc": 158,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/shell/content-canvas.tsx",
+      "loc": 24,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/shell/global-rail.tsx",
+      "loc": 155,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/shell/HeaderPortal.tsx",
+      "loc": 18,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 2,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/shell/index.ts",
+      "loc": 12,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/simlab/index.ts",
+      "loc": 3,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/simlab/simlab-research-panel.tsx",
+      "loc": 1116,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/simlab/simlab-review-panel.tsx",
+      "loc": 154,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/social/index.ts",
+      "loc": 5,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/squads/index.ts",
+      "loc": 2,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/studio/index.ts",
+      "loc": 8,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/tourism/index.ts",
+      "loc": 8,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/tourism/proposals/ProposalFormFields.tsx",
+      "loc": 371,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/tourism/studio/StudioFormatPicker.tsx",
+      "loc": 74,
+      "verdict": "CANDIDATE_DUPLICATE_OR_SUPERSEDED",
+      "reason": "Símbolos/tabelas já cobertos por módulos canônicos ativos no runtime",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/tourism/studio/StudioMapWidget.tsx",
+      "loc": 265,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/tourism/studio/StudioTemplatePicker.tsx",
+      "loc": 111,
+      "verdict": "CANDIDATE_DUPLICATE_OR_SUPERSEDED",
+      "reason": "Símbolos/tabelas já cobertos por módulos canônicos ativos no runtime",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/tourism/studio/StudioToolbar.tsx",
+      "loc": 90,
+      "verdict": "CANDIDATE_DUPLICATE_OR_SUPERSEDED",
+      "reason": "Símbolos/tabelas já cobertos por módulos canônicos ativos no runtime",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/tourism/studio/StudioUnsplashPicker.tsx",
+      "loc": 140,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/alert.tsx",
+      "loc": 50,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 6,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/aspect-ratio.tsx",
+      "loc": 6,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/breadcrumb.tsx",
+      "loc": 102,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/canonical/adaptive-modal.tsx",
+      "loc": 84,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/canonical/canonical-form.tsx",
+      "loc": 248,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/canonical/canonical-overlay.tsx",
+      "loc": 170,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/canonical/canonical-wizard.tsx",
+      "loc": 163,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/canonical/data-surface.tsx",
+      "loc": 410,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/canonical/dense-data-grid.tsx",
+      "loc": 167,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/canonical/index.ts",
+      "loc": 15,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 6,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/canonical/media-family.tsx",
+      "loc": 291,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/canonical/navigation-shell.tsx",
+      "loc": 211,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/canonical/viewport-container.tsx",
+      "loc": 194,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/chart.tsx",
+      "loc": 332,
+      "verdict": "CANDIDATE_DUPLICATE_OR_SUPERSEDED",
+      "reason": "Símbolos/tabelas já cobertos por módulos canônicos ativos no runtime",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/command.tsx",
+      "loc": 144,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/context-menu.tsx",
+      "loc": 188,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/drawer.tsx",
+      "loc": 99,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/fluid-noise-surface.tsx",
+      "loc": 77,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/hover-card.tsx",
+      "loc": 28,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/input-otp.tsx",
+      "loc": 70,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/menubar.tsx",
+      "loc": 230,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/navigation-menu.tsx",
+      "loc": 121,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/pagination.tsx",
+      "loc": 99,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/resizable.tsx",
+      "loc": 38,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/sidebar.tsx",
+      "loc": 739,
+      "verdict": "CANDIDATE_DUPLICATE_OR_SUPERSEDED",
+      "reason": "Símbolos/tabelas já cobertos por módulos canônicos ativos no runtime",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/toggle-group.tsx",
+      "loc": 58,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/ui/toggle.tsx",
+      "loc": 42,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/widgets/index.ts",
+      "loc": 27,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/widgets/TaskDetailSheet.tsx",
+      "loc": 317,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/workspace/index.ts",
+      "loc": 19,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/workspace/kpi-metric-card.tsx",
+      "loc": 173,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/workspace/mini-sparkline.tsx",
+      "loc": 102,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 2,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/workspace/module-action-header.tsx",
+      "loc": 214,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/workspace/quick-module-config-drawer.tsx",
+      "loc": 281,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 2,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/workspace/quick-store-editor-dialog.tsx",
+      "loc": 399,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/components/workspace/social-studio-modal.tsx",
+      "loc": 221,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/config/route-registry.ts",
+      "loc": 25,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/design-system/ai/index.ts",
+      "loc": 5,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/hooks/tourism/use-lead-checklist.ts",
+      "loc": 62,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/hooks/tourism/use-lead-convert.ts",
+      "loc": 86,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/hooks/tourism/use-lead-detail.ts",
+      "loc": 271,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/hooks/tourism/use-lead-meetings.ts",
+      "loc": 129,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/hooks/tourism/use-lead-tags.ts",
+      "loc": 52,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/hooks/use-picking.ts",
+      "loc": 76,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/hooks/use-pwa-telemetry.ts",
+      "loc": 144,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/ad-engine/content-blocks/index.ts",
+      "loc": 8,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/ad-engine/content-blocks/renderers.ts",
+      "loc": 177,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/ad-engine/content-blocks/sanitizer.ts",
+      "loc": 102,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 2,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/ad-engine/content-blocks/types.ts",
+      "loc": 306,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 3,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/ad-engine/niche-archetype-matrix.ts",
+      "loc": 298,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/ad-engine/niche-data-registry.ts",
+      "loc": 267,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/ad-engine/niche-semantic-library.ts",
+      "loc": 104,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/ad-engine/template-metamorphosis.ts",
+      "loc": 208,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 3,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/ad-engine/workspace-parity-bridge.ts",
+      "loc": 131,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/ai/context-firewall.ts",
+      "loc": 133,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/ai/ears-validator.ts",
+      "loc": 231,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 2,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/ai/index.ts",
+      "loc": 11,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/ai/prd-decomposer.ts",
+      "loc": 383,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 2,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/ai/product-manager.ts",
+      "loc": 182,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 2,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/ai/provider-registry.ts",
+      "loc": 102,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/ai/quality-gate.ts",
+      "loc": 122,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/ai/skill-registry.ts",
+      "loc": 36,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/ai/strategic-frameworks.ts",
+      "loc": 149,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/ai/ux-research.ts",
+      "loc": 224,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 2,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/architecture/layer-contract.ts",
+      "loc": 114,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/bigtech-lifecycle.ts",
+      "loc": 355,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/builder/index.ts",
+      "loc": 10,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/builder/presentation-presets.ts",
+      "loc": 136,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 2,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/builder/registry-contract.ts",
+      "loc": 135,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/cache.ts",
+      "loc": 27,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/constants/status.ts",
+      "loc": 119,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/contracts/public-verification-projection.ts",
+      "loc": 185,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/engines/conditional-step-engine.ts",
+      "loc": 199,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/engines/form-field-engine.ts",
+      "loc": 272,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/engines/kds.engine.ts",
+      "loc": 83,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/engines/module-auditor.ts",
+      "loc": 222,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (1 tabelas únicas, 0 RPCs, 0 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [
+        "payment_methods"
+      ],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/engines/niche-calculation-engine.ts",
+      "loc": 190,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/file-manager.ts",
+      "loc": 357,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/financial-receipt-canvas.ts",
+      "loc": 235,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/fiscal/ncm-registry.ts",
+      "loc": 256,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/idempotency/idempotency-guard.ts",
+      "loc": 142,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/loader-observability.ts",
+      "loc": 37,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/media/gallery-manager.ts",
+      "loc": 164,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/mining/regional-sources-catalog.ts",
+      "loc": 256,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/mining/sitemap-crawler.engine.ts",
+      "loc": 241,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/mining/social-content-miner.engine.ts",
+      "loc": 106,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/mining/url-canonicalizer.ts",
+      "loc": 131,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/module-registry.ts",
+      "loc": 406,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/niches/index.ts",
+      "loc": 12,
+      "verdict": "DEPRECATED_OR_SHIM",
+      "reason": "Arquivo apenas reexporta outro módulo (shim)",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/pagination/keyset-pagination.ts",
+      "loc": 179,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/policies/cancellation-policy-registry.ts",
+      "loc": 272,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/telemetry/silent-failure-detector.ts",
+      "loc": 224,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/theme-factory.ts",
+      "loc": 396,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/tourism/proposal-editorial-mapper.ts",
+      "loc": 586,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/travel/credit-intelligence.ts",
+      "loc": 202,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/lib/web-performance.ts",
+      "loc": 242,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/registries/ai-squads-registry.ts",
+      "loc": 163,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/registries/product-field-registry.ts",
+      "loc": 309,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/services/ai-artifact-compiler.functions.ts",
+      "loc": 119,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (0 tabelas únicas, 0 RPCs, 2 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 2
+    },
+    {
+      "relPath": "src/services/ai-builder-generator.ts",
+      "loc": 194,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/services/ai-master-prompts.functions.ts",
+      "loc": 762,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (1 tabelas únicas, 0 RPCs, 3 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [
+        "ai_master_prompt_versions"
+      ],
+      "uniqueRpcs": [],
+      "serverFnsCount": 3
+    },
+    {
+      "relPath": "src/services/ai-pool.ts",
+      "loc": 234,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (0 tabelas únicas, 0 RPCs, 3 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 3
+    },
+    {
+      "relPath": "src/services/ai-quality-benchmark.functions.ts",
+      "loc": 570,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (1 tabelas únicas, 0 RPCs, 1 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [
+        "ai_quality_task_metrics"
+      ],
+      "uniqueRpcs": [],
+      "serverFnsCount": 1
+    },
+    {
+      "relPath": "src/services/ai-quality-evaluator.engine.ts",
+      "loc": 317,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/services/ai-quality-rubrics.ts",
+      "loc": 301,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/services/ai.functions.ts",
+      "loc": 79,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (0 tabelas únicas, 0 RPCs, 1 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 1
+    },
+    {
+      "relPath": "src/services/atomic-reservations.functions.ts",
+      "loc": 149,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (0 tabelas únicas, 2 RPCs, 4 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [
+        "consume_reservation_atomic",
+        "release_reservation_atomic"
+      ],
+      "serverFnsCount": 4
+    },
+    {
+      "relPath": "src/services/builder-exporter.ts",
+      "loc": 126,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/services/canonical-catalog.functions.ts",
+      "loc": 222,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (3 tabelas únicas, 0 RPCs, 3 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [
+        "canonical_device_brands",
+        "canonical_vehicle_brands",
+        "canonical_job_occupations"
+      ],
+      "uniqueRpcs": [],
+      "serverFnsCount": 3
+    },
+    {
+      "relPath": "src/services/cash-safes.functions.ts",
+      "loc": 548,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (0 tabelas únicas, 0 RPCs, 6 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 6
+    },
+    {
+      "relPath": "src/services/chat-commerce.functions.ts",
+      "loc": 1056,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (1 tabelas únicas, 0 RPCs, 13 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [
+        "immutable_ledger_entries"
+      ],
+      "uniqueRpcs": [],
+      "serverFnsCount": 13
+    },
+    {
+      "relPath": "src/services/claim.functions.ts",
+      "loc": 204,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (3 tabelas únicas, 0 RPCs, 6 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [
+        "store_reputation_claims",
+        "store_reputation_messages",
+        "store_reputation_scores"
+      ],
+      "uniqueRpcs": [],
+      "serverFnsCount": 6
+    },
+    {
+      "relPath": "src/services/classifieds-workspace-bridge.functions.ts",
+      "loc": 159,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (0 tabelas únicas, 0 RPCs, 1 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 1
+    },
+    {
+      "relPath": "src/services/customer.functions.ts",
+      "loc": 172,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (0 tabelas únicas, 0 RPCs, 4 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 4
+    },
+    {
+      "relPath": "src/services/document-artifacts.functions.ts",
+      "loc": 144,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (2 tabelas únicas, 0 RPCs, 3 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [
+        "document_artifacts",
+        "document_artifact_links"
+      ],
+      "uniqueRpcs": [],
+      "serverFnsCount": 3
+    },
+    {
+      "relPath": "src/services/finance.functions.ts",
+      "loc": 330,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (0 tabelas únicas, 1 RPCs, 4 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [
+        "channel_financial_summary"
+      ],
+      "serverFnsCount": 4
+    },
+    {
+      "relPath": "src/services/financial.functions.ts",
+      "loc": 85,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (0 tabelas únicas, 0 RPCs, 3 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 3
+    },
+    {
+      "relPath": "src/services/fulfillment.functions.ts",
+      "loc": 367,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (0 tabelas únicas, 0 RPCs, 5 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 5
+    },
+    {
+      "relPath": "src/services/geo-search.functions.ts",
+      "loc": 265,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (0 tabelas únicas, 0 RPCs, 3 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 3
+    },
+    {
+      "relPath": "src/services/hotel-mining.functions.ts",
+      "loc": 232,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (0 tabelas únicas, 0 RPCs, 1 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 1
+    },
+    {
+      "relPath": "src/services/installments.functions.ts",
+      "loc": 125,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (1 tabelas únicas, 1 RPCs, 3 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [
+        "installments"
+      ],
+      "uniqueRpcs": [
+        "settle_installment_atomic"
+      ],
+      "serverFnsCount": 3
+    },
+    {
+      "relPath": "src/services/machine.functions.ts",
+      "loc": 183,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (0 tabelas únicas, 0 RPCs, 3 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 3
+    },
+    {
+      "relPath": "src/services/marketing-engagement.functions.ts",
+      "loc": 189,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (2 tabelas únicas, 0 RPCs, 6 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [
+        "abandoned_carts_log",
+        "social_posts_assets"
+      ],
+      "uniqueRpcs": [],
+      "serverFnsCount": 6
+    },
+    {
+      "relPath": "src/services/marketplace-checkout.functions.ts",
+      "loc": 283,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (0 tabelas únicas, 1 RPCs, 2 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [
+        "create_marketplace_checkout_atomic"
+      ],
+      "serverFnsCount": 2
+    },
+    {
+      "relPath": "src/services/marketplace-showcase.functions.ts",
+      "loc": 172,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (0 tabelas únicas, 0 RPCs, 1 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 1
+    },
+    {
+      "relPath": "src/services/match-time.functions.ts",
+      "loc": 471,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (2 tabelas únicas, 0 RPCs, 7 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [
+        "match_time_sessions",
+        "match_time_offers"
+      ],
+      "uniqueRpcs": [],
+      "serverFnsCount": 7
+    },
+    {
+      "relPath": "src/services/mining/ai-curator-gate.ts",
+      "loc": 88,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/services/mining/semantic-deduplicator.ts",
+      "loc": 109,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/services/multi-store-checkout.functions.ts",
+      "loc": 180,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (0 tabelas únicas, 0 RPCs, 1 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 1
+    },
+    {
+      "relPath": "src/services/nexus-operations.functions.ts",
+      "loc": 223,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (4 tabelas únicas, 0 RPCs, 11 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [
+        "badge_templates",
+        "lead_capture_forms",
+        "event_activations",
+        "activation_logs"
+      ],
+      "uniqueRpcs": [],
+      "serverFnsCount": 11
+    },
+    {
+      "relPath": "src/services/portal-waitlist.functions.ts",
+      "loc": 94,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (1 tabelas únicas, 0 RPCs, 2 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [
+        "portal_pro_waitlist"
+      ],
+      "uniqueRpcs": [],
+      "serverFnsCount": 2
+    },
+    {
+      "relPath": "src/services/proposal-storage.ts",
+      "loc": 40,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/services/seller.functions.ts",
+      "loc": 69,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (1 tabelas únicas, 0 RPCs, 1 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [
+        "seller_showcases"
+      ],
+      "uniqueRpcs": [],
+      "serverFnsCount": 1
+    },
+    {
+      "relPath": "src/services/timeline.functions.ts",
+      "loc": 146,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (0 tabelas únicas, 0 RPCs, 1 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 1
+    },
+    {
+      "relPath": "src/services/token-quota.functions.ts",
+      "loc": 198,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (1 tabelas únicas, 1 RPCs, 3 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [
+        "user_daily_token_quotas"
+      ],
+      "uniqueRpcs": [
+        "consume_user_civil_tokens_atomic"
+      ],
+      "serverFnsCount": 3
+    },
+    {
+      "relPath": "src/services/tourism-operations.functions.ts",
+      "loc": 213,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (2 tabelas únicas, 0 RPCs, 5 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [
+        "trip_bus_layouts",
+        "event_checkins"
+      ],
+      "uniqueRpcs": [],
+      "serverFnsCount": 5
+    },
+    {
+      "relPath": "src/services/travel-commission.functions.ts",
+      "loc": 161,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (3 tabelas únicas, 2 RPCs, 6 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [
+        "travel_commission_rules",
+        "travel_commission_audit",
+        "travel_commission_allocations"
+      ],
+      "uniqueRpcs": [
+        "calculate_travel_sale_commissions",
+        "settle_travel_commission"
+      ],
+      "serverFnsCount": 6
+    },
+    {
+      "relPath": "src/services/travel-continuous-flow.functions.ts",
+      "loc": 871,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (6 tabelas únicas, 0 RPCs, 12 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [
+        "travel_leads_qualification",
+        "travel_contract_signers",
+        "travel_sales_spreadsheet_rows",
+        "travel_tax_shield_ledger",
+        "travel_monthly_closings",
+        "travel_airline_links"
+      ],
+      "uniqueRpcs": [],
+      "serverFnsCount": 12
+    },
+    {
+      "relPath": "src/services/travel-credit-intelligence.functions.ts",
+      "loc": 28,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (0 tabelas únicas, 0 RPCs, 1 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 1
+    },
+    {
+      "relPath": "src/services/travel-credit-vault.functions.ts",
+      "loc": 214,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (2 tabelas únicas, 0 RPCs, 3 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [
+        "ephemeral_vault_sessions",
+        "customer_payment_vault"
+      ],
+      "uniqueRpcs": [],
+      "serverFnsCount": 3
+    },
+    {
+      "relPath": "src/services/travel-installments.functions.ts",
+      "loc": 222,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (1 tabelas únicas, 0 RPCs, 2 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [
+        "travel_booking_installments"
+      ],
+      "uniqueRpcs": [],
+      "serverFnsCount": 2
+    },
+    {
+      "relPath": "src/services/travel-mcp-gateway.service.ts",
+      "loc": 219,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (1 tabelas únicas, 0 RPCs, 0 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [
+        "audit_log"
+      ],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/services/travel-reviews.functions.ts",
+      "loc": 231,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (1 tabelas únicas, 0 RPCs, 2 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": true,
+      "uniqueTables": [
+        "hotel_reviews"
+      ],
+      "uniqueRpcs": [],
+      "serverFnsCount": 2
+    },
+    {
+      "relPath": "src/services/travel-supply-orchestrator.service.ts",
+      "loc": 752,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/services/vertical-ai-modules.functions.ts",
+      "loc": 466,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Possui capacidades próprias (0 tabelas únicas, 0 RPCs, 16 serverFns) — NÃO excluir sem absorver",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 16
+    },
+    {
+      "relPath": "src/services/whatsapp-corporate-travel-tools.server.ts",
+      "loc": 467,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/types/events-extended.ts",
+      "loc": 117,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/types/offer.ts",
+      "loc": 62,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/types/quotes.ts",
+      "loc": 28,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/types/travel-continuous-flow.ts",
+      "loc": 143,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/types/travel-installments.ts",
+      "loc": 22,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 1,
+      "testOnlyReachable": true,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    },
+    {
+      "relPath": "src/utils/storage-helper.ts",
+      "loc": 15,
+      "verdict": "DORMANT_CAPABILITY_KEEP_AND_WIRE",
+      "reason": "Contém lógica ou domínio próprio ainda não conectado às rotas ativas",
+      "nonTestDirectCallers": 0,
+      "testOnlyReachable": false,
+      "uniqueTables": [],
+      "uniqueRpcs": [],
+      "serverFnsCount": 0
+    }
+  ],
+  "monoliths": [
+    {
+      "relPath": "src/routes/_store.conta.classificados.novo.tsx",
+      "loc": 7930,
+      "functionCount": 3,
+      "maxFunctionLoc": 7501,
+      "branchCount": 912,
+      "hooksCount": 355,
+      "anyCount": 52,
+      "embeddedComponentsCount": 2
+    },
+    {
+      "relPath": "src/components/tourism/crm/TourismPipeCardDossier.tsx",
+      "loc": 7409,
+      "functionCount": 1,
+      "maxFunctionLoc": 7144,
+      "branchCount": 432,
+      "hooksCount": 85,
+      "anyCount": 101,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/services/chat.functions.ts",
+      "loc": 6443,
+      "functionCount": 4,
+      "maxFunctionLoc": 206,
+      "branchCount": 752,
+      "hooksCount": 0,
+      "anyCount": 311,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/components/atendimento/AtendimentoChatWorkspace.tsx",
+      "loc": 6342,
+      "functionCount": 2,
+      "maxFunctionLoc": 6034,
+      "branchCount": 537,
+      "hooksCount": 118,
+      "anyCount": 108,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/services/crm.functions.ts",
+      "loc": 5853,
+      "functionCount": 6,
+      "maxFunctionLoc": 127,
+      "branchCount": 560,
+      "hooksCount": 0,
+      "anyCount": 201,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/components/tourism/unified-proposal-workspace.tsx",
+      "loc": 5648,
+      "functionCount": 2,
+      "maxFunctionLoc": 5436,
+      "branchCount": 469,
+      "hooksCount": 73,
+      "anyCount": 50,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/components/builder/OmniEditor.tsx",
+      "loc": 5247,
+      "functionCount": 3,
+      "maxFunctionLoc": 2560,
+      "branchCount": 195,
+      "hooksCount": 52,
+      "anyCount": 97,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/lib/builder/omni-templates.ts",
+      "loc": 4805,
+      "functionCount": 4,
+      "maxFunctionLoc": 198,
+      "branchCount": 6,
+      "hooksCount": 0,
+      "anyCount": 0,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/services/builder.functions.ts",
+      "loc": 4360,
+      "functionCount": 4,
+      "maxFunctionLoc": 407,
+      "branchCount": 298,
+      "hooksCount": 0,
+      "anyCount": 92,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/services/mining.functions.ts",
+      "loc": 4287,
+      "functionCount": 2,
+      "maxFunctionLoc": 113,
+      "branchCount": 262,
+      "hooksCount": 0,
+      "anyCount": 33,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/services/classifieds.functions.ts",
+      "loc": 4159,
+      "functionCount": 3,
+      "maxFunctionLoc": 436,
+      "branchCount": 310,
+      "hooksCount": 0,
+      "anyCount": 57,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/components/tourism/studio/studio-sidebar-editor.tsx",
+      "loc": 4124,
+      "functionCount": 3,
+      "maxFunctionLoc": 3861,
+      "branchCount": 256,
+      "hooksCount": 16,
+      "anyCount": 42,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/services/marketplace-hub.functions.ts",
+      "loc": 4054,
+      "functionCount": 11,
+      "maxFunctionLoc": 777,
+      "branchCount": 343,
+      "hooksCount": 0,
+      "anyCount": 55,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/lib/routes.ts",
+      "loc": 3817,
+      "functionCount": 3,
+      "maxFunctionLoc": 11,
+      "branchCount": 3,
+      "hooksCount": 0,
+      "anyCount": 0,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/services/events.functions.ts",
+      "loc": 3817,
+      "functionCount": 24,
+      "maxFunctionLoc": 202,
+      "branchCount": 270,
+      "hooksCount": 0,
+      "anyCount": 55,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/services/ai-conversations.functions.ts",
+      "loc": 3799,
+      "functionCount": 20,
+      "maxFunctionLoc": 967,
+      "branchCount": 286,
+      "hooksCount": 0,
+      "anyCount": 47,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/routes/_store.membro.$id.tsx",
+      "loc": 3692,
+      "functionCount": 12,
+      "maxFunctionLoc": 2265,
+      "branchCount": 167,
+      "hooksCount": 72,
+      "anyCount": 71,
+      "embeddedComponentsCount": 11
+    },
+    {
+      "relPath": "src/services/travel-proposal.functions.ts",
+      "loc": 3626,
+      "functionCount": 29,
+      "maxFunctionLoc": 291,
+      "branchCount": 436,
+      "hooksCount": 0,
+      "anyCount": 49,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/components/builder/vitrine-block-inspector.tsx",
+      "loc": 3620,
+      "functionCount": 7,
+      "maxFunctionLoc": 3272,
+      "branchCount": 119,
+      "hooksCount": 1,
+      "anyCount": 51,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/registries/mcp-tool-registry.ts",
+      "loc": 3521,
+      "functionCount": 3,
+      "maxFunctionLoc": 3,
+      "branchCount": 151,
+      "hooksCount": 0,
+      "anyCount": 58,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/components/classifieds/editorial-showcase-view.tsx",
+      "loc": 3376,
+      "functionCount": 1,
+      "maxFunctionLoc": 3316,
+      "branchCount": 332,
+      "hooksCount": 18,
+      "anyCount": 28,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/components/commerce/canonical-store-profile-view.tsx",
+      "loc": 3366,
+      "functionCount": 1,
+      "maxFunctionLoc": 3290,
+      "branchCount": 174,
+      "hooksCount": 47,
+      "anyCount": 61,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/components/chat/ai-chat-shell.tsx",
+      "loc": 3306,
+      "functionCount": 10,
+      "maxFunctionLoc": 2509,
+      "branchCount": 186,
+      "hooksCount": 40,
+      "anyCount": 12,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/services/travel-lifecycle.functions.ts",
+      "loc": 3266,
+      "functionCount": 5,
+      "maxFunctionLoc": 54,
+      "branchCount": 269,
+      "hooksCount": 0,
+      "anyCount": 106,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/components/chat/customer-360-sidebar.tsx",
+      "loc": 3231,
+      "functionCount": 1,
+      "maxFunctionLoc": 3062,
+      "branchCount": 245,
+      "hooksCount": 83,
+      "anyCount": 87,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/services/mobility.functions.ts",
+      "loc": 3191,
+      "functionCount": 4,
+      "maxFunctionLoc": 231,
+      "branchCount": 161,
+      "hooksCount": 0,
+      "anyCount": 81,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/routes/_store.checkout.tsx",
+      "loc": 3061,
+      "functionCount": 2,
+      "maxFunctionLoc": 2912,
+      "branchCount": 206,
+      "hooksCount": 54,
+      "anyCount": 55,
+      "embeddedComponentsCount": 1
+    },
+    {
+      "relPath": "src/components/profile/professional-resume-editor.tsx",
+      "loc": 3054,
+      "functionCount": 10,
+      "maxFunctionLoc": 1344,
+      "branchCount": 127,
+      "hooksCount": 74,
+      "anyCount": 28,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/services/ads.functions.ts",
+      "loc": 3045,
+      "functionCount": 10,
+      "maxFunctionLoc": 224,
+      "branchCount": 214,
+      "hooksCount": 0,
+      "anyCount": 73,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/services/travel-pre-boarding-and-commissions.functions.ts",
+      "loc": 2998,
+      "functionCount": 9,
+      "maxFunctionLoc": 1086,
+      "branchCount": 169,
+      "hooksCount": 0,
+      "anyCount": 13,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/routes/workspace.orcamentos.novo.tsx",
+      "loc": 2992,
+      "functionCount": 3,
+      "maxFunctionLoc": 1575,
+      "branchCount": 176,
+      "hooksCount": 63,
+      "anyCount": 30,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/components/commerce/travel/travel-package-form.tsx",
+      "loc": 2976,
+      "functionCount": 1,
+      "maxFunctionLoc": 2833,
+      "branchCount": 112,
+      "hooksCount": 17,
+      "anyCount": 22,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/services/social.functions.ts",
+      "loc": 2966,
+      "functionCount": 0,
+      "maxFunctionLoc": 0,
+      "branchCount": 243,
+      "hooksCount": 0,
+      "anyCount": 104,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/lib/builder/builder-registry.ts",
+      "loc": 2887,
+      "functionCount": 0,
+      "maxFunctionLoc": 0,
+      "branchCount": 0,
+      "hooksCount": 0,
+      "anyCount": 0,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/services/admin-catalog.functions.ts",
+      "loc": 2864,
+      "functionCount": 27,
+      "maxFunctionLoc": 293,
+      "branchCount": 259,
+      "hooksCount": 0,
+      "anyCount": 50,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/components/admin/builder/BuilderWixStudioPanels.tsx",
+      "loc": 2851,
+      "functionCount": 7,
+      "maxFunctionLoc": 1017,
+      "branchCount": 93,
+      "hooksCount": 27,
+      "anyCount": 33,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/lib/classifieds/semantics.ts",
+      "loc": 2809,
+      "functionCount": 12,
+      "maxFunctionLoc": 734,
+      "branchCount": 407,
+      "hooksCount": 0,
+      "anyCount": 19,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/services/branded-app.functions.ts",
+      "loc": 2772,
+      "functionCount": 14,
+      "maxFunctionLoc": 197,
+      "branchCount": 191,
+      "hooksCount": 0,
+      "anyCount": 89,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/lib/workspace-navigation.ts",
+      "loc": 2695,
+      "functionCount": 4,
+      "maxFunctionLoc": 948,
+      "branchCount": 115,
+      "hooksCount": 0,
+      "anyCount": 8,
+      "embeddedComponentsCount": 0
+    },
+    {
+      "relPath": "src/routes/workspace.turismo.viagens.$id.tsx",
+      "loc": 2638,
+      "functionCount": 2,
+      "maxFunctionLoc": 2550,
+      "branchCount": 109,
+      "hooksCount": 35,
+      "anyCount": 29,
+      "embeddedComponentsCount": 0
+    }
+  ],
+  "routeRedirectTraps": [],
+  "quarantineInventory": [],
+  "stackAudit": {
+    "tsconfigStrictFlags": {
+      "noUnusedLocals": false,
+      "noUnusedParameters": false
+    },
+    "eslintDisabledOrRelaxed": {
+      "noUnusedVarsOff": true,
+      "noExplicitAnyWarn": true,
+      "rulesOfHooksWarn": true
+    },
+    "overlappingDependencyGroups": [
+      {
+        "group": "Postgres Drivers",
+        "members": [
+          {
+            "name": "pg",
+            "version": "^8.23.0",
+            "kind": "dependencies",
+            "srcImportCount": 4,
+            "scriptMatchCount": 24
+          },
+          {
+            "name": "postgres",
+            "version": "^3.4.9",
+            "kind": "dependencies",
+            "srcImportCount": 0,
+            "scriptMatchCount": 92
+          }
+        ]
+      },
+      {
+        "group": "Icon Libraries",
+        "members": [
+          {
+            "name": "lucide-react",
+            "version": "^0.575.0",
+            "kind": "dependencies",
+            "srcImportCount": 1162,
+            "scriptMatchCount": 9
+          },
+          {
+            "name": "@phosphor-icons/react",
+            "version": "^2.1.10",
+            "kind": "dependencies",
+            "srcImportCount": 172,
+            "scriptMatchCount": 2
+          }
+        ]
+      },
+      {
+        "group": "Client PDF/Rasterizers",
+        "members": [
+          {
+            "name": "jspdf",
+            "version": "^4.2.1",
+            "kind": "dependencies",
+            "srcImportCount": 5,
+            "scriptMatchCount": 2
+          },
+          {
+            "name": "html2canvas",
+            "version": "^1.4.1",
+            "kind": "dependencies",
+            "srcImportCount": 2,
+            "scriptMatchCount": 2
+          }
+        ]
+      },
+      {
+        "group": "Client Carousels/Sliders",
+        "members": [
+          {
+            "name": "embla-carousel-react",
+            "version": "^8.6.0",
+            "kind": "dependencies",
+            "srcImportCount": 3,
+            "scriptMatchCount": 1
+          },
+          {
+            "name": "vaul",
+            "version": "^1.1.2",
+            "kind": "dependencies",
+            "srcImportCount": 4,
+            "scriptMatchCount": 1
+          }
+        ]
+      }
+    ],
+    "zeroSrcImportDependencies": [
+      {
+        "name": "@tailwindcss/vite",
+        "version": "^4.2.1",
+        "kind": "dependencies",
+        "srcImportCount": 0,
+        "scriptMatchCount": 0
+      },
+      {
+        "name": "@tanstack/router-plugin",
+        "version": "^1.168.29",
+        "kind": "dependencies",
+        "srcImportCount": 0,
+        "scriptMatchCount": 0
+      },
+      {
+        "name": "@types/canvas-confetti",
+        "version": "^1.9.0",
+        "kind": "dependencies",
+        "srcImportCount": 0,
+        "scriptMatchCount": 0
+      },
+      {
+        "name": "@types/pg",
+        "version": "^8.23.1",
+        "kind": "dependencies",
+        "srcImportCount": 0,
+        "scriptMatchCount": 0
+      },
+      {
+        "name": "postgres",
+        "version": "^3.4.9",
+        "kind": "dependencies",
+        "srcImportCount": 0,
+        "scriptMatchCount": 92
+      },
+      {
+        "name": "tailwindcss",
+        "version": "^4.2.1",
+        "kind": "dependencies",
+        "srcImportCount": 0,
+        "scriptMatchCount": 0
+      },
+      {
+        "name": "tw-animate-css",
+        "version": "^1.3.4",
+        "kind": "dependencies",
+        "srcImportCount": 0,
+        "scriptMatchCount": 0
+      },
+      {
+        "name": "vite-tsconfig-paths",
+        "version": "^6.0.2",
+        "kind": "dependencies",
+        "srcImportCount": 0,
+        "scriptMatchCount": 0
+      }
+    ]
+  }
+}

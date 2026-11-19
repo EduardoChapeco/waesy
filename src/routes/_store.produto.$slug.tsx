@@ -21,7 +21,7 @@ import { ConvenienceShowcaseView } from "@/components/classifieds/convenience-sh
 import type { DepartureOption } from "@/lib/classifieds/canonical-airports";
 import { calculateShipping } from "@/services/shipping.functions";
 import { formatMoney } from "@/lib/money";
-import { getNicheSemantics } from "@/lib/niche-semantics";
+import { getNicheSemantics } from "@/lib/niches/niche-semantics";
 import { getPublicExperienceDocumentBySlug } from "@/services/builder.functions";
 import { ProductAiSdrChat } from "@/components/commerce/product-ai-sdr-chat";
 import { addToCart } from "@/services/cart.functions";

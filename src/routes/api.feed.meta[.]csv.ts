@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getServerClient } from "@/lib/supabase";
+import { isUuid as checkUuid } from "@/lib/utils";
 
 import type {} from "@tanstack/react-start";
 function escapeCsv(field: any): string {
@@ -29,7 +30,7 @@ export const Route = createFileRoute("/api/feed/meta.csv")({
             return new Response("Missing store parameter", { status: 400 });
           }
 
-          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(storeParam);
+          const isUuid = checkUuid(storeParam);
           const { data: resolvedStore } = await db
             .from("stores")
             .select("id")

@@ -32376,35 +32376,53 @@ export type Database = {
       }
       store_page_sections: {
         Row: {
+          city_filter: string | null
           config: Json
           created_at: string
           id: string
           is_active: boolean
+          items_limit: number
+          layout_mode: string
           section_order: number
           section_type: string
+          source_id: string | null
+          source_type: string
           store_id: string
+          tab_id: string
           title: string | null
           updated_at: string
         }
         Insert: {
+          city_filter?: string | null
           config?: Json
           created_at?: string
           id?: string
           is_active?: boolean
+          items_limit?: number
+          layout_mode?: string
           section_order?: number
           section_type: string
+          source_id?: string | null
+          source_type?: string
           store_id: string
+          tab_id?: string
           title?: string | null
           updated_at?: string
         }
         Update: {
+          city_filter?: string | null
           config?: Json
           created_at?: string
           id?: string
           is_active?: boolean
+          items_limit?: number
+          layout_mode?: string
           section_order?: number
           section_type?: string
+          source_id?: string | null
+          source_type?: string
           store_id?: string
+          tab_id?: string
           title?: string | null
           updated_at?: string
         }
@@ -32603,14 +32621,22 @@ export type Database = {
         Row: {
           app_name: string
           background_color: string
+          cache_version: number
+          cover_url: string | null
           created_at: string
           custom_domain: string | null
           description: string | null
           display_mode: string
+          entry_animation: string
           icon_192_url: string | null
           icon_512_url: string | null
           id: string
+          is_app_enabled: boolean
           is_published: boolean
+          logo_square_url: string | null
+          maskable_icon_512_url: string | null
+          navigation_tabs: Json
+          niche_features: Json
           orientation: string
           published_at: string | null
           settings: Json
@@ -32618,20 +32644,29 @@ export type Database = {
           splash_image_url: string | null
           start_url: string
           store_id: string
+          template_id: string
           theme_color: string
           updated_at: string
         }
         Insert: {
           app_name: string
           background_color?: string
+          cache_version?: number
+          cover_url?: string | null
           created_at?: string
           custom_domain?: string | null
           description?: string | null
           display_mode?: string
+          entry_animation?: string
           icon_192_url?: string | null
           icon_512_url?: string | null
           id?: string
+          is_app_enabled?: boolean
           is_published?: boolean
+          logo_square_url?: string | null
+          maskable_icon_512_url?: string | null
+          navigation_tabs?: Json
+          niche_features?: Json
           orientation?: string
           published_at?: string | null
           settings?: Json
@@ -32639,20 +32674,29 @@ export type Database = {
           splash_image_url?: string | null
           start_url?: string
           store_id: string
+          template_id?: string
           theme_color?: string
           updated_at?: string
         }
         Update: {
           app_name?: string
           background_color?: string
+          cache_version?: number
+          cover_url?: string | null
           created_at?: string
           custom_domain?: string | null
           description?: string | null
           display_mode?: string
+          entry_animation?: string
           icon_192_url?: string | null
           icon_512_url?: string | null
           id?: string
+          is_app_enabled?: boolean
           is_published?: boolean
+          logo_square_url?: string | null
+          maskable_icon_512_url?: string | null
+          navigation_tabs?: Json
+          niche_features?: Json
           orientation?: string
           published_at?: string | null
           settings?: Json
@@ -32660,6 +32704,7 @@ export type Database = {
           splash_image_url?: string | null
           start_url?: string
           store_id?: string
+          template_id?: string
           theme_color?: string
           updated_at?: string
         }

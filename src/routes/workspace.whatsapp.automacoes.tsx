@@ -1,5 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { getStoreSettings } from "@/services/store.functions";
+import { getRealtimeChannel } from "@/services/realtime-channel";
 import { Bot, Megaphone, Plus, Save, Send, Pause, Play, Workflow, ShieldCheck, ChevronRight, FileText, Car, Plane, ShoppingBag, Smartphone, GitBranch, MessageSquare, ListChecks, CheckCheck, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
@@ -26,13 +28,14 @@ const TEMPLATE_CATEGORIES = [
 export const Route = createFileRoute("/workspace/whatsapp/automacoes")({
   head: () => ({ meta: [{ title: "WhatsApp · Automações | Waesy" }] }),
   loader: async () => {
+    const store = await getStoreSettings().catch(() => null);
     const [flows, campaigns, instances, templates] = await Promise.all([
       listWhatsAppFlows().catch(() => []),
       listWhatsAppCampaigns().catch(() => []),
-      listWorkspaceWhatsAppInstances().catch(() => []),
-      listStoreQuickAnswers({ data: {} }).catch(() => []),
+      listWorkspaceWhatsAppInstances({ data: { store_id: store?.id } }).catch(() => []),
+      listStoreQuickAnswers({ data: { storeId: store?.id } }).catch(() => []),
     ]);
-    return { flows, campaigns, instances, templates };
+    return { store, flows, campaigns, instances, templates };
   },
   component: WhatsAppAutomationPage,
 });
@@ -41,11 +44,60 @@ type FlowNode = { id: string; type: "trigger" | "condition" | "action"; title: s
 function newFlowNodes(): FlowNode[] { return [{ id: "trigger-inbound", type: "trigger", title: "Mensagem recebida", config: { event: "whatsapp_inbound" } }, { id: "action-handoff", type: "action", title: "Transferir para atendimento", config: { action: "assign_agent" } }]; }
 
 function WhatsAppAutomationPage() {
+  const router = useRouter();
   const data = Route.useLoaderData();
   const [flows, setFlows] = useState<any[]>(data.flows || []);
   const [campaigns, setCampaigns] = useState<any[]>(data.campaigns || []);
-  const [instances] = useState<WhatsAppChannelInstanceDTO[]>(data.instances || []);
+  const [instances, setInstances] = useState<WhatsAppChannelInstanceDTO[]>(data.instances || []);
   const [templates, setTemplates] = useState<any[]>(data.templates || []);
+
+  useEffect(() => {
+    setFlows(data.flows || []);
+    setCampaigns(data.campaigns || []);
+    setInstances(data.instances || []);
+    setTemplates(data.templates || []);
+  }, [data.flows, data.campaigns, data.instances, data.templates]);
+
+  const effectiveStoreId =
+    data.store?.id ||
+    instances[0]?.store_id ||
+    flows[0]?.store_id ||
+    campaigns[0]?.store_id ||
+    undefined;
+
+  useEffect(() => {
+    if (!effectiveStoreId) return;
+    let debounceTimer: number | null = null;
+    const refreshLive = () => {
+      if (debounceTimer !== null) window.clearTimeout(debounceTimer);
+      debounceTimer = window.setTimeout(async () => {
+        debounceTimer = null;
+        const [freshFlows, freshCampaigns, freshInstances, freshTemplates] = await Promise.all([
+          listWhatsAppFlows().catch(() => null),
+          listWhatsAppCampaigns().catch(() => null),
+          listWorkspaceWhatsAppInstances({ data: { store_id: effectiveStoreId } }).catch(() => null),
+          listStoreQuickAnswers({ data: { storeId: effectiveStoreId } }).catch(() => null),
+        ]);
+        if (freshFlows) setFlows(freshFlows);
+        if (freshCampaigns) setCampaigns(freshCampaigns);
+        if (freshInstances) setInstances(freshInstances);
+        if (freshTemplates) setTemplates(freshTemplates);
+        void router.invalidate();
+      }, 600);
+    };
+    const filter = `store_id=eq.${effectiveStoreId}`;
+    const { channel, unsubscribe } = getRealtimeChannel(`whatsapp-automacoes:${effectiveStoreId}`);
+    channel
+      ?.on("postgres_changes", { event: "*", schema: "public", table: "store_workflows", filter }, refreshLive)
+      .on("postgres_changes", { event: "*", schema: "public", table: "whatsapp_campaigns", filter }, refreshLive)
+      .on("postgres_changes", { event: "*", schema: "public", table: "store_quick_answers", filter }, refreshLive)
+      .on("postgres_changes", { event: "*", schema: "public", table: "whatsapp_channel_live_state", filter }, refreshLive)
+      .subscribe();
+    return () => {
+      if (debounceTimer !== null) window.clearTimeout(debounceTimer);
+      unsubscribe();
+    };
+  }, [effectiveStoreId, router]);
   const [selectedFlow, setSelectedFlow] = useState<any>(flows[0] || null);
   const [flowTitle, setFlowTitle] = useState("");
   const [flowDescription, setFlowDescription] = useState("");
@@ -74,6 +126,7 @@ function WhatsAppAutomationPage() {
       const saved = await createStoreQuickAnswer({
         data: {
           id: editingTplId || undefined,
+          storeId: effectiveStoreId,
           shortcut: tplName.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "_"),
           title: tplHeader.trim() || tplName.trim(),
           message: tplBody.trim(),
@@ -100,7 +153,7 @@ function WhatsAppAutomationPage() {
   async function handleDeleteTemplate(id: string) {
     setBusy(true);
     try {
-      await deleteStoreQuickAnswer({ data: { id } });
+      await deleteStoreQuickAnswer({ data: { id, storeId: effectiveStoreId } });
       setTemplates((prev) => prev.filter((item) => item.id !== id));
       if (editingTplId === id) setEditingTplId(null);
       toast.success("Template removido da biblioteca.");

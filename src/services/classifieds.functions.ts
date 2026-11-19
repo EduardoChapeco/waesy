@@ -1856,18 +1856,25 @@ export const applyToClassifiedJob = createServerFn({ method: "POST" })
 
     if (item?.store_id) {
       try {
-        await supabase.from("leads_crm").insert({
-          store_id: item.store_id,
-          full_name: input.candidate_name.trim(),
+        const { ingestOmnichannelLead } = await import("./omnichannel-lead-ingestion");
+        await ingestOmnichannelLead(supabase, {
+          storeId: item.store_id,
+          source: "lead_form",
+          sourceDetail: "Classificados / Vagas",
+          fullName: input.candidate_name.trim(),
           email: input.candidate_email || null,
           phone: input.candidate_phone || null,
           title: `Candidatura: ${item.title}`,
           destination: `Classificado: ${item.title}`,
-          source: "site",
-          lead_source_detail: "Classificados / Vagas",
-          status: "new",
-          tags: ["Classificados", "Candidato", input.candidate_role || item.title],
+          sourceListingId: item.id,
+          sourceListingOrigin: "classified",
+          sourceListingTitle: item.title,
           notes: `Candidatura a vaga via classificados. Cargo pretendido: ${input.candidate_role || "Não informado"}. Experiência: ${input.experience_years || "Não informada"}. Escolaridade: ${input.education_level || "Não informada"}. Nota: ${input.cover_note || "Nenhuma"}.`,
+          customFields: {
+            candidate_role: input.candidate_role || null,
+            experience_years: input.experience_years || null,
+            education_level: input.education_level || null,
+          },
         });
       } catch (err: any) {
         console.warn("[classifieds] Failed to sync to leads_crm:", err);

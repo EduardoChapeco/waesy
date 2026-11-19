@@ -1,4 +1,4 @@
-import { getNicheTranslation } from "@/lib/niche-dictionary";
+import { getNicheTranslation } from "@/lib/niches/niche-dictionary";
 /**
  * notifications.functions.ts — BFF Server Functions para o Sistema Central de Notificações
  */

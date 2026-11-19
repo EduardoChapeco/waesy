@@ -4,17 +4,9 @@
  */
 
 import { uploadStoreMedia } from "./storage.functions";
+import { readFileAsDataUrl } from "@/lib/media-utils";
 
 export * from "./storage.functions";
-
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-  });
-}
 
 /**
  * Upload de mídias de proposta (mapa estático, imagens customizadas)
@@ -26,7 +18,7 @@ export async function uploadProposalMedia(
   slot: string = "media"
 ): Promise<string> {
   try {
-    const base64 = await fileToBase64(file);
+    const base64 = await readFileAsDataUrl(file);
     const result = await uploadStoreMedia({
       data: {
         fileName: file.name || `proposal_${slot}_${Date.now()}.png`,

@@ -7,7 +7,7 @@
  * Invariantes: M01, M08, M09 | Checks: C26, C40 | Prompt: P31
  */
 
-import { NicheId, NicheModuleKey, NICHE_MANIFEST_REGISTRY, getNicheManifest } from "@/lib/niche-manifest";
+import { NicheId, NicheModuleKey, NICHE_MANIFEST_REGISTRY, getNicheManifest } from "@/lib/niches/niche-manifest";
 
 export interface ModuleDefinition {
   id: NicheModuleKey;

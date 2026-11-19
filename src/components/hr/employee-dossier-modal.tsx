@@ -21,9 +21,11 @@ import {
   ExternalLink,
   ShieldAlert,
   Loader2,
+  Award,
 } from "lucide-react";
 import { toast } from "sonner";
 import { upsertEmployeeDossier } from "@/services/hr.functions";
+import { EmployeeCommercialProfilePanel } from "@/components/tourism/EmployeeCommercialProfilePanel";
 import { formatMoney } from "@/lib/money";
 
 export interface MedicalExamRecord {
@@ -70,18 +72,32 @@ export interface EmployeeDossierModalProps {
   onClose: () => void;
   employee: {
     id: string;
+    profile_id?: string | null;
     full_name: string;
     job_title: string;
     employment_type: string;
     base_salary_cents: number;
     metadata?: Record<string, any>;
   } | null;
+  initialTab?: "aso" | "documents" | "benefits" | "pos" | "commercial";
   onSaved?: () => void;
 }
 
-export function EmployeeDossierModal({ isOpen, onClose, employee, onSaved }: EmployeeDossierModalProps) {
-  const [activeTab, setActiveTab] = useState<"aso" | "documents" | "benefits" | "pos">("aso");
+export function EmployeeDossierModal({
+  isOpen,
+  onClose,
+  employee,
+  initialTab = "aso",
+  onSaved,
+}: EmployeeDossierModalProps) {
+  const [activeTab, setActiveTab] = useState<"aso" | "documents" | "benefits" | "pos" | "commercial">(initialTab);
   const [isSaving, setIsSaving] = useState(false);
+
+  React.useEffect(() => {
+    if (isOpen && initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [isOpen, initialTab]);
 
   const initialMeta = employee?.metadata || {};
   const [medicalExams, setMedicalExams] = useState<MedicalExamRecord[]>(initialMeta.medical_exams || []);
@@ -285,7 +301,7 @@ export function EmployeeDossierModal({ isOpen, onClose, employee, onSaved }: Emp
 
         <div className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-6">
           <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="space-y-6">
-            <TabsList className="grid grid-cols-2 sm:grid-cols-4 h-auto sm:h-11 min-h-11 gap-1 p-1">
+            <TabsList className="grid grid-cols-2 sm:grid-cols-5 h-auto sm:h-11 min-h-11 gap-1 p-1">
               <TabsTrigger value="aso" className="text-xs font-semibold gap-2 focus-visible:ring-2">
                 <Activity className="size-3.5" />
                 <span>ASO</span>
@@ -301,6 +317,10 @@ export function EmployeeDossierModal({ isOpen, onClose, employee, onSaved }: Emp
               <TabsTrigger value="pos" className="text-xs font-semibold gap-2 focus-visible:ring-2">
                 <MonitorCheck className="size-3.5" />
                 <span>PDV / Caixa</span>
+              </TabsTrigger>
+              <TabsTrigger value="commercial" className="text-xs font-semibold gap-2 focus-visible:ring-2">
+                <Award className="size-3.5" />
+                <span>Vendas / Prêmios</span>
               </TabsTrigger>
             </TabsList>
 
@@ -745,6 +765,15 @@ export function EmployeeDossierModal({ isOpen, onClose, employee, onSaved }: Emp
                   />
                 </div>
               </div>
+            </TabsContent>
+
+            {/* ── ABA 5: PRODUÇÃO COMERCIAL & PREMIAÇÕES POR FORA ── */}
+            <TabsContent value="commercial" className="space-y-4 mt-0">
+              <EmployeeCommercialProfilePanel
+                employeeId={employee.id}
+                profileId={employee.profile_id || undefined}
+                canManagePayouts
+              />
             </TabsContent>
           </Tabs>
         </div>

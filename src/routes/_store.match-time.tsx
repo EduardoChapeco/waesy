@@ -1,25 +1,51 @@
 import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { generateMatchTimeOffers } from "@/services/marketing.functions";
+import { getMatchDeckBatchFn, MatchCardDTO } from "@/services/match-engine.functions";
+import { OmniMatchDeckView } from "@/components/branded-app/omni-match-deck-view";
 import { useCartContext } from "@/lib/cart-context";
 import { Button } from "@/components/ui/button";
-import { Heart, X, Layers, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { Heart, X, Layers, ShoppingBag, ArrowLeft, Flame } from "lucide-react";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
 
 import { addToCart } from "@/services/cart.functions";
 
 export const Route = createFileRoute("/_store/match-time")({
- head: () => ({ meta: [{ title: "Match Time | Produtos" }] }),
- loader: async () => {
-   try {
- return { state: "ok" as const, offers: await generateMatchTimeOffers() };
-   } catch (err) {
-     console.error("[loader:_store.match-time] Unhandled loader error:", err);
-     return { state: "error" as const, offers: [] };
+  head: () => ({ meta: [{ title: "Match Time | Descoberta Interativa" }] }),
+  loader: async () => {
+    try {
+      const matchBatch = await getMatchDeckBatchFn({
+        data: {
+          visitorSessionId: "public_store_session",
+          limit: 15,
+        },
+      }).catch(() => null);
+
+      if (matchBatch?.cards && matchBatch.cards.length > 0) {
+        return {
+          state: "ok" as const,
+          mode: "omnimatch" as const,
+          matchCards: matchBatch.cards,
+          storeId: matchBatch.template?.store_id || "general",
+          offers: [],
+        };
+      }
+
+      const legacyOffers = await generateMatchTimeOffers().catch(() => []);
+      return {
+        state: "ok" as const,
+        mode: "legacy" as const,
+        matchCards: [],
+        storeId: "general",
+        offers: legacyOffers,
+      };
+    } catch (err) {
+      console.error("[loader:_store.match-time] Unhandled loader error:", err);
+      return { state: "error" as const, mode: "legacy" as const, matchCards: [], storeId: "general", offers: [] };
     }
- },
- component: MatchTimePage,
+  },
+  component: MatchTimePage,
 });
 
 function MatchTimePage() {
@@ -30,6 +56,34 @@ function MatchTimePage() {
  const [offers] = useState<any[]>(loadResult.offers);
  const [currentIndex, setCurrentIndex] = useState(0);
  const [direction, setDirection] = useState<"left" | "right" | null>(null);
+
+ if (loadResult.mode === "omnimatch" && loadResult.matchCards.length > 0) {
+   return (
+     <div className="flex flex-col items-center justify-center min-h-vh-75 py-6 px-4">
+       <div className="w-full max-w-sm mb-4 flex items-center justify-between">
+         <Link
+           to="/"
+           className="size-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 active:scale-95 transition-transform duration-200"
+           aria-label="Voltar para Início"
+         >
+           <ArrowLeft className="size-5" />
+         </Link>
+         <div className="flex items-center text-primary font-bold text-lg tracking-tight gap-2">
+           <Flame className="size-5 fill-current" />
+           <span>OmniMatch</span>
+         </div>
+         <div className="w-11" />
+       </div>
+
+       <OmniMatchDeckView
+         storeId={loadResult.storeId}
+         storeName="Vitrine Waesy"
+         cards={loadResult.matchCards}
+         visitorSessionId="public_store_session"
+       />
+     </div>
+   );
+ }
 
  const currentOffer = offers[currentIndex];
 

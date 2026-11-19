@@ -3,7 +3,8 @@ import { getPublicApiGovernanceSettings, savePublicApiGovernanceSettings, lookup
 import { formatCep, formatCnpj, formatPhone } from "@/lib/document-validator";
 import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
 import { Check, Compass, Navigation, Search, Cpu, Building2, Globe2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getRealtimeChannel } from "@/services/realtime-channel";
 import { toast } from "sonner";
 import { Plug, MapPin, CreditCard, Mail, Truck, Sliders, Eye, EyeOff, CheckCircle2, AlertCircle, Clock, ShieldCheck, RefreshCw, Save, Radio, Layers, Plus, Trash2, Terminal, Activity, Zap, Linkedin, Copy, ExternalLink, Lock, Plane, Database } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -126,6 +127,25 @@ function MasterWhatsAppInstancesPanel({ instances, onChanged }: { instances: Wha
  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
  const [instanceToDelete, setInstanceToDelete] = useState<WhatsAppChannelInstanceDTO | null>(null);
  const [isDeleting, setIsDeleting] = useState(false);
+
+ useEffect(() => {
+  let debounceTimer: number | null = null;
+  const scheduleRefresh = () => {
+   if (debounceTimer !== null) window.clearTimeout(debounceTimer);
+   debounceTimer = window.setTimeout(() => {
+    debounceTimer = null;
+    onChanged();
+   }, 600);
+  };
+  const { channel, unsubscribe } = getRealtimeChannel("admin-master-whatsapp-live");
+  channel
+   ?.on("postgres_changes", { event: "*", schema: "public", table: "whatsapp_channel_live_state" }, scheduleRefresh)
+   .subscribe();
+  return () => {
+   if (debounceTimer !== null) window.clearTimeout(debounceTimer);
+   unsubscribe();
+  };
+ }, [onChanged]);
 
  const handleConfirmDelete = async () => {
   if (!instanceToDelete) return;

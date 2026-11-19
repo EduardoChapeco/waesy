@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { listCategories, updateCategory } from "@/services/admin-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
-import { getNicheSemantics } from "@/lib/niche-semantics";
+import { getNicheSemantics } from "@/lib/niches/niche-semantics";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { ErrorState } from "@/components/state/states";

@@ -15,26 +15,13 @@ import { PostCommentsDrawer } from "@/components/community/post-comments-drawer"
 import { MediaLightboxModal } from "@/components/community/media-lightbox-modal";
 import { MediaCarousel } from "@/components/community/MediaCarousel";
 import { RichPostContent } from "@/components/community/rich-post-content";
+import { isVideoUrl } from "@/lib/media-utils";
 
 interface PostCardProps {
  item?: MuralFeedItem;
  post?: MuralFeedItem;
  session?: any;
  queryKey?: unknown[];
-}
-
-function isVideoUrl(url?: string | null): boolean {
- if (!url) return false;
- const clean = url.split("?")[0].toLowerCase();
- return (
- clean.endsWith(".mp4") ||
- clean.endsWith(".webm") ||
- clean.endsWith(".mov") ||
- clean.endsWith(".quicktime") ||
- clean.endsWith(".m4v") ||
- clean.endsWith(".ogg") ||
- clean.includes("video")
- );
 }
 
 export function PostCard(props: PostCardProps) {

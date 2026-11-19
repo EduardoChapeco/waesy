@@ -32,6 +32,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { StudioFrame } from "@/components/tourism/studio/studio-frame";
 import { ProposalCanvasRenderer } from "@/components/tourism/studio/proposal-canvas-renderer";
 import type { ProposalCanvasFormat } from "@/services/travel-proposal.functions";
@@ -1783,13 +1784,16 @@ export function UniversalDocumentStudio({
                               placeholder="Razão Social / Nome Fantasia"
                               className="h-11"
                             />
-                            <Input
+                            <ImageUpload
                               value={tenant.logoUrl || ""}
-                              onChange={(e) =>
-                                setTenant((p) => ({ ...p, logoUrl: e.target.value || null }))
+                              onChange={(url) =>
+                                setTenant((p) => ({ ...p, logoUrl: url || null }))
                               }
-                              placeholder="URL da Logo da Empresa (Brand Kit)"
-                              className="h-11"
+                              bucket="brand-assets"
+                              aspectPreset="square"
+                              variant="minimal"
+                              label="Logo da Empresa (Brand Kit)"
+                              showExternalUrlOption={false}
                             />
                             <Input
                               value={tenant.documentNumber}

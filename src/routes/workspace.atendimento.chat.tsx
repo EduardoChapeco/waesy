@@ -16,6 +16,8 @@ export type AtendimentoChatSearch = {
   search?: string;
   channelInstanceId?: string;
   storeId?: string;
+  leadId?: string;
+  phone?: string;
 };
 
 export const Route = createFileRoute("/workspace/atendimento/chat")({
@@ -26,6 +28,8 @@ export const Route = createFileRoute("/workspace/atendimento/chat")({
     channelInstanceId:
       typeof search.channelInstanceId === "string" ? search.channelInstanceId : undefined,
     storeId: typeof search.storeId === "string" ? search.storeId : undefined,
+    leadId: typeof search.leadId === "string" ? search.leadId : undefined,
+    phone: typeof search.phone === "string" ? search.phone : undefined,
   }),
   loaderDeps: ({ search }) => ({
     storeId: search.storeId,
@@ -51,7 +55,9 @@ export const Route = createFileRoute("/workspace/atendimento/chat")({
         ...(res || {
           threads: [],
           metrics: { total: 0, open: 0, closed: 0, avg_rating: 0, sla_first_response_min: 0 },
+          slaAlerts: { waitingCount: 0, atRiskCount: 0, breachedCount: 0, forgottenTodayCount: 0, forgottenLeadsCount: 0, forgottenThreads: [] },
         }),
+        slaAlerts: (res as any)?.slaAlerts || { waitingCount: 0, atRiskCount: 0, breachedCount: 0, forgottenTodayCount: 0, forgottenLeadsCount: 0, forgottenThreads: [] },
         isSupervisor: Boolean((res as any)?.isSupervisor || (store as any)?.is_owner),
         store,
         sdrSessions: sdrData?.sessions || [],
@@ -102,6 +108,7 @@ function WorkspaceAtendimentoChatPage() {
     <AtendimentoChatWorkspace
       initialThreads={loaderData.threads || []}
       metrics={loaderData.metrics}
+      slaAlerts={loaderData.slaAlerts}
       isSupervisor={Boolean(loaderData.isSupervisor)}
       store={loaderData.store}
       sdrSessions={loaderData.sdrSessions || []}

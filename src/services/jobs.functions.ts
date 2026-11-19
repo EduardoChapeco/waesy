@@ -723,12 +723,12 @@ export interface EmployerProfileInsightsDTO {
 }
 
 export const getEmployerProfileInsights = createServerFn({ method: "GET" })
- .validator(z.object({ companyName: z.string().min(2) }))
+ .validator(z.object({ companyName: z.string().min(2), storeId: z.string().uuid().optional() }))
  .handler(async ({ data }) => {
  const supabase = getServerClient();
  const cleanCompany = data.companyName.trim();
 
- // 1. Consultar avaliações de ex-funcionários em job_applications
+ // 1. Consultar avaliações em job_applications
  const { data: jobApps, error: jobErr } = await supabase
  .from("job_applications")
  .select("previous_company_rating, previous_company_feedback, reason_for_leaving, last_salary_cents, created_at")
@@ -736,17 +736,67 @@ export const getEmployerProfileInsights = createServerFn({ method: "GET" })
  .not("previous_company_rating", "is", null);
 
  if (jobErr) {
- console.error("[jobs] Erro ao buscar insights do empregador:", jobErr);
+ const { logSystemError } = await import("@/lib/logger");
+ logSystemError({
+   route: "jobs.getEmployerProfileInsights",
+   contractName: "getEmployerProfileInsights.job_applications",
+   schemaName: "public",
+   tableName: "job_applications",
+   error: jobErr,
+ });
  }
 
  // 2. Consultar avaliações em classified_applications
- const { data: classApps } = await supabase
+ const { data: classApps, error: clsAppErr } = await supabase
  .from("classified_applications")
  .select("previous_company_rating, previous_company_feedback, reason_for_leaving, last_salary_cents, applied_at")
  .ilike("previous_company_name", `%${cleanCompany}%`)
  .not("previous_company_rating", "is", null);
 
- const allReviews = [...(jobApps || []), ...(classApps || [])];
+ if (clsAppErr) {
+ const { logSystemError } = await import("@/lib/logger");
+ logSystemError({
+   route: "jobs.getEmployerProfileInsights",
+   contractName: "getEmployerProfileInsights.classified_applications",
+   schemaName: "public",
+   tableName: "classified_applications",
+   error: clsAppErr,
+ });
+ }
+
+ // 3. Consultar avaliações estruturadas de employer_reviews (currículos & perfis)
+ let empQuery = supabase
+ .from("employer_reviews")
+ .select("company_rating, pros, exit_reason, salary_cents, created_at, store_id, company_name")
+ .eq("status", "published");
+
+ if (data.storeId) {
+   empQuery = empQuery.or(`store_id.eq.${data.storeId},company_name.ilike.%${cleanCompany}%`);
+ } else {
+   empQuery = empQuery.ilike("company_name", `%${cleanCompany}%`);
+ }
+
+ const { data: empReviews, error: empErr } = await empQuery;
+ if (empErr) {
+ const { logSystemError } = await import("@/lib/logger");
+ logSystemError({
+   route: "jobs.getEmployerProfileInsights",
+   contractName: "getEmployerProfileInsights.employer_reviews",
+   schemaName: "public",
+   tableName: "employer_reviews",
+   error: empErr,
+ });
+ }
+
+ const mappedEmpReviews = (empReviews || []).map((r: any) => ({
+   previous_company_rating: r.company_rating,
+   previous_company_feedback: r.pros,
+   reason_for_leaving: r.exit_reason,
+   last_salary_cents: r.salary_cents,
+   created_at: r.created_at,
+ }));
+
+ const allReviews = [...(jobApps || []), ...(classApps || []), ...mappedEmpReviews];
 
  if (allReviews.length === 0) {
  return {
@@ -760,9 +810,11 @@ export const getEmployerProfileInsights = createServerFn({ method: "GET" })
  } as EmployerProfileInsightsDTO;
  }
 
+ const ratedEntries = allReviews.filter((r) => typeof r.previous_company_rating === "number" && r.previous_company_rating > 0);
  const totalReviews = allReviews.length;
- const avgRating =
- allReviews.reduce((sum, r) => sum + (r.previous_company_rating || 0), 0) / totalReviews;
+ const avgRating = ratedEntries.length > 0
+ ? ratedEntries.reduce((sum, r) => sum + Number(r.previous_company_rating || 0), 0) / ratedEntries.length
+ : 0;
 
  const salaryEntries = allReviews.filter((r) => r.last_salary_cents && r.last_salary_cents > 0);
  const avgSalaryCents =

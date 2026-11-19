@@ -380,8 +380,13 @@ export default function WorkspaceAssociacaoPage() {
                   <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/40">
                     {m.store?.slug && (
                       <Button asChild variant="ghost" className="h-11 min-h-11 px-4 rounded-lg text-xs gap-1 cursor-pointer">
-                        <Link to="/loja/$slug" params={{ slug: m.store.slug }}>
-                          <span>Ver Vitrine</span>
+                        <Link
+                          to="/app/$slug"
+                          params={{ slug: m.store.slug }}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <span>Ver App Oficial</span>
                           <ExternalLink className="size-3" />
                         </Link>
                       </Button>

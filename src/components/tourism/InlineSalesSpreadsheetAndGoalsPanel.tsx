@@ -65,81 +65,41 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
     DEFAULT_OPERATOR_OVER_RETENTION_CONFIGS,
   );
   const [cancellationPolicies, setCancellationPolicies] = useState<AgencyCancellationPolicyConfig[]>([]);
-  const [isManagerOrOwner, setIsManagerOrOwner] = useState<boolean>(true);
+  const [isManagerOrOwner, setIsManagerOrOwner] = useState<boolean>(false);
   const [showArchived, setShowArchived] = useState(false);
   const [showOperatorSettings, setShowOperatorSettings] = useState(false);
   const [showAgentSettings, setShowAgentSettings] = useState(false);
 
-  // Carrega configurações persistidas por agência/tenant no banco (Supabase) com fallback offline
+  // Carrega configurações persistidas exclusivamente do servidor (multi-tenant + RBAC)
   useEffect(() => {
     let cancelled = false;
-    try {
-      const savedRows = localStorage.getItem(`waesy_travel_sales_rows_${storeId}`);
-      if (savedRows) {
-        const parsed = JSON.parse(savedRows);
-        if (Array.isArray(parsed) && parsed.length > 0) setRows(parsed);
-      }
-
-      const savedAgents = localStorage.getItem(`waesy_travel_agents_${storeId}`);
-      if (savedAgents) {
-        const parsed = JSON.parse(savedAgents);
-        if (Array.isArray(parsed) && parsed.length > 0) setAgents(parsed);
-      }
-
-      const savedOps = localStorage.getItem(`waesy_travel_operator_configs_${storeId}`);
-      if (savedOps) {
-        const parsed = JSON.parse(savedOps);
-        if (Array.isArray(parsed) && parsed.length > 0) setOperatorConfigs(parsed);
-      }
-
-      const savedPolicies = localStorage.getItem(`waesy_travel_cancel_policies_${storeId}`);
-      if (savedPolicies) {
-        const parsed = JSON.parse(savedPolicies);
-        if (Array.isArray(parsed) && parsed.length > 0) setCancellationPolicies(parsed);
-      }
-    } catch (e) {
-      console.warn("[InlineSalesSpreadsheetAndGoalsPanel] Erro ao carregar cache local:", e);
-    }
-
     getAgencySalesAndCommissionConfigFn({ data: { storeId } })
       .then((res) => {
         if (cancelled || !res) return;
-        if (typeof res.isManagerOrOwner === "boolean") {
-          setIsManagerOrOwner(res.isManagerOrOwner);
-        }
-        if (Array.isArray(res.rows) && res.rows.length > 0) {
+        setIsManagerOrOwner(Boolean(res.isManagerOrOwner));
+        if (Array.isArray(res.rows)) {
           setRows(res.rows);
-          try {
-            localStorage.setItem(`waesy_travel_sales_rows_${storeId}`, JSON.stringify(res.rows));
-          } catch {}
         }
         if (Array.isArray(res.agents) && res.agents.length > 0) {
           setAgents(res.agents);
-          try {
-            localStorage.setItem(`waesy_travel_agents_${storeId}`, JSON.stringify(res.agents));
-          } catch {}
         }
         if (Array.isArray(res.operatorConfigs) && res.operatorConfigs.length > 0) {
           setOperatorConfigs(res.operatorConfigs);
-          try {
-            localStorage.setItem(`waesy_travel_operator_configs_${storeId}`, JSON.stringify(res.operatorConfigs));
-          } catch {}
         }
-        if (Array.isArray(res.cancellationPolicies) && res.cancellationPolicies.length > 0) {
+        if (Array.isArray(res.cancellationPolicies)) {
           setCancellationPolicies(res.cancellationPolicies);
-          try {
-            localStorage.setItem(`waesy_travel_cancel_policies_${storeId}`, JSON.stringify(res.cancellationPolicies));
-          } catch {}
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        setIsManagerOrOwner(false);
+      });
 
     return () => {
       cancelled = true;
     };
   }, [storeId]);
 
-  // Salva automaticamente alterações no banco (BFF + Supabase) e cache local
+  // Salva alterações no banco (BFF + Supabase) com proteção estrita de papel gerencial
   const persistChanges = useCallback(
     (
       newRows?: InlineSaleSpreadsheetRowInput[],
@@ -147,14 +107,7 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
       newOps?: OperatorOverRetentionConfig[],
       newPolicies?: AgencyCancellationPolicyConfig[],
     ) => {
-      try {
-        if (newRows) localStorage.setItem(`waesy_travel_sales_rows_${storeId}`, JSON.stringify(newRows));
-        if (newAgents) localStorage.setItem(`waesy_travel_agents_${storeId}`, JSON.stringify(newAgents));
-        if (newOps) localStorage.setItem(`waesy_travel_operator_configs_${storeId}`, JSON.stringify(newOps));
-        if (newPolicies) localStorage.setItem(`waesy_travel_cancel_policies_${storeId}`, JSON.stringify(newPolicies));
-      } catch (e) {
-        console.warn("[InlineSalesSpreadsheetAndGoalsPanel] Erro ao salvar cache local:", e);
-      }
+      if (!isManagerOrOwner) return;
       saveAgencySalesAndCommissionConfigFn({
         data: {
           storeId,
@@ -163,32 +116,36 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
           ...(newOps !== undefined ? { operatorConfigs: newOps } : {}),
           ...(newPolicies !== undefined ? { cancellationPolicies: newPolicies } : {}),
         },
-      }).catch(() => {});
+      }).catch((err) => {
+        toast.error(err instanceof Error ? err.message : "Erro ao sincronizar planilha com o servidor.");
+      });
     },
-    [storeId],
+    [storeId, isManagerOrOwner],
   );
 
   const handleManualSave = async () => {
-    persistChanges(rows, agents, operatorConfigs, cancellationPolicies);
+    if (!isManagerOrOwner) {
+      toast.error("Somente gestores ou financeiro podem salvar regras e planilha global.");
+      return;
+    }
     try {
       await saveAgencySalesAndCommissionConfigFn({
         data: { storeId, rows, agents, operatorConfigs, cancellationPolicies },
       });
-      toast.success("Configurações e planilha sincronizadas nas tabelas do banco com sucesso!");
-    } catch {
-      toast.success("Configurações e planilha salvas localmente!");
+      toast.success("Configurações e planilha sincronizadas no banco com sucesso!");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Falha ao salvar planilha no servidor.");
     }
   };
 
   const handleRestoreDefaults = () => {
+    if (!isManagerOrOwner) {
+      toast.error("Permissão negada.");
+      return;
+    }
     setRows(INITIAL_INLINE_ROWS);
     setAgents(DEFAULT_AGENT_PROFILES);
     setOperatorConfigs(DEFAULT_OPERATOR_OVER_RETENTION_CONFIGS);
-    try {
-      localStorage.removeItem(`waesy_travel_sales_rows_${storeId}`);
-      localStorage.removeItem(`waesy_travel_agents_${storeId}`);
-      localStorage.removeItem(`waesy_travel_operator_configs_${storeId}`);
-    } catch {}
     saveAgencySalesAndCommissionConfigFn({
       data: {
         storeId,
@@ -196,8 +153,11 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
         agents: DEFAULT_AGENT_PROFILES,
         operatorConfigs: DEFAULT_OPERATOR_OVER_RETENTION_CONFIGS,
       },
-    }).catch(() => {});
-    toast.info("Configurações limpas e sincronizadas.");
+    })
+      .then(() => toast.info("Configurações restauradas e sincronizadas."))
+      .catch((err) =>
+        toast.error(err instanceof Error ? err.message : "Erro ao restaurar padrões."),
+      );
   };
 
   // Estado do Simulador de Cancelamento / Multa / Carta de Crédito / Financiamento Ativo
@@ -223,6 +183,7 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
     field: K,
     value: InlineSaleSpreadsheetRowInput[K],
   ) => {
+    if (!isManagerOrOwner) return;
     setRows((prev) => {
       const next = prev.map((r) => (r.id === id ? { ...r, [field]: value } : r));
       persistChanges(next);
@@ -231,6 +192,7 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
   };
 
   const handleOperatorChangeForRow = (rowId: string, newOperatorName: string) => {
+    if (!isManagerOrOwner) return;
     const matchedOp = operatorConfigs.find(
       (op) => op.operatorName.toLowerCase() === newOperatorName.toLowerCase(),
     );
@@ -252,6 +214,10 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
   };
 
   const handleAddInlineRow = () => {
+    if (!isManagerOrOwner) {
+      toast.error("Somente gestores ou financeiro podem lançar linhas na planilha global.");
+      return;
+    }
     const defaultOp = operatorConfigs[0] || {
       operatorName: "",
       defaultRetentionPctWhenFinanced: 0,
@@ -326,72 +292,76 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="secondary" className="text-xs font-bold">
-                100% Editável & Multi-Tenant por Agência
-              </Badge>
-              <Badge variant="secondary" className="text-xs">
-                Meta por Faturamento Bruto • Pago sobre o Valor Líquido (1% / 1,5%)
+                {isManagerOrOwner ? "Modo Gerencial Multi-Tenant" : "Modo Somente Leitura"}
               </Badge>
               <Badge variant="outline" className="text-xs">
-                Over com Comissão Própria (Padrão 30% Líq.) • Pix/Dinheiro = 0% Retenção
+                Faixas Dinâmicas Server-Side • Base Líquida + Over Líquido (PIX 0% Retenção)
               </Badge>
             </div>
             <h2 className="text-base sm:text-lg font-bold text-foreground">
-              Planilha Direta de Vendas, Over por Operadora, Metas Brutas e Comissões Líquidas
+              Planilha Direta de Vendas, Over por Operadora e Regras da Agência
             </h2>
             <p className="text-xs text-muted-foreground">
-              Todas as taxas e porcentagens são editáveis. As metas mensais somam o Faturamento Bruto Total, mas a comissão do vendedor incide sobre o Valor Líquido (ex.: até R$ 99.999,99 = 1% s/ Líquido; R$ 100.000,00+ = 1,5% s/ Líquido) + % própria sobre o Over Líquido (padrão 30%). Cancelamentos e multas não descontam comissão salvo edição manual do administrador.
+              Metas mensais somam o Faturamento Bruto confirmado no servidor. As faixas progressivas e percentuais de Over configurados por gestor calculam a premiação variável por fora da folha CLT.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleManualSave}
-              className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer text-primary border-primary/30 hover:bg-primary/10"
-            >
-              <Save className="size-4" />
-              <span>Salvar Planilha</span>
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={handleRestoreDefaults}
-              className="h-11 min-h-11 px-3 rounded-lg text-xs font-medium gap-1 cursor-pointer text-muted-foreground hover:text-foreground"
-              title="Restaurar padrão da agência"
-            >
-              <RotateCcw className="size-3.5" />
-              <span>Restaurar</span>
-            </Button>
+            {isManagerOrOwner && (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleManualSave}
+                  className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer text-primary border-primary/30 hover:bg-primary/10 focus-visible:ring-2"
+                >
+                  <Save className="size-4" />
+                  <span>Salvar Planilha</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={handleRestoreDefaults}
+                  className="h-11 min-h-11 px-3 rounded-lg text-xs font-medium gap-1 cursor-pointer text-muted-foreground hover:text-foreground focus-visible:ring-2"
+                  title="Restaurar padrão da agência"
+                >
+                  <RotateCcw className="size-3.5" />
+                  <span>Restaurar</span>
+                </Button>
+              </>
+            )}
             <Button
               type="button"
               variant="outline"
               onClick={() => setShowOperatorSettings((v) => !v)}
-              className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2"
             >
               <Settings2 className="size-4 text-primary" />
               <span>
                 {showOperatorSettings
                   ? "Ocultar Taxas por Operadora"
-                  : "Configurar Retenção de Over por Operadora"}
+                  : "Regras de Over por Operadora"}
               </span>
             </Button>
             <Button
               type="button"
               variant="outline"
               onClick={() => setShowArchived((v) => !v)}
-              className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer"
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer focus-visible:ring-2"
             >
               {showArchived ? "Ocultar Arquivadas" : "Mostrar Arquivadas"}
             </Button>
-            <Button
-              type="button"
-              onClick={handleAddInlineRow}
-              className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer"
-            >
-              <Plus className="size-4" />
-              <span>Adicionar Linha na Planilha</span>
-            </Button>
+            {isManagerOrOwner && (
+              <Button
+                type="button"
+                variant="default"
+                onClick={handleAddInlineRow}
+                className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2"
+              >
+                <Plus className="size-4" />
+                <span>Adicionar Linha</span>
+              </Button>
+            )}
           </div>
         </div>
 
@@ -638,17 +608,19 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
             <tbody className="divide-y divide-border/60">
               {calculatedRows.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="py-12 text-center text-muted-foreground">
+                  <td colSpan={12} className="py-12 text-center text-muted-foreground">
                     <div className="max-w-md mx-auto space-y-3">
                       <Calculator className="size-8 mx-auto text-muted-foreground/60" />
                       <p className="text-sm font-semibold text-foreground">Nenhuma operação financeira registrada na planilha</p>
                       <p className="text-xs text-muted-foreground">
                         Adicione uma venda abaixo para calcular faturamento bruto, taxas não comissionáveis, comissão da agência, over e repasse do vendedor.
                       </p>
-                      <Button size="sm" onClick={handleAddInlineRow} className="h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer">
-                        <Plus className="size-4" />
-                        <span>Lançar Primeira Venda</span>
-                      </Button>
+                      {isManagerOrOwner && (
+                        <Button size="sm" onClick={handleAddInlineRow} className="h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2">
+                          <Plus className="size-4" />
+                          <span>Lançar Primeira Venda</span>
+                        </Button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -895,23 +867,25 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
 
                     {/* Receita Total Líquida da Agência */}
                     <td className="py-3 px-3 text-right font-mono">
-                      <span className="px-2 py-1 rounded-md bg-primary/10 text-primary font-black text-sm inline-block">
+                      <span className="px-2 py-1 rounded-md bg-primary/10 text-primary font-bold text-sm inline-block">
                         {formatMoney(row.totalAgencyNetCommissionCents)}
                       </span>
                     </td>
 
-                    {/* Vendedor: % sobre Valor Líquido (ex: 1% ou 1.5%) + % sobre Over Líquido (ex: 30%) + Override R$ */}
+                    {/* Vendedor: % sobre Valor Líquido + % sobre Over Líquido */}
                     <td className="py-3 px-3 space-y-2">
                       <select
+                        disabled={!isManagerOrOwner}
                         value={row.agentId}
                         onChange={(e) => {
+                          if (!isManagerOrOwner) return;
                           const ag = agents.find((a) => a.agentId === e.target.value);
                           if (ag) {
                             updateRowField(row.id, "agentId", ag.agentId);
                             updateRowField(row.id, "agentName", ag.agentName);
                           }
                         }}
-                        className="h-11 w-52 rounded-md border border-input bg-background px-2 text-xs font-semibold"
+                        className="h-11 w-52 rounded-md border border-input bg-background px-2 text-xs font-semibold disabled:opacity-75"
                       >
                         {agents.map((ag) => (
                           <option key={ag.agentId} value={ag.agentId}>
@@ -978,7 +952,7 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
 
                     {/* Lucro Líquido da Agência (após Vendedor) */}
                     <td className="py-3 px-3 text-right font-mono">
-                      <strong className="text-sm font-black text-emerald-700 dark:text-emerald-400">
+                      <strong className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
                         {formatMoney(row.agencyNetProfitAfterAgentCents)}
                       </strong>
                     </td>
@@ -986,29 +960,33 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
                     {/* Ações Inline (Cancelar/Multa/Carta de Crédito e Arquivar) */}
                     <td className="py-3 px-3 text-right">
                       <div className="flex flex-col gap-1 items-end">
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setCancelTargetRowId(row.id)}
-                          className="h-11 min-h-11 px-3 rounded-md text-xs font-semibold gap-1 cursor-pointer"
-                        >
-                          <Calculator className="size-3.5 text-warning-strong" />
-                          <span>Multa / Crédito / Cancelar</span>
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => {
-                            updateRowField(row.id, "bookingStatus", "arquivada");
-                            toast.success("Venda arquivada na planilha.");
-                          }}
-                          className="h-11 min-h-11 px-3 rounded-md text-xs text-muted-foreground cursor-pointer"
-                        >
-                          <Archive className="size-3.5 mr-1" />
-                          <span>Arquivar</span>
-                        </Button>
+                        {isManagerOrOwner && (
+                          <>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setCancelTargetRowId(row.id)}
+                              className="h-11 min-h-11 px-3 rounded-md text-xs font-semibold gap-1 cursor-pointer focus-visible:ring-2"
+                            >
+                              <Calculator className="size-3.5 text-warning-strong" />
+                              <span>Multa / Crédito / Cancelar</span>
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                updateRowField(row.id, "bookingStatus", "arquivada");
+                                toast.success("Venda arquivada na planilha.");
+                              }}
+                              className="h-11 min-h-11 px-3 rounded-md text-xs text-muted-foreground cursor-pointer focus-visible:ring-2"
+                            >
+                              <Archive className="size-3.5 mr-1" />
+                              <span>Arquivar</span>
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -1151,13 +1129,13 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
             </div>
             <div className="p-3 rounded-lg bg-card border border-border">
               <span className="text-xs text-muted-foreground block">Carta de Crédito na Operadora</span>
-              <strong className="text-base font-black text-primary font-mono">
+              <strong className="text-base font-bold text-primary font-mono">
                 {formatMoney(cancelSimulation.operatorCreditLetterCents)}
               </strong>
             </div>
             <div className="p-3 rounded-lg bg-card border border-border">
               <span className="text-xs text-muted-foreground block">Reembolso em Espécie</span>
-              <strong className="text-base font-black text-foreground font-mono">
+              <strong className="text-base font-bold text-foreground font-mono">
                 {formatMoney(cancelSimulation.netCashRefundToClientCents)}
               </strong>
             </div>
@@ -1239,23 +1217,10 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Label className="text-xs">Faturamento Bruto Mês (R$):</Label>
-                  <Input
-                    type="number"
-                    step="5000"
-                    value={(ag.currentMonthAgencyRevenueCents / 100).toFixed(0)}
-                    onChange={(e) => {
-                      const valCents = Math.round((parseFloat(e.target.value) || 0) * 100);
-                      setAgents((prev) =>
-                        prev.map((item, idx) =>
-                          idx === agIdx
-                            ? { ...item, currentMonthAgencyRevenueCents: valCents }
-                            : item,
-                        ),
-                      );
-                    }}
-                    className="h-11 w-32 text-xs font-mono rounded-md px-2"
-                  />
+                  <span className="text-xs text-muted-foreground">Base Apurada (Servidor):</span>
+                  <Badge variant="outline" className="font-mono text-xs tabular-nums">
+                    {formatMoney(ag.currentMonthAgencyRevenueCents)}
+                  </Badge>
                 </div>
               </div>
 
@@ -1276,8 +1241,10 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <Input
+                          disabled={!isManagerOrOwner}
                           value={tier.tierName}
-                          onChange={(e) =>
+                          onChange={(e) => {
+                            if (!isManagerOrOwner) return;
                             setAgents((prev) =>
                               prev.map((item, idx) =>
                                 idx === agIdx
@@ -1289,16 +1256,16 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
                                     }
                                   : item,
                               ),
-                            )
-                          }
-                          className="h-11 flex-1 min-w-44 text-xs font-bold rounded-md px-2 bg-background"
+                            );
+                          }}
+                          className="h-11 flex-1 min-w-44 text-xs font-bold rounded-md px-2 bg-background disabled:opacity-75"
                         />
                         {isCurrent && (
                           <Badge variant="secondary" className="text-xs font-bold">
                             Faixa Ativa no Mês
                           </Badge>
                         )}
-                        {ag.tiers.length > 1 && (
+                        {isManagerOrOwner && ag.tiers.length > 1 && (
                           <Button
                             type="button"
                             variant="ghost"
@@ -1314,7 +1281,7 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
                                 ),
                               )
                             }
-                            className="size-11 min-h-11 min-w-11 p-0 text-destructive cursor-pointer"
+                            className="size-11 min-h-11 min-w-11 p-0 text-destructive cursor-pointer focus-visible:ring-2"
                             title="Remover faixa"
                           >
                             <Trash2 className="size-4" />
@@ -1328,8 +1295,10 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
                           <Input
                             type="number"
                             step="1000"
+                            disabled={!isManagerOrOwner}
                             value={(tier.minMonthlyRevenueCents / 100).toFixed(0)}
                             onChange={(e) => {
+                              if (!isManagerOrOwner) return;
                               const cents = Math.round((parseFloat(e.target.value) || 0) * 100);
                               setAgents((prev) =>
                                 prev.map((item, idx) =>
@@ -1344,7 +1313,7 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
                                 ),
                               );
                             }}
-                            className="h-11 text-xs font-mono rounded-md px-2 bg-background"
+                            className="h-11 text-xs font-mono rounded-md px-2 bg-background disabled:opacity-75"
                           />
                         </div>
 
@@ -1353,6 +1322,7 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
                           <Input
                             type="number"
                             step="1000"
+                            disabled={!isManagerOrOwner}
                             placeholder="Sem teto"
                             value={
                               tier.maxMonthlyRevenueCents != null
@@ -1360,6 +1330,7 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
                                 : ""
                             }
                             onChange={(e) => {
+                              if (!isManagerOrOwner) return;
                               const raw = e.target.value;
                               const cents =
                                 raw === "" ? null : Math.round((parseFloat(raw) || 0) * 100);
@@ -1376,7 +1347,7 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
                                 ),
                               );
                             }}
-                            className="h-11 text-xs font-mono rounded-md px-2 bg-background"
+                            className="h-11 text-xs font-mono rounded-md px-2 bg-background disabled:opacity-75"
                           />
                         </div>
 
@@ -1385,8 +1356,10 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
                           <Input
                             type="number"
                             step="0.1"
+                            disabled={!isManagerOrOwner}
                             value={tier.commissionPct}
                             onChange={(e) => {
+                              if (!isManagerOrOwner) return;
                               const pct = parseFloat(e.target.value) || 0;
                               setAgents((prev) =>
                                 prev.map((item, idx) =>
@@ -1401,7 +1374,7 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
                                 ),
                               );
                             }}
-                            className="h-11 text-xs font-mono font-bold rounded-md px-2 bg-background"
+                            className="h-11 text-xs font-mono font-bold rounded-md px-2 bg-background disabled:opacity-75"
                           />
                         </div>
 
@@ -1410,8 +1383,10 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
                           <Input
                             type="number"
                             step="1"
+                            disabled={!isManagerOrOwner}
                             value={tier.overCommissionPct ?? 30}
                             onChange={(e) => {
+                              if (!isManagerOrOwner) return;
                               const overPct = parseFloat(e.target.value) || 0;
                               setAgents((prev) =>
                                 prev.map((item, idx) =>
@@ -1426,7 +1401,7 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
                                 ),
                               );
                             }}
-                            className="h-11 text-xs font-mono font-bold rounded-md px-2 bg-background"
+                            className="h-11 text-xs font-mono font-bold rounded-md px-2 bg-background disabled:opacity-75"
                           />
                         </div>
                       </div>

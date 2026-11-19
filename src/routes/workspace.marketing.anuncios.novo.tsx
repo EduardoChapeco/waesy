@@ -417,7 +417,7 @@ function NovoAnuncioPage() {
  id="ad-dest-url"
  value={customUrl}
  onChange={(e) => setCustomUrl(e.target.value)}
- placeholder={`https://usewaesy.com/loja/${storeSlug || "sua-loja"}`}
+ placeholder={`https://waesy.com.br/app/${storeSlug || "sua-empresa"}`}
  className="h-10 text-xs rounded-lg"
  />
  </div>

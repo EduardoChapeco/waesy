@@ -1,12 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { Briefcase, Coins, Lock, Plus, ExternalLink, TrendingUp, Building, Users, Eye, ShieldCheck, FileSpreadsheet, ArrowUpRight } from "lucide-react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Briefcase, Coins, Lock, Plus, TrendingUp, Building, Users, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/commerce/page-header";
 import { ErrorState } from "@/components/state/states";
 import { formatMoney } from "@/lib/money";
+import { getClientActiveTenant } from "@/lib/context-auth";
 import { listStoreBusinessClassifieds, listStoreAllNdaSignatures } from "@/services/classifieds.functions";
+import { WorkspaceClassifiedEditorDialog } from "@/components/workspace/workspace-classified-editor-dialog";
 
 export const Route = createFileRoute("/workspace/captacao/")({
   head: () => ({ meta: [{ title: "Captação de Investimento | Workspace Waesy" }] }),
@@ -27,6 +30,15 @@ export const Route = createFileRoute("/workspace/captacao/")({
 
 function WorkspaceCaptacaoHubPage() {
   const loaderData = Route.useLoaderData();
+  const queryClient = useQueryClient();
+  const activeStoreId = typeof window !== "undefined" ? getClientActiveTenant() || undefined : undefined;
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any | null>(null);
+
+  const openNewBusiness = () => {
+    setEditingItem(null);
+    setEditorOpen(true);
+  };
 
   const { data: businesses = loaderData.businesses, isLoading: isBusinessesLoading, isError: businessesError } = useQuery({
     queryKey: ["workspace", "business-classifieds"],
@@ -75,11 +87,14 @@ function WorkspaceCaptacaoHubPage() {
             </Link>
           </Button>
 
-          <Button asChild size="sm" className="h-9 px-4 gap-2 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 shadow-xs min-h-11 sm:min-h-0">
-            <Link to="/conta/classificados/novo" search={{ tipo: "negocio" }}>
-              <Plus className="size-3.5" />
-              <span>Novo Anúncio de Negócio</span>
-            </Link>
+          <Button
+            type="button"
+            size="sm"
+            onClick={openNewBusiness}
+            className="h-9 px-4 gap-2 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 shadow-xs min-h-11 sm:min-h-0 cursor-pointer"
+          >
+            <Plus className="size-3.5" />
+            <span>Novo Anúncio de Negócio</span>
           </Button>
         </div>
       </div>
@@ -154,11 +169,14 @@ function WorkspaceCaptacaoHubPage() {
                 Publique sua empresa, franquia ou ponto comercial com proteção de sigilo por termo NDA e conecte-se a investidores qualificados.
               </p>
             </div>
-            <Button asChild size="sm" className="h-9 px-4 rounded-lg text-xs font-bold min-h-11 sm:min-h-0">
-              <Link to="/conta/classificados/novo" search={{ tipo: "negocio" }}>
-                <Plus className="size-3.5 mr-2" />
-                <span>Anunciar Empresa / Ponto</span>
-              </Link>
+            <Button
+              type="button"
+              size="sm"
+              onClick={openNewBusiness}
+              className="h-9 px-4 rounded-lg text-xs font-bold min-h-11 sm:min-h-0 cursor-pointer"
+            >
+              <Plus className="size-3.5 mr-2" />
+              <span>Anunciar Empresa / Ponto</span>
             </Button>
           </div>
         ) : (
@@ -241,18 +259,16 @@ function WorkspaceCaptacaoHubPage() {
                       </Link>
                     </Button>
 
-                    <Button asChild variant="outline" size="sm" className="h-8 px-3 rounded-lg text-xs font-medium min-h-11 sm:min-h-0">
-                      <Link to="/classificados/$id" params={{ id: item.id }}>
-                        <Eye className="size-3.5 mr-2" />
-                        <span>Vitrine</span>
-                        <ArrowUpRight className="size-3 ml-1 opacity-60" />
-                      </Link>
-                    </Button>
-
-                    <Button asChild size="sm" className="h-8 px-3 rounded-lg text-xs font-medium min-h-11 sm:min-h-0">
-                      <Link to="/conta/classificados/novo" search={{ tipo: "negocio", editId: item.id }}>
-                        <span>Editar</span>
-                      </Link>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => {
+                        setEditingItem(item);
+                        setEditorOpen(true);
+                      }}
+                      className="h-8 px-3 rounded-lg text-xs font-medium min-h-11 sm:min-h-0 cursor-pointer"
+                    >
+                      <span>Editar</span>
                     </Button>
                   </div>
                 </div>
@@ -261,6 +277,17 @@ function WorkspaceCaptacaoHubPage() {
           </div>
         )}
       </div>
+
+      <WorkspaceClassifiedEditorDialog
+        open={editorOpen}
+        onOpenChange={setEditorOpen}
+        mode="negocio"
+        storeId={activeStoreId}
+        editItem={editingItem}
+        onSaved={() => {
+          queryClient.invalidateQueries({ queryKey: ["workspace", "business-classifieds"] });
+        }}
+      />
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { listAgencyTravelContracts, deleteTravelContract, duplicateTravelContract, type TravelContractDTO } from "@/services/travel-contract.functions";
 import { AgencyClausesEditorModal } from "@/components/tourism/contract/agency-clauses-editor-modal";
+import { ContractAddendumsSheet } from "@/components/tourism/contract/contract-addendums-sheet";
 import { NewTravelContractSheet } from "@/components/tourism/contract/new-travel-contract-sheet";
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
@@ -44,6 +45,11 @@ export default function WorkspaceContractsIndexPage() {
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
   const [isClausesModalOpen, setIsClausesModalOpen] = useState(false);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+  const [addendumsTarget, setAddendumsTarget] = useState<{
+    id: string;
+    title: string;
+    status: string;
+  } | null>(null);
 
   const { data: contracts = [], refetch, isLoading } = useQuery({
     queryKey: ["agency-contracts", selectedStatus, search],
@@ -271,6 +277,16 @@ export default function WorkspaceContractsIndexPage() {
                           icon: Copy,
                           onClick: () => handleCopyLink(c.public_token),
                         },
+                        {
+                          label: "Aditivos Contratuais",
+                          icon: Plus,
+                          onClick: () =>
+                            setAddendumsTarget({
+                              id: c.id,
+                              title: c.contract_title || "Contrato de Viagem",
+                              status: c.status || "draft",
+                            }),
+                        },
                         ...(isSigned
                           ? [
                               {
@@ -301,6 +317,17 @@ export default function WorkspaceContractsIndexPage() {
           open={isClausesModalOpen}
           onOpenChange={setIsClausesModalOpen}
           storeId={store?.id || ""}
+        />
+
+        <ContractAddendumsSheet
+          open={Boolean(addendumsTarget)}
+          onOpenChange={(nextOpen) => {
+            if (!nextOpen) setAddendumsTarget(null);
+          }}
+          contractId={addendumsTarget?.id ?? null}
+          contractTitle={addendumsTarget?.title ?? ""}
+          contractStatus={addendumsTarget?.status ?? "draft"}
+          onCreated={refetch}
         />
 
         {/* ── 4. DASHBOARD SHEET DE MÉTRICAS JURÍDICAS ── */}

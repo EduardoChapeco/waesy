@@ -1084,7 +1084,7 @@ export const listFinancialInstitutions = createServerFn({ method: "GET" })
     return rows || [];
   });
 
-// 4. Aeroportos (ck_airports)
+// 4. Aeroportos (airports_global — SSOT canônica no Supabase)
 export const searchAirports = createServerFn({ method: "GET" })
   .validator(
     z.object({
@@ -1096,12 +1096,15 @@ export const searchAirports = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }) => {
     const db = getServerClient();
-    let q = db.from("ck_airports").select("*").limit(data.limit);
+    let q = db.from("airports_global").select("*").eq("is_commercial", true).limit(data.limit);
 
     if (data.country_code) q = q.eq("country_code", data.country_code.toUpperCase());
-    if (data.is_hub !== undefined) q = q.eq("is_hub", data.is_hub);
+    if (data.is_hub) {
+      q = q.in("iata_code", ["GRU", "CGH", "VCP", "GIG", "SDU", "BSB", "CNF", "POA", "CWB", "FLN", "REC", "SSA", "FOR", "XAP"]);
+    }
     if (data.query?.trim()) {
-      const s = `%${data.query.trim()}%`;
+      const clean = data.query.trim().replace(/[%(),]/g, " ");
+      const s = `%${clean}%`;
       q = q.or(`name.ilike.${s},city.ilike.${s},iata_code.ilike.${s},icao_code.ilike.${s}`);
     }
 

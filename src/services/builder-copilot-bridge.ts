@@ -222,7 +222,7 @@ import type {
   CreativeArchetype,
   CreativeAspectRatio,
   CreativeThemeId,
-} from "@/components/studio/creative-artboard-renderer";
+} from "@/types/studio-machine";
 
 export function buildSocialPostPayload(title: string, userPrompt: string): {
   platform: string;

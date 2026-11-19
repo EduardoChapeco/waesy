@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { EmptyState, ErrorState } from "@/components/state/states";
-import { Utensils, Check, Plus, Loader2, AlertCircle, Compass, Layers, ShoppingBag } from 'lucide-react';
+import { Utensils, Check, Plus, Minus, Loader2, AlertCircle, Compass, Layers, ShoppingBag } from 'lucide-react';
 import { formatMoney } from "@/lib/money";
 import { getModifiersByProduct } from "@/services/modifiers.functions";
-import { getNicheSemantics } from "@/lib/niche-semantics";
+import { getNicheSemantics } from "@/lib/niches/niche-semantics";
+import { calcModifiersTotalCents, inferModifierGroupMode } from "@/lib/modifiers/option-group-math";
 
 export interface SelectedModifier {
  groupId: string;
@@ -16,6 +17,7 @@ export interface SelectedModifier {
  modifierId: string;
  title: string;
  priceDeltaCents: number;
+ quantity?: number;
 }
 
 export interface ProductModifiersModalProps {
@@ -82,10 +84,49 @@ export function ProductModifiersModal({
  }, [open, productId]);
 
  const basePriceCents = variant?.price_cents || product?.price_cents || 0;
- const modifiersTotalCents = selectedModifiers.reduce((acc, m) => acc + m.priceDeltaCents, 0);
+ const modifiersTotalCents = useMemo(
+   () => calcModifiersTotalCents(modifierGroups || [], selectedModifiers),
+   [modifierGroups, selectedModifiers]
+ );
  const finalUnitPriceCents = basePriceCents + modifiersTotalCents;
 
+ const handleStepModifierQty = (group: any, mod: any, delta: number) => {
+   const currentQty =
+     selectedModifiers.find((m) => m.modifierId === mod.id)?.quantity || 0;
+   const nextQty = currentQty + delta;
+   const otherTotal = selectedModifiers
+     .filter((m) => m.groupId === group.id && m.modifierId !== mod.id)
+     .reduce((sum, m) => sum + (m.quantity || 1), 0);
+
+   if (nextQty <= 0) {
+     setSelectedModifiers(selectedModifiers.filter((m) => m.modifierId !== mod.id));
+     return;
+   }
+   if (group.max_selections > 0 && otherTotal + nextQty > group.max_selections) {
+     return;
+   }
+
+   const filtered = selectedModifiers.filter((m) => m.modifierId !== mod.id);
+   setSelectedModifiers([
+     ...filtered,
+     {
+       groupId: group.id,
+       groupTitle: group.title,
+       modifierId: mod.id,
+       title: nextQty > 1 ? `${nextQty}x ${mod.title}` : mod.title,
+       priceDeltaCents: mod.price_delta_cents || 0,
+       quantity: nextQty,
+     },
+   ]);
+ };
+
  const handleToggleModifier = (group: any, mod: any) => {
+ const mode = inferModifierGroupMode(group);
+ if (mode === "quantity") {
+   handleStepModifierQty(group, mod, 1);
+   return;
+ }
+
  const isSingleChoice = group.max_selections === 1;
 
  if (isSingleChoice) {
@@ -102,7 +143,7 @@ export function ProductModifiersModal({
  },
  ]);
  } else {
- // Multi choice
+ // Multi choice or Pizza flavors
  const exists = selectedModifiers.some((m) => m.modifierId === mod.id);
  if (exists) {
  setSelectedModifiers(selectedModifiers.filter((m) => m.modifierId !== mod.id));
@@ -127,7 +168,9 @@ export function ProductModifiersModal({
  // Validation: Check required groups
  const isValid = (modifierGroups || []).every((group: any) => {
  if (!group.is_required && group.min_selections === 0) return true;
- const selectedInGroup = selectedModifiers.filter((m) => m.groupId === group.id).length;
+ const selectedInGroup = selectedModifiers
+   .filter((m) => m.groupId === group.id)
+   .reduce((sum, m) => sum + (m.quantity || 1), 0);
  return selectedInGroup >= group.min_selections;
  });
 
@@ -195,13 +238,65 @@ export function ProductModifiersModal({
  </div>
 
  <span className="text-2xs text-muted-foreground font-mono">
- {group.max_selections === 1 ? "Escolha 1" : `Até ${group.max_selections}`}
+ {group.max_selections === 1
+   ? "Escolha 1"
+   : inferModifierGroupMode(group) === "pizza"
+   ? `Até ${group.max_selections} sabores`
+   : `Até ${group.max_selections}`}
  </span>
  </div>
 
  <div className="space-y-2">
  {(group.modifiers || []).map((mod: any) => {
- const isSelected = selectedModifiers.some((m) => m.modifierId === mod.id);
+ const selection = selectedModifiers.find((m) => m.modifierId === mod.id);
+ const isSelected = Boolean(selection);
+ const modQty = selection?.quantity || 0;
+ const isQuantityMode = inferModifierGroupMode(group) === "quantity";
+
+ if (isQuantityMode) {
+   return (
+     <div
+       key={mod.id}
+       className={`w-full flex items-center justify-between gap-3 min-h-12 px-4 py-2 rounded-lg text-sm border transition-colors ${
+         isSelected
+           ? "border-primary bg-primary/10 text-foreground font-semibold"
+           : "border-border/70 bg-background text-foreground"
+       }`}
+     >
+       <div className="min-w-0">
+         <span className="font-medium text-sm text-foreground block truncate">{mod.title}</span>
+         <span className="font-mono text-xs text-muted-foreground">
+           {mod.price_delta_cents > 0 ? `+ ${formatMoney(mod.price_delta_cents)}` : "Grátis"}
+         </span>
+       </div>
+
+       <div className="flex items-center gap-2 shrink-0">
+         <Button
+           type="button"
+           variant="outline"
+           size="sm"
+           aria-label={`Diminuir ${mod.title}`}
+           disabled={modQty <= 0}
+           onClick={() => handleStepModifierQty(group, mod, -1)}
+           className="h-11 w-11 p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+         >
+           <Minus className="size-4" aria-hidden="true" />
+         </Button>
+         <span className="w-6 text-center text-sm font-bold tabular-nums">{modQty}</span>
+         <Button
+           type="button"
+           variant="outline"
+           size="sm"
+           aria-label={`Adicionar ${mod.title}`}
+           onClick={() => handleStepModifierQty(group, mod, 1)}
+           className="h-11 w-11 p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+         >
+           <Plus className="size-4" aria-hidden="true" />
+         </Button>
+       </div>
+     </div>
+   );
+ }
 
  return (
  <button

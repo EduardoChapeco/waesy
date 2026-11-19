@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { generateExperienceFromPrompt } from './ai-builder-generator';
 import { exportStaticHtml, triggerDeployHook } from './builder-exporter';
-import { HOME_TEMPLATES_LIBRARY } from '@/lib/home-templates-library';
+import { HOME_TEMPLATES_LIBRARY } from '@/lib/builder/home-templates-library';
 
 describe('[FASE 8 AUDIT] AI Layout Generator, Niche Templates & 1-Click Exporter', () => {
  it('should infer tourism niche and generate a complete experience node tree', () => {

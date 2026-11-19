@@ -634,7 +634,7 @@ export function getContrastRatio(hexA: string, hexB: string): number {
   return (brightest + 0.05) / (darkest + 0.05);
 }
 
-function ensureReadableAccent(brandHex: string, surfaceHex: string, tone: "light" | "dark"): string {
+export function ensureReadableAccent(brandHex: string, surfaceHex: string, tone: "light" | "dark"): string {
   let candidate = expandHex(brandHex);
   const targetPole = tone === "dark" ? hex("F8FAFC") : hex("0F172A");
 
@@ -645,6 +645,70 @@ function ensureReadableAccent(brandHex: string, surfaceHex: string, tone: "light
     candidate = mixHexColors(candidate, targetPole, 0.18);
   }
   return candidate;
+}
+
+export interface ResolvedWebShowcaseTheme {
+  preset: "editorial" | "modern" | "dark" | "boutique";
+  isDark: boolean;
+  surfaceBg: string;
+  accentColor: string;
+  accentFg: string;
+  accentReadable: string;
+  headingFont: string;
+  bodyFont: string;
+  cssVars: Record<string, string>;
+}
+
+/** Derives WCAG 2.2 AA contrast-checked CSS variables for ProposalWebShowcase themes. */
+export function resolveWebShowcaseTheme(
+  preset: string | null | undefined,
+  accentColor?: string | null,
+): ResolvedWebShowcaseTheme {
+  const safePreset: ResolvedWebShowcaseTheme["preset"] =
+    preset === "modern" || preset === "dark" || preset === "boutique" ? preset : "editorial";
+  const isDark = safePreset === "dark";
+  const surfaceBg = isDark ? hex("0B0F19") : safePreset === "boutique" ? hex("FAF8F5") : hex("FFFFFF");
+  const defaultAccent =
+    safePreset === "dark"
+      ? hex("C5A059")
+      : safePreset === "boutique"
+        ? hex("7F1D1D")
+        : safePreset === "modern"
+          ? hex("0F2942")
+          : hex("18181B");
+  const baseAccent = isValidHexColor(accentColor) ? expandHex(accentColor) : defaultAccent;
+  const accentReadable = ensureReadableAccent(baseAccent, surfaceBg, isDark ? "dark" : "light");
+  const contrastDark = getContrastRatio(hex("0F172A"), baseAccent);
+  const contrastLight = getContrastRatio(hex("FFFFFF"), baseAccent);
+  const accentFg = contrastDark >= contrastLight ? hex("0F172A") : hex("FFFFFF");
+  const fontMeta =
+    safePreset === "boutique"
+      ? FONT_PRESET_OPTIONS.find((f) => f.id === "luxury") || FONT_PRESET_OPTIONS[0]
+      : safePreset === "modern"
+        ? FONT_PRESET_OPTIONS.find((f) => f.id === "modern") || FONT_PRESET_OPTIONS[0]
+        : FONT_PRESET_OPTIONS[0];
+
+  const cssVars: Record<string, string> = {
+    "--web-accent": baseAccent,
+    "--web-accent-fg": accentFg,
+    "--web-accent-readable": accentReadable,
+    "--web-accent-soft": mixHexColors(surfaceBg, accentReadable, isDark ? 0.16 : 0.08),
+    "--web-surface": surfaceBg,
+    "--web-heading-font": fontMeta.headingFont,
+    "--web-body-font": fontMeta.bodyFont,
+  };
+
+  return {
+    preset: safePreset,
+    isDark,
+    surfaceBg,
+    accentColor: baseAccent,
+    accentFg,
+    accentReadable,
+    headingFont: fontMeta.headingFont,
+    bodyFont: fontMeta.bodyFont,
+    cssVars,
+  };
 }
 
 export interface ResolvedProposalCanvasTheme {

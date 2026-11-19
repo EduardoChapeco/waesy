@@ -24,7 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { getNicheSemantics } from "@/lib/niche-semantics";
+import { getNicheSemantics } from "@/lib/niches/niche-semantics";
 import { MultiBrandEcosystemGovernanceCard } from "@/components/workspace/multi-brand-ecosystem-governance-card";
 
 export const Route = createFileRoute("/workspace/configuracoes/")({
@@ -33,9 +33,9 @@ export const Route = createFileRoute("/workspace/configuracoes/")({
    try {
      const [settingsRes, hoursRes, policiesRes, manualMethodsRes] = await Promise.all([
        getStoreSettings(),
-       getWorkingHours(),
-       getPolicies(),
-       listManualPaymentMethods(),
+       getWorkingHours().catch(() => null),
+       getPolicies().catch(() => null),
+       listManualPaymentMethods().catch(() => []),
      ]);
      return {
        store: settingsRes,

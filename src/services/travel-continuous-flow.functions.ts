@@ -13,6 +13,10 @@ import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, requireStaff } from "@/lib/server-access";
+import {
+  normalizeDestinationTagList,
+  normalizeRoomsFromLeadOrLegacy,
+} from "@/lib/travel/opportunity-matching-engine";
 import type {
   TravelLeadQualificationDTO,
   TravelContractSignerDTO,
@@ -77,6 +81,8 @@ export const upsertLeadQualification = createServerFn({ method: "POST" })
       .eq("lead_id", data.leadId)
       .maybeSingle();
 
+    let savedId = existing?.id;
+
     if (existing?.id) {
       const { error: updErr } = await supabase
         .from("travel_leads_qualification")
@@ -104,41 +110,86 @@ export const upsertLeadQualification = createServerFn({ method: "POST" })
         .eq("id", existing.id);
 
       if (updErr) throw new Error("Erro ao atualizar qualificação do lead: " + updErr.message);
-      return { success: true, id: existing.id };
+    } else {
+      const { data: created, error: insErr } = await supabase
+        .from("travel_leads_qualification")
+        .insert({
+          lead_id: data.leadId,
+          store_id: identity.store_id,
+          niche_category: data.nicheCategory,
+          origin_city: data.originCity || null,
+          destination_cities: data.destinationCities,
+          preferred_departure_date: data.preferredDepartureDate || null,
+          preferred_return_date: data.preferredReturnDate || null,
+          flexibility_days: data.flexibilityDays,
+          pax_adults: data.paxAdults,
+          pax_children: data.paxChildren,
+          pax_children_ages: data.paxChildrenAges,
+          pax_infants: data.paxInfants,
+          pax_infants_birthdates: data.paxInfantsBirthdates,
+          cabin_preference: data.cabinPreference,
+          hotel_stars_min: data.hotelStarsMin,
+          hotel_meal_plan: data.hotelMealPlan,
+          budget_max_cents: data.budgetMaxCents || null,
+          special_notes: data.specialNotes || null,
+          assigned_agent_id: data.assignedAgentId || null,
+          qualification_score: data.qualificationScore,
+        })
+        .select("id")
+        .single();
+
+      if (insErr || !created?.id) {
+        throw new Error("Erro ao criar qualificação do lead: " + (insErr?.message || "ID ausente"));
+      }
+      savedId = created.id;
     }
 
-    const { data: created, error: insErr } = await supabase
-      .from("travel_leads_qualification")
-      .insert({
-        lead_id: data.leadId,
-        store_id: identity.store_id,
-        niche_category: data.nicheCategory,
-        origin_city: data.originCity || null,
-        destination_cities: data.destinationCities,
-        preferred_departure_date: data.preferredDepartureDate || null,
-        preferred_return_date: data.preferredReturnDate || null,
+    // Sincroniza qualificação estruturada com leads_crm para unificação total no Radar de Oportunidades
+    try {
+      const destTags = normalizeDestinationTagList(data.destinationCities);
+      const roomNorm = normalizeRoomsFromLeadOrLegacy({
+        adultsCount: data.paxAdults,
+        childrenCount: data.paxChildren,
+        childrenAges: data.paxChildrenAges,
+      });
+      const leadSyncPatch: Record<string, any> = {
+        ...(destTags.length > 0
+          ? {
+              destination: destTags.map((d) => d.label).join(", "),
+              destination_tags: destTags,
+            }
+          : {}),
+        ...(data.originCity ? { departure_city: data.originCity } : {}),
+        ...(data.preferredDepartureDate ? { travel_start: data.preferredDepartureDate } : {}),
+        ...(data.preferredReturnDate ? { travel_end: data.preferredReturnDate } : {}),
         flexibility_days: data.flexibilityDays,
-        pax_adults: data.paxAdults,
-        pax_children: data.paxChildren,
-        pax_children_ages: data.paxChildrenAges,
+        pax_adults: roomNorm.adultsCount,
+        pax_children: roomNorm.childrenCount,
         pax_infants: data.paxInfants,
-        pax_infants_birthdates: data.paxInfantsBirthdates,
-        cabin_preference: data.cabinPreference,
-        hotel_stars_min: data.hotelStarsMin,
-        hotel_meal_plan: data.hotelMealPlan,
-        budget_max_cents: data.budgetMaxCents || null,
-        special_notes: data.specialNotes || null,
-        assigned_agent_id: data.assignedAgentId || null,
-        qualification_score: data.qualificationScore,
-      })
-      .select("id")
-      .single();
-
-    if (insErr || !created?.id) {
-      throw new Error("Erro ao criar qualificação do lead: " + (insErr?.message || "ID ausente"));
+        pax_ages: roomNorm.childrenAges,
+        children_ages: roomNorm.childrenAges,
+        room_occupancies: roomNorm.rooms,
+        ...(data.budgetMaxCents ? { budget_cents: data.budgetMaxCents, estimated_value_cents: data.budgetMaxCents } : {}),
+        updated_at: new Date().toISOString(),
+      };
+      let { error: syncErr } = await supabase
+        .from("leads_crm")
+        .update(leadSyncPatch)
+        .eq("id", data.leadId)
+        .eq("store_id", identity.store_id);
+      if (syncErr && /42703|column .* does not exist|PGRST204/i.test(`${syncErr.code || ""} ${syncErr.message || ""}`)) {
+        for (const col of ["destination_tags", "flexibility_days", "children_ages", "room_occupancies", "budget_cents", "departure_city"]) {
+          delete leadSyncPatch[col];
+        }
+        await supabase.from("leads_crm").update(leadSyncPatch).eq("id", data.leadId).eq("store_id", identity.store_id);
+      }
+      const { internalEvaluateDemandAgainstAllSupply } = await import("./opportunity-radar.functions");
+      await internalEvaluateDemandAgainstAllSupply({ storeId: identity.store_id, leadId: data.leadId });
+    } catch {
+      // Sincronização auxiliar não bloqueia qualificação principal
     }
 
-    return { success: true, id: created.id };
+    return { success: true, id: String(savedId) };
   });
 
 export const getLeadQualification = createServerFn({ method: "GET" })
@@ -405,12 +456,14 @@ export const signContractAsPayer = createServerFn({ method: "POST" })
       let generatedBoletosCount = 0;
       let commissionRecorded = false;
 
-      try {
-        const supabase = getServerClient();
-        const { data: allSigners } = await supabase
+      if (signer.contract_id) {
+        const { data: allSigners, error: signersErr } = await supabase
           .from("travel_contract_signers")
           .select("id, full_name, cpf_cnpj, share_amount_cents, payment_method, signature_status")
           .eq("contract_id", signer.contract_id);
+        if (signersErr) {
+          throw new Error("Erro ao validar assinantes vinculados ao contrato: " + signersErr.message);
+        }
 
         const signersList = Array.isArray(allSigners) && allSigners.length > 0 ? allSigners : [
           { ...signer, signature_status: "signed" },
@@ -423,8 +476,8 @@ export const signContractAsPayer = createServerFn({ method: "POST" })
         if (pendingCount === 0) {
           allSignersCompleted = true;
 
-          // 1. Marcar contrato como assinado em travel_contracts
-          const { data: contractRow } = await supabase
+          // 1. Marcar contrato como assinado em travel_contracts e contracts canônico
+          const { data: legacyContractRow } = await supabase
             .from("travel_contracts")
             .update({
               status: "signed",
@@ -435,39 +488,69 @@ export const signContractAsPayer = createServerFn({ method: "POST" })
             .select("id, store_id, proposal_id, client_name, client_document, destination, total_value_cents, payment_conditions")
             .maybeSingle();
 
-          const storeId = contractRow?.store_id || (signer as any).store_id;
+          let canonicalContractRow: any = null;
+          if (!legacyContractRow) {
+            const { data: updatedCanonical } = await supabase
+              .from("contracts")
+              .update({
+                status: "completed",
+                updated_at: now,
+              })
+              .eq("id", signer.contract_id)
+              .select("id, store_id, title, metadata")
+              .maybeSingle();
+            canonicalContractRow = updatedCanonical;
+          }
+
+          const canonicalMeta = (canonicalContractRow?.metadata as Record<string, any>) || {};
+          const storeId = legacyContractRow?.store_id || canonicalContractRow?.store_id || canonicalMeta.store_id || (signer as any).store_id;
+          const proposalId = legacyContractRow?.proposal_id || canonicalMeta.proposal_id || null;
+          const paymentConditionsText = String(legacyContractRow?.payment_conditions || canonicalMeta.payment_conditions || "");
           const totalValueCents = Number(
-            contractRow?.total_value_cents ||
+            legacyContractRow?.total_value_cents ||
+              canonicalMeta.total_value_cents ||
               signersList.reduce((acc: number, s: any) => acc + Number(s.share_amount_cents || 0), 0) ||
               0,
           );
 
-          // 2. Localizar viagem vinculada (tourism_trips) e destravar status
-          let tripId: string | null = null;
-          if (contractRow?.proposal_id && storeId) {
-            const { data: tripRow } = await supabase
+          // 2. Localizar viagem vinculada na tabela canônica tourism_trips e destravar status
+          let tripRowData: any = null;
+          if (storeId && (canonicalMeta.trip_id || proposalId)) {
+            let tripQuery = supabase
               .from("tourism_trips")
-              .select("id")
-              .eq("proposal_id", contractRow.proposal_id)
-              .eq("store_id", storeId)
-              .maybeSingle();
+              .select("id, store_id, source_proposal_id, proposal_id, customer_id, financial_details, operator_name, total_cents, notes")
+              .eq("store_id", storeId);
+
+            if (canonicalMeta.trip_id) {
+              tripQuery = tripQuery.eq("id", canonicalMeta.trip_id);
+            } else if (proposalId) {
+              tripQuery = tripQuery.or(`source_proposal_id.eq.${proposalId},proposal_id.eq.${proposalId}`);
+            }
+
+            const { data: tripRow, error: tripLookupErr } = await tripQuery.limit(1).maybeSingle();
+            if (tripLookupErr) {
+              throw new Error("Erro ao localizar viagem vinculada ao contrato: " + tripLookupErr.message);
+            }
 
             if (tripRow?.id) {
-              tripId = tripRow.id;
-              await supabase
+              tripRowData = tripRow;
+              const { error: tripStatusErr } = await supabase
                 .from("tourism_trips")
                 .update({
                   status: "confirmed",
                   updated_at: now,
                 })
-                .eq("id", tripId);
+                .eq("id", tripRow.id)
+                .eq("store_id", storeId);
+              if (tripStatusErr) {
+                throw new Error("Erro ao confirmar status da viagem após assinatura: " + tripStatusErr.message);
+              }
             }
           }
 
-          // 3. Gerar parcelas do plano contratado em travel_trip_installment_boletos
-          if (storeId && tripId && totalValueCents > 0) {
-            const condText = String(contractRow?.payment_conditions || "");
-            const matchInstallments = condText.match(/(\d+)\s*x/i);
+          // 3. Gerar parcelas do plano contratado em travel_trip_installment_boletos (com channel válido do CHECK)
+          if (storeId && tripRowData?.id && totalValueCents > 0) {
+            const matchInstallments = paymentConditionsText.match(/(\d+)\s*x/i);
             const installmentsCount = Math.min(
               24,
               Math.max(1, matchInstallments ? parseInt(matchInstallments[1], 10) : 1),
@@ -475,7 +558,14 @@ export const signContractAsPayer = createServerFn({ method: "POST" })
             const perInstallmentCents = Math.floor(totalValueCents / installmentsCount);
             const remainderCents = totalValueCents - perInstallmentCents * installmentsCount;
 
-            const operatorName = (contractRow as any)?.operator_name || "Operadora";
+            const operatorName = String(tripRowData.operator_name || "Agencia");
+            const mappedChannel =
+              (signer as any).payment_method === "boleto"
+                ? "boleto_bancario"
+                : (signer as any).payment_method === "credit_card"
+                  ? "credit_card"
+                  : "agency_pix";
+
             const boletoRows = Array.from({ length: installmentsCount }, (_, idx) => {
               const dueDate = new Date(Date.now() + (idx + 1) * 30 * 24 * 60 * 60 * 1000)
                 .toISOString()
@@ -483,14 +573,15 @@ export const signContractAsPayer = createServerFn({ method: "POST" })
               const amountCents = idx === 0 ? perInstallmentCents + remainderCents : perInstallmentCents;
               return {
                 store_id: storeId,
-                trip_id: tripId,
+                trip_id: tripRowData.id,
+                client_profile_id: tripRowData.customer_id || null,
                 installment_number: idx + 1,
                 total_installments: installmentsCount,
                 due_date: dueDate,
                 amount_cents: amountCents,
                 currency: "BRL",
                 operator_slug: operatorName.toLowerCase().replace(/\s+/g, "_"),
-                payment_channel: (signer as any).payment_method === "boleto" ? "operator_boleto" : "agency_direct",
+                payment_channel: mappedChannel,
                 status: "pending",
                 customer_notes: `Parcela ${idx + 1}/${installmentsCount} do contrato formalizado`,
               };
@@ -500,49 +591,85 @@ export const signContractAsPayer = createServerFn({ method: "POST" })
               .from("travel_trip_installment_boletos")
               .upsert(boletoRows, { onConflict: "trip_id,installment_number" });
 
-            if (!bolErr) {
-              generatedBoletosCount = boletoRows.length;
+            if (bolErr) {
+              throw new Error("Erro ao gerar parcelas do contrato em boletos: " + bolErr.message);
             }
+            generatedBoletosCount = boletoRows.length;
           }
 
-          // 4. Registrar automaticamente na planilha de vendas e comissões
-          // 4. Registrar na planilha de vendas apenas com base em dados reais confirmados
+          // 4. Registrar na planilha de vendas usando dados reais de tourism_trips
           if (storeId && totalValueCents > 0) {
-            const { data: tripData } = await supabase
-              .from("travel_trips")
-              .select("id, estimated_budget_cents, notes")
-              .eq("id", tripId)
-              .maybeSingle();
-
+            const financialDetails = (tripRowData?.financial_details as Record<string, any>) || {};
             let parsedNotes: Record<string, any> = {};
-            if (typeof tripData?.notes === "string" && tripData.notes.trim().startsWith("{")) {
+            if (typeof tripRowData?.notes === "string" && tripRowData.notes.trim().startsWith("{")) {
               try {
-                parsedNotes = JSON.parse(tripData.notes);
+                parsedNotes = JSON.parse(tripRowData.notes);
               } catch {
                 parsedNotes = {};
               }
             }
-            const supplierNetCents = Number(parsedNotes.cost_cents || 0) > 0 ? Number(parsedNotes.cost_cents) : 0;
+            const supplierNetCents =
+              Number(financialDetails.operator_net_cents || parsedNotes.cost_cents || 0) > 0
+                ? Number(financialDetails.operator_net_cents || parsedNotes.cost_cents)
+                : 0;
             const agencyCommissionCents = supplierNetCents > 0 ? Math.max(0, totalValueCents - supplierNetCents) : 0;
-            const operatorName = parsedNotes.operator || parsedNotes.primary_supplier || "Operadora Não Informada";
 
-            const { data: recordedCommission, error: commissionError } = await supabase.from("travel_sales_spreadsheet_rows").insert({
-              store_id: storeId,
-              trip_id: tripId,
-              contract_id: signer.contract_id,
-              client_name: contractRow?.client_name || (signer as any).full_name || "Cliente",
-              destination: contractRow?.destination || "Pacote Turístico",
-              gross_sale_cents: totalValueCents,
-              net_commissionable_cents: agencyCommissionCents,
-              agent_commission_cents: 0,
-              status: "active",
-            }).select("id").maybeSingle();
+            const { data: recordedCommission, error: commissionError } = await supabase
+              .from("travel_sales_spreadsheet_rows")
+              .insert({
+                store_id: storeId,
+                trip_id: tripRowData?.id || null,
+                contract_id: signer.contract_id,
+                client_name: legacyContractRow?.client_name || canonicalMeta.client_name || (signer as any).full_name || "Cliente",
+                destination: legacyContractRow?.destination || canonicalMeta.destination || "Pacote Turístico",
+                gross_sale_cents: totalValueCents,
+                net_commissionable_cents: agencyCommissionCents,
+                agent_commission_cents: Number(financialDetails.agent_commission_cents || 0),
+                status: "active",
+              })
+              .select("id")
+              .maybeSingle();
 
-            commissionRecorded = !commissionError && Boolean(recordedCommission?.id);
+            if (commissionError) {
+              console.error(
+                "[travel-continuous-flow:signContractAsPayer] Falha ao lançar venda na planilha financeira:",
+                {
+                  contractId: signer.contract_id,
+                  message: commissionError.message,
+                },
+              );
+              commissionRecorded = false;
+            } else {
+              commissionRecorded = Boolean(recordedCommission?.id);
+            }
+
+            // Sincronizar também na Ficha Financeira Mestre SSOT
+            try {
+              const { syncTourismSaleToFinancialSheetServer } = await import("./travel-commissions-unified.functions");
+              const payMethod = String((signer as any).payment_method || "").toLowerCase();
+              await syncTourismSaleToFinancialSheetServer({
+                supabase,
+                storeId,
+                actorProfileId: null,
+                contractId: signer.contract_id,
+                tripId: tripRowData?.id || null,
+                proposalId: proposalId || null,
+                sellerProfileId: canonicalMeta.seller_profile_id || (legacyContractRow as any)?.created_by || null,
+                clientName: legacyContractRow?.client_name || canonicalMeta.client_name || (signer as any).full_name || "Cliente",
+                destination: legacyContractRow?.destination || canonicalMeta.destination || "Pacote Turístico",
+                primaryOperator: String(tripRowData?.operator_name || financialDetails.operator_name || "Operadora"),
+                locatorCode: String(canonicalMeta.pnr_locator || signer.contract_id.slice(0, 8)),
+                internalCode: `CT-${signer.contract_id.slice(0, 6)}`,
+                grossSaleCents: totalValueCents,
+                operatorTablePriceCents: supplierNetCents > 0 ? supplierNetCents : undefined,
+                overPaymentMethod: payMethod === "pix" || payMethod === "cash" ? "pix_direto_agencia" : "operadora_financiado",
+                bookingStatus: "confirmada",
+              });
+            } catch (ssotErr) {
+              console.warn("[signContractAsPayer] Aviso ao sincronizar ficha SSOT:", ssotErr);
+            }
           }
         }
-      } catch {
-        // Garantir que a assinatura eletrônica em si nunca falhe caso tabelas auxiliares ainda estejam sincronizando
       }
 
       return {
@@ -584,6 +711,20 @@ export const recordTaxShieldEntry = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<{ success: boolean; id: string }> => {
     const identity = await requireStaff();
     const supabase = getServerClient();
+
+    if (data.tripId) {
+      const { data: tripRow, error: tripErr } = await supabase
+        .from("tourism_trips")
+        .select("id, store_id")
+        .eq("id", data.tripId)
+        .maybeSingle();
+      if (tripErr || !tripRow) {
+        throw new Error("Viagem vinculada não encontrada.");
+      }
+      if (tripRow.store_id !== identity.store_id && identity.role !== "platform_admin") {
+        throw new Error("Acesso negado: viagem pertence a outra loja.");
+      }
+    }
 
     const projectedTaxCents = Math.round(
       (data.taxableServiceBaseCents * data.projectedTaxRatePct) / 100,
@@ -645,8 +786,10 @@ export const listTaxShieldEntries = createServerFn({ method: "GET" })
       query = query.eq("invoice_status", data.invoiceStatus);
     }
     if (data.search?.trim()) {
-      const q = data.search.trim();
-      query = query.or(`client_name.ilike.%${q}%,operator_locator.ilike.%${q}%,entry_code.ilike.%${q}%`);
+      const q = data.search.trim().replace(/[(),.%*\\]/g, "");
+      if (q) {
+        query = query.or(`client_name.ilike.%${q}%,operator_locator.ilike.%${q}%,entry_code.ilike.%${q}%`);
+      }
     }
 
     const { data: rows, error } = await query;

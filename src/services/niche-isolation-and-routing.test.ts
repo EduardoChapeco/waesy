@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getNicheTranslation } from "@/lib/niche-dictionary";
+import { getNicheTranslation } from "@/lib/niches/niche-dictionary";
 import { getSidebarConfig, getMasterSidebarPillars } from "@/lib/workspace-navigation";
 import {
   linkProductRecipeSchema,

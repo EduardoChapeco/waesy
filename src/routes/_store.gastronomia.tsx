@@ -12,7 +12,7 @@ import {
   Flame,
 } from "@phosphor-icons/react";
 
-import { Button } from "@/components/ui/button";
+import { RouteErrorFallback } from "@/components/state/route-error-fallback";
 import { PageSkeleton } from "@/components/state/loading";
 import { ProductOptionDrawer, type CustomizableProduct } from "@/components/commerce/ProductOptionDrawer";
 import { addToCart } from "@/services/cart.functions";
@@ -95,27 +95,18 @@ export const Route = createFileRoute("/_store/gastronomia")({
       return { banners: null, hotpages: null, marketplaceFeed: null, catalogProducts: null, surfaceExperience: null };
     }
   },
-  errorComponent: GastronomiaErrorComponent,
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorFallback
+      error={error}
+      reset={reset}
+      icon={ForkKnife}
+      title="Instabilidade ao carregar gastronomia"
+      description="Não foi possível carregar os restaurantes e cardápios no momento."
+    />
+  ),
   component: GastronomiaVerticalPage,
   pendingComponent: PageSkeleton,
 });
-
-function GastronomiaErrorComponent({ error, reset }: { error: any; reset: () => void }) {
-  return (
-    <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
-        <ForkKnife size={32} />
-      </div>
-      <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar gastronomia</h2>
-      <p className="text-sm text-muted-foreground max-w-md mx-auto">
-        {error?.message || "Não foi possível carregar os restaurantes e cardápios no momento."}
-      </p>
-      <Button onClick={reset} className="rounded-lg font-bold">
-        Tentar Novamente
-      </Button>
-    </div>
-  );
-}
 
 function GastronomiaVerticalPage() {
   const { banners, hotpages, marketplaceFeed, catalogProducts, surfaceExperience } = ((Route.useLoaderData?.() as any) || {});

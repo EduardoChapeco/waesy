@@ -11,12 +11,17 @@ import {
   getTourMetaLine,
   getTransferBadgeLabel,
   getTransferMetaLine,
+  getTransferTitle,
   ProposalAdaptiveImage,
   ProposalAgencyLogo,
+  ProposalCruiseBlock,
   ProposalDestinationGallerySection,
+  ProposalFlightMapBlock,
+  ProposalHotelMediaGallery,
   ProposalItineraryMediaGrid,
   ProposalMultiNicheSpecsBlock,
   ProposalPricingBreakdownBlock,
+  ProposalTransferListBlock,
 } from "./blocks/UI";
 import {
   Plane,
@@ -232,6 +237,12 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                 </div>
               ))}
             </div>
+            <ProposalFlightMapBlock
+              flights={p.flights as any}
+              theme={theme}
+              showMap={raw?.web_page?.show_flight_route_map !== false}
+              capturedMapUrl={raw?.captured_map_url || raw?.map_image_url || raw?.custom_fields?.captured_map_url}
+            />
           </section>
         )}
 
@@ -291,32 +302,13 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                         </div>
                       </div>
                     </div>
-                    {h.images?.[0] && (
-                      <div
-                        className={`grid gap-4 ${
-                          h.images.length === 1
-                            ? "grid-cols-1 h-56"
-                            : h.images.length === 2
-                              ? "grid-cols-1 sm:grid-cols-2 h-48"
-                              : "grid-cols-1 sm:grid-cols-3 h-52"
-                        }`}
-                      >
-                        {h.images.slice(0, 3).map((imgUrl: string, imgIdx: number) => (
-                          <div
-                            key={imgIdx}
-                            className="rounded-lg overflow-hidden border p-border-subtle h-full"
-                          >
-                            <ProposalAdaptiveImage
-                              src={imgUrl}
-                              alt={h.name}
-                              objectPosition={(h as any).object_position}
-                              scale={(h as any).image_scale}
-                              className="w-full h-full"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    <ProposalHotelMediaGallery
+                      images={h.images}
+                      media={(h as any).media}
+                      title={h.name}
+                      objectPosition={(h as any).object_position}
+                      scale={(h as any).image_scale}
+                    />
                   </div>
                 </div>
               ))}
@@ -387,37 +379,27 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
           </section>
         )}
 
-        {/* TRASLADOS */}
+        {/* CRUZEIROS MARÍTIMOS (MSC / COSTA) */}
+        {Array.isArray((raw as any).cruises) && (raw as any).cruises.length > 0 && (
+          <section className="break-inside-avoid space-y-5">
+            <h2 className="text-2xl font-bold p-text-ink pb-3 border-b p-border-main p-heading-font">
+              Cruzeiro Marítimo & Itinerário Náutico
+            </h2>
+            <ProposalCruiseBlock cruises={(raw as any).cruises} theme={theme} />
+          </section>
+        )}
+
+        {/* TRASLADOS & RECEPTIVO (FULL-WIDTH LIST FORMAT) */}
         {theme.isSectionVisible("transfers") && vm.hasTransfers && (
           <section className="break-inside-avoid space-y-5">
             <h2 className="text-2xl font-bold p-text-ink pb-3 border-b p-border-main p-heading-font">
               {nc.transfersTitle}
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {p.transfers!.map((t, i) => {
-                const transferMeta = getTransferMetaLine(t as Record<string, any>, formatDate);
-                return (
-                  <div
-                    key={i}
-                    className="p-5 rounded-xl border p-border-main p-surface-subtle space-y-2"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 font-bold p-text-ink text-sm">
-                        <Car className="size-4 p-text-brand shrink-0" />
-                        <span>{t.description || (t as any).route || "Transfer In/Out"}</span>
-                      </div>
-                      <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider p-surface-card border p-border-main p-text-muted">
-                        {getTransferBadgeLabel(t.type)}
-                      </span>
-                    </div>
-                    {transferMeta && (
-                      <div className="text-xs p-text-muted leading-relaxed">{transferMeta}</div>
-                    )}
-                    {t.notes && <p className="text-xs p-text-faint leading-relaxed">{t.notes}</p>}
-                  </div>
-                );
-              })}
-            </div>
+            <ProposalTransferListBlock
+              transfers={p.transfers}
+              formatDateFn={formatDate}
+              theme={theme}
+            />
           </section>
         )}
 

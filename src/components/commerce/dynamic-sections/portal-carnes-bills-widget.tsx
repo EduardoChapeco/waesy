@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { EmptyState } from "@/components/state/states";
 import { cn } from "@/lib/utils";
 
 export interface PortalBillItem {
@@ -32,35 +33,7 @@ export function PortalCarnesBillsWidget({ content, design_tokens }: PortalCarnes
  const [isPixModalOpen, setIsPixModalOpen] = useState(false);
  const [copied, setCopied] = useState(false);
 
- const bills: PortalBillItem[] = content?.bills || [
- {
- id: "bill-01",
- installment_number: 1,
- total_installments: 3,
- due_date: "2026-08-10",
- amount_cents: 35000,
- status: "paid",
- paid_at: "2026-08-09T10:15:00Z",
- },
- {
- id: "bill-02",
- installment_number: 2,
- total_installments: 3,
- due_date: "2026-09-10",
- amount_cents: 35000,
- status: "pending",
- pix_copy_paste: "00020126580014br.gov.bcb.pix0136123e4567-e89b-12d3-a456-4266141740005204000053039865406350.005802BR5925WIDER EXPERIENCIAS DIGITAIS6009SAO PAULO62070503***6304ABCD",
- },
- {
- id: "bill-03",
- installment_number: 3,
- total_installments: 3,
- due_date: "2026-10-10",
- amount_cents: 35000,
- status: "pending",
- pix_copy_paste: "00020126580014br.gov.bcb.pix0136123e4567-e89b-12d3-a456-4266141740005204000053039865406350.005802BR5925WIDER EXPERIENCIAS DIGITAIS6009SAO PAULO62070503***6304EFGH",
- },
- ];
+ const bills: PortalBillItem[] = content?.bills || [];
 
  const copyPix = (text: string) => {
  navigator.clipboard.writeText(text);
@@ -85,6 +58,12 @@ export function PortalCarnesBillsWidget({ content, design_tokens }: PortalCarnes
  </div>
  </div>
 
+ {bills.length === 0 ? (
+ <EmptyState
+ title="Nenhuma parcela em aberto"
+ description="Seus carnês e cobranças emitidos por esta empresa aparecerão aqui."
+ />
+ ) : (
  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
  {bills.map((bill) => (
  <div
@@ -151,6 +130,7 @@ export function PortalCarnesBillsWidget({ content, design_tokens }: PortalCarnes
  </div>
  ))}
  </div>
+ )}
 
  {/* Modal PIX Copia e Cola */}
  <Dialog open={isPixModalOpen} onOpenChange={setIsPixModalOpen}>

@@ -79,7 +79,7 @@ function WorkspaceCaptacaoNdasPage() {
             </div>
             <Button asChild variant="outline" size="sm" className="h-9 px-4 rounded-lg text-xs font-semibold min-h-11 sm:min-h-0">
               <Link to="/workspace/captacao">
-                <span>Ver Minhas Empresas Listadas</span>
+                <span>Ver Captações e Anúncios</span>
               </Link>
             </Button>
           </div>

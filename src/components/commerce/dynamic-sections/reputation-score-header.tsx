@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 interface ReputationScoreHeaderProps {
  content?: {
+ store_id?: string;
  company_name?: string;
 	 reputation_score?: number;
 	 reputation_badge?: string;
@@ -113,6 +114,7 @@ export function ReputationScoreHeader({ content, design_tokens }: ReputationScor
  isOpen={isComplaintModalOpen}
  onClose={() => setIsComplaintModalOpen(false)}
  companyName={content?.company_name || "a Empresa"}
+ entityId={content?.store_id || content?.company_name || "empresa"}
  />
  </div>
  );

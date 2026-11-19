@@ -357,3 +357,56 @@ export const duplicateFlightItinerary = createServerFn({ method: 'POST' })
     if (fullErr) throw fullErr;
     return full as any;
   });
+
+export const setFlightItineraryActive = createServerFn({ method: 'POST' })
+  .validator(
+    z.object({
+      itineraryId: z.string().uuid(),
+      tripId: z.string().uuid().optional().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const { itineraryId, tripId } = data;
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ['owner', 'admin', 'manager', 'seller']);
+    const db = getServerClient();
+
+    const { data: target, error: fetchErr } = await db
+      .from('travel_flight_itineraries')
+      .select('id, store_id, trip_id')
+      .eq('id', itineraryId)
+      .maybeSingle();
+
+    if (fetchErr || !target) {
+      throw new Error('Itinerário aéreo não encontrado.');
+    }
+    if (target.store_id !== identity.store_id && identity.role !== 'platform_admin') {
+      throw new Error('Acesso não autorizado para ativar itinerário de outra loja.');
+    }
+
+    const effectiveTripId = tripId ?? target.trip_id ?? null;
+    if (effectiveTripId) {
+      const { error: archiveErr } = await db
+        .from('travel_flight_itineraries')
+        .update({ status: 'archived', updated_at: new Date().toISOString() })
+        .eq('store_id', target.store_id)
+        .eq('trip_id', effectiveTripId)
+        .eq('status', 'active')
+        .neq('id', itineraryId);
+      if (archiveErr) {
+        throw new Error(`Erro ao arquivar itinerários anteriores: ${archiveErr.message}`);
+      }
+    }
+
+    const { error: activateErr } = await db
+      .from('travel_flight_itineraries')
+      .update({ status: 'active', updated_at: new Date().toISOString() })
+      .eq('id', itineraryId)
+      .eq('store_id', target.store_id);
+
+    if (activateErr) {
+      throw new Error(`Erro ao ativar itinerário aéreo: ${activateErr.message}`);
+    }
+
+    return { success: true, itineraryId };
+  });

@@ -1129,8 +1129,16 @@
   width: 100%;
   max-width: 100%;
   @media (min-width: 1024px) {
-    width: 70vw;
-    max-width: 70vw;
+    width: 78vw;
+    max-width: 78vw;
+  }
+  @media (min-width: 1280px) {
+    width: 84vw;
+    max-width: 84vw;
+  }
+  @media (min-width: 1536px) {
+    width: 88vw;
+    max-width: 88vw;
   }
 }
 
@@ -2252,6 +2260,16 @@ u.copilot-underline {
 
 @utility waesy-dyn-w {
   width: var(--dyn-w);
+}
+
+@utility waesy-app-font-shell {
+  font-family: var(--brand-body-font, var(--font-sans));
+}
+
+.waesy-app-font-shell h1,
+.waesy-app-font-shell h2,
+.waesy-app-font-shell h3 {
+  font-family: var(--brand-heading-font, var(--font-sans));
 }
 
 

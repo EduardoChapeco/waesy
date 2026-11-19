@@ -85,10 +85,21 @@ export const getChannelDRE = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<ChannelDRESummaryDTO[]> => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager", "finance", "gerente", "financeiro"]);
 
     const targetStoreId = data?.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
+
+    // Busca vendas de turismo (GMV vs Receita Real da Agência e Premiações Por Fora)
+    let travelQuery = supabase
+      .from("travel_sale_financial_sheets")
+      .select("primary_operator, gross_sale_cents, net_sale_cents, agency_revenue_cents, internal_costs_cents, over_deductions_cents, net_result_cents, sale_date, booking_status")
+      .eq("store_id", targetStoreId)
+      .neq("booking_status", "cancelada");
+
+    if (data?.startDate) travelQuery = travelQuery.gte("sale_date", data.startDate);
+    if (data?.endDate) travelQuery = travelQuery.lte("sale_date", data.endDate);
+    const { data: travelSheets } = await travelQuery;
 
     // Busca pedidos externos com dados financeiros por canal
     let externalQuery = supabase
@@ -181,6 +192,33 @@ export const getChannelDRE = createServerFn({ method: "GET" })
       current.net_revenue_cents += netCents;
 
       summaryMap.set(channel, current);
+    }
+
+    // Processa vendas de Turismo (Operadora: Receita Real da Agência separada do repasse Net Operadora)
+    for (const sheet of travelSheets || []) {
+      const channelKey = `turismo:${String(sheet.primary_operator || "operadora").toLowerCase().replace(/[^a-z0-9]+/g, "_")}`;
+      const current = summaryMap.get(channelKey) || {
+        channel: channelKey as ChannelOrigin,
+        channel_label: `Turismo • ${sheet.primary_operator || "Operadora"}`,
+        order_count: 0,
+        gross_revenue_cents: 0,
+        platform_fees_cents: 0,
+        gateway_fees_cents: 0,
+        shipping_costs_cents: 0,
+        net_revenue_cents: 0,
+        gross_margin_percent: 0,
+      };
+      const grossCents = Number(sheet.gross_sale_cents || 0);
+      const agencyRevCents = Number(sheet.agency_revenue_cents || 0);
+      const netProfitCents = Number(sheet.net_result_cents || 0);
+      const operatorPassThroughCents = Math.max(0, grossCents - agencyRevCents);
+
+      current.order_count += 1;
+      current.gross_revenue_cents += grossCents;
+      current.platform_fees_cents += operatorPassThroughCents;
+      current.gateway_fees_cents += Number(sheet.internal_costs_cents || 0);
+      current.net_revenue_cents += netProfitCents;
+      summaryMap.set(channelKey, current);
     }
 
     // Calcula margem bruta

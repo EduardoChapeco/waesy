@@ -1,8 +1,7 @@
-const CACHE_NAME = "waesy-v5-pwa-native";
+const CACHE_NAME = "waesy-v6-app-realtime";
+const TENANT_RUNTIME_CACHE_PREFIX = "waesy-app-runtime-";
 const STATIC_ASSETS = [
-  "/",
   "/offline.html",
-  "/manifest.json",
   "/favicon.ico",
   "/favicon.svg",
   "/icons/icon-192x192.png",
@@ -11,47 +10,117 @@ const STATIC_ASSETS = [
   "/apple-touch-icon.png",
 ];
 
-// ── PWA Native Singularity: Auth-Safe Service Worker ───────────────────────
-// Regras críticas para não quebrar a sessão Supabase no contexto standalone:
-// 1. NUNCA interceptar rotas de auth (/api/auth/*, /auth/*) — deixar passar direto.
-// 2. NUNCA cachear respostas com Set-Cookie ou headers de autenticação.
-// 3. skipWaiting() diferido — só após um messageEvent 'SKIP_WAITING', evitando
-//    que o SW se ative no meio de um request de refresh de token.
-// 4. navigate requests usam fetch() com credentials:"include" para que o browser
-//    envie os cookies de sessão corretamente mesmo no standalone context.
+function extractTenantNamespace(urlObj, referrerStr) {
+  const matchPath = urlObj.pathname.match(/^\/app\/(?:preview\/)?([^/?#]+)/i);
+  if (matchPath && matchPath[1]) {
+    return matchPath[1].toLowerCase();
+  }
+  if (referrerStr) {
+    try {
+      const refUrl = new URL(referrerStr);
+      const refMatch = refUrl.pathname.match(/^\/app\/(?:preview\/)?([^/?#]+)/i);
+      if (refMatch && refMatch[1]) {
+        return refMatch[1].toLowerCase();
+      }
+    } catch (_e) {}
+  }
+  const host = (urlObj.hostname || "").toLowerCase();
+  if (
+    host &&
+    host !== "localhost" &&
+    host !== "127.0.0.1" &&
+    !host.endsWith("waesy.com.br") &&
+    !host.endsWith("waesy.app")
+  ) {
+    return host.replace(/[^a-z0-9.-]/g, "-");
+  }
+  return "global";
+}
+
+function getTenantRuntimeCacheName(urlObj, referrerStr) {
+  return `${TENANT_RUNTIME_CACHE_PREFIX}${extractTenantNamespace(urlObj, referrerStr)}`;
+}
+
+// ── PWA Native Singularity v6: Zero-Stale Auto-Sync Service Worker ─────────
+// Regras invioláveis para atualizar dados e manifestos sem exigir limpar cache:
+// 1. NUNCA interceptar rotas de auth (/api/auth/*, /auth/*), /api/* (inclui
+//    /api/pwa/manifest.json), /_server, /workspace/* ou /admin*.
+// 2. HTML (mode === "navigate"): sempre Network-Only/First sem gravar páginas
+//    dinâmicas em cache (fallback /offline.html apenas se offline real).
+// 3. Chunks com hash (/assets/*): Cache-First seguro (URL imutável por build).
+// 4. Imagens/ícones sem hash: Network-First particionado por tenant
+//    (waesy-app-runtime-<slug>) para refletir trocas de logo/capa instantaneamente.
+// 5. Ativação incremental sem perda de dados: preserva IndexedDB, localStorage,
+//    sessionStorage, cookies e caches ativos de outros tenants.
 // ──────────────────────────────────────────────────────────────────────────
 
-// 1. Instalação e pré-cache de ativos essenciais + página offline
+// 1. Instalação e pré-cache estritamente de fallback offline e ícones base
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
+      return cache.addAll(STATIC_ASSETS).catch(() => {});
     })
   );
-  // NÃO chamamos self.skipWaiting() aqui.
-  // O SW antigo continua ativo até que a aba seja refrescada,
-  // evitando interromper requests de refresh de token em voo.
+  self.skipWaiting();
 });
 
-// Permite ativação forçada via postMessage (ex: após login bem-sucedido)
+// Permite ativação forçada ou purge seletivo por tenant de cache de mídia via postMessage
 self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "SKIP_WAITING") {
+  if (!event.data) return;
+  if (event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
+  } else if (event.data.type === "PURGE_APP_CACHE") {
+    const rawTarget = String(event.data.slug || event.data.host || "").trim().toLowerCase();
+    const targetCacheName = rawTarget ? `${TENANT_RUNTIME_CACHE_PREFIX}${rawTarget}` : null;
+    event.waitUntil(
+      caches
+        .keys()
+        .then((cacheNames) =>
+          Promise.all(
+            cacheNames
+              .filter((name) => {
+                if (targetCacheName) {
+                  return name === targetCacheName;
+                }
+                return name.startsWith(TENANT_RUNTIME_CACHE_PREFIX);
+              })
+              .map((name) => caches.delete(name))
+          )
+        )
+        .then(() =>
+          self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
+            for (const client of windowClients) {
+              try {
+                client.postMessage({
+                  type: "WAESY_SW_CACHE_SYNCED",
+                  slug: rawTarget || null,
+                  version: event.data.version || null,
+                });
+              } catch (_e) {}
+            }
+          })
+        )
+    );
   }
 });
 
-// 2. Ativação e limpeza de caches legados
+// 2. Ativação incremental: limpa apenas caches obsoletos de versões antigas sem apagar dados do usuário
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
-      );
-    })
+    caches
+      .keys()
+      .then((cacheNames) =>
+        Promise.all(
+          cacheNames
+            .filter(
+              (name) =>
+                name !== CACHE_NAME && !name.startsWith(TENANT_RUNTIME_CACHE_PREFIX)
+            )
+            .map((name) => caches.delete(name))
+        )
+      )
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 // ── Rotas que NUNCA devem ser interceptadas pelo SW ───────────────────────
@@ -86,57 +155,75 @@ function hasAuthHeaders(response) {
   );
 }
 
-// 3. Estratégia de Rede e Cache Resiliente
+function isHashedAsset(url) {
+  return url.pathname.startsWith("/assets/");
+}
+
+// 3. Estratégia de Rede e Cache Sem Cache Preso
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
-  // Passa direto sem interceptar: auth, API não-manifest, admin, workspace
-  const isPwaManifest = url.pathname.startsWith("/api/pwa/manifest");
+  // Network-Only estrito: auth, /api/* (inclusive manifest.json dinâmico), admin, workspace e não-GET
   if (
     event.request.method !== "GET" ||
     isAuthRoute(url) ||
-    (url.pathname.startsWith("/api") && !isPwaManifest) ||
+    url.pathname.startsWith("/api") ||
     isAdminRoute(url)
   ) {
-    return; // deixa o browser resolver normalmente com cookies intactos
+    return;
   }
 
-  // Navigate: Network-first com credentials:include para preservar cookies de sessão
-  // Fallback para /offline.html apenas em caso de erro de rede real.
+  // Navigate: Network-First sem persistir HTML dinâmico em cache (evita app travado em versão antiga)
   if (event.request.mode === "navigate") {
     event.respondWith(
-      fetch(event.request, { credentials: "include" }).catch(async () => {
-        const cached = await caches.match(event.request);
-        if (cached) return cached;
+      fetch(event.request, { credentials: "include", cache: "no-store" }).catch(async () => {
         const offlinePage = await caches.match("/offline.html");
-        return offlinePage || caches.match("/");
+        return offlinePage || new Response("Offline", { status: 503, statusText: "Offline" });
       })
     );
     return;
   }
 
-  // Stale-While-Revalidate para ativos estáticos (imagens, CSS, JS, fontes)
-  // com guarda: nunca cachear respostas com headers de auth.
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request)
-        .then((networkResponse) => {
-          if (
-            networkResponse &&
-            networkResponse.status === 200 &&
-            !hasAuthHeaders(networkResponse)
-          ) {
+  // Chunks com hash do Vite (/assets/*): Cache-First (URL muda a cada build)
+  if (isHashedAsset(url)) {
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        if (cachedResponse) return cachedResponse;
+        return fetch(event.request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200 && !hasAuthHeaders(networkResponse)) {
             const responseToCache = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(event.request, responseToCache);
             });
           }
           return networkResponse;
-        })
-        .catch(() => cachedResponse);
+        });
+      })
+    );
+    return;
+  }
 
-      return cachedResponse || fetchPromise;
-    })
+  // Demais ativos sem hash (logos, capas, banners, ícones): Network-First particionado por tenant
+  const tenantCacheName = getTenantRuntimeCacheName(url, event.request.referrer);
+  event.respondWith(
+    fetch(event.request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200 && !hasAuthHeaders(networkResponse)) {
+          const responseToCache = networkResponse.clone();
+          caches.open(tenantCacheName).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return networkResponse;
+      })
+      .catch(async () => {
+        const tenantCache = await caches.open(tenantCacheName);
+        const cachedInTenant = await tenantCache.match(event.request);
+        if (cachedInTenant) return cachedInTenant;
+        const cachedGlobal = await caches.match(event.request);
+        if (cachedGlobal) return cachedGlobal;
+        return new Response("", { status: 504 });
+      })
   );
 });
 

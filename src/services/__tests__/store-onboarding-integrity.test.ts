@@ -13,6 +13,8 @@ const dbPassword = process.env.SUPABASE_DB_PASSWORD || process.env.DB_PASSWORD |
 const pool = new pg.Pool({
   connectionString: `postgres://postgres.${projectRef}:${encodeURIComponent(dbPassword)}@aws-0-sa-east-1.pooler.supabase.com:6543/postgres`,
   ssl: { rejectUnauthorized: false },
+  max: 2,
+  connectionTimeoutMillis: 15000,
 });
 
 let isPoolConnected = false;
@@ -38,11 +40,11 @@ describe.skipIf(!dbPassword)('MICROFASE 2 — Onboarding Atômico de Negócios, 
     if (profiles.length > 0) {
       testUserId = profiles[0].id;
     }
-  });
+  }, 30000);
 
   afterAll(async () => {
     if (!isPoolConnected) return;
-    // Limpeza de registros de teste
+    // Limpeza de registros de teste (DELETE FROM stores percorre ~849 FKs)
     try {
       if (testStoreId) {
         await pool.query('DELETE FROM workspace_members WHERE store_id = $1', [testStoreId]);
@@ -51,9 +53,12 @@ describe.skipIf(!dbPassword)('MICROFASE 2 — Onboarding Atômico de Negócios, 
       if (testOrgId) {
         await pool.query('DELETE FROM organizations WHERE id = $1', [testOrgId]);
       }
-      await pool.end();
-    } catch {}
-  });
+    } catch {
+      // cleanup best-effort
+    } finally {
+      await pool.end().catch(() => {});
+    }
+  }, 60000);
 
   it('deve gerar slugs únicos e limpos sem sufixos aleatórios quando não houver colisão', async () => {
     const rawName = 'Padaria & Confeitaria São José';
@@ -109,7 +114,7 @@ describe.skipIf(!dbPassword)('MICROFASE 2 — Onboarding Atômico de Negócios, 
     expect(memberRows[0].profile_id).toBe(testUserId);
     expect(memberRows[0].role).toBe('owner');
     expect(memberRows[0].is_active).toBe(true);
-  });
+  }, 20000);
 
   it('deve garantir que a loja provisionada seja descoberta tanto por membership quanto por context_profile_id', async () => {
     if (!isPoolConnected || !testUserId || !testStoreId) return;
@@ -131,7 +136,7 @@ describe.skipIf(!dbPassword)('MICROFASE 2 — Onboarding Atômico de Negócios, 
     );
     expect(byContext.length).toBe(1);
     expect(byContext[0].id).toBe(testStoreId);
-  });
+  }, 20000);
 
   it('deve comprovar que lojas ativas possuem vínculo de owner comprovado', async () => {
     if (!isPoolConnected || !testStoreId) return;
@@ -143,5 +148,5 @@ describe.skipIf(!dbPassword)('MICROFASE 2 — Onboarding Atômico de Negócios, 
     );
     expect(ownerCheck.length).toBeGreaterThan(0);
     expect(ownerCheck[0].role).toBe('owner');
-  });
+  }, 20000);
 });

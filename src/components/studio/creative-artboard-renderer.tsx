@@ -1,27 +1,13 @@
 import React from "react";
 import { Check, MapPin, Quote as QuoteIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type {
+  CreativeThemeId,
+  CreativeArchetype,
+  CreativeAspectRatio,
+} from "@/types/studio-machine";
 
-export type CreativeThemeId =
-  | "obsidian"
-  | "emerald"
-  | "gold"
-  | "cobalt"
-  | "terracotta"
-  | "paper";
-
-export type CreativeArchetype =
-  | "headline_lead"
-  | "bullet_checklist"
-  | "promo_offer"
-  | "quote"
-  | "product"
-  | "carousel"
-  | "presentation"
-  | "travel"
-  | "news";
-
-export type CreativeAspectRatio = "1:1" | "4:5" | "9:16" | "16:9";
+export type { CreativeThemeId, CreativeArchetype, CreativeAspectRatio };
 
 export interface CreativeThemeTokens {
   id: CreativeThemeId;

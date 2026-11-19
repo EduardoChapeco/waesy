@@ -1,6 +1,7 @@
 import { createFileRoute, Link, redirect, useNavigate, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { getRealtimeChannel } from "@/services/realtime-channel";
 import { AtendimentoOverviewView } from "@/components/atendimento/AtendimentoOverviewView";
 import { ErrorState } from "@/components/state/states";
 import { Button } from "@/components/ui/button";
@@ -129,6 +130,31 @@ function WorkspaceAtendimentoOverviewPage() {
   const navigate = useNavigate();
   const router = useRouter();
   const [isReconcilingIfood, setIsReconcilingIfood] = useState(false);
+
+  useEffect(() => {
+    const storeId = store?.id || bi?.storeId;
+    if (!storeId) return;
+    let debounceTimer: number | null = null;
+    const scheduleRefresh = () => {
+      if (debounceTimer !== null) window.clearTimeout(debounceTimer);
+      debounceTimer = window.setTimeout(() => {
+        debounceTimer = null;
+        void router.invalidate();
+      }, 1200);
+    };
+    const filter = `store_id=eq.${storeId}`;
+    const { channel, unsubscribe } = getRealtimeChannel(`atendimento-overview:${storeId}`);
+    channel
+      ?.on("postgres_changes", { event: "*", schema: "public", table: "chat_threads", filter }, scheduleRefresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "whatsapp_outbox", filter }, scheduleRefresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "whatsapp_channel_live_state", filter }, scheduleRefresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "whatsapp_history_sync_jobs", filter }, scheduleRefresh)
+      .subscribe();
+    return () => {
+      if (debounceTimer !== null) window.clearTimeout(debounceTimer);
+      unsubscribe();
+    };
+  }, [store?.id, bi?.storeId, router]);
 
   if (loadError) {
     return (

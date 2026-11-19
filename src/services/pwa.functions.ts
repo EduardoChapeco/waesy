@@ -25,18 +25,37 @@ export const getStorePwaConfig = createServerFn({ method: "GET" })
 export const saveStorePwaConfig = createServerFn({ method: "POST" })
   .validator(
     z.object({
+      storeId: z.string().uuid().optional(),
       appName: z.string().min(2).max(100),
       shortName: z.string().min(1).max(30),
-      description: z.string().optional(),
+      description: z.string().optional().nullable(),
       themeColor: z.string().default(TOKEN_HEX.neutral900),
       backgroundColor: z.string().default(TOKEN_HEX.neutral950),
       icon192Url: z.string().url().optional().nullable(),
       icon512Url: z.string().url().optional().nullable(),
+      maskableIcon512Url: z.string().url().optional().nullable(),
+      logoSquareUrl: z.string().url().optional().nullable(),
+      coverUrl: z.string().url().optional().nullable(),
       splashImageUrl: z.string().url().optional().nullable(),
       startUrl: z.string().default("/"),
       displayMode: z.enum(["standalone", "fullscreen", "minimal-ui", "browser"]).default("standalone"),
       orientation: z.enum(["portrait", "landscape", "any"]).default("portrait"),
       customDomain: z.string().optional().nullable(),
+      templateId: z
+        .enum([
+          "standard_catalog",
+          "tourism_cvc",
+          "delivery_ifood",
+          "events_sympla",
+          "services_agenda",
+          "ecommerce_retail",
+        ])
+        .optional()
+        .default("standard_catalog"),
+      isAppEnabled: z.boolean().optional().default(true),
+      entryAnimation: z.enum(["none", "pulse", "bounce", "fade", "slide_up"]).optional().default("pulse"),
+      navigationTabs: z.array(z.any()).optional(),
+      nicheFeatures: z.record(z.any()).optional(),
       isPublished: z.boolean().default(true),
       settings: z.record(z.any()).optional().default({}),
     }),
@@ -44,27 +63,50 @@ export const saveStorePwaConfig = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    const targetStoreId = data.storeId || identity.store_id;
+    assertStoreAccess(identity, ["owner", "admin", "manager"], targetStoreId);
 
-    const payload = {
-      store_id: identity.store_id,
+    const { data: existing } = await supabase
+      .from("store_pwa_configs")
+      .select("cache_version")
+      .eq("store_id", targetStoreId)
+      .maybeSingle();
+
+    const nextVersion = Number(existing?.cache_version || 0) + 1;
+
+    const payload: Record<string, any> = {
+      store_id: targetStoreId,
       app_name: data.appName,
       short_name: data.shortName,
-      description: data.description,
+      description: data.description ?? null,
       theme_color: data.themeColor,
       background_color: data.backgroundColor,
       icon_192_url: data.icon192Url,
       icon_512_url: data.icon512Url,
+      maskable_icon_512_url: data.maskableIcon512Url ?? null,
+      logo_square_url: data.logoSquareUrl ?? null,
+      cover_url: data.coverUrl ?? null,
       splash_image_url: data.splashImageUrl,
       start_url: data.startUrl,
       display_mode: data.displayMode,
       orientation: data.orientation,
       custom_domain: data.customDomain,
+      template_id: data.templateId,
+      is_app_enabled: data.isAppEnabled,
+      entry_animation: data.entryAnimation,
+      cache_version: nextVersion,
       is_published: data.isPublished,
       settings: data.settings || {},
       published_at: data.isPublished ? new Date().toISOString() : null,
       updated_at: new Date().toISOString(),
     };
+
+    if (data.navigationTabs !== undefined) {
+      payload.navigation_tabs = data.navigationTabs;
+    }
+    if (data.nicheFeatures !== undefined) {
+      payload.niche_features = data.nicheFeatures;
+    }
 
     const { data: config, error } = await supabase
       .from("store_pwa_configs")
@@ -102,10 +144,13 @@ export const getPublicPwaManifest = createServerFn({ method: "GET" })
 
     const icons = [];
     if (pwa.icon_192_url) {
-      icons.push({ src: pwa.icon_192_url, sizes: "192x192", type: "image/png" });
+      icons.push({ src: pwa.icon_192_url, sizes: "192x192", type: "image/png", purpose: "any" });
     }
     if (pwa.icon_512_url) {
-      icons.push({ src: pwa.icon_512_url, sizes: "512x512", type: "image/png" });
+      icons.push({ src: pwa.icon_512_url, sizes: "512x512", type: "image/png", purpose: "any" });
+    }
+    if (pwa.maskable_icon_512_url) {
+      icons.push({ src: pwa.maskable_icon_512_url, sizes: "512x512", type: "image/png", purpose: "maskable" });
     }
 
     return {

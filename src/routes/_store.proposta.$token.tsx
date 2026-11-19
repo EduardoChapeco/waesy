@@ -1,26 +1,27 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Download, MessageCircle, ShieldCheck, Star, Bot, Send, Loader2, LayoutTemplate, FileText, Globe, Lock, KeyRound, Eye, EyeOff } from "lucide-react";
+import { Download, MessageCircle, ShieldCheck, Star, Bot, Loader2, FileText, Globe, Lock, KeyRound, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import {
   getPublicTravelProposalByToken,
   verifyTravelProposalAccessPin,
-  askProposalSalesAdvisorAI,
   updateTravelProposal,
+  type HotelDTO,
   type TravelProposalDTO,
   type TravelProposalOptionDTO,
   type ProposalStatus,
 } from "@/services/travel-proposal.functions";
 import { ProposalCanvasRenderer } from "@/components/tourism/studio/proposal-canvas-renderer";
+import { ProposalWebShowcase } from "@/components/tourism/studio/proposal-web-showcase";
 import { TravelProposalCheckoutModal } from "@/components/tourism/studio/travel-proposal-checkout-modal";
-import { EditorialShowcaseView } from "@/components/classifieds/editorial-showcase-view";
-import { proposalToEditorialClassified } from "@/lib/tourism/proposal-editorial-mapper";
+import { TourismProposalAiDrawer } from "@/components/tourism/shared/TourismProposalAiDrawer";
+import type { CommercialPaymentPreference } from "@/components/tourism/shared/ProposalCommercialPanel";
+import { normalizeProposalOptionsAndHotels } from "@/lib/tourism/proposal-normalization";
 import { exportElementAsPdf } from "@/lib/pdf-export";
 import { formatMoney } from "@/lib/money";
 
@@ -60,11 +61,13 @@ function PublicTravelProposalPage() {
   const [isUnlocking, setIsUnlocking] = useState(false);
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [viewMode, setViewMode] = useState<"editorial" | "studio">("editorial");
+  const [viewMode, setViewMode] = useState<"web" | "studio">("web");
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [isAccepted, setIsAccepted] = useState(proposal?.acceptance_status === "accepted");
   const [localStatus, setLocalStatus] = useState<string>(proposal?.status || "sent");
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [prefilledPreference, setPrefilledPreference] = useState<CommercialPaymentPreference | null>(null);
+  const [prefilledInstallments, setPrefilledInstallments] = useState<number>(1);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(() => {
     const acceptedIndex = proposal?.options?.findIndex((option: { id?: string }) => option.id === proposal?.accepted_option_id) ?? -1;
     return acceptedIndex >= 0 ? acceptedIndex : 0;
@@ -79,43 +82,37 @@ function PublicTravelProposalPage() {
     setSelectedOptionIndex(acceptedIndex >= 0 ? acceptedIndex : 0);
   }, [loaderProposal?.id, loaderProposal?.updated_at, loaderProposal?.status, loaderProposal?.acceptance_status, loaderProposal?.accepted_option_id]);
 
-  // ── AI Sales Advisor (SDR) States ──
+  // ── AI Sales Advisor (SDR) Drawer State ──
   const [isAdvisorOpen, setIsAdvisorOpen] = useState(false);
-  const [advisorInput, setAdvisorInput] = useState("");
-  const buildAdvisorGreeting = (agency?: string | null, city?: string | null) =>
-    `Olá! Sou o Consultor de Viagens Inteligente da ${agency || "sua agência"}. Estou aqui para esclarecer qualquer detalhe dos voos, hotéis, localização, clima e passeios para ${city || "sua viagem"}. Como posso te ajudar hoje?`;
-  const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>(() => [
-    {
-      role: "assistant",
-      content: buildAdvisorGreeting(proposal?.agency_name, proposal?.destination_city),
-    },
-  ]);
 
-  useEffect(() => {
-    setMessages((prev) => {
-      if (prev.length === 1 && prev[0]?.role === "assistant") {
-        return [
-          {
-            role: "assistant",
-            content: buildAdvisorGreeting(proposal?.agency_name, proposal?.destination_city),
-          },
-        ];
-      }
-      return prev;
-    });
-  }, [proposal?.public_token, proposal?.agency_name, proposal?.destination_city, proposal?.access_locked]);
+  const normalizedPackage = useMemo(() => {
+    if (!proposal) return { hotels: [] as HotelDTO[], options: [] as TravelProposalOptionDTO[] };
+    const norm = normalizeProposalOptionsAndHotels(
+      proposal.hotels || [],
+      proposal.options || [],
+    );
+    return {
+      hotels: norm.hotels as HotelDTO[],
+      options: norm.options as TravelProposalOptionDTO[],
+    };
+  }, [proposal?.hotels, proposal?.options]);
 
   const options: TravelProposalOptionDTO[] = useMemo(() => {
-    return Array.isArray(proposal?.options) && proposal.options.length > 0 ? proposal.options : [];
-  }, [proposal?.options]);
+    return normalizedPackage.options as TravelProposalOptionDTO[];
+  }, [normalizedPackage.options]);
 
   const effectiveProposal = useMemo<TravelProposalDTO | null>(() => {
     if (!proposal) return null;
     const statusValue = (localStatus || proposal.status || "sent") as ProposalStatus;
-    if (options.length === 0) return { ...proposal, status: statusValue };
+    const baseHotels = normalizedPackage.hotels.length > 0 ? normalizedPackage.hotels : proposal.hotels;
+    if (options.length === 0) {
+      return { ...proposal, hotels: baseHotels, status: statusValue };
+    }
 
     const currentOpt = options[selectedOptionIndex] || options[0];
-    if (!currentOpt) return { ...proposal, status: statusValue };
+    if (!currentOpt) {
+      return { ...proposal, hotels: baseHotels, status: statusValue };
+    }
 
     const optLabel = String((currentOpt as any).name || (currentOpt as any).title || "").trim();
     return {
@@ -124,21 +121,17 @@ function PublicTravelProposalPage() {
       title: optLabel ? `${proposal.title} — ${optLabel}` : proposal.title,
       subtitle: (currentOpt as any).subtitle || proposal.subtitle,
       flights: currentOpt.flights && currentOpt.flights.length > 0 ? currentOpt.flights : proposal.flights,
-      hotels: currentOpt.hotels && currentOpt.hotels.length > 0 ? currentOpt.hotels : proposal.hotels,
+      hotels: currentOpt.hotels && currentOpt.hotels.length > 0 ? currentOpt.hotels : baseHotels,
       itinerary: currentOpt.itinerary && currentOpt.itinerary.length > 0 ? currentOpt.itinerary : proposal.itinerary,
       transfers: currentOpt.transfers && currentOpt.transfers.length > 0 ? currentOpt.transfers : proposal.transfers,
       tours: currentOpt.tours && currentOpt.tours.length > 0 ? currentOpt.tours : proposal.tours,
+      cruises: Array.isArray((currentOpt as any).cruises) && (currentOpt as any).cruises.length > 0 ? (currentOpt as any).cruises : (proposal as any).cruises,
       rooms: Array.isArray((currentOpt as any).rooms) && (currentOpt as any).rooms.length > 0 ? (currentOpt as any).rooms : (proposal as any).rooms,
       includes: currentOpt.includes && currentOpt.includes.length > 0 ? currentOpt.includes : proposal.includes,
       excludes: currentOpt.excludes && currentOpt.excludes.length > 0 ? currentOpt.excludes : proposal.excludes,
       pricing: currentOpt.pricing || proposal.pricing,
     };
-  }, [proposal, options, selectedOptionIndex, localStatus]);
-
-  const editorialClassified = useMemo(() => {
-    if (!effectiveProposal) return null;
-    return proposalToEditorialClassified(effectiveProposal);
-  }, [effectiveProposal]);
+  }, [proposal, normalizedPackage.hotels, options, selectedOptionIndex, localStatus]);
 
   const publishMutation = useMutation({
     mutationFn: () =>
@@ -158,40 +151,6 @@ function PublicTravelProposalPage() {
       toast.error(err?.message || "Não foi possível publicar a proposta.");
     },
   });
-
-  const advisorMutation = useMutation({
-    mutationFn: (question: string) =>
-      askProposalSalesAdvisorAI({
-        data: {
-          token: proposal!.public_token,
-          question,
-          currentOptionId: options[selectedOptionIndex]?.id,
-          conversationHistory: messages.map((m) => ({ role: m.role, content: m.content })),
-        },
-      }),
-    onSuccess: (res) => {
-      setMessages((prev) => [...prev, { role: "assistant", content: res.reply }]);
-    },
-    onError: (err: any) => {
-      toast.error("O consultor IA não conseguiu responder no momento. Tente novamente.");
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: "Tive uma instabilidade rápida de conexão com o servidor. Você também pode tirar dúvidas diretamente com o agente humano no WhatsApp!",
-        },
-      ]);
-    },
-  });
-
-  const handleSendMessage = (textToSend?: string) => {
-    const text = (textToSend || advisorInput).trim();
-    if (!text || advisorMutation.isPending) return;
-
-    setMessages((prev) => [...prev, { role: "user", content: text }]);
-    setAdvisorInput("");
-    advisorMutation.mutate(text);
-  };
 
   const handleUnlockPin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -357,7 +316,7 @@ function PublicTravelProposalPage() {
     }
   }
 
-  if (!proposal || !effectiveProposal || !editorialClassified) {
+  if (!proposal || !effectiveProposal) {
     const unavailableTitle = loadError ? "Proposta indisponível" : "Proposta não encontrada";
     return (
       <div className="max-w-md mx-auto py-20 px-4 text-center space-y-4" role={loadError ? "alert" : undefined}>
@@ -437,8 +396,8 @@ function PublicTravelProposalPage() {
         </div>
       )}
       
-      {/* ── 1. HEADER TABS MULTI-OPÇÃO (QUANDO EXISTIREM 2+ COTAÇÕES) ── */}
-      {options.length > 1 && (
+      {/* ── 1. HEADER TABS MULTI-OPÇÃO (APENAS QUANDO HOUVER 2+ PACOTES/COTAÇÕES DISTINTAS) ── */}
+      {options.length > 1 && proposal.web_page?.show_option_tabs !== false && (
         <div className="bg-card border border-border rounded-lg p-3">
           <div className="flex items-center justify-between gap-2 mb-2 px-1">
             <span className="text-2xs font-bold tracking-tight text-foreground uppercase flex items-center gap-2">
@@ -501,7 +460,7 @@ function PublicTravelProposalPage() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 p-3 sm:p-4 rounded-xl bg-card border border-border sticky top-3 z-20">
         <div className="space-y-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs sm:text-sm font-bold text-foreground truncate">
+            <span className="text-xs sm:text-sm font-bold text-foreground break-words">
               {activeOption ? `${activeOption.name} · ${proposal.destination_city}` : proposal.title}
             </span>
             {isAccepted ? (
@@ -526,17 +485,17 @@ function PublicTravelProposalPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* Alternador Editorial Interativo vs Lâmina PDF */}
+          {/* Alternador Página Web vs Lâmina PDF */}
           <div className="inline-flex items-center rounded-lg border border-border bg-muted/40 p-1 gap-1">
             <Button
               type="button"
               size="sm"
-              variant={viewMode === "editorial" ? "secondary" : "ghost"}
-              onClick={() => setViewMode("editorial")}
+              variant={viewMode === "web" ? "secondary" : "ghost"}
+              onClick={() => setViewMode("web")}
               className="h-11 min-h-11 px-3 rounded-md text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <LayoutTemplate className="size-3.5" />
-              <span>Editorial</span>
+              <Globe className="size-3.5" />
+              <span>Página Web</span>
             </Button>
             <Button
               type="button"
@@ -574,7 +533,7 @@ function PublicTravelProposalPage() {
             <span>{isExportingPdf ? "Gerando..." : "Baixar PDF"}</span>
           </Button>
 
-          {cleanWhatsapp && viewMode === "studio" && (
+          {cleanWhatsapp && (
             <Button
               asChild
               size="sm"
@@ -592,19 +551,16 @@ function PublicTravelProposalPage() {
             </Button>
           )}
 
-          {/* No modo Lâmina PDF mantém o botão de aceite visível na barra; no modo Editorial o CTA principal vive na vitrine */}
-          {viewMode === "studio" && (
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => setIsCheckoutModalOpen(true)}
-              disabled={cannotAccept}
-              className="rounded-lg text-xs font-bold gap-2 min-h-11 h-11 px-4 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <ShieldCheck className="size-4" />
-              <span>{isAccepted ? "Aceite registrado" : "Registrar aceite"}</span>
-            </Button>
-          )}
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => setIsCheckoutModalOpen(true)}
+            disabled={cannotAccept}
+            className="rounded-lg text-xs font-bold gap-2 min-h-11 h-11 px-4 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <ShieldCheck className="size-4" />
+            <span>{isAccepted ? "Aceite registrado" : "Registrar aceite"}</span>
+          </Button>
         </div>
       </div>
 
@@ -624,39 +580,47 @@ function PublicTravelProposalPage() {
         </p>
       )}
 
-      {/* ── 3. RENDERIZAÇÃO DA PROPOSTA WEB (EDITORIAL INTERATIVO OU LÂMINA STUDIO) ── */}
-      {viewMode === "editorial" ? (
-        <EditorialShowcaseView
-          classified={editorialClassified}
-          onOpenBookingModal={() => {
+      {/* ── 3. RENDERIZAÇÃO DA PROPOSTA WEB (VITRINE INTERATIVA EDITÁVEL OU LÂMINA PDF) ── */}
+      {viewMode === "web" ? (
+        <ProposalWebShowcase
+          proposal={effectiveProposal}
+          webPage={proposal.web_page}
+          ctaLabel={primaryCtaLabel}
+          ctaDisabled={cannotAccept}
+          onSelectPayment={(pref, inst) => {
+            setPrefilledPreference(pref);
+            setPrefilledInstallments(inst);
+          }}
+          onAcceptClick={(pref, inst) => {
+            if (pref) setPrefilledPreference(pref);
+            if (inst && inst >= 1) setPrefilledInstallments(inst);
             if (cannotAccept) {
               toast.info(primaryCtaLabel);
               return;
             }
             setIsCheckoutModalOpen(true);
           }}
-          ctaLabelOverride={primaryCtaLabel}
-          ctaDisabled={cannotAccept}
+          onAskAdvisorClick={() => setIsAdvisorOpen(true)}
+          whatsappHref={cleanWhatsapp ? `https://wa.me/${cleanWhatsapp}?text=${waConfirmMessage}` : null}
         />
       ) : null}
 
       {/* Mantém a lâmina A4 sempre montada para visualização Studio ou exportação PDF em alta fidelidade */}
       <div
         id="public-proposal-canvas"
-        aria-hidden={viewMode === "editorial" ? true : undefined}
+        aria-hidden={viewMode === "web" ? true : undefined}
         className={
           viewMode === "studio"
             ? "max-w-4xl mx-auto rounded-lg border border-border overflow-hidden bg-card"
             : "fixed top-0 pointer-events-none w-full max-w-4xl"
         }
-        style={viewMode === "editorial" ? { left: "-10000px", opacity: 1, zIndex: -50 } : undefined}
+        style={viewMode === "web" ? { left: "-10000px", opacity: 1, zIndex: -50 } : undefined}
       >
         <ProposalCanvasRenderer proposal={effectiveProposal} />
       </div>
 
-      {/* ── 4. BARRA FIXA MOBILE (APENAS NO MODO STUDIO; NO EDITORIAL O COMPONENT JÁ POSSUI BARRA PRÓPRIA) ── */}
-      {viewMode === "studio" && (
-        <div className="sm:hidden fixed bottom-0 left-0 right-0 p-3 pb-safe bg-background border-t border-border/70 z-30 flex items-center gap-2">
+      {/* ── 4. BARRA FIXA MOBILE (Z-30 ABAIXO DOS MODAIS Z-50) ── */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 p-3 pb-safe bg-background border-t border-border/70 z-30 flex items-center gap-2">
           <Button
             type="button"
             variant="outline"
@@ -695,120 +659,15 @@ function PublicTravelProposalPage() {
             <span>{isAccepted ? "Aceite registrado" : "Registrar aceite"}</span>
           </Button>
         </div>
-      )}
 
-      {/* ── 5. SHEET DO CONSULTOR DE VENDAS / SDR DE IA ── */}
-      <Sheet open={isAdvisorOpen} onOpenChange={setIsAdvisorOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col h-full bg-background">
-          <SheetHeader className="p-4 border-b border-border/60 shrink-0 bg-muted/20">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-lg bg-warning/10 border border-warning/30 flex items-center justify-center text-warning-strong">
-                <Star className="size-5" />
-              </div>
-              <div>
-                <SheetTitle className="text-sm font-bold text-foreground">Consultor de Viagens IA</SheetTitle>
-                <SheetDescription className="text-2xs text-muted-foreground">
-                  Especialista da {proposal.agency_name} para {proposal.destination_city}
-                </SheetDescription>
-              </div>
-            </div>
-          </SheetHeader>
-
-          {/* Chat Messages */}
-          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-waesy p-4 space-y-3">
-            {messages.map((m, idx) => (
-              <div
-                key={idx}
-                className={`flex gap-3 ${m.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                {m.role === "assistant" && (
-                  <div className="h-7 w-7 rounded-lg bg-warning/10 border border-warning/20 flex items-center justify-center shrink-0 text-warning-strong mt-1">
-                    <Bot className="size-4" />
-                  </div>
-                )}
-                <div
-                  className={`p-3 rounded-lg text-xs leading-relaxed max-w-17/20 ${
-                    m.role === "user"
-                      ? "bg-foreground text-background font-medium rounded-tr-sm"
-                      : "bg-muted/50 border border-border/60 text-foreground rounded-tl-sm space-y-2"
-                  }`}
-                >
-                  <AdvisorFormattedMessage content={m.content} />
-                </div>
-              </div>
-            ))}
-
-            {advisorMutation.isPending && (
-              <div className="flex gap-3 justify-start">
-                <div className="h-7 w-7 rounded-lg bg-warning/10 border border-warning/20 flex items-center justify-center shrink-0 text-warning-strong">
-                  <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
-                </div>
-                <div className="p-3 rounded-lg bg-muted/50 border border-border/60 text-xs text-muted-foreground">
-                  Pesquisando informações públicas do hotel, destino e opções cotadas...
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Quick Suggestions Chips */}
-          <div className="p-3 border-t border-border/40 bg-muted/10 shrink-0 space-y-2">
-            <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider block px-1">
-              Perguntas Frequentes
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {options.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => handleSendMessage("Qual a diferença principal entre as opções cotadas e qual vale mais a pena?")}
-                  className="text-2xs min-h-11 sm:min-h-10 px-3 py-2 rounded-lg border border-border/60 bg-background hover:bg-muted text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  Comparar as Opções
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => handleSendMessage("Como é a localização do hotel e a distância da praia ou centro?")}
-                className="text-2xs min-h-11 sm:min-h-10 px-3 py-2 rounded-lg border border-border/60 bg-background hover:bg-muted text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                Localização do Hotel
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSendMessage("Como é o clima nesta época do ano no destino e o que levar?")}
-                className="text-2xs min-h-11 sm:min-h-10 px-3 py-2 rounded-lg border border-border/60 bg-background hover:bg-muted text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                Clima e Bagagem
-              </button>
-            </div>
-          </div>
-
-          {/* Input Bar */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSendMessage();
-            }}
-            className="p-3 border-t border-border/60 bg-background shrink-0 flex items-center gap-2"
-          >
-            <Input
-              value={advisorInput}
-              onChange={(e) => setAdvisorInput(e.target.value)}
-              placeholder="Digite sua dúvida sobre a viagem..."
-              disabled={advisorMutation.isPending}
-              className="h-11 sm:h-10 text-base md:text-sm rounded-lg flex-1"
-            />
-            <Button
-              type="submit"
-              size="icon"
-              aria-label="Enviar pergunta ao consultor"
-              disabled={!advisorInput.trim() || advisorMutation.isPending}
-              className="size-11 min-h-11 min-w-11 sm:size-10 sm:min-h-0 sm:min-w-0 rounded-lg bg-primary hover:opacity-90 text-primary-foreground shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <Send className="size-4" />
-            </Button>
-          </form>
-        </SheetContent>
-      </Sheet>
+      {/* ── 5. DRAWER DO CONSULTOR DE VENDAS / SDR DE IA (PADRÃO INSTAGRAM / DIRECT) ── */}
+      <TourismProposalAiDrawer
+        isOpen={isAdvisorOpen}
+        onClose={() => setIsAdvisorOpen(false)}
+        proposal={effectiveProposal}
+        customPrompt={proposal.web_page?.ai_advisor_prompt}
+        agencyPhone={proposal.web_page?.whatsapp_phone || proposal.agency_whatsapp || proposal.client_whatsapp}
+      />
 
       {/* ── 6. MODAL DE CHECKOUT, MANIFESTO E SINAL ── */}
       <TravelProposalCheckoutModal
@@ -816,70 +675,14 @@ function PublicTravelProposalPage() {
         onClose={() => setIsCheckoutModalOpen(false)}
         proposal={effectiveProposal}
         selectedOptionId={activeOption?.id || null}
+        initialPaymentPreference={prefilledPreference}
+        initialInstallments={prefilledInstallments}
         onSuccess={() => {
           setIsAccepted(true);
           setLocalStatus("approved");
           setIsCheckoutModalOpen(false);
         }}
       />
-    </div>
-  );
-}
-
-/** Renderiza texto rico seguro (**negrito** e links https://) sem exibir asteriscos crus. */
-function AdvisorFormattedMessage({ content }: { content: string }) {
-  const tokenRegex = /(\*\*[^*]+\*\*|https?:\/\/[^\s)<>]+)/g;
-  const lines = String(content || "").split(/\r?\n/);
-
-  return (
-    <div className="space-y-2 break-words">
-      {lines.map((line, lineIdx) => {
-        if (!line.trim()) return <div key={lineIdx} className="h-1" aria-hidden />;
-        const segments: React.ReactNode[] = [];
-        let lastIndex = 0;
-        let match: RegExpExecArray | null;
-        tokenRegex.lastIndex = 0;
-
-        while ((match = tokenRegex.exec(line)) !== null) {
-          if (match.index > lastIndex) {
-            segments.push(line.slice(lastIndex, match.index));
-          }
-          const token = match[0];
-          if (token.startsWith("**") && token.endsWith("**")) {
-            segments.push(
-              <strong key={`${lineIdx}-${match.index}`} className="font-semibold">
-                {token.slice(2, -2)}
-              </strong>,
-            );
-          } else if (token.startsWith("http://") || token.startsWith("https://")) {
-            const cleanedUrl = token.replace(/[.,;:!?]+$/, "");
-            const trailingPunct = token.slice(cleanedUrl.length);
-            segments.push(
-              <a
-                key={`${lineIdx}-${match.index}`}
-                href={cleanedUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline underline-offset-2 font-medium break-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-              >
-                {cleanedUrl}
-              </a>,
-            );
-            if (trailingPunct) segments.push(trailingPunct);
-          }
-          lastIndex = match.index + token.length;
-        }
-
-        if (lastIndex < line.length) {
-          segments.push(line.slice(lastIndex));
-        }
-
-        return (
-          <p key={lineIdx} className="leading-relaxed">
-            {segments.length > 0 ? segments : line}
-          </p>
-        );
-      })}
     </div>
   );
 }

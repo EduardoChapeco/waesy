@@ -12,12 +12,17 @@ import {
   getTourMetaLine,
   getTransferBadgeLabel,
   getTransferMetaLine,
+  getTransferTitle,
   ProposalAdaptiveImage,
   ProposalAgencyLogo,
+  ProposalCruiseBlock,
   ProposalDestinationGallerySection,
+  ProposalFlightMapBlock,
+  ProposalHotelMediaGallery,
   ProposalItineraryMediaGrid,
   ProposalMultiNicheSpecsBlock,
   ProposalPricingBreakdownBlock,
+  ProposalTransferListBlock,
 } from "./blocks/UI";
 import {
   Plane,
@@ -26,7 +31,6 @@ import {
   X,
   Compass,
   Car,
-  Sparkles,
   FileText,
   ShieldCheck,
   PhoneCall,
@@ -98,7 +102,7 @@ export default function TemplateBentoGrid({ proposal: p, agency }: TemplateProps
                   <span className="block text-xs font-bold uppercase tracking-wider opacity-75">
                     Cliente
                   </span>
-                  <span className="text-sm font-bold truncate block">
+                  <span className="text-sm font-bold break-words block">
                     {vm.client.name || "Cliente"}
                   </span>
                 </div>
@@ -107,7 +111,7 @@ export default function TemplateBentoGrid({ proposal: p, agency }: TemplateProps
                     <span className="block text-xs font-bold uppercase tracking-wider opacity-75">
                       {nc.destinationLabel}
                     </span>
-                    <span className="text-sm font-bold truncate block">{p.destination}</span>
+                    <span className="text-sm font-bold break-words block">{p.destination}</span>
                   </div>
                 )}
                 {vm.totalPax > 0 && (
@@ -221,6 +225,12 @@ export default function TemplateBentoGrid({ proposal: p, agency }: TemplateProps
                 </div>
               ))}
             </div>
+            <ProposalFlightMapBlock
+              flights={p.flights as any}
+              theme={theme}
+              showMap={raw?.web_page?.show_flight_route_map !== false}
+              capturedMapUrl={raw?.captured_map_url || raw?.map_image_url || raw?.custom_fields?.captured_map_url}
+            />
           </section>
         )}
 
@@ -325,6 +335,13 @@ export default function TemplateBentoGrid({ proposal: p, agency }: TemplateProps
                           </span>
                         </div>
                       </div>
+                      <ProposalHotelMediaGallery
+                        images={hotelPhotos}
+                        media={(h as any).media}
+                        title={h.name}
+                        objectPosition={(h as any).object_position}
+                        scale={(h as any).image_scale}
+                      />
                     </div>
                   </div>
                 );
@@ -386,45 +403,38 @@ export default function TemplateBentoGrid({ proposal: p, agency }: TemplateProps
           </section>
         )}
 
-        {/* TRANSFERS & PASSEIOS / ENTREGÁVEIS */}
-        {((theme.isSectionVisible("transfers") && vm.hasTransfers) ||
-          (theme.isSectionVisible("tours") && vm.hasTours)) && (
-          <section className="grid grid-cols-1 md:grid-cols-12 gap-4 break-inside-avoid">
-            {theme.isSectionVisible("transfers") && vm.hasTransfers && (
-              <div className={`${vm.hasTours ? "md:col-span-5" : "md:col-span-12"} space-y-3`}>
-                <div className="flex items-center gap-2 pb-2 border-b p-border-main">
-                  <Car className="size-4 p-text-brand" />
-                  <h3 className="text-base font-bold p-text-ink p-heading-font">
-                    {nc.transfersTitle}
-                  </h3>
-                </div>
-                {p.transfers!.map((t, i) => (
-                  <div key={i} className="p-surface-card border p-border-main rounded-xl p-4">
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <span className="text-sm font-bold p-text-ink">
-                        {t.description || (t as any).route || "Logística"}
-                      </span>
-                      <span className="text-xs font-bold px-3 py-1 rounded-full p-surface-subtle border p-border-subtle p-text-muted">
-                        {getTransferBadgeLabel(t.type)}
-                      </span>
-                    </div>
-                    {getTransferMetaLine(t as Record<string, any>, formatDate) && (
-                      <p className="text-xs p-text-muted">
-                        {getTransferMetaLine(t as Record<string, any>, formatDate)}
-                      </p>
-                    )}
-                    {t.notes && (
-                      <p className="text-xs p-text-faint mt-2 whitespace-pre-line">{t.notes}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+        {/* CRUZEIROS MARÍTIMOS */}
+        {Array.isArray((raw as any).cruises) && (raw as any).cruises.length > 0 && (
+          <section className="break-inside-avoid space-y-4">
+            <h3 className="text-xl font-bold p-text-ink pb-2 border-b p-border-main p-heading-font">
+              Cruzeiro Marítimo & Itinerário Náutico
+            </h3>
+            <ProposalCruiseBlock cruises={(raw as any).cruises} theme={theme} />
+          </section>
+        )}
 
-            {theme.isSectionVisible("tours") && vm.hasTours && (
-              <div className={`${vm.hasTransfers ? "md:col-span-7" : "md:col-span-12"} space-y-3`}>
+        {/* TRANSFERS (LINHAS COMPLETAS / FULL-WIDTH) */}
+        {theme.isSectionVisible("transfers") && vm.hasTransfers && (
+          <section className="break-inside-avoid space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b p-border-main">
+              <Car className="size-4 p-text-brand" />
+              <h3 className="text-xl font-bold p-text-ink p-heading-font">
+                {nc.transfersTitle}
+              </h3>
+            </div>
+            <ProposalTransferListBlock
+              transfers={p.transfers}
+              formatDateFn={formatDate}
+              theme={theme}
+            />
+          </section>
+        )}
+
+        {/* PASSEIOS / ENTREGÁVEIS */}
+        {theme.isSectionVisible("tours") && vm.hasTours && (
+          <section className="break-inside-avoid space-y-4">
                 <div className="flex items-center gap-2 pb-2 border-b p-border-main">
-                  <Sparkles className="size-4 p-text-brand" />
+                  <Compass className="size-4 p-text-brand" />
                   <h3 className="text-base font-bold p-text-ink p-heading-font">
                     {nc.toursTitle}
                   </h3>
@@ -473,8 +483,6 @@ export default function TemplateBentoGrid({ proposal: p, agency }: TemplateProps
                     );
                   })}
                 </div>
-              </div>
-            )}
           </section>
         )}
 

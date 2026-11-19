@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createServerFn } from "@tanstack/react-start";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { parseJsonField } from "@/lib/utils";
 import {
   AgentRegistryDTO,
   SquadTemplateDTO,
@@ -203,23 +204,6 @@ export const CANONICAL_SQUAD_TEMPLATES: CanonicalSquadTemplateDefinition[] = [
     ],
   },
 ];
-
-function parseJsonField<T>(value: any, fallback: T): T {
-  if (value === null || value === undefined) return fallback;
-  if (typeof value === "object") return value as T;
-  if (typeof value === "string") {
-    try {
-      let parsed = JSON.parse(value);
-      if (typeof parsed === "string") {
-        parsed = JSON.parse(parsed);
-      }
-      return (parsed || fallback) as T;
-    } catch {
-      return fallback;
-    }
-  }
-  return fallback;
-}
 
 export interface SquadWithDetails {
   id: string;

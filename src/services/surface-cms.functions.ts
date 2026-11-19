@@ -427,9 +427,6 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
 	const isSurfaceUuid = Boolean(
 		surface?.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(surface.id)),
 	);
-	if (!surface && (surfaceSlug === "turismo" || surfaceSlug === "viagens")) {
-		surface = { id: "canonical-surface-turismo", slug: "turismo", title: "Turismo & Viagens" } as any;
-	}
  if (!surface || !isSurfaceUuid) {
  return { sections: [], allProducts: [] };
  }
@@ -462,7 +459,7 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  // Futuro ideal: delegar essa agregação para uma RPC (Stored Procedure) no banco.
  let storesQuery = supabase
  .from("stores")
- .select("id, name, slug, description, settings, city")
+ .select("id, name, slug, description, settings, city, is_verified, waesy_marketplace_enabled, publish_to_marketplace")
  .order("created_at", { ascending: false })
  .limit(storeId ? 1 : 100);
 
@@ -480,7 +477,7 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  attributes,
  created_at,
  media:product_media(url, alt, sort_order),
- store:stores(id, name, slug, settings, city)
+ store:stores(id, name, slug, settings, city, waesy_marketplace_enabled, publish_to_marketplace)
  `,
  )
  .in("status", ["published", "active"])
@@ -490,14 +487,22 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  	if (storeId) {
 		storesQuery = storesQuery.eq("id", storeId);
 		productsQuery = productsQuery.eq("store_id", storeId);
-	} else if (cleanCity) {
-		storesQuery = storesQuery.ilike("city", `%${cleanCity}%`);
+	} else {
+		storesQuery = storesQuery.neq("waesy_marketplace_enabled", false).neq("publish_to_marketplace", false);
+		if (cleanCity) {
+			storesQuery = storesQuery.ilike("city", `%${cleanCity}%`);
+		}
 	}
 
  const [storesRes, productsRes] = await Promise.all([storesQuery, productsQuery]);
 
- // Mapeia lojas
- const allDbStores: StoreCardDTO[] = (storesRes.data || []).map((s: any) => {
+ const isStorePublicOnMarketplace = (stRow: any) =>
+   Boolean(storeId) ||
+   (stRow?.waesy_marketplace_enabled !== false && stRow?.publish_to_marketplace !== false);
+
+ // Mapeia lojas (isolando SaaS privados da vitrine compartilhada B.20/Waesy Pro)
+ const publicStoresRaw = (storesRes.data || []).filter(isStorePublicOnMarketplace);
+ const allDbStores: StoreCardDTO[] = publicStoresRaw.map((s: any) => {
  const settings = (s.settings as Record<string, any>) || {};
  const category = formatStoreCategory(settings.segment || settings.type || settings.niche || "Comércio Local");
   const is_verified = s.is_verified === true || settings.is_verified === true;
@@ -542,8 +547,9 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  });
  }
 
- // Mapeia produtos
- let allProducts: FlashOfferDTO[] = (productsRes.data || []).map((p: any) => {
+ // Mapeia produtos (bloqueando vazamento de produtos pertencentes a SaaS privados)
+ const publicProductsRaw = (productsRes.data || []).filter((p: any) => isStorePublicOnMarketplace(p.store));
+ let allProducts: FlashOfferDTO[] = publicProductsRaw.map((p: any) => {
  const sortedMedia = Array.isArray(p.media)
  ? [...p.media].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
  : [];
@@ -647,16 +653,11 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  if (bannerPool.length === 0) bannerPool = platformBanners;
  sectionItems = bannerPool.slice(0, sec.item_limit || 4);
  } else if (sec.type === "custom_buttons_rail" || sec.data_source === "custom_buttons") {
- // Seção de Botões Personalizados: Puxa do config ou gera a partir de categorias
+ // Seção de Botões Personalizados: consome estritamente itens reais configurados no CMS (sem fallback hardcoded)
  if (sec.config && Array.isArray((sec.config as any).buttons)) {
- sectionItems = (sec.config as any).buttons;
+ sectionItems = (sec.config as any).buttons.filter((btn: any) => btn && btn.is_active !== false);
  } else {
- sectionItems = [
- { id: "destaques", label: "Destaques", icon: "Layers", route: "/ofertas" },
- { id: "novidades", label: "Novidades", icon: "Tag", route: "/buscar?sort=newest" },
- { id: "mais-pedidos", label: "Mais Pedidos", icon: "Flame", route: "/buscar?sort=popular" },
- { id: "frete-gratis", label: "Frete Grátis", icon: "Truck", route: "/buscar?free_delivery=true" },
- ];
+ sectionItems = [];
  }
  } else if (sec.type === "social_posts_rail" || sec.data_source === "social_posts") {
  const { getUnifiedShowcasePosts } = await import("@/services/admin-home-cms.functions");
@@ -673,6 +674,57 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  });
  return [];
  });
+ } else if (sec.type === "video_section" || sec.data_source === "videos") {
+ const { getUnifiedShowcasePosts } = await import("@/services/admin-home-cms.functions");
+ const posts = await getUnifiedShowcasePosts({
+ data: { city: cleanCity || undefined, limit: (sec.item_limit || 8) * 3 },
+ }).catch(() => []);
+ sectionItems = (posts || [])
+   .filter((post: any) => {
+     const urls = [
+       post.media_url,
+       ...(Array.isArray(post.media_urls) ? post.media_urls : []),
+     ].filter(Boolean);
+     return urls.some((u: string) => /\.(mp4|webm|mov|m3u8)(\?|$)/i.test(String(u)));
+   })
+   .slice(0, sec.item_limit || 8);
+ } else if (sec.type === "tourism_car_rental_rail" || sec.data_source === "car_rentals") {
+ let carQuery = supabase
+   .from("classifieds")
+   .select("id, title, price_cents, attributes, category_slug, city, store_id, media_urls, stores(id, name, slug, waesy_marketplace_enabled, publish_to_marketplace)")
+   .eq("status", "published")
+   .or("category_slug.ilike.%car%,category_slug.ilike.%aluguel%,category_slug.ilike.%veic%")
+   .order("created_at", { ascending: false })
+   .limit(sec.item_limit || 10);
+ if (cleanCity) carQuery = carQuery.ilike("city", `%${cleanCity}%`);
+ if (storeId) carQuery = carQuery.eq("store_id", storeId);
+ const { data: carRows } = await carQuery;
+ sectionItems = (carRows || []).filter((c: any) => !c.stores || isStorePublicOnMarketplace(c.stores));
+ } else if (sec.type === "classifieds_spotlight") {
+ let clsQuery = supabase
+   .from("classifieds")
+   .select("id, title, price_cents, attributes, category_slug, city, store_id, media_urls, stores(id, name, slug, waesy_marketplace_enabled, publish_to_marketplace)")
+   .eq("status", "published")
+   .order("created_at", { ascending: false })
+   .limit(sec.item_limit || 10);
+ if (cleanCity) clsQuery = clsQuery.ilike("city", `%${cleanCity}%`);
+ if (storeId) clsQuery = clsQuery.eq("store_id", storeId);
+ if (sec.taxonomy_slug) clsQuery = clsQuery.ilike("category_slug", `%${sec.taxonomy_slug}%`);
+ const { data: clsRows } = await clsQuery;
+ sectionItems = (clsRows || []).filter((c: any) => !c.stores || isStorePublicOnMarketplace(c.stores));
+ } else if (sec.type === "single_store_spotlight") {
+ const targetStoreId = (sec.config as any)?.store_id || sec.taxonomy_slug || null;
+ const chosenStore = targetStoreId
+   ? filteredStores.find((s) => s.id === targetStoreId || s.slug === targetStoreId)
+   : filteredStores[0];
+ sectionItems = chosenStore
+   ? [
+       {
+         store: chosenStore,
+         products: allProducts.filter((p) => p.store_id === chosenStore.id).slice(0, sec.item_limit || 6),
+       },
+     ]
+   : [];
  } else if (sec.type === "store_rail" || sec.data_source === "stores") {
  let storePool = [...filteredStores];
  if (sec.ranking_strategy === "random_shuffle") {
@@ -684,26 +736,43 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  flashPool.sort((a, b) => b.discount_percent - a.discount_percent);
  sectionItems = flashPool.slice(0, sec.item_limit || 8);
  } else {
- // Product rail / bento / grid
+ // Product rail / bento / grid (com filtragem estrita de hotpage/category/top_sellers quando aplicável)
  let pool = allProducts.filter((p) => !usedProductIds.has(p.id));
  if (pool.length === 0) pool = allProducts;
 
- if (sec.ranking_strategy === "random_shuffle") {
- pool = [...pool].sort(() => Math.random() - 0.5);
+ if ((sec.data_source === "category" || sec.data_source === "hotpage") && sec.taxonomy_slug) {
+   const tax = sec.taxonomy_slug.trim().toLowerCase();
+   const matched = pool.filter((p) => {
+     const rawProd = publicProductsRaw.find((item: any) => item.id === p.id);
+     const attrs = (rawProd?.attributes as Record<string, any>) || {};
+     const hay = `${attrs.category || ""} ${attrs.niche || ""} ${attrs.segment || ""} ${attrs.hotpage_slug || ""} ${p.title || ""}`.toLowerCase();
+     return hay.includes(tax);
+   });
+   pool = matched;
+ }
+
+ if (sec.data_source === "top_sellers") {
+   pool = [...pool].sort((a, b) => b.discount_percent - a.discount_percent || a.price_cents - b.price_cents);
+ } else if (sec.ranking_strategy === "random_shuffle") {
+   pool = [...pool].sort(() => Math.random() - 0.5);
  } else if (sec.ranking_strategy === "discount") {
- pool = [...pool].sort((a, b) => b.discount_percent - a.discount_percent);
+   pool = [...pool].sort((a, b) => b.discount_percent - a.discount_percent);
  } else if (sec.ranking_strategy === "popularity") {
- pool = [...pool].sort((a, b) => a.price_cents - b.price_cents);
+   pool = [...pool].sort((a, b) => a.price_cents - b.price_cents);
  }
 
  sectionItems = pool.slice(0, sec.item_limit || 12);
- sectionItems.forEach((p) => usedProductIds.add(p.id));
+ sectionItems.forEach((p) => {
+   if (p?.id) usedProductIds.add(p.id);
+ });
  }
 
+ if (sectionItems.length > 0) {
  hydratedSections.push({
  ...sec,
  items: sectionItems,
  });
+ }
  }
 
  // ─── 5. CAMADA ALGORÍTMICA AUTÔNOMA (COMPLEMENTO HÍBRIDO DO FEED) ────────

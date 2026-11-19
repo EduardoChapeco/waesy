@@ -20,7 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { listOptionGroups, upsertOptionGroup, deleteOptionGroup, quickUpdateOptionValue } from "@/services/admin-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
-import { getNicheSemantics } from "@/lib/niche-semantics";
+import { getNicheSemantics } from "@/lib/niches/niche-semantics";
 import { resolveUnifiedNicheId } from "@/lib/niches/niche-ssot";
 import { ErrorState } from "@/components/state/states";
 import { uploadStoreMedia } from "@/services/storage.functions";
@@ -58,7 +58,7 @@ import {
   searchOptionGroupPresets,
   NICHE_LABELS,
   type OptionGroupPreset,
-} from "@/lib/niche-presets";
+} from "@/lib/niches/niche-presets";
 
 export const Route = createFileRoute("/workspace/catalogo/atributos")({
  head: () => ({ meta: [{ title: "Adicionais | Workspace Waesy" }] }),

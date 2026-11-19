@@ -1,11 +1,11 @@
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { Building, Check, ChevronsUpDown } from "lucide-react";
+import { Building, Building2, Check, ChevronsUpDown, User } from "lucide-react";
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { setTenantContext } from "@/services/identity.functions";
 import type { ServerIdentity } from "@/lib/identity-core";
@@ -18,8 +18,8 @@ export function TenantSwitcher({ identity }: TenantSwitcherProps) {
  const [open, setOpen] = useState(false);
  const router = useRouter();
 
- const activeStoreId = identity.store_id;
- const activeMembership = identity.memberships.find((m) => m.store_id === activeStoreId);
+ const activeStoreId = identity.store_id || identity.memberships[0]?.store_id || null;
+ const activeMembership = identity.memberships.find((m) => m.store_id === activeStoreId) || identity.memberships[0];
 
  const setContextMutation = useMutation({
  mutationFn: async (store_id: string | null) => {
@@ -34,21 +34,17 @@ export function TenantSwitcher({ identity }: TenantSwitcherProps) {
  },
  });
 
- // Mostramos o seletor mesmo se houver apenas 1 membership, porque ele agora pode alternar
- // entre o Perfil Pessoal e aquela 1 membership.
- // Só bloqueamos se houver 0 memberships (não deveria estar no admin, mas apenas por segurança).
  if (identity.memberships.length === 0) {
  return (
- <div className="flex items-center gap-2 px-2 py-2 text-sm font-medium text-muted-foreground">
- <Building className="h-4 w-4" />
- Perfil Pessoal
+ <div className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground border border-border rounded-lg bg-card">
+ <Building className="h-4 w-4 text-primary" />
+ <span className="truncate">{activeMembership?.name || "Unidade Corporativa"}</span>
  </div>
  );
  }
 
  const getActiveLabel = () => {
- if (!activeStoreId) return "Perfil Pessoal (Física)";
- return activeMembership?.name || "Selecione o Contexto...";
+ return activeMembership?.name || "Selecione a Loja...";
  };
 
  return (
@@ -58,43 +54,23 @@ export function TenantSwitcher({ identity }: TenantSwitcherProps) {
  variant="outline"
  role="combobox"
  aria-expanded={open}
- className="w-full justify-between sm:w-60"
+ className="w-full justify-between sm:w-60 h-11 min-h-11"
  disabled={setContextMutation.isPending}
  >
  <div className="flex items-center gap-2 truncate">
- <Building className="h-4 w-4 shrink-0" />
- <span className="truncate">{getActiveLabel()}</span>
+ <Building className="h-4 w-4 shrink-0 text-primary" />
+ <span className="truncate font-medium">{getActiveLabel()}</span>
  </div>
  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
  </Button>
  </PopoverTrigger>
  <PopoverContent className="w-60 p-0" align="start">
  <Command>
- <CommandInput placeholder="Buscar contexto..." />
+ <CommandInput placeholder="Buscar loja..." />
  <CommandList>
- <CommandEmpty>Nenhum contexto encontrado.</CommandEmpty>
+ <CommandEmpty>Nenhuma loja encontrada.</CommandEmpty>
 
- <CommandGroup heading="Identidade Base">
- <CommandItem
- value="perfil pessoal"
- onSelect={() => {
- if (activeStoreId !== null && activeStoreId !== undefined) {
- setContextMutation.mutate(null);
- } else {
- setOpen(false);
- }
- }}
- className="flex items-center justify-between font-bold text-primary"
- >
- <div className="flex items-center gap-2 truncate">
- <Building className="h-4 w-4" />
- <span className="truncate">Perfil Pessoal (Física)</span>
- </div>
- <Check className={cn("h-4 w-4", !activeStoreId ? "opacity-100" : "opacity-0")} />
- </CommandItem>
- </CommandGroup>
-
- <CommandGroup heading="Meus Coletivos / Lojas">
+ <CommandGroup heading="Lojas & Unidades">
  {identity.memberships.map((membership) => (
  <CommandItem
  key={membership.store_id}
@@ -116,9 +92,9 @@ export function TenantSwitcher({ identity }: TenantSwitcherProps) {
  className="h-4 w-4 rounded-full object-cover"
  />
  ) : (
- <Building className="h-4 w-4" />
+ <Building className="h-4 w-4 text-primary" />
  )}
- <span className="truncate">{membership.name}</span>
+ <span className="truncate font-medium">{membership.name}</span>
  </div>
  <Check
  className={cn(
@@ -128,6 +104,31 @@ export function TenantSwitcher({ identity }: TenantSwitcherProps) {
  />
  </CommandItem>
  ))}
+ <CommandItem
+ value="seletor de portais empresas"
+ onSelect={() => {
+ window.location.href = "/auth/portal-selector";
+ }}
+ className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+ >
+ <Building2 className="h-4 w-4 shrink-0 text-primary" />
+ <span>Ver Todas as Empresas</span>
+ </CommandItem>
+ </CommandGroup>
+
+ <CommandSeparator />
+
+ <CommandGroup heading="Acesso Civil">
+ <CommandItem
+ value="sair para conta pessoal"
+ onSelect={() => {
+ window.location.href = "/conta";
+ }}
+ className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+ >
+ <User className="h-4 w-4 shrink-0" />
+ <span>Ir para Conta Pessoal</span>
+ </CommandItem>
  </CommandGroup>
  </CommandList>
  </Command>

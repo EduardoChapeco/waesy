@@ -34,6 +34,7 @@ import {
   saveWorkspaceWhatsAppInstance,
   type WhatsAppChannelInstanceDTO,
 } from "@/services/whatsapp-channel-instances.functions";
+import { getRealtimeChannel } from "@/services/realtime-channel";
 
 export interface WhatsAppQrConnectModalProps {
   open: boolean;
@@ -222,9 +223,46 @@ export function WhatsAppQrConnectModal({
     return () => clearInterval(timer);
   }, [open, qrBase64, qrGeneratedAt, connectionStatus]);
 
-  // Polling automático de 5s enquanto aguarda leitura do QR Code
+  // Realtime instantaneo + polling de contingencia enquanto aguarda leitura do QR Code
   useEffect(() => {
     if (!open || !selectedInstanceId || connectionStatus === "connected") return;
+
+    const rt = getRealtimeChannel(`whatsapp-qr-${selectedInstanceId}`);
+    if (rt?.channel) {
+      void rt.ensureAuth?.();
+      rt.channel
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "whatsapp_channel_live_state",
+            filter: `instance_id=eq.${selectedInstanceId}`,
+          },
+          (payload: any) => {
+            const row = payload?.new;
+            if (!row) return;
+            if (row.status === "connected") {
+              setConnectionStatus("connected");
+              setQrBase64(null);
+              setQrExpired(false);
+              setLastErrorMessage(null);
+              toast.success("Aparelho WhatsApp conectado e sincronizado ao vivo!");
+              onInstancesUpdated();
+            } else {
+              if (row.qr_code_url) {
+                setQrBase64(row.qr_code_url);
+                setQrGeneratedAt(new Date().toISOString());
+                setQrExpired(false);
+              }
+              if (row.pairing_code) setPairingCode(row.pairing_code);
+              if (row.last_error_message) setLastErrorMessage(row.last_error_message);
+            }
+          },
+        )
+        .subscribe();
+    }
+
     const interval = setInterval(async () => {
       try {
         const result = await syncWhatsAppInstanceStatus({
@@ -255,7 +293,10 @@ export function WhatsAppQrConnectModal({
         // Silencioso durante polling
       }
     }, 5000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      rt?.unsubscribe();
+    };
   }, [open, selectedInstanceId, connectionStatus]);
 
   const handleGenerateQrCode = async () => {

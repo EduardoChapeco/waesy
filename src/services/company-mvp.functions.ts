@@ -40,6 +40,37 @@ export const FastRegisterCompanySchema = z.object({
   instagram: z.string().optional(),
   cnpj: z.string().optional(),
   onboardingJobId: z.string().optional(),
+  activateBrandedApp: z.boolean().default(true).optional(),
+  appTemplateId: z
+    .enum([
+      "tourism_cvc",
+      "delivery_ifood",
+      "events_sympla",
+      "services_agenda",
+      "ecommerce_retail",
+      "standard_catalog",
+    ])
+    .optional(),
+  appNicheFeatures: z
+    .object({
+      enablePackages: z.boolean().optional(),
+      enableFlights: z.boolean().optional(),
+      enableHotels: z.boolean().optional(),
+      enableBus: z.boolean().optional(),
+      enableCars: z.boolean().optional(),
+      enableApiQuoter: z.boolean().optional(),
+      enableCorporateTravel: z.boolean().optional(),
+      enableDelivery: z.boolean().optional(),
+      enablePickup: z.boolean().optional(),
+      enableTicketing: z.boolean().optional(),
+      enableClientPortal: z.boolean().optional(),
+      enableInstallPrompt: z.boolean().optional(),
+      corporateAppUrl: z.string().optional(),
+      corporateAppLabel: z.string().optional(),
+      corporateTravelUrl: z.string().optional(),
+      corporateTravelLabel: z.string().optional(),
+    })
+    .optional(),
 });
 
 export const fastRegisterCompany = createServerFn({ method: "POST" })
@@ -289,6 +320,34 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       }
     }
 
+    // 6.2 Provisionar App Oficial Padronizado (/app/:slug) & Seções do Nicho
+    if (data.activateBrandedApp !== false) {
+      try {
+        const { provisionDefaultBrandedAppForStore } = await import("./branded-app.functions");
+        await provisionDefaultBrandedAppForStore({
+          storeId: store.id,
+          storeName: resolvedName,
+          storeSlug: orgSlug,
+          nicheOrCategory: resolvedNiche || data.category,
+          logoUrl: data.logoUrl || null,
+          bannerUrl: data.bannerUrl || null,
+          templateId: data.appTemplateId,
+          isAppEnabled: true,
+          nicheFeatures: data.appNicheFeatures
+            ? {
+                ...data.appNicheFeatures,
+                corporateAppUrl:
+                  data.appNicheFeatures.corporateAppUrl || data.appNicheFeatures.corporateTravelUrl,
+                corporateAppLabel:
+                  data.appNicheFeatures.corporateAppLabel || data.appNicheFeatures.corporateTravelLabel,
+              }
+            : undefined,
+        });
+      } catch (e: any) {
+        console.warn("[fastRegisterCompany] Aviso ao provisionar App Oficial:", e?.message);
+      }
+    }
+
     // 7. Limpar Cache em Memória de Identidades no Servidor (Zero Desconexão de Tenant)
     try {
       await clearIdentityCache();
@@ -318,6 +377,8 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       store,
       storeId: store.id,
       slug: orgSlug,
+      appUrl: `/app/${orgSlug}`,
+      marketplaceUrl: resolvedMarketplaceOptIn ? `/loja/${orgSlug}` : null,
     };
   });
 

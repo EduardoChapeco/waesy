@@ -23,6 +23,9 @@ import {
   XCircle,
   Loader2,
   UserCheck,
+  LayoutGrid,
+  List,
+  MessageSquare,
 } from "lucide-react";
 import { ContractEditorSheet } from "@/components/office/contract-editor-sheet";
 import { CommercialBudgetPadSheet } from "@/components/documents/CommercialBudgetPadSheet";
@@ -36,6 +39,8 @@ import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -66,6 +71,8 @@ import {
 import {
   isContractSignedOrCompleted,
   formatContractStatusLabel,
+  buildContractSigningUrls,
+  normalizeBrazilPhoneE164,
 } from "@/lib/contracts/contract-vault-rules";
 import { downloadSignedContractPackagePdf } from "@/lib/contracts/contract-pdf-download";
 import { formatMoney } from "@/lib/money";
@@ -179,6 +186,10 @@ function ContractsDashboard() {
   const [signatureModalOpen, setSignatureModalOpen] = useState(false);
   const [countertopModalOpen, setCountertopModalOpen] = useState(false);
   const [countertopTargetContract] = useState<any>(null);
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const [whatsappShareTarget, setWhatsappShareTarget] = useState<any>(null);
+  const [selectedWhatsappSignerIdx, setSelectedWhatsappSignerIdx] = useState<number>(0);
+  const [copiedWhatsappMsg, setCopiedWhatsappMsg] = useState(false);
 
   // Gestão de Pastas no Cofre
   const [newFolderOpen, setNewFolderOpen] = useState(false);
@@ -284,32 +295,77 @@ function ContractsDashboard() {
     },
   ];
 
-  const handleCopyLink = (e: React.MouseEvent | undefined, contract: any) => {
+  const getContractSigningInfo = (contract: any, signerIndex = 0) => {
+    if (!contract) return { url: "", message: "", signer: null, isPublicSigning: false, envelopes: [] };
+    const latestVersion = [...(contract.versions || [])].sort(
+      (a: any, b: any) => (b.version_number || 0) - (a.version_number || 0),
+    )[0];
+    const envelopes = (latestVersion?.envelopes || []) as any[];
+    const pendingEnvelopes = envelopes.filter((e) => e.status !== "signed" && e.status !== "cancelled");
+    const targetSigner = envelopes[signerIndex] || pendingEnvelopes[0] || envelopes[0] || null;
+
+    let url = "";
+    let isPublicSigning = false;
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://waesy.com.br";
+
+    if (targetSigner?.signing_token) {
+      url = `${origin}/assinar/${targetSigner.signing_token}`;
+      isPublicSigning = true;
+    } else if (contract.verification_code) {
+      url =
+        contract.category === "tourism" || contract.category === "tourism_package"
+          ? `${origin}/contrato/${contract.verification_code}`
+          : `${origin}/verify/document/${contract.verification_code}`;
+      isPublicSigning = true;
+    } else {
+      url = `${origin}/workspace/contratos/${contract.id}/editor`;
+      isPublicSigning = false;
+    }
+
+    const signerName = targetSigner?.signer_name || "Cliente";
+    const firstName = signerName.trim().split(/\s+/)[0] || "Cliente";
+    let contextualIntro = `Olá ${firstName}! Segue o link de acesso seguro ao seu documento *${contract.title}*:`;
+
+    if (contract.category === "tourism" || contract.category === "tourism_package") {
+      contextualIntro = `Olá ${firstName}! Segue o link seguro para assinatura do seu *Pacote de Viagem / Voucher ${contract.title}*:`;
+    } else if (contract.category === "real_estate_rental" || contract.category === "real_estate_sale") {
+      contextualIntro = `Olá ${firstName}! Segue o link para conferência e assinatura eletrônica do seu *Contrato Imobiliário ${contract.title}*:`;
+    } else if (contract.category === "vehicle_sale" || contract.category === "vehicle_consignation") {
+      contextualIntro = `Olá ${firstName}! Segue o link para conferência e assinatura do seu *Contrato Veicular ${contract.title}*:`;
+    } else if (contract.category === "service_agreement") {
+      contextualIntro = `Olá ${firstName}! Segue o link seguro para assinatura do seu *Contrato de Prestação de Serviços ${contract.title}*:`;
+    }
+
+    const message = `${contextualIntro}\n\n${url}\n\nAbra o link para revisar e assinar em poucos passos com total validade jurídica.`;
+    return { url, message, signer: targetSigner, isPublicSigning, envelopes };
+  };
+
+  const handleCopyLink = (e: React.MouseEvent | undefined, contract: any, signerIdx = 0) => {
     e?.preventDefault();
     e?.stopPropagation();
     const contractId = typeof contract === "string" ? contract : contract.id;
-    const url =
-      typeof contract === "object" && contract?.verification_code
-        ? contract.category === "tourism" || contract.category === "tourism_package"
-          ? `${window.location.origin}/contrato/${contract.verification_code}`
-          : `${window.location.origin}/verify/document/${contract.verification_code}`
-        : `${window.location.origin}/workspace/contratos/${contractId}/editor`;
-    navigator.clipboard?.writeText(url).catch(() => null);
+    const contractObj = typeof contract === "object" ? contract : contractsList.find((c) => c.id === contractId);
+    const info = getContractSigningInfo(contractObj, signerIdx);
+    navigator.clipboard?.writeText(info.url).catch(() => null);
     setCopiedContractId(contractId);
-    toast.success("Link do contrato copiado.");
+    toast.success(info.isPublicSigning ? "Link de assinatura copiado." : "Link do editor copiado.");
     setTimeout(() => setCopiedContractId(null), 2500);
   };
 
   const handleShareWhatsApp = (e: React.MouseEvent | undefined, contract: any) => {
     e?.preventDefault();
     e?.stopPropagation();
-    const link = contract.verification_code
-      ? contract.category === "tourism" || contract.category === "tourism_package"
-        ? `${window.location.origin}/contrato/${contract.verification_code}`
-        : `${window.location.origin}/verify/document/${contract.verification_code}`
-      : `${window.location.origin}/workspace/contratos/${contract.id}/editor`;
-    const text = `Olá! Segue o link de acesso ao contrato *${contract.title}*: ${link}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+    const latestVersion = [...(contract.versions || [])].sort(
+      (a: any, b: any) => (b.version_number || 0) - (a.version_number || 0),
+    )[0];
+    const envelopes = (latestVersion?.envelopes || []) as any[];
+    if (envelopes.length > 0) {
+      setWhatsappShareTarget(contract);
+      setSelectedWhatsappSignerIdx(0);
+    } else {
+      const info = getContractSigningInfo(contract, 0);
+      window.open(`https://wa.me/?text=${encodeURIComponent(info.message)}`, "_blank", "noopener,noreferrer");
+    }
   };
 
   const handleCreateFolder = async () => {
@@ -505,130 +561,162 @@ function ContractsDashboard() {
         </div>
       </div>
 
-      {/* 2. Barra de Pastas do Cofre (Multi-Tenant Real) */}
-      <div className="flex flex-wrap items-center gap-2 pb-1">
-        <button
-          type="button"
-          onClick={() => setActiveFolderFilter("all")}
-          className={`inline-flex items-center gap-2 h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 rounded-lg border text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-            activeFolderFilter === "all"
-              ? "border-primary bg-primary/10 text-primary"
-              : "border-border bg-card text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <Folder className="size-3.5" />
-          <span>Todas ({totalContracts})</span>
-        </button>
+      {/* 2. Barra de Pastas do Cofre (Multi-Tenant Real) & Alternador Cards ⇄ Tabela */}
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setActiveFolderFilter("all")}
+            className={`inline-flex items-center gap-2 h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 rounded-lg border text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+              activeFolderFilter === "all"
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border bg-card text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Folder className="size-4" />
+            <span>Todas ({totalContracts})</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setActiveFolderFilter("unfiled")}
-          className={`inline-flex items-center gap-2 h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 rounded-lg border text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-            activeFolderFilter === "unfiled"
-              ? "border-primary bg-primary/10 text-primary"
-              : "border-border bg-card text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <span>Cofre Geral ({unfiledCount})</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => setActiveFolderFilter("unfiled")}
+            className={`inline-flex items-center gap-2 h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 rounded-lg border text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+              activeFolderFilter === "unfiled"
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border bg-card text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <span>Cofre Geral ({unfiledCount})</span>
+          </button>
 
-        {foldersList.map((folder: any) => (
-          <div key={folder.id} className="inline-flex items-center gap-1">
-            {renamingFolderId === folder.id ? (
-              <div className="inline-flex items-center gap-1 bg-card border border-border rounded-lg px-2 h-9">
-                <Input
-                  value={renameFolderValue}
-                  onChange={(e) => setRenameFolderValue(e.target.value)}
-                  className="h-7 w-28 text-xs px-2"
-                />
-                <Button
-                  type="button"
-                  size="sm"
-                  disabled={isMutatingFolder}
-                  onClick={() => handleRenameFolder(folder.id)}
-                  className="h-11 min-h-11 sm:h-7 sm:min-h-0 px-2 text-xs"
-                >
-                  OK
-                </Button>
-              </div>
-            ) : (
-              <div className="inline-flex items-center rounded-lg border border-border bg-card overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => setActiveFolderFilter(folder.id)}
-                  className={`inline-flex items-center gap-2 h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                    activeFolderFilter === folder.id
-                      ? "bg-primary/10 text-primary"
-                      : "text-foreground hover:bg-muted/50"
-                  }`}
-                >
-                  <Folder className="size-3.5" />
-                  <span>{folder.name}</span>
-                  <span className="text-muted-foreground">({folder.contractCount})</span>
-                </button>
-                <button
-                  type="button"
-                  aria-label={`Renomear pasta ${folder.name}`}
-                  onClick={() => {
-                    setRenamingFolderId(folder.id);
-                    setRenameFolderValue(folder.name);
-                  }}
-                  className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-2 text-muted-foreground hover:text-foreground border-l border-border/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <Pencil className="size-3" />
-                </button>
-                <button
-                  type="button"
-                  aria-label={`Excluir pasta ${folder.name}`}
-                  onClick={() => handleDeleteFolder(folder.id)}
-                  className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-2 text-muted-foreground hover:text-destructive border-l border-border/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <Trash2 className="size-3" />
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
+          {foldersList.map((folder: any) => (
+            <div key={folder.id} className="inline-flex items-center gap-1">
+              {renamingFolderId === folder.id ? (
+                <div className="inline-flex items-center gap-1 bg-card border border-border rounded-lg px-2 h-9">
+                  <Input
+                    value={renameFolderValue}
+                    onChange={(e) => setRenameFolderValue(e.target.value)}
+                    className="h-7 w-28 text-xs px-2"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={isMutatingFolder}
+                    onClick={() => handleRenameFolder(folder.id)}
+                    className="h-11 min-h-11 sm:h-7 sm:min-h-0 px-2 text-xs"
+                  >
+                    OK
+                  </Button>
+                </div>
+              ) : (
+                <div className="inline-flex items-center rounded-lg border border-border bg-card overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setActiveFolderFilter(folder.id)}
+                    className={`inline-flex items-center gap-2 h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                      activeFolderFilter === folder.id
+                        ? "bg-primary/10 text-primary"
+                        : "text-foreground hover:bg-muted/50"
+                    }`}
+                  >
+                    <Folder className="size-4" />
+                    <span>{folder.name}</span>
+                    <span className="text-muted-foreground">({folder.contractCount})</span>
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Renomear pasta ${folder.name}`}
+                    onClick={() => {
+                      setRenamingFolderId(folder.id);
+                      setRenameFolderValue(folder.name);
+                    }}
+                    className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-2 text-muted-foreground hover:text-foreground border-l border-border/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Pencil className="size-3" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Excluir pasta ${folder.name}`}
+                    onClick={() => handleDeleteFolder(folder.id)}
+                    className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-2 text-muted-foreground hover:text-destructive border-l border-border/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Trash2 className="size-3" />
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
 
-        {newFolderOpen ? (
-          <div className="inline-flex items-center gap-2">
-            <Input
-              value={newFolderName}
-              onChange={(e) => setNewFolderName(e.target.value)}
-              placeholder="Nome da pasta..."
-              className="h-9 w-40 text-xs"
-            />
-            <Button
-              type="button"
-              size="sm"
-              disabled={isMutatingFolder}
-              onClick={handleCreateFolder}
-              className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 text-xs"
-            >
-              Salvar
-            </Button>
+          {newFolderOpen ? (
+            <div className="inline-flex items-center gap-2">
+              <Input
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                placeholder="Nome da pasta..."
+                className="h-9 w-40 text-xs"
+              />
+              <Button
+                type="button"
+                size="sm"
+                disabled={isMutatingFolder}
+                onClick={handleCreateFolder}
+                className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 text-xs"
+              >
+                Salvar
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setNewFolderOpen(false)}
+                className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-2 text-xs"
+              >
+                Cancelar
+              </Button>
+            </div>
+          ) : (
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => setNewFolderOpen(false)}
-              className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-2 text-xs"
+              onClick={() => setNewFolderOpen(true)}
+              className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 text-xs text-primary gap-2"
             >
-              Cancelar
+              <FolderPlus className="size-4" />
+              <span>Nova Pasta</span>
             </Button>
-          </div>
-        ) : (
-          <Button
+          )}
+        </div>
+
+        {/* Alternador Cards ⇄ Tabela (Stripe / Linear) */}
+        <div className="inline-flex items-center rounded-lg border border-border bg-card p-1 shrink-0">
+          <button
             type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setNewFolderOpen(true)}
-            className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 text-xs text-primary gap-2"
+            onClick={() => setViewMode("cards")}
+            aria-label="Visualização em Cards"
+            className={`inline-flex items-center gap-2 h-11 min-h-11 sm:h-8 sm:min-h-0 px-3 rounded-md text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+              viewMode === "cards"
+                ? "bg-primary/10 text-primary border border-primary/20 shadow-2xs"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
-            <FolderPlus className="size-3.5" />
-            <span>Nova Pasta</span>
-          </Button>
-        )}
+            <LayoutGrid className="size-4" />
+            <span className="hidden sm:inline">Cards</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("table")}
+            aria-label="Visualização em Tabela Densa"
+            className={`inline-flex items-center gap-2 h-11 min-h-11 sm:h-8 sm:min-h-0 px-3 rounded-md text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+              viewMode === "table"
+                ? "bg-primary/10 text-primary border border-primary/20 shadow-2xs"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <List className="size-4" />
+            <span className="hidden sm:inline">Tabela</span>
+          </button>
+        </div>
       </div>
 
       {/* 3. Toolbar Canônica */}
@@ -685,6 +773,224 @@ function ContractsDashboard() {
           <Button asChild size="sm" variant="outline" className="rounded-lg h-11 min-h-11 sm:h-10 sm:min-h-0 px-4 text-xs font-semibold mt-2">
             <Link to="/workspace/contratos/novo">Criar Primeiro Contrato</Link>
           </Button>
+        </div>
+      ) : viewMode === "table" ? (
+        <div className="rounded-lg border border-border bg-card overflow-hidden shadow-2xs">
+          <div className="overflow-x-auto table-container">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-muted/40 border-b border-border/80 text-muted-foreground font-semibold">
+                <tr>
+                  <th className="py-3 px-4">Documento</th>
+                  <th className="py-3 px-3">Categoria</th>
+                  <th className="py-3 px-3">Signatários & Progresso</th>
+                  <th className="py-3 px-3">Valor</th>
+                  <th className="py-3 px-3">Pasta</th>
+                  <th className="py-3 px-3">Status</th>
+                  <th className="py-3 px-4 text-right">Ações Rápidas</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                {filteredContracts.map((contract: any) => {
+                  const isSigned = isContractSignedOrCompleted(contract.status);
+                  const isSigning = contract.status === "signing";
+                  const isCancelled = contract.status === "cancelled";
+                  const isCopied = copiedContractId === contract.id;
+                  const categoryLabel = CATEGORY_LABELS[contract.category] || "Geral";
+                  const latestVersion = [...(contract.versions || [])].sort(
+                    (a: any, b: any) => (b.version_number || 0) - (a.version_number || 0),
+                  )[0];
+                  const envelopes = (latestVersion?.envelopes || []) as any[];
+                  const signedEnvCount = envelopes.filter((e) => e.status === "signed").length;
+                  const pendingEnvelopes = envelopes.filter((e) => e.status !== "signed" && e.status !== "cancelled");
+                  const firstPending = pendingEnvelopes[0] || null;
+                  const myEmail = (userSigProfile?.email || "").trim().toLowerCase();
+                  const myPendingEnv = pendingEnvelopes.find(
+                    (e) =>
+                      (userSigProfile?.profileId && e.signer_profile_id === userSigProfile.profileId) ||
+                      (myEmail && (e.signer_email || "").trim().toLowerCase() === myEmail),
+                  );
+
+                  return (
+                    <tr key={contract.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="py-3 px-4">
+                        <Link
+                          to="/workspace/contratos/$id/editor"
+                          params={{ id: contract.id }}
+                          className="font-bold text-foreground hover:text-primary transition-colors block line-clamp-1"
+                        >
+                          {contract.title}
+                        </Link>
+                        <span className="text-2xs text-muted-foreground">
+                          Criado em {formatDate(contract.created_at)}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3">
+                        <Badge variant="outline" className="text-2xs font-medium bg-muted/30">
+                          {categoryLabel}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-3">
+                        {envelopes.length > 0 ? (
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-semibold text-foreground">
+                              {signedEnvCount}/{envelopes.length}
+                            </span>
+                            <div className="flex items-center -space-x-1">
+                              {envelopes.slice(0, 3).map((env: any, idx: number) => {
+                                const isEnvSigned = env.status === "signed";
+                                return (
+                                  <span
+                                    key={env.id || idx}
+                                    title={`${env.signer_name}: ${isEnvSigned ? "Assinado" : "Pendente"}`}
+                                    className={`size-5 rounded-full flex items-center justify-center text-3xs font-bold border border-background ${
+                                      isEnvSigned
+                                        ? "bg-emerald-600 text-primary-foreground"
+                                        : "bg-muted text-foreground"
+                                    }`}
+                                  >
+                                    {(env.signer_name || "S")[0].toUpperCase()}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                            {envelopes.length > 3 && (
+                              <span className="text-2xs text-muted-foreground">+{envelopes.length - 3}</span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground text-2xs">Sem envelopes</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-3 font-mono font-medium text-foreground">
+                        {contract.deal ? formatMoney(contract.deal.proposed_price_cents || 0) : "—"}
+                      </td>
+                      <td className="py-3 px-3">
+                        {contract.folder?.name ? (
+                          <Badge variant="secondary" className="text-2xs gap-1">
+                            <Folder className="size-3" />
+                            <span>{contract.folder.name}</span>
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground text-2xs">Cofre Geral</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-3">
+                        {isSigned ? (
+                          <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 text-2xs font-semibold gap-1">
+                            <CheckCircle2 className="size-3" />
+                            <span>Assinado</span>
+                          </Badge>
+                        ) : isCancelled ? (
+                          <Badge variant="destructive" className="text-2xs font-semibold">
+                            Cancelado
+                          </Badge>
+                        ) : isSigning ? (
+                          <Badge variant="secondary" className="bg-warning/10 text-warning-strong border border-warning/20 text-2xs font-semibold gap-1">
+                            <Clock className="size-3" />
+                            <span>Em Coleta</span>
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-2xs text-muted-foreground font-medium">
+                            Rascunho
+                          </Badge>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="inline-flex items-center justify-end gap-1">
+                          {myPendingEnv && !isCancelled ? (
+                            <Button asChild size="sm" className="h-11 min-h-11 sm:h-8 sm:min-h-0 px-3 text-2xs font-semibold">
+                              <a href={`/assinar/${myPendingEnv.signing_token}`}>
+                                Assinar
+                              </a>
+                            </Button>
+                          ) : (
+                            <Button asChild size="sm" variant="ghost" className="h-11 min-h-11 sm:h-8 sm:min-h-0 px-2 text-2xs">
+                              <Link to="/workspace/contratos/$id/editor" params={{ id: contract.id }}>
+                                Editar
+                              </Link>
+                            </Button>
+                          )}
+                          <button
+                            type="button"
+                            aria-label="Copiar Link de Assinatura"
+                            onClick={(e) => handleCopyLink(e, contract)}
+                            className="size-11 min-h-11 sm:size-8 sm:min-h-0 rounded-md flex items-center justify-center hover:bg-muted text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            {isCopied ? <Check className="size-4 text-emerald-600" /> : <Copy className="size-4" />}
+                          </button>
+                          <button
+                            type="button"
+                            aria-label="Compartilhar no WhatsApp"
+                            onClick={(e) => handleShareWhatsApp(e, contract)}
+                            className="size-11 min-h-11 sm:size-8 sm:min-h-0 rounded-md flex items-center justify-center hover:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            <WhatsappLogo className="size-4" />
+                          </button>
+                          <button
+                            type="button"
+                            aria-label="Baixar PDF"
+                            onClick={() => handleDownloadContractPdf(contract.id)}
+                            className="size-11 min-h-11 sm:size-8 sm:min-h-0 rounded-md flex items-center justify-center hover:bg-muted text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            <Download className="size-4" />
+                          </button>
+                          <CrudActionsMenu
+                            triggerVariant="ghost"
+                            triggerClassName="size-11 min-h-11 sm:size-8 sm:min-h-0 p-0 rounded-md hover:bg-muted flex items-center justify-center"
+                            customActions={[
+                              {
+                                label: "Abrir no Editor Completo",
+                                icon: FileSignature,
+                                onClick: () =>
+                                  router.navigate({ to: "/workspace/contratos/$id/editor", params: { id: contract.id } }),
+                              },
+                              {
+                                label: "Baixar Documento / Certificado PDF",
+                                icon: Download,
+                                onClick: () => handleDownloadContractPdf(contract.id),
+                              },
+                              {
+                                label: isCopied ? "Link Copiado!" : "Copiar Link de Assinatura",
+                                icon: isCopied ? Check : Copy,
+                                onClick: () => handleCopyLink(undefined, contract),
+                              },
+                              {
+                                label: "Compartilhar no WhatsApp",
+                                icon: WhatsappLogo as any,
+                                onClick: () => handleShareWhatsApp(undefined as any, contract),
+                              },
+                              ...(contract.verification_code
+                                ? [
+                                    {
+                                      label: "Certificado Público de Autenticidade",
+                                      icon: ExternalLink,
+                                      onClick: () =>
+                                        router.navigate({
+                                          to: "/verify/document/$code",
+                                          params: { code: contract.verification_code },
+                                        }),
+                                    },
+                                  ]
+                                : []),
+                              ...(!isSigned && !isCancelled
+                                ? [
+                                    {
+                                      label: "Cancelar Contrato",
+                                      icon: XCircle,
+                                      onClick: () => setCancelTarget(contract),
+                                    },
+                                  ]
+                                : []),
+                            ]}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -841,89 +1147,123 @@ function ContractsDashboard() {
                 </div>
 
                 <div className="pt-3 border-t border-border/60 flex flex-wrap items-center justify-between gap-2">
-                  {myPendingEnv && !isCancelled ? (
-                    <Button asChild size="sm" className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 rounded-lg text-xs font-semibold gap-2 flex-1">
-                      <a href={`/assinar/${myPendingEnv.signing_token}`}>
-                        <PenTool className="size-3.5" />
-                        <span>Assinar Agora</span>
-                      </a>
-                    </Button>
-                  ) : (
-                    <Button asChild size="sm" variant="outline" className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 rounded-lg text-xs font-semibold gap-2 flex-1">
-                      <Link to="/workspace/contratos/$id/editor" params={{ id: contract.id }}>
-                        <FileSignature className="size-3.5" />
-                        <span>Abrir Editor</span>
-                      </Link>
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-2 flex-1 min-w-36">
+                    {myPendingEnv && !isCancelled ? (
+                      <Button asChild size="sm" className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 rounded-lg text-xs font-semibold gap-2 flex-1">
+                        <a href={`/assinar/${myPendingEnv.signing_token}`}>
+                          <PenTool className="size-4" />
+                          <span>Assinar</span>
+                        </a>
+                      </Button>
+                    ) : (
+                      <Button asChild size="sm" variant="outline" className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 rounded-lg text-xs font-semibold gap-2 flex-1">
+                        <Link to="/workspace/contratos/$id/editor" params={{ id: contract.id }}>
+                          <FileSignature className="size-4" />
+                          <span>Abrir</span>
+                        </Link>
+                      </Button>
+                    )}
 
-                  {firstPending && !isCancelled && (
-                    <Button
+                    {firstPending && !isCancelled && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={resendingEnvelopeId === firstPending.id}
+                        onClick={() => handleResendPendingSigner(firstPending)}
+                        className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 text-xs gap-1"
+                        title="Reenviar link para signatário pendente"
+                      >
+                        {resendingEnvelopeId === firstPending.id ? (
+                          <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+                        ) : (
+                          <Bell className="size-4" />
+                        )}
+                        <span className="hidden sm:inline">Aviso</span>
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Ações Rápidas de 1 Toque (Sem esconder em Kebab) */}
+                  <div className="flex items-center gap-1">
+                    <button
                       type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={resendingEnvelopeId === firstPending.id}
-                      onClick={() => handleResendPendingSigner(firstPending)}
-                      className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 text-xs gap-1"
+                      aria-label="Copiar Link de Assinatura"
+                      onClick={(e) => handleCopyLink(e, contract)}
+                      title="Copiar Link de Assinatura"
+                      className="inline-flex items-center justify-center size-11 min-h-11 sm:size-9 sm:min-h-0 rounded-lg border border-border/70 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      {resendingEnvelopeId === firstPending.id ? (
-                        <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
-                      ) : (
-                        <Bell className="size-3.5" />
-                      )}
-                      <span>Reenviar</span>
-                    </Button>
-                  )}
+                      {isCopied ? <Check className="size-4 text-emerald-600" /> : <Copy className="size-4" />}
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Compartilhar no WhatsApp"
+                      onClick={(e) => handleShareWhatsApp(e, contract)}
+                      title="Compartilhar no WhatsApp"
+                      className="inline-flex items-center justify-center size-11 min-h-11 sm:size-9 sm:min-h-0 rounded-lg border border-border/70 hover:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <WhatsappLogo className="size-4" />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Baixar Documento PDF"
+                      onClick={() => handleDownloadContractPdf(contract.id)}
+                      title="Baixar PDF"
+                      className="inline-flex items-center justify-center size-11 min-h-11 sm:size-9 sm:min-h-0 rounded-lg border border-border/70 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <Download className="size-4" />
+                    </button>
 
-                  <CrudActionsMenu
-                    triggerVariant="outline"
-                    triggerClassName="h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 rounded-lg border-border/60 hover:bg-muted"
-                    customActions={[
-                      {
-                        label: "Abrir no Editor Completo",
-                        icon: FileSignature,
-                        onClick: () =>
-                          router.navigate({ to: "/workspace/contratos/$id/editor", params: { id: contract.id } }),
-                      },
-                      {
-                        label: "Baixar Documento / Certificado PDF",
-                        icon: Download,
-                        onClick: () => handleDownloadContractPdf(contract.id),
-                      },
-                      {
-                        label: isCopied ? "Link Copiado!" : "Copiar Link de Verificação",
-                        icon: isCopied ? Check : Copy,
-                        onClick: () => handleCopyLink(undefined, contract),
-                      },
-                      {
-                        label: "Compartilhar no WhatsApp",
-                        icon: WhatsappLogo as any,
-                        onClick: () => handleShareWhatsApp(undefined as any, contract),
-                      },
-                      ...(contract.verification_code
-                        ? [
-                            {
-                              label: "Certificado Público de Autenticidade",
-                              icon: ExternalLink,
-                              onClick: () =>
-                                router.navigate({
-                                  to: "/verify/document/$code",
-                                  params: { code: contract.verification_code },
-                                }),
-                            },
-                          ]
-                        : []),
-                      ...(!isSigned && !isCancelled
-                        ? [
-                            {
-                              label: "Cancelar Contrato",
-                              icon: XCircle,
-                              onClick: () => setCancelTarget(contract),
-                            },
-                          ]
-                        : []),
-                    ]}
-                  />
+                    <CrudActionsMenu
+                      triggerVariant="outline"
+                      triggerClassName="size-11 min-h-11 sm:size-9 sm:min-h-0 p-0 rounded-lg border-border/60 hover:bg-muted flex items-center justify-center"
+                      customActions={[
+                        {
+                          label: "Abrir no Editor Completo",
+                          icon: FileSignature,
+                          onClick: () =>
+                            router.navigate({ to: "/workspace/contratos/$id/editor", params: { id: contract.id } }),
+                        },
+                        {
+                          label: "Baixar Documento / Certificado PDF",
+                          icon: Download,
+                          onClick: () => handleDownloadContractPdf(contract.id),
+                        },
+                        {
+                          label: isCopied ? "Link Copiado!" : "Copiar Link de Assinatura",
+                          icon: isCopied ? Check : Copy,
+                          onClick: () => handleCopyLink(undefined, contract),
+                        },
+                        {
+                          label: "Compartilhar no WhatsApp",
+                          icon: WhatsappLogo as any,
+                          onClick: () => handleShareWhatsApp(undefined as any, contract),
+                        },
+                        ...(contract.verification_code
+                          ? [
+                              {
+                                label: "Certificado Público de Autenticidade",
+                                icon: ExternalLink,
+                                onClick: () =>
+                                  router.navigate({
+                                    to: "/verify/document/$code",
+                                    params: { code: contract.verification_code },
+                                  }),
+                              },
+                            ]
+                          : []),
+                        ...(!isSigned && !isCancelled
+                          ? [
+                              {
+                                label: "Cancelar Contrato",
+                                icon: XCircle,
+                                onClick: () => setCancelTarget(contract),
+                              },
+                            ]
+                          : []),
+                      ]}
+                    />
+                  </div>
                 </div>
               </div>
             );
@@ -1050,6 +1390,122 @@ function ContractsDashboard() {
               Confirmar Cancelamento
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Compartilhamento Direto via WhatsApp com Mensagem Contextual por Nicho */}
+      <Dialog open={Boolean(whatsappShareTarget)} onOpenChange={(o) => !o && setWhatsappShareTarget(null)}>
+        <DialogContent className="sm:max-w-lg pt-safe-modal">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <WhatsappLogo className="size-5 text-emerald-600" />
+              <span>Compartilhar Contrato via WhatsApp</span>
+            </DialogTitle>
+            <DialogDescription>
+              Envie o link seguro e direto de assinatura para o signatário com mensagem personalizada.
+            </DialogDescription>
+          </DialogHeader>
+
+          {whatsappShareTarget && (() => {
+            const info = getContractSigningInfo(whatsappShareTarget, selectedWhatsappSignerIdx);
+            const envelopes = info.envelopes || [];
+            const selectedSigner = info.signer;
+            const signerPhoneClean = selectedSigner?.signer_phone
+              ? normalizeBrazilPhoneE164(selectedSigner.signer_phone)?.replace(/\D/g, "")
+              : null;
+            const waHref = signerPhoneClean
+              ? `https://wa.me/${signerPhoneClean}?text=${encodeURIComponent(info.message)}`
+              : `https://wa.me/?text=${encodeURIComponent(info.message)}`;
+
+            return (
+              <div className="space-y-4 py-2">
+                <div className="p-3 rounded-lg bg-muted/30 border border-border/70 space-y-1">
+                  <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Documento</span>
+                  <p className="text-sm font-bold text-foreground line-clamp-1">{whatsappShareTarget.title}</p>
+                </div>
+
+                {envelopes.length > 1 && (
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium text-muted-foreground">
+                      Selecione o Signatário Destinatário:
+                    </Label>
+                    <div className="space-y-2 max-h-40 overflow-y-auto">
+                      {envelopes.map((env: any, idx: number) => {
+                        const isSelected = selectedWhatsappSignerIdx === idx;
+                        const isEnvSigned = env.status === "signed";
+                        return (
+                          <button
+                            key={env.id || idx}
+                            type="button"
+                            onClick={() => setSelectedWhatsappSignerIdx(idx)}
+                            className={cn(
+                              "w-full text-left p-3 rounded-lg border text-xs flex items-center justify-between gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                              isSelected
+                                ? "border-primary bg-primary/10 text-foreground font-semibold"
+                                : "border-border bg-card text-muted-foreground hover:bg-muted/40"
+                            )}
+                          >
+                            <div className="min-w-0">
+                              <p className="font-semibold text-foreground truncate">{env.signer_name || `Signatário ${idx + 1}`}</p>
+                              <p className="text-2xs text-muted-foreground truncate">{env.signer_phone || env.signer_email || "Sem contato cadastrado"}</p>
+                            </div>
+                            <Badge variant={isEnvSigned ? "default" : "secondary"} className="text-2xs shrink-0">
+                              {isEnvSigned ? "Assinado" : "Pendente"}
+                            </Badge>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-medium text-muted-foreground">
+                      Mensagem Pronta para Envio:
+                    </Label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard?.writeText(info.message).catch(() => null);
+                        setCopiedWhatsappMsg(true);
+                        toast.success("Mensagem copiada para a área de transferência.");
+                        setTimeout(() => setCopiedWhatsappMsg(false), 2000);
+                      }}
+                      className="text-2xs text-primary hover:underline font-semibold flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+                    >
+                      {copiedWhatsappMsg ? <Check className="size-3" /> : <Copy className="size-3" />}
+                      <span>{copiedWhatsappMsg ? "Copiado!" : "Copiar Texto"}</span>
+                    </button>
+                  </div>
+                  <div className="p-3 rounded-lg bg-muted/40 border border-border font-mono text-xs whitespace-pre-wrap leading-relaxed max-h-36 overflow-y-auto text-foreground">
+                    {info.message}
+                  </div>
+                </div>
+
+                <DialogFooter className="gap-2 sm:gap-0 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setWhatsappShareTarget(null)}
+                    className="h-11 min-h-11 sm:h-9 sm:min-h-0"
+                  >
+                    Fechar
+                  </Button>
+                  <Button
+                    type="button"
+                    asChild
+                    className="h-11 min-h-11 sm:h-9 sm:min-h-0 bg-emerald-600 hover:bg-emerald-700 text-primary-foreground font-semibold gap-2"
+                  >
+                    <a href={waHref} target="_blank" rel="noopener noreferrer">
+                      <WhatsappLogo className="size-4" />
+                      <span>Abrir no WhatsApp</span>
+                    </a>
+                  </Button>
+                </DialogFooter>
+              </div>
+            );
+          })()}
         </DialogContent>
       </Dialog>
     </div>

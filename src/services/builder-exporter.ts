@@ -1,4 +1,4 @@
-import type { ExperienceNode } from '@/lib/builder-types';
+import type { ExperienceNode } from '@/lib/builder/builder-types';
 
 export interface ExportHtmlOptions {
  title?: string;

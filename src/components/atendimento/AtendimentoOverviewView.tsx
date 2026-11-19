@@ -653,7 +653,7 @@ export function AtendimentoOverviewView({
             <span>Telemetria de Entregas WhatsApp</span>
           </h2>
         </div>
-        <WhatsAppOperationsMetricsPanel />
+        <WhatsAppOperationsMetricsPanel storeId={bi.storeId || undefined} />
       </section>
     </div>
   );

@@ -20,11 +20,14 @@ describe("EARS-WA-03: SmartPhoneText & Nova Conversa WhatsApp wiring", () => {
     });
   });
 
-  it("conecta SmartPhoneText e startStaffWhatsAppThread no workspace AtendimentoChatWorkspace", () => {
+  it("conecta WhatsAppMarkdownText + SmartPhoneText e startStaffWhatsAppThread no workspace AtendimentoChatWorkspace", () => {
     const wsPath = path.resolve(process.cwd(), "src/components/atendimento/AtendimentoChatWorkspace.tsx");
     const wsSrc = fs.readFileSync(wsPath, "utf8");
-    expect(wsSrc).toContain('import { SmartPhoneText } from "@/components/atendimento/SmartPhoneText"');
-    expect(wsSrc).toContain("<SmartPhoneText");
+    const mdPath = path.resolve(process.cwd(), "src/components/atendimento/WhatsAppMarkdownText.tsx");
+    const mdSrc = fs.readFileSync(mdPath, "utf8");
+    expect(wsSrc).toContain('import { WhatsAppMarkdownText } from "@/components/atendimento/WhatsAppMarkdownText"');
+    expect(wsSrc).toContain("<WhatsAppMarkdownText");
+    expect(mdSrc).toContain("<SmartPhoneText");
     expect(wsSrc).toContain("startStaffWhatsAppThread");
     expect(wsSrc).toContain("Nova Conversa");
   });

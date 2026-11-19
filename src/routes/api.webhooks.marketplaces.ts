@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { handleInboundWebhook, type InboundWebhookPayload } from "@/services/marketplace-webhooks.functions";
 import { getServerClient } from "@/lib/supabase";
-import { decryptSecret } from "@/lib/crypto-vault.server";
+import { safeDecryptVaultValue as safeDecryptSecret } from "@/lib/marketplace-vault.server";
 import {
   safeCompareHexOrString,
   verifyBlingWebhookSignature,
@@ -12,15 +12,6 @@ import {
 import { createHmac } from "node:crypto";
 
 import type {} from "@tanstack/react-start";
-
-function safeDecryptSecret(val: unknown): string {
-  if (typeof val !== "string" || !val.trim()) return "";
-  try {
-    return decryptSecret(val.trim());
-  } catch {
-    return val.trim();
-  }
-}
 
 /**
  * Normaliza identificador externo de conta, tópico, eventId e resourceId por provedor.

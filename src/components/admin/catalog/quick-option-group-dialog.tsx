@@ -49,14 +49,14 @@ const formSchema = z.object({
 
 export type OptionGroupFormData = z.infer<typeof formSchema>;
 
-import { getNicheSemantics } from "@/lib/niche-semantics";
+import { getNicheSemantics } from "@/lib/niches/niche-semantics";
 import {
   getNicheOptionGroupPresets,
   getNicheModifierPlaceholders,
   searchOptionGroupPresets,
   NICHE_LABELS,
   type OptionGroupPreset,
-} from "@/lib/niche-presets";
+} from "@/lib/niches/niche-presets";
 
 export interface QuickOptionGroupDialogProps {
  open: boolean;

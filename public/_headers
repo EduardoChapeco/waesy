@@ -29,10 +29,16 @@
   Cache-Control: public, max-age=0, must-revalidate
   Content-Type: application/manifest+json; charset=utf-8
 
-# ── 4. Manifesto dinâmico da loja (por storeId) — ZERO cache.
+# ── 4. Manifesto dinâmico da loja (por storeId/slug) — ZERO cache.
 /api/pwa/manifest.json
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+  Pragma: no-cache
   Content-Type: application/manifest+json; charset=utf-8
+
+# ── 4.1 Apps standalone das empresas (/app/*) — Revalidação obrigatória.
+/app/*
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
 
 # ── 5. Ícones da app (podem ser atualizados entre versões)
 /icons/*

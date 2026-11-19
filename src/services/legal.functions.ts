@@ -1,50 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity } from "@/lib/server-access";
+import { requirePlatformAdmin } from "@/lib/server-access";
 import { z } from "zod";
-
-/**
- * Valida se o usuário autenticado é Platform Admin (Master)
- */
-async function requirePlatformAdmin() {
- const identity = await getServerIdentity();
- if (!identity.id) {
- throw new Error("Não autenticado. Por favor, faça login.");
- }
-
- if (identity.role === "platform_admin" || identity.role === "master") {
- return identity;
- }
-
- const db = getServerClient();
- const { data: p } = await db
- .from("profiles")
- .select("role")
- .eq("id", identity.id)
- .maybeSingle();
-
- if (p?.role === "platform_admin" || p?.role === "master") {
- return { ...identity, role: "platform_admin" };
- }
-
- const { isBootstrapPlatformAdminEmail } = await import("@/lib/identity.server");
- const { data: userData, error: userFetchError } = await db.auth.admin.getUserById(identity.id);
- if (userFetchError) {
- console.warn("[legal] Falha ao consultar e-mail do usuário na auth admin:", userFetchError.message);
- }
- const email = userData?.user?.email?.toLowerCase();
-
- if (email && isBootstrapPlatformAdminEmail(email)) {
- const { error: promotionError } = await db.from("profiles").update({ role: "platform_admin" }).eq("id", identity.id);
- if (promotionError) {
- console.error("[legal] Falha ao persistir promoção para platform_admin:", promotionError);
- throw new Error("Não foi possível confirmar a autorização administrativa.");
- }
- return { ...identity, role: "platform_admin" };
- }
-
- throw new Error("Acesso negado. Apenas administradores globais master podem realizar esta ação.");
-}
 
 // ============================================================
 // 1. REGISTRO FORENSE DE CONSENTIMENTO & ACEITE (LGPD / COOKIES)

@@ -5,6 +5,7 @@
 
 import { formatMoney } from "./money";
 import { formatDateTime } from "./datetime";
+import { escapeHtml } from "./sanitize";
 
 export interface ThermalReceiptItem {
   title: string;
@@ -309,15 +310,6 @@ function printViaHiddenIframe(receiptText: string, paperWidth: "80mm" | "58mm"):
       document.body.removeChild(iframe);
     }, 1000);
   }, 300);
-}
-
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
 }
 
 // ---------------------------------------------------------------------------

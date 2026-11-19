@@ -128,7 +128,7 @@ export const createQuickOrder = createServerFn({ method: "POST" })
         if (authorStore?.id) resolvedStoreId = authorStore.id;
       }
 
-      // Se for transação comunitária/civil sem loja comercial, vincular à Loja Raiz da Plataforma (nunca a terceiros)
+      // Se for transação comunitária/civil sem loja comercial, vincular à Loja Raiz da Plataforma
       if (!resolvedStoreId) {
         const { data: rootStore } = await db
           .from("stores")
@@ -138,10 +138,119 @@ export const createQuickOrder = createServerFn({ method: "POST" })
           .maybeSingle();
         if (rootStore?.id) {
           resolvedStoreId = rootStore.id;
-        } else {
-          // Fallback seguro para o UUID canônico da matriz Waesy
-          resolvedStoreId = "00000000-0000-0000-0000-000000000002";
         }
+      }
+
+      if (!resolvedStoreId) {
+        return {
+          status: "error",
+          message: "Nenhuma loja ou anunciante identificado para este pedido.",
+        };
+      }
+
+      validateQuickOrderArithmetic(input);
+
+      // 1.5 Validação Server-Side Autoritativa de Preços e Descontos no Catálogo
+      let authoritativeDiscountCap = 0;
+
+      if (input.productId) {
+        const { data: productRow, error: prodErr } = await db
+          .from("products")
+          .select("id, store_id, price_cents, status")
+          .eq("id", input.productId)
+          .maybeSingle();
+
+        if (prodErr || !productRow || !["published", "active"].includes(String(productRow.status))) {
+          return {
+            status: "error",
+            message: "Produto indisponível ou removido do catálogo.",
+          };
+        }
+        if (productRow.store_id && resolvedStoreId !== productRow.store_id) {
+          resolvedStoreId = productRow.store_id;
+        }
+
+        const primaryItem = input.items[0];
+        let minAllowedUnitCents = Math.max(0, Number(productRow.price_cents) || 0);
+        if (primaryItem?.variantId) {
+          const { data: variantRow } = await db
+            .from("product_variants")
+            .select("id, price_override_cents, product_id")
+            .eq("id", primaryItem.variantId)
+            .eq("product_id", productRow.id)
+            .maybeSingle();
+          if (!variantRow) {
+            return { status: "error", message: "Variação de produto inválida." };
+          }
+          if (variantRow.price_override_cents != null) {
+            minAllowedUnitCents = Math.max(0, Number(variantRow.price_override_cents));
+          }
+        }
+        if (minAllowedUnitCents > 0 && primaryItem && primaryItem.unitPriceCents < minAllowedUnitCents) {
+          return {
+            status: "error",
+            message: "Preço do produto divergente do catálogo oficial.",
+          };
+        }
+      } else if (input.classifiedId) {
+        const { data: clsRow, error: clsErr } = await db
+          .from("classifieds")
+          .select("id, store_id, price_cents, attributes, status")
+          .eq("id", input.classifiedId)
+          .maybeSingle();
+
+        if (clsErr || !clsRow || ["archived", "removed", "sold"].includes(String(clsRow.status))) {
+          return {
+            status: "error",
+            message: "Anúncio indisponível ou encerrado.",
+          };
+        }
+
+        const attrs = ((clsRow.attributes || {}) as Record<string, any>) || {};
+        const primaryItem = input.items[0];
+        const basePriceCents = Math.max(0, Number(clsRow.price_cents || 0));
+        const tiers = Array.isArray(attrs.progressive_discount_tiers || attrs.discount_tiers)
+          ? (attrs.progressive_discount_tiers || attrs.discount_tiers)
+          : [];
+        const maxTierPct = tiers.reduce(
+          (mx: number, t: any) => Math.max(mx, Number(t?.discount_percent || t?.percent || 0)),
+          0,
+        );
+        const pixPct = input.paymentMethod === "pix" ? Number(attrs.pix_discount_percent || 0) : 0;
+        const maxAllowedPct = Math.min(90, Math.max(0, maxTierPct + pixPct));
+
+        if (basePriceCents > 0 && primaryItem) {
+          const isWeightMode = Boolean(attrs.fresh_pricing?.enabled) && /\d+g|\d+(?:\.\d+)?kg/i.test(primaryItem.itemDetails || "");
+          if (!isWeightMode) {
+            const minUnitAfterMaxTier = Math.floor(basePriceCents * (1 - maxTierPct / 100));
+            if (primaryItem.unitPriceCents < minUnitAfterMaxTier) {
+              return {
+                status: "error",
+                message: "Preço do anúncio inferior ao permitido pelas regras da oferta.",
+              };
+            }
+          }
+        }
+        authoritativeDiscountCap = Math.round((input.subtotalCents * maxAllowedPct) / 100) + 100;
+
+        if (input.items.length > 1) {
+          const bumpOffer = attrs.order_bump_offer;
+          const bumpItem = input.items[1];
+          const minBump = Number(bumpOffer?.special_price_cents || 0);
+          if (!bumpOffer?.enabled || (minBump > 0 && bumpItem.unitPriceCents < minBump)) {
+            return {
+              status: "error",
+              message: "Item adicional (order bump) inválido ou valor adulterado.",
+            };
+          }
+        }
+      }
+
+      if (input.discountCents > authoritativeDiscountCap) {
+        return {
+          status: "error",
+          message: "Desconto informado excede as regras permitidas pelo catálogo.",
+        };
       }
 
       // 2. Token Público Canônico Seguro
@@ -159,8 +268,6 @@ export const createQuickOrder = createServerFn({ method: "POST" })
         item_details: item.itemDetails || null,
         ripeness: item.ripeness || null,
       }));
-
-      validateQuickOrderArithmetic(input);
 
       const customerSnapshot = {
         name: input.customerName.trim(),

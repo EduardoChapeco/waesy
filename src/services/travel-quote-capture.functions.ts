@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import { getServerClient } from '@/lib/supabase';
-import { matchQuoteWithDemand, calculateTariffTemperature } from '@/lib/travel-opportunity-matcher';
+import { calculateTariffTemperature } from '@/lib/travel-opportunity-matcher';
+import {
+  evaluateUnifiedOpportunityMatch,
+  normalizeLegacyDemandToCanonical,
+  normalizeLegacyOfferToCanonical,
+} from '@/lib/travel/opportunity-matching-engine';
 
 export const TravelQuoteCapturePayloadSchema = z.object({
   storeId: z.string().uuid(),
@@ -141,7 +146,22 @@ export async function ingestTravelQuoteCapture(payloadRaw: TravelQuoteCapturePay
     source: 'extension_capture'
   });
 
-  // 4. Executar Radar de Oportunidades Sob Demanda (sem trigger no banco)
+  // 4. Executar Radar de Oportunidades Sob Demanda (com abertura aérea/transfer quando discriminada nos itens)
+  const flightItemsTotalCents = (items || [])
+    .filter((it) => it.itemType === 'flight')
+    .reduce((sum, it) => sum + Number(it.totalAmountCents || it.fareAmountCents || 0), 0);
+  const transferItemsTotalCents = (items || [])
+    .filter((it) => it.itemType === 'transfer')
+    .reduce((sum, it) => sum + Number(it.totalAmountCents || it.fareAmountCents || 0), 0);
+  const itemAirfarePerAdultCents =
+    flightItemsTotalCents > 0 && flightItemsTotalCents < totalCents
+      ? Math.round(flightItemsTotalCents / Math.max(1, adultsCount))
+      : null;
+  const itemTransferPerAdultCents =
+    transferItemsTotalCents > 0 && transferItemsTotalCents < totalCents
+      ? Math.round(transferItemsTotalCents / Math.max(1, adultsCount))
+      : null;
+
   const matchedOpportunities = await evaluateRadarForCapture({
     captureId: capture.id,
     storeId,
@@ -153,6 +173,8 @@ export async function ingestTravelQuoteCapture(payloadRaw: TravelQuoteCapturePay
     totalCents,
     adultsCount,
     childrenCount,
+    airfarePerAdultCents: itemAirfarePerAdultCents,
+    transferPerAdultCents: itemTransferPerAdultCents,
     sourcePage
   });
 
@@ -178,6 +200,8 @@ async function evaluateRadarForCapture(captureData: {
   totalCents: number;
   adultsCount: number;
   childrenCount?: number;
+  airfarePerAdultCents?: number | null;
+  transferPerAdultCents?: number | null;
   sourcePage: string;
 }) {
   const supabase = getServerClient();
@@ -196,19 +220,34 @@ async function evaluateRadarForCapture(captureData: {
       .select('*')
       .eq('store_id', captureData.storeId);
     crmLeads = (lData || []).filter((l: any) =>
-      !['won', 'lost', 'cancelled'].includes(l.status) &&
-      Boolean(l.destination || l.destination_of_interest)
+      !['won', 'lost', 'cancelled', 'archived', 'opted_out'].includes(String(l.status || '').toLowerCase()) &&
+      Boolean(
+        l.destination ||
+          l.destination_of_interest ||
+          (Array.isArray(l.destination_tags) && l.destination_tags.length > 0)
+      )
     );
   } catch (err) {
     console.warn('[travel-quote-capture] fallback consultando leads_crm:', err);
   }
 
-  // Se não houver demandas nem leads ativos, encerra
-  const totalDemands = (demands || []).length;
-  const totalCrmLeads = crmLeads.length;
-  if (totalDemands === 0 && totalCrmLeads === 0) return [];
+  // 2.5 Buscar também interesses pré-CRM ativos em travel_interests
+  let travelInterests: any[] = [];
+  try {
+    const { data: iData } = await supabase
+      .from('travel_interests')
+      .select('*')
+      .eq('store_id', captureData.storeId);
+    travelInterests = (iData || []).filter((it: any) =>
+      ['open', 'matched', 'nurturing'].includes(String(it.status || 'open').toLowerCase())
+    );
+  } catch {
+    // Tabela opcional em mocks enxutos
+  }
 
-  // Buscar histórico de preços para cálculo de temperatura
+  if ((demands || []).length === 0 && crmLeads.length === 0 && travelInterests.length === 0) return [];
+
+  // Buscar histórico de preços para cálculo de temperatura e comparação histórica
   const { data: historicalPrices } = await supabase
     .from('travel_price_observations')
     .select('price_cents')
@@ -223,101 +262,145 @@ async function evaluateRadarForCapture(captureData: {
     captureData.sourcePage === 'aereo_resultado' ? 'flight' :
     captureData.sourcePage === 'hotel_resultado' ? 'hotel' : 'package';
 
-  const generatedOpps = [];
+  const canonicalCaptureOffer = normalizeLegacyOfferToCanonical({
+    id: captureData.captureId,
+    source_type: 'quote_capture',
+    title: `Captura ${captureData.operatorSlug || 'InfoTravel'}: ${captureData.destinationCity}`,
+    destination_city: captureData.destinationCity,
+    origin_city: captureData.originCity,
+    start_date: captureData.startDate,
+    end_date: captureData.endDate,
+    total_cents: captureData.totalCents,
+    adults_count: captureData.adultsCount,
+    children_count: captureData.childrenCount || 0,
+    airfare_per_adult_cents: captureData.airfarePerAdultCents ?? null,
+    transfer_per_adult_cents: captureData.transferPerAdultCents ?? null,
+    product_type: productType,
+    operator_slug: captureData.operatorSlug,
+  });
 
-  // Avaliação 1: Demandas formais de travel_client_demands
-  for (const demand of demands || []) {
-    const match = matchQuoteWithDemand(
-      {
-        id: demand.id,
-        contactName: demand.contact_name,
-        contactPhone: demand.contact_phone,
-        destinationCity: demand.destination_city,
-        earliestDeparture: demand.earliest_departure,
-        latestDeparture: demand.latest_departure,
-        budgetMaxCents: Number(demand.budget_max_cents),
-        adultsCount: demand.adults_count,
-        childrenCount: demand.children_count,
-        preferredProductType: demand.preferred_product_type,
-        lastInteractionAt: demand.last_interaction_at
-      },
-      {
-        id: captureData.captureId,
-        destinationCity: captureData.destinationCity,
-        originCity: captureData.originCity,
-        startDate: captureData.startDate,
-        endDate: captureData.endDate,
-        totalCents: captureData.totalCents,
-        adultsCount: captureData.adultsCount,
-        childrenCount: captureData.childrenCount,
-        productType
-      }
-    );
+  const histInputs = observations.map((cents) => ({
+    destination: captureData.destinationCity,
+    totalCents: cents,
+    adultsCount: captureData.adultsCount,
+  }));
 
-    if (match.isMatch) {
-      const { data: opp, error } = await supabase
+  const insertOpportunityCompat = async (payload: Record<string, any>) => {
+    const { data: opp, error } = await supabase
+      .from('travel_opportunities')
+      .insert(payload)
+      .select()
+      .single();
+    if (!error && opp) return opp;
+
+    if (error && /42703|column .* does not exist|PGRST204/i.test(`${error.code || ''} ${error.message || ''}`)) {
+      const fallbackPayload = {
+        store_id: payload.store_id,
+        demand_id: payload.demand_id ?? null,
+        lead_id: payload.lead_id ?? null,
+        capture_id: payload.capture_id,
+        match_score: payload.match_score,
+        match_reasons: payload.match_reasons,
+        quoted_total_cents: payload.quoted_total_cents,
+        client_budget_cents: payload.client_budget_cents,
+        variance_pct: payload.variance_pct,
+        historical_reference_median_cents: payload.historical_reference_median_cents,
+        historical_sample_size: payload.historical_sample_size,
+        tariff_temperature: payload.tariff_temperature,
+        whatsapp_pitch_draft: payload.whatsapp_pitch_draft,
+        status: payload.status,
+      };
+      const { data: fallbackOpp } = await supabase
         .from('travel_opportunities')
-        .insert({
-          store_id: captureData.storeId,
-          demand_id: demand.id,
-          capture_id: captureData.captureId,
-          match_score: match.matchScore,
-          match_reasons: match.reasons,
-          quoted_total_cents: captureData.totalCents,
-          client_budget_cents: demand.budget_max_cents,
-          variance_pct: match.variancePct,
-          historical_reference_median_cents: tempAnalysis.medianCents,
-          historical_sample_size: tempAnalysis.sampleSize,
-          tariff_temperature: tempAnalysis.temperature,
-          whatsapp_pitch_draft: match.suggestedWhatsAppPitch,
-          status: 'open'
-        })
+        .insert(fallbackPayload)
         .select()
         .single();
+      return fallbackOpp || null;
+    }
+    return null;
+  };
 
-      if (!error && opp) {
-        generatedOpps.push(opp);
-      }
+  const generatedOpps: any[] = [];
+
+  // Avaliação 1: Demandas formais de travel_client_demands (via Motor Unificado Determinístico)
+  for (const demand of demands || []) {
+    const canonicalDemand = normalizeLegacyDemandToCanonical({
+      id: demand.id,
+      demand_source: 'client_demand',
+      lead_id: demand.crm_lead_id || demand.lead_id || null,
+      full_name: demand.contact_name || 'Cliente',
+      whatsapp: demand.contact_phone || null,
+      destination: demand.destination_city || '',
+      travel_start: demand.earliest_departure || demand.earliest_departure_date || null,
+      travel_end: demand.latest_departure || demand.latest_return_date || null,
+      earliest_departure: demand.earliest_departure || null,
+      latest_departure: demand.latest_departure || null,
+      flexibility_days: demand.flexibility_days ?? undefined,
+      date_flexible: demand.date_flexible ?? undefined,
+      budget_max_cents: Number(demand.budget_max_cents || 0) > 0 ? Number(demand.budget_max_cents) : null,
+      pax_adults: demand.adults_count || 2,
+      pax_children: demand.children_count || 0,
+      wanted_inclusions: [],
+    });
+
+    const unified = evaluateUnifiedOpportunityMatch(canonicalCaptureOffer, canonicalDemand, {
+      minScore: 55,
+      historicalObservations: histInputs,
+    });
+
+    if (unified.isMatch) {
+      const opp = await insertOpportunityCompat({
+        store_id: captureData.storeId,
+        demand_id: demand.id,
+        lead_id: demand.crm_lead_id || demand.lead_id || null,
+        target_lead_id: demand.crm_lead_id || demand.lead_id || null,
+        source_type: 'quote_capture',
+        capture_id: captureData.captureId,
+        offer_title: canonicalCaptureOffer.title,
+        destination_city: captureData.destinationCity,
+        departure_date: captureData.startDate,
+        adults_count: captureData.adultsCount,
+        children_count: captureData.childrenCount || 0,
+        match_score: unified.matchScore,
+        match_reasons: unified.matchReasons,
+        quoted_total_cents: captureData.totalCents,
+        simulated_total_cents: unified.effectiveOfferTotalCents,
+        client_budget_cents: Number(demand.budget_max_cents || 0),
+        variance_pct: unified.budgetVariancePct ?? 0,
+        historical_reference_median_cents: unified.historicalCheck.historicalMedianCents ?? tempAnalysis.medianCents,
+        historical_sample_size: Math.max(unified.historicalCheck.sampleCount, tempAnalysis.sampleSize),
+        tariff_temperature: tempAnalysis.temperature,
+        requires_child_requote: unified.requiresChildRequote,
+        child_simulation: unified.childSimulation,
+        historical_check: unified.historicalCheck,
+        warnings: unified.warnings,
+        match_tier: unified.matchTier,
+        match_version: 'unified_v2',
+        whatsapp_pitch_draft: unified.suggestedPitchPt,
+        status: 'open',
+      });
+      if (opp) generatedOpps.push(opp);
     }
   }
 
-  // Avaliação 2: Leads ativos do Funil Comercial / CRM em leads_crm
+  // Avaliação 2: Leads ativos do Funil Comercial / CRM em leads_crm (via Motor Unificado Determinístico)
   for (const lead of crmLeads) {
-    const candidateCity = lead.destination || lead.destination_of_interest || '';
     const budget = Number(lead.budget_cents || lead.estimated_value_cents || 0);
-    const earliest = lead.travel_start || lead.departure_date || captureData.startDate;
-    const latest = lead.travel_end || lead.return_date || captureData.startDate;
+    const canonicalLeadDemand = normalizeLegacyDemandToCanonical({
+      ...lead,
+      demand_source: 'lead_crm',
+      lead_id: lead.id,
+      budget_cents: budget > 0 ? budget : null,
+    });
 
-    const match = matchQuoteWithDemand(
-      {
-        id: lead.id,
-        contactName: lead.full_name || lead.title || 'Cliente sem nome',
-        contactPhone: lead.phone || null,
-        destinationCity: candidateCity,
-        earliestDeparture: earliest,
-        latestDeparture: latest,
-        budgetMaxCents: budget,
-        adultsCount: Number(lead.pax_adults || lead.passenger_count || lead.pax_count || 1),
-        childrenCount: Number(lead.pax_children || 0),
-        preferredProductType: 'any',
-        lastInteractionAt: lead.updated_at || lead.created_at || new Date().toISOString()
-      },
-      {
-        id: captureData.captureId,
-        destinationCity: captureData.destinationCity,
-        originCity: captureData.originCity,
-        startDate: captureData.startDate,
-        endDate: captureData.endDate,
-        totalCents: captureData.totalCents,
-        adultsCount: captureData.adultsCount,
-        childrenCount: captureData.childrenCount,
-        productType
-      }
-    );
+    const unified = evaluateUnifiedOpportunityMatch(canonicalCaptureOffer, canonicalLeadDemand, {
+      minScore: 58,
+      historicalObservations: histInputs,
+    });
 
-    if (match.isMatch) {
-      // 1. Atualizar o card em leads_crm com o score e payload estruturado da oportunidade
-      const existingCustom = (typeof lead.custom_fields === 'object' && lead.custom_fields) ? lead.custom_fields : {};
+    if (unified.isMatch) {
+      const existingCustom =
+        typeof lead.custom_fields === 'object' && lead.custom_fields ? lead.custom_fields : {};
       const oppPayload = {
         capture_id: captureData.captureId,
         operator_slug: captureData.operatorSlug || 'infotravel_default',
@@ -326,50 +409,140 @@ async function evaluateRadarForCapture(captureData: {
         start_date: captureData.startDate,
         end_date: captureData.endDate,
         quoted_total_cents: captureData.totalCents,
+        simulated_total_cents: unified.effectiveOfferTotalCents,
         budget_cents: budget,
-        variance_pct: match.variancePct,
+        variance_pct: unified.budgetVariancePct ?? 0,
         tariff_temperature: tempAnalysis.temperature,
-        match_reasons: match.reasons,
-        whatsapp_pitch_draft: match.suggestedWhatsAppPitch,
-        matched_at: new Date().toISOString()
+        requires_child_requote: unified.requiresChildRequote,
+        match_reasons: unified.matchReasons,
+        warnings: unified.warnings,
+        whatsapp_pitch_draft: unified.suggestedPitchPt,
+        matched_at: new Date().toISOString(),
       };
+
+      const prevHistory = Array.isArray((existingCustom as any).infotravel_opportunities_history)
+        ? (existingCustom as any).infotravel_opportunities_history
+        : [];
+      const nextHistory = [
+        oppPayload,
+        ...prevHistory.filter((h: any) => h?.capture_id !== captureData.captureId),
+      ].slice(0, 12);
 
       await supabase
         .from('leads_crm')
         .update({
-          algorithmic_score: match.matchScore,
+          algorithmic_score: unified.matchScore,
+          last_matched_at: new Date().toISOString(),
           custom_fields: {
             ...existingCustom,
-            infotravel_opportunity: oppPayload
-          }
+            infotravel_opportunity: oppPayload,
+            infotravel_opportunities_history: nextHistory,
+          },
         })
         .eq('id', lead.id);
 
-      // 2. Gravar no ledger de travel_opportunities
-      const { data: opp, error } = await supabase
-        .from('travel_opportunities')
-        .insert({
-          store_id: captureData.storeId,
-          demand_id: null,
-          lead_id: lead.id,
-          capture_id: captureData.captureId,
-          match_score: match.matchScore,
-          match_reasons: match.reasons,
-          quoted_total_cents: captureData.totalCents,
-          client_budget_cents: budget,
-          variance_pct: match.variancePct,
-          historical_reference_median_cents: tempAnalysis.medianCents,
-          historical_sample_size: tempAnalysis.sampleSize,
-          tariff_temperature: tempAnalysis.temperature,
-          whatsapp_pitch_draft: match.suggestedWhatsAppPitch,
-          status: 'open'
-        })
-        .select()
-        .single();
+      const opp = await insertOpportunityCompat({
+        store_id: captureData.storeId,
+        demand_id: null,
+        lead_id: lead.id,
+        target_lead_id: lead.id,
+        source_type: 'quote_capture',
+        capture_id: captureData.captureId,
+        offer_title: canonicalCaptureOffer.title,
+        destination_city: captureData.destinationCity,
+        departure_date: captureData.startDate,
+        adults_count: captureData.adultsCount,
+        children_count: captureData.childrenCount || 0,
+        match_score: unified.matchScore,
+        match_reasons: unified.matchReasons,
+        quoted_total_cents: captureData.totalCents,
+        simulated_total_cents: unified.effectiveOfferTotalCents,
+        client_budget_cents: budget,
+        variance_pct: unified.budgetVariancePct ?? 0,
+        historical_reference_median_cents: unified.historicalCheck.historicalMedianCents ?? tempAnalysis.medianCents,
+        historical_sample_size: Math.max(unified.historicalCheck.sampleCount, tempAnalysis.sampleSize),
+        tariff_temperature: tempAnalysis.temperature,
+        requires_child_requote: unified.requiresChildRequote,
+        child_simulation: unified.childSimulation,
+        historical_check: unified.historicalCheck,
+        warnings: unified.warnings,
+        match_tier: unified.matchTier,
+        match_version: 'unified_v2',
+        whatsapp_pitch_draft: unified.suggestedPitchPt,
+        status: 'open',
+      });
+      if (opp) generatedOpps.push(opp);
+    }
+  }
 
-      if (!error && opp) {
-        generatedOpps.push(opp);
-      }
+  // Avaliação 3: Backlog de Interesses pré-CRM (travel_interests)
+  for (const interestRow of travelInterests) {
+    if (interestRow.lead_id && crmLeads.some((l: any) => l.id === interestRow.lead_id)) continue;
+    const datesObj = (interestRow.dates || {}) as Record<string, any>;
+    const partyObj = (interestRow.party || {}) as Record<string, any>;
+    const budgetObj = (interestRow.budget || {}) as Record<string, any>;
+    const canonicalInterest = normalizeLegacyDemandToCanonical({
+      id: interestRow.id,
+      demand_source: 'travel_interest',
+      lead_id: interestRow.lead_id || null,
+      contact_id: interestRow.contact_id || null,
+      full_name: interestRow.title || 'Interessado',
+      destination_tags:
+        Array.isArray(interestRow.destination_tags) && interestRow.destination_tags.length > 0
+          ? interestRow.destination_tags
+          : interestRow.destinations,
+      preferred_destinations: interestRow.destinations,
+      travel_start: datesObj.exactDepartureDate || null,
+      travel_end: datesObj.exactReturnDate || null,
+      target_months: datesObj.targetMonths || [],
+      period_tags: interestRow.period_tags || [],
+      flexibility_days: interestRow.flexibility_days ?? 3,
+      date_flexibility_mode: datesObj.flexibility === 'flexible_anytime' ? 'flexible_anytime' : undefined,
+      date_flexible: datesObj.flexibility === 'flexible_anytime',
+      room_occupancies: interestRow.room_occupancies,
+      pax_adults: partyObj.adults ?? 2,
+      pax_children: partyObj.children ?? 0,
+      children_ages: partyObj.childAges || partyObj.childrenAges || [],
+      max_total_budget_cents: budgetObj.maxTotalBudgetCents || null,
+    });
+
+    const unified = evaluateUnifiedOpportunityMatch(canonicalCaptureOffer, canonicalInterest, {
+      minScore: 60,
+      historicalObservations: histInputs,
+    });
+    if (unified.isMatch) {
+      const opp = await insertOpportunityCompat({
+        store_id: captureData.storeId,
+        demand_id: null,
+        lead_id: interestRow.lead_id || null,
+        target_lead_id: interestRow.lead_id || null,
+        target_interest_id: interestRow.id,
+        source_type: 'quote_capture',
+        capture_id: captureData.captureId,
+        offer_title: canonicalCaptureOffer.title,
+        destination_city: captureData.destinationCity,
+        departure_date: captureData.startDate,
+        adults_count: captureData.adultsCount,
+        children_count: captureData.childrenCount || 0,
+        match_score: unified.matchScore,
+        match_reasons: unified.matchReasons,
+        quoted_total_cents: captureData.totalCents,
+        simulated_total_cents: unified.effectiveOfferTotalCents,
+        client_budget_cents: Number(budgetObj.maxTotalBudgetCents || 0),
+        variance_pct: unified.budgetVariancePct ?? 0,
+        historical_reference_median_cents: unified.historicalCheck.historicalMedianCents ?? tempAnalysis.medianCents,
+        historical_sample_size: Math.max(unified.historicalCheck.sampleCount, tempAnalysis.sampleSize),
+        tariff_temperature: tempAnalysis.temperature,
+        requires_child_requote: unified.requiresChildRequote,
+        child_simulation: unified.childSimulation,
+        historical_check: unified.historicalCheck,
+        warnings: unified.warnings,
+        match_tier: unified.matchTier,
+        match_version: 'unified_v2',
+        whatsapp_pitch_draft: unified.suggestedPitchPt,
+        status: 'open',
+      });
+      if (opp) generatedOpps.push(opp);
     }
   }
 

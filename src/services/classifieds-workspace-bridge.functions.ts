@@ -2,18 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getServerClient } from "@/lib/supabase";
 import { getIdentity } from "./identity.functions";
 import { z } from "zod";
-
-function slugify(text: string): string {
-  return text
-    .toString()
-    .toLowerCase()
-    .trim()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
+import { slugify } from "@/lib/slug-utils";
 
 /**
  * Promove um anúncio de classificado para a estrutura nativa de catálogo da loja no Workspace Pro.

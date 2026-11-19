@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { setCookie } from "@tanstack/start-server-core";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess, clearIdentityCache } from "@/lib/server-access";
-import { getUnifiedNicheSpec } from "@/lib/niches/niche-ssot";
+import { getUnifiedNicheSpec, resolveCommercialOperatingModel } from "@/lib/niches/niche-ssot";
 import { VERTICAL_PLAN_CATALOG } from "@/lib/architecture/module-plan-governance";
 
 export type OnboardingStepStatus =
@@ -135,7 +135,27 @@ export async function _getOnboardingStatus(): Promise<OnboardingOverview> {
  }
  };
 
- const [storeRes, shippingRes, categoriesRes, productsRes, stockRes, ordersRes, couponsRes] =
+ const fetchBrandedAppConfig = async () => {
+ try {
+ const { data, error } = await db
+ .from("store_pwa_configs")
+ .select("id, is_app_enabled, template_id")
+ .eq("store_id", storeId)
+ .maybeSingle();
+ if (error) {
+ return {
+ status: "error" as const,
+ error: error instanceof Error ? error.message : String(error),
+ };
+ }
+ return { status: "ok" as const, data };
+ } catch (e: unknown) {
+ const err = e as Error;
+ return { status: "error" as const, error: err?.message || "Erro inesperado" };
+ }
+ };
+
+ const [storeRes, shippingRes, categoriesRes, productsRes, stockRes, ordersRes, couponsRes, brandedAppRes] =
  await Promise.all([
  fetchStore(),
  fetchShippingRatesCount(),
@@ -144,6 +164,7 @@ export async function _getOnboardingStatus(): Promise<OnboardingOverview> {
  fetchStockVariants(),
  fetchCount("orders"),
  fetchCount("coupons"),
+ fetchBrandedAppConfig(),
  ]);
 
  const steps: OnboardingStep[] = [];
@@ -482,6 +503,83 @@ export async function _getOnboardingStatus(): Promise<OnboardingOverview> {
  });
  }
 
+ // 13. App Oficial Padronizado & PWA
+ if (brandedAppRes.status === "error") {
+ steps.push({
+ id: "branded_app",
+ category: "divulgacao",
+ label: "App Oficial & PWA",
+ description: "Ativação do App próprio (/app/slug) com seções do nicho e logo proporcional.",
+ status: "technical_error",
+ targetRoute: "/workspace/configuracoes/pwa",
+ });
+ } else {
+ const appEnabled = Boolean(brandedAppRes.data?.is_app_enabled);
+ steps.push({
+ id: "branded_app",
+ category: "divulgacao",
+ label: "App Oficial & PWA",
+ description: "Ativação do App próprio (/app/slug) com seções do nicho e logo proporcional.",
+ status: appEnabled ? "completed" : "unconfigured",
+ targetRoute: "/workspace/configuracoes/pwa",
+ details: appEnabled ? "App Oficial ativo e sincronizado" : "Ative e personalize seu App Oficial",
+ });
+ }
+
+ // 14. Etapas Operacionais Específicas por Modelo Comercial
+ const storeData = storeRes.status === "ok" ? storeRes.data : null;
+ const commercialModel = resolveCommercialOperatingModel(storeData?.settings as any);
+
+ if (commercialModel === "distribuidora_b2b_rota") {
+ steps.push({
+ id: "b2b_price_tables",
+ category: "vendas",
+ label: "Tabelas de Preço & Regras B2B",
+ description: "Tabelas de preços restritas por CNPJ/cliente e regras atacadistas.",
+ status: "unconfigured",
+ targetRoute: "/workspace/catalogo/tabelas",
+ details: "Configure tabelas de atacado e descontos por cliente",
+ });
+ steps.push({
+ id: "b2b_routes",
+ category: "vendas",
+ label: "Carteira & Rotas por Vendedor",
+ description: "Distribuição semanal de clientes e roteirização com check-in GPS.",
+ status: "unconfigured",
+ targetRoute: "/workspace/crm",
+ details: "Defina a frequência de visitas e atribuições de representantes",
+ });
+ } else if (commercialModel === "turismo_lazer") {
+ steps.push({
+ id: "tourism_proposals",
+ category: "vendas",
+ label: "Propostas & Pacotes de Viagem",
+ description: "Modelos de proposta multi-opções e tarifário de operadoras.",
+ status: "unconfigured",
+ targetRoute: "/workspace/turismo/propostas",
+ details: "Cadastre roteiros e crie sua primeira proposta interativa",
+ });
+ steps.push({
+ id: "tourism_installments",
+ category: "vendas",
+ label: "Boletos & Pós-Viagem",
+ description: "Controle de quitação de parcelas e automações condicionadas ao retorno.",
+ status: "unconfigured",
+ targetRoute: "/workspace/financeiro",
+ details: "Configure emissão de boletos e pós-embarque",
+ });
+ } else if (commercialModel === "turismo_corporativo") {
+ steps.push({
+ id: "corporate_accounts",
+ category: "vendas",
+ label: "Contas PJ & Centros de Custo",
+ description: "Políticas de viagem corporativa, fluxo de aprovação e faturamento.",
+ status: "unconfigured",
+ targetRoute: "/workspace/clientes",
+ details: "Cadastre empresas clientes e executivos responsáveis",
+ });
+ }
+
  const totalSteps = steps.length;
  const completedSteps = steps.filter((s) => s.status === "completed").length;
  const partiallyConfiguredSteps = steps.filter((s) => s.status === "partially_configured").length;
@@ -493,7 +591,6 @@ export async function _getOnboardingStatus(): Promise<OnboardingOverview> {
  const hasPayment = steps.find((s) => s.id === "payment")?.status === "completed";
  const isStoreReadyToSell = Boolean(hasProduct && hasPayment);
 
- const storeData = storeRes.status === "ok" ? storeRes.data : null;
  const storeCategory = (storeData?.settings as any)?.category || (storeData?.settings as any)?.niche || "retail";
  const storeName = storeData?.name || "Sua Loja";
 

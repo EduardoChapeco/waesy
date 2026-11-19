@@ -12,7 +12,11 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Role } from "@/types/domain";
-import type { ServerIdentity } from "@/lib/identity-core";
+import {
+  assertStoreAccess,
+  MANAGER_ROLES,
+  type ServerIdentity,
+} from "@/lib/identity-core";
 
 export type { ServerIdentity };
 export {
@@ -34,6 +38,18 @@ export async function getSSRClient(preCapturedHeaders?: Headers | null): Promise
 export async function getServerIdentity(): Promise<ServerIdentity> {
  const mod = await import("@/lib/identity.server");
  return mod.getServerIdentity();
+}
+
+/** Exige acesso gerencial (ou papéis extras autorizados) na loja ativa. */
+export async function requireStoreManagerIdentity(
+  extraRoles: readonly string[] = [],
+): Promise<ServerIdentity & { id: string; store_id: string }> {
+  const identity = await getServerIdentity();
+  assertStoreAccess(
+    identity,
+    extraRoles.length > 0 ? [...MANAGER_ROLES, ...extraRoles] : MANAGER_ROLES,
+  );
+  return identity;
 }
 
 /** Resolve o tenant ativo sem criar aresta estática para tenant.server. */

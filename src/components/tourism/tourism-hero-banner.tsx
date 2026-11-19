@@ -10,6 +10,13 @@ interface TourismHeroBannerProps {
   banner?: BannerDTO | null;
   userEmail?: string | null;
   onOpenQuote?: (destination?: string) => void;
+  storeName?: string;
+  storeLogoUrl?: string | null;
+  badgeLabel?: string;
+  backTo?: string;
+  showLoyaltyWidget?: boolean;
+  ctaLabel?: string;
+  ctaSubtext?: string;
   className?: string;
 }
 
@@ -17,13 +24,26 @@ export function TourismHeroBanner({
   banner,
   userEmail,
   onOpenQuote,
+  storeName,
+  storeLogoUrl,
+  badgeLabel = "GDS & Tarifas Online",
+  backTo = "/",
+  showLoyaltyWidget = true,
+  ctaLabel,
+  ctaSubtext,
   className,
 }: TourismHeroBannerProps) {
   const [isDiscountActive, setIsDiscountActive] = useState(false);
 
-  const heroTitle = banner?.title || "Seus pedidos Waesy viram pontos pra viajar";
+  const agencyLabel = storeName || "Agência Oficial";
+  const heroTitle =
+    banner?.title ||
+    (storeName ? `${storeName} · Viagens & Roteiros` : "Seus pedidos viram benefícios pra viajar");
   const heroSubtitle =
-    banner?.subtitle || "Conecte sua conta Excelência Tour e viaje com tarifas exclusivas";
+    banner?.subtitle ||
+    (storeName
+      ? `Consulte pacotes, passagens aéreas, hospedagens e atendimento direto com ${storeName}.`
+      : `Conecte sua conta ${agencyLabel} e viaje com tarifas exclusivas`);
   const coverImage = banner?.media_url;
 
   return (
@@ -59,23 +79,35 @@ export function TourismHeroBanner({
 
       {/* Conteúdo do Topo (Hero + Parceria) */}
       <div className="relative z-10 px-4 sm:px-8 pt-4 sm:pt-8 pb-4 text-center sm:text-left space-y-4 max-w-2xl">
-        {/* Barra Superior Mobile (Botão Voltar + Selo de Parceria Oficial) */}
+        {/* Barra Superior Mobile (Botão Voltar + Selo de Agência/Parceria) */}
         <div className="flex items-center justify-between sm:justify-start gap-2">
-          <Link
-            to="/"
-            aria-label="Voltar para o início"
-            className="md:hidden size-11 min-h-11 min-w-11 rounded-full bg-card border border-border text-foreground flex items-center justify-center hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
-          >
-            <ArrowLeft size={20} weight="bold" />
-          </Link>
+          {backTo && (
+            <Link
+              to={backTo}
+              aria-label="Voltar para o início"
+              className="md:hidden size-11 min-h-11 min-w-11 rounded-full bg-card border border-border text-foreground flex items-center justify-center hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+            >
+              <ArrowLeft size={20} weight="bold" />
+            </Link>
+          )}
 
           <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-card border border-border text-xs font-semibold text-foreground">
-            <span className="font-black tracking-tight text-primary">Waesy</span>
-            <span className="opacity-40">+</span>
-            <span className="font-black tracking-tight text-foreground">Excelência Tour</span>
-            <span className="text-3xs px-2 py-1 rounded-full bg-muted border border-border text-foreground font-bold uppercase tracking-wider">
-              GDS & Wooba
-            </span>
+            {storeLogoUrl ? (
+              <img
+                src={storeLogoUrl}
+                alt={agencyLabel}
+                className="size-5 rounded-md object-contain bg-card shrink-0"
+              />
+            ) : (
+              <span className="font-black tracking-tight text-primary">Waesy</span>
+            )}
+            {!storeName && <span className="opacity-40">+</span>}
+            <span className="font-black tracking-tight text-foreground">{agencyLabel}</span>
+            {badgeLabel && (
+              <span className="text-3xs px-2 py-1 rounded-full bg-muted border border-border text-foreground font-bold uppercase tracking-wider">
+                {badgeLabel}
+              </span>
+            )}
           </div>
         </div>
 
@@ -90,89 +122,86 @@ export function TourismHeroBanner({
         </div>
       </div>
 
-      {/* ── Widget Flutuante de Pontos & Fidelidade (Estilo iFood / Decolar) ── */}
-      <div className="relative z-10 px-4 sm:px-8 pb-6">
-        <div className="w-full max-w-xl mx-auto sm:mx-0 rounded-xl bg-card border border-border p-4 sm:p-5 space-y-4">
-          <div className="flex items-center justify-between gap-3 border-b border-border pb-3">
-            <div className="flex items-center gap-2">
-              <div className="size-8 rounded-lg bg-muted border border-border text-destructive flex items-center justify-center shrink-0">
-                <Tag size={18} weight="bold" />
-              </div>
-              <div>
-                <span className="text-xs font-bold text-foreground block">
-                  Seus pontos & Benefícios
-                </span>
-                <span className="text-xs text-muted-foreground block">
-                  Programa fidelidade em viagens
-                </span>
-              </div>
-            </div>
+      {/* ── Widget Flutuante de Cotação & Benefícios (Estilo iFood / Decolar) ── */}
+      {showLoyaltyWidget && (
+        <div className="relative z-10 px-4 sm:px-8 pb-6">
+          <div className="w-full max-w-xl mx-auto sm:mx-0 rounded-xl bg-card border border-border p-4 sm:p-5 space-y-4">
+            {!storeName && (
+              <>
+                <div className="flex items-center justify-between gap-3 border-b border-border pb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="size-8 rounded-lg bg-muted border border-border text-destructive flex items-center justify-center shrink-0">
+                      <Tag size={18} weight="bold" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-foreground block">
+                        Benefícios & Condições Especiais
+                      </span>
+                      <span className="text-xs text-muted-foreground block">
+                        Atendimento consultivo em viagens
+                      </span>
+                    </div>
+                  </div>
 
-            {/* Toggle de Desconto */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-muted-foreground hidden sm:inline">
-                Ativar desconto
-              </span>
-              <Switch
-                checked={isDiscountActive}
-                onCheckedChange={setIsDiscountActive}
-                aria-label="Ativar desconto de pontos"
-                className="focus-visible:ring-2 focus-visible:ring-ring"
-              />
-            </div>
-          </div>
+                  {/* Toggle de Desconto */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-muted-foreground hidden sm:inline">
+                      Tarifa Clube
+                    </span>
+                    <Switch
+                      checked={isDiscountActive}
+                      onCheckedChange={setIsDiscountActive}
+                      aria-label="Ativar filtro de tarifa clube"
+                      className="focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                  </div>
+                </div>
 
-          {/* Saldo de Pontos & Conversão */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-base sm:text-lg font-black font-mono text-red-600">
-                  1.000 pts
-                </span>
-                <span className="text-xs text-muted-foreground">·</span>
-                <span className="text-xs font-bold text-foreground">
-                  R$ 24,00 de desconto na Excelência Tour
-                </span>
-              </div>
-              {userEmail ? (
-                <span className="text-3xs text-muted-foreground font-mono block">
-                  {userEmail}
-                </span>
-              ) : (
-                <Link
-                  to="/entrar"
-                  className="text-3xs text-primary hover:underline font-semibold block focus-visible:ring-2 focus-visible:ring-ring rounded"
-                >
-                  Entre na sua conta para resgatar milhas e descontos
-                </Link>
-              )}
-            </div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="space-y-1">
+                    {userEmail ? (
+                      <span className="text-3xs text-muted-foreground font-mono block">
+                        {userEmail}
+                      </span>
+                    ) : (
+                      <Link
+                        to="/entrar"
+                        className="text-xs text-primary hover:underline font-semibold block focus-visible:ring-2 focus-visible:ring-ring rounded"
+                      >
+                        Entre na sua conta para acompanhar suas viagens e vouchers
+                      </Link>
+                    )}
+                  </div>
 
-            {isDiscountActive && (
-              <span className="inline-flex items-center gap-1 text-3xs font-bold text-emerald-600 bg-emerald-500/10 px-2 py-1 rounded-md self-start sm:self-center">
-                <Sparkle size={12} weight="fill" />
-                Desconto aplicado na busca
-              </span>
+                  {isDiscountActive && (
+                    <span className="inline-flex items-center gap-1 text-3xs font-bold text-emerald-600 bg-emerald-500/10 px-2 py-1 rounded-md self-start sm:self-center">
+                      <Sparkle size={12} weight="fill" />
+                      Tarifas promocionais priorizadas
+                    </span>
+                  )}
+                </div>
+              </>
             )}
-          </div>
 
-          {/* Botão Primário Callout iFood/Decolar */}
-          <div className="pt-1">
-            <Button
-              type="button"
-              onClick={() => onOpenQuote?.()}
-              className="w-full h-11 min-h-11 rounded-lg bg-red-600 hover:bg-red-700 text-primary-foreground font-bold text-xs sm:text-sm  transition-transform active:scale-98 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring gap-2"
-            >
-              <Sparkle size={16} weight="fill" />
-              <span>Ganhe 250 pontos grátis na primeira reserva</span>
-              <ArrowRight size={14} className="ml-auto" />
-            </Button>
-            <p className="text-3xs text-center text-muted-foreground mt-2">
-              Consulte pacotes com consultores especializados da Excelência Tour no WhatsApp.
-            </p>
+            {/* Botão Primário Callout */}
+            <div className="pt-1">
+              <Button
+                type="button"
+                onClick={() => onOpenQuote?.()}
+                className="w-full h-11 min-h-11 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs sm:text-sm transition-transform active:scale-98 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring gap-2"
+              >
+                <Sparkle size={16} weight="fill" />
+                <span>{ctaLabel || `Solicitar Cotação com ${agencyLabel}`}</span>
+                <ArrowRight size={14} className="ml-auto" />
+              </Button>
+              <p className="text-3xs text-center text-muted-foreground mt-2">
+                {ctaSubtext ||
+                  `Consulte pacotes, aéreos e hospedagens direto com especialistas da ${agencyLabel}.`}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }

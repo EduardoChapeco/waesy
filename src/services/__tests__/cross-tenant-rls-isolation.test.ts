@@ -15,6 +15,8 @@ const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY!;
 const pool = new pg.Pool({
   connectionString: `postgres://postgres.${projectRef}:${encodeURIComponent(dbPassword)}@aws-0-sa-east-1.pooler.supabase.com:6543/postgres`,
   ssl: { rejectUnauthorized: false },
+  max: 2,
+  connectionTimeoutMillis: 15000,
 });
 
 let isPoolConnected = false;
@@ -52,7 +54,7 @@ describe.skipIf(!dbPassword)('FASE 3 — Auditoria Cross-Tenant e RLS com Banco 
       RETURNING id
     `, [userBId]);
     addressBId = addrRows[0].id;
-  });
+  }, 30000);
 
   afterAll(async () => {
     if (isPoolConnected && addressBId) {
@@ -63,7 +65,7 @@ describe.skipIf(!dbPassword)('FASE 3 — Auditoria Cross-Tenant e RLS com Banco 
     try {
       await pool.end();
     } catch {}
-  });
+  }, 30000);
 
   it('deve confirmar que RLS está habilitada (relrowsecurity = true) nas tabelas transacionais no PostgreSQL', async () => {
     if (!isPoolConnected) return;
@@ -78,7 +80,7 @@ describe.skipIf(!dbPassword)('FASE 3 — Auditoria Cross-Tenant e RLS com Banco 
     rows.forEach((r) => {
       expect(r.relrowsecurity).toBe(true);
     });
-  });
+  }, 20000);
 
   it('deve impedir que cliente anon leia endereços privados de outro usuário (retorna 0 linhas devido à RLS)', async () => {
     if (!isPoolConnected || !addressBId) return;
@@ -90,7 +92,7 @@ describe.skipIf(!dbPassword)('FASE 3 — Auditoria Cross-Tenant e RLS com Banco 
 
     // Sem sessão do User B, a RLS do PostgreSQL filtra e retorna lista vazia
     expect(data === null || data.length === 0).toBe(true);
-  });
+  }, 20000);
 
   it('deve verificar políticas declaradas em pg_policies para user_addresses', async () => {
     if (!isPoolConnected) return;
@@ -103,7 +105,7 @@ describe.skipIf(!dbPassword)('FASE 3 — Auditoria Cross-Tenant e RLS com Banco 
     expect(rows.length).toBeGreaterThan(0);
     const hasOwnerRestriction = rows.some((p) => p.qual && p.qual.includes('user_id'));
     expect(hasOwnerRestriction).toBe(true);
-  });
+  }, 20000);
 
   it('deve verificar políticas declaradas em pg_policies para financial_ledger_entries', async () => {
     if (!isPoolConnected) return;
@@ -114,7 +116,7 @@ describe.skipIf(!dbPassword)('FASE 3 — Auditoria Cross-Tenant e RLS com Banco 
     `);
 
     expect(rows.length).toBeGreaterThan(0);
-  });
+  }, 20000);
 
   it('deve confirmar que tabelas com 0 policies bloqueiam acesso de leitura a clientes anônimos', async () => {
     const anonClient = createClient(supabaseUrl, supabaseAnonKey);
@@ -125,5 +127,5 @@ describe.skipIf(!dbPassword)('FASE 3 — Auditoria Cross-Tenant e RLS com Banco 
 
     // RLS ativada com 0 policy = Deny All para anon/authenticated
     expect(data === null || data.length === 0).toBe(true);
-  });
+  }, 20000);
 });

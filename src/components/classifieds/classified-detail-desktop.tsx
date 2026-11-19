@@ -11,24 +11,15 @@ import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
 import { resolveClassifiedNiche, getClassifiedPrimaryCtaLabel, isClassifiedConversational, getClassifiedPaymentMethods, isNichePaymentApplicable, getNicheTabLabels } from "@/lib/classifieds/semantics";
 import { resolveClassifiedDetailedSpecs } from "@/lib/classifieds/canonical-specs-resolver";
 import { NicheSpecificationsDisplay } from "@/components/common/niche-specifications-display";
+import { VerticalFinancialCalculators } from "@/components/classifieds/vertical-financial-calculators";
 import { LeadFormModal } from "@/components/leads/lead-form-modal";
 import { startCustomerChatThread } from "@/services/chat.functions";
 import { addToCart } from "@/services/cart.functions";
 import { useCartContext } from "@/lib/cart-context";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { cn, isUuid } from "@/lib/utils";
+import { isVideoUrl } from "@/lib/media-utils";
 import type { UniversalClassifiedShowcaseProps } from "@/types/unified-ad-engine";
-
-function isVideoUrl(url?: string | null): boolean {
-  if (!url) return false;
-  const clean = url.split("?")[0].toLowerCase();
-  return (
-    clean.endsWith(".mp4") ||
-    clean.endsWith(".webm") ||
-    clean.endsWith(".mov") ||
-    clean.includes("video")
-  );
-}
 
 export function ClassifiedDetailDesktop({
   classified,
@@ -63,9 +54,6 @@ export function ClassifiedDetailDesktop({
 
   const displayMode = (classified.attributes?.display_mode as string) || "tabs";
   const templateStyle = (classified.attributes?.template_style as string) || "standard";
-
-  const isUuid = (str?: any): str is string =>
-    typeof str === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
   const handleStartNativeChat = async (customInitialMessage?: string | React.MouseEvent) => {
     const initialMsg = typeof customInitialMessage === "string" ? customInitialMessage : undefined;
@@ -1161,6 +1149,18 @@ export function ClassifiedDetailDesktop({
                   </div>
                 </div>
               )}
+
+              <VerticalFinancialCalculators
+                nicheId={String(
+                  (typeof niche === "string" ? niche : (niche as any)?.id) ||
+                    classified.category_slug ||
+                    classified.category_name ||
+                    attrs.niche ||
+                    ""
+                )}
+                priceCents={priceCents}
+                attributes={attrs}
+              />
             </div>
           )}
 

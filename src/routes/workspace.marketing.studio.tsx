@@ -133,8 +133,8 @@ export default function WorkspaceSocialStudioPage() {
   const qrDataUri = useMemo(() => {
     const targetUrl =
       typeof window !== "undefined"
-        ? `${window.location.origin}/loja/${store?.slug || ""}`
-        : `https://waesy.app/loja/${store?.slug || "oficial"}`;
+        ? `${window.location.origin}/app/${store?.slug || ""}`
+        : `https://waesy.com.br/app/${store?.slug || "oficial"}`;
     return generateQrCodeDataUri(targetUrl, { border: 1 });
   }, [store?.slug]);
 

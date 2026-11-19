@@ -11,6 +11,7 @@ import { formatMoney } from "@/lib/money";
 import { formatDateTime } from "@/lib/datetime";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet } from "@/components/workspace/workspace-dashboard-sheet";
+import { HrSubmoduleNavigation } from "@/components/hr/HrSubmoduleNavigation";
 
 export const Route = createFileRoute("/workspace/rh/compliance")({
   head: () => ({ meta: [{ title: "Compliance Trabalhista & Riscos DP | Gestão RH Waesy" }] }),
@@ -64,7 +65,13 @@ function WorkspaceRHCompliancePage() {
   };
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-6 w-full">
+    <div className="flex-1 space-y-4 p-4 md:p-6 w-full max-w-7xl mx-auto">
+      {/* ── Navegação de Submódulos de RH ── */}
+      <HrSubmoduleNavigation
+        activeModule="compliance"
+        openIssuesCount={report?.items?.length}
+      />
+
       {/* ── 1. Barra Canônica de Operação Silenciosa ── */}
       <WorkspaceCanonicalToolbar
         tabs={[

@@ -12,7 +12,8 @@ import { CurrencyField } from "@/components/ui/currency-field";
 import { MediaUploader } from "@/components/ui/media-uploader";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
-import { listAdCampaigns, toggleAdCampaignStatus, deleteAdCampaign, createAdCampaign, getStoreAdTargets, getStoreAdChannelsSettings, saveStoreAdChannelsSettings, generateUtmTrackingLink, getStoreMarketingTierStatus, upgradeStoreToWaesyMax, connectExternalAdAccountOAuth, dispatchExternalMetaOrGoogleCampaign, generateAiAdCreativeFromCatalog, getMarketingRoiClosedLoopMetrics, getExternalAdsOAuthUrl, discoverAccessibleAdAccountsFn, syncExternalAdCampaignMetricsFn, diagnoseAdAccountsHealthMcpFn, type AdCampaign, type StoreAdChannelsDTO } from "@/services/ads.functions";
+import { listAdCampaigns, toggleAdCampaignStatus, deleteAdCampaign, createAdCampaign, getStoreAdTargets, getStoreAdChannelsSettings, saveStoreAdChannelsSettings, generateUtmTrackingLink, getStoreMarketingTierStatus, upgradeStoreToWaesyMax, connectExternalAdAccountOAuth, dispatchExternalMetaOrGoogleCampaign, generateAiAdCreativeFromCatalog, getMarketingRoiClosedLoopMetrics, getExternalAdsOAuthUrl, discoverAccessibleAdAccountsFn, syncExternalAdCampaignMetricsFn, diagnoseAdAccountsHealthMcpFn, importDiscoveredMetaPixelsToSourcesFn, type AdCampaign, type StoreAdChannelsDTO } from "@/services/ads.functions";
+import { calculateStoreLtvAndAdSpend } from "@/services/crm.functions";
 import { Lock, ShieldCheck, ArrowUpRight, Layers, RefreshCw, Activity } from "lucide-react";
 import { boostAdCampaignAtomic } from "@/services/deep-core.functions";
 import { WorkspaceCanonicalToolbar, type WorkspaceToolbarTab } from "@/components/workspace/workspace-canonical-toolbar";
@@ -25,20 +26,32 @@ import { orchestrateCampaignIntent } from "@/services/mcp-orchestrator.functions
 import type { DynamicRenderableBlock } from "@/types/ad-tech-mcp";
 import { Mic, MicOff, Send, Wand2 } from "lucide-react";
 import { TravelPromoFlyerModal } from "@/components/tourism/promotional-flyer/travel-promo-flyer-modal";
+import { RouteErrorFallback } from "@/components/state/route-error-fallback";
 
 export const Route = createFileRoute("/workspace/marketing/anuncios")({
   head: () => ({ meta: [{ title: "Campanhas | Workspace Waesy" }] }),
   loader: async () => {
-    const [campaigns, storeTargets, channelsSettings, tierStatus, roiMetrics] = await Promise.all([
+    const [campaigns, storeTargets, channelsSettings, tierStatus, roiMetrics, ltvMetrics] = await Promise.all([
       listAdCampaigns(),
       getStoreAdTargets(),
       getStoreAdChannelsSettings(),
       getStoreMarketingTierStatus(),
       getMarketingRoiClosedLoopMetrics(),
+      calculateStoreLtvAndAdSpend().catch(() => null),
     ]);
-    return { campaigns, storeTargets, channelsSettings, tierStatus, roiMetrics };
+    return { campaigns, storeTargets, channelsSettings, tierStatus, roiMetrics, ltvMetrics };
   },
-  errorComponent: WorkspaceAnunciosErrorComponent,
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorFallback
+      error={error}
+      reset={reset}
+      icon={Megaphone}
+      title="Falha ao Carregar Campanhas"
+      description="Não foi possível sincronizar o módulo de anúncios no momento."
+      actionLabel="Recarregar Página"
+      showErrorDetails
+    />
+  ),
   component: AnunciosRouteSwitch,
 });
 
@@ -48,37 +61,6 @@ function AnunciosRouteSwitch() {
     return <Outlet />;
   }
   return <AnunciosWorkspacePage />;
-}
-
-function WorkspaceAnunciosErrorComponent({ error }: { error: any }) {
-  return (
-    <div className="w-full max-w-lg mx-auto p-4 sm:p-8 text-center space-y-4">
-      <div className="inline-flex size-14 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-1">
-        <Megaphone className="size-7" />
-      </div>
-      <div className="space-y-1">
-        <h2 className="text-lg font-bold text-foreground">Falha ao Carregar Campanhas</h2>
-        <p className="text-xs text-muted-foreground max-w-md mx-auto">
-          Não foi possível sincronizar o módulo de anúncios no momento.
-        </p>
-      </div>
-      {error?.message && (
-        <pre className="mt-2 rounded-lg bg-muted/40 border border-border/50 p-3 text-xs text-muted-foreground overflow-auto max-h-32 text-left font-mono">
-          {error.message}
-        </pre>
-      )}
-      <div className="pt-2 flex items-center justify-center gap-3">
-        <Button
-          variant="default"
-          size="sm"
-          className="rounded-lg text-xs h-10 px-5 font-bold cursor-pointer min-h-11 sm:min-h-0"
-          onClick={() => window.location.reload()}
-        >
-          Recarregar Página
-        </Button>
-      </div>
-    </div>
-  );
 }
 
 const FORMAT_LABELS: Record<string, string> = {
@@ -97,7 +79,7 @@ const QUICK_FORMATS = [
 
 function AnunciosWorkspacePage() {
   const router = useRouter();
-  const { campaigns: initialCampaigns, storeTargets, channelsSettings, tierStatus: initialTierStatus, roiMetrics } = ((Route.useLoaderData?.() as any) || {});
+  const { campaigns: initialCampaigns, storeTargets, channelsSettings, tierStatus: initialTierStatus, roiMetrics, ltvMetrics } = ((Route.useLoaderData?.() as any) || {});
   const [tierStatus, setTierStatus] = useState<any>(initialTierStatus || { planTier: "free", isMaxUnlocked: false, boostDiscountPercent: 0 });
   const [maxUpsellOpen, setMaxUpsellOpen] = useState(false);
   const [isUpgradingMax, setIsUpgradingMax] = useState(false);
@@ -127,7 +109,8 @@ function AnunciosWorkspacePage() {
   const [isSyncingLiveMetrics, setIsSyncingLiveMetrics] = useState(false);
   const [isDiscoveringAccounts, setIsDiscoveringAccounts] = useState(false);
   const [discoveredAccounts, setDiscoveredAccounts] = useState<Array<{ id: string; name: string; currency?: string; status?: string }>>([]);
-  const [discoveredPixels, setDiscoveredPixels] = useState<Array<{ id: string; name: string }>>([]);
+  const [discoveredPixels, setDiscoveredPixels] = useState<Array<{ id: string; name: string; accountId?: string; accountName?: string }>>([]);
+  const [isImportingPixels, setIsImportingPixels] = useState(false);
   const [isStartingOAuthRedirect, setIsStartingOAuthRedirect] = useState(false);
   const [isListeningVoice, setIsListeningVoice] = useState(false);
 
@@ -521,6 +504,26 @@ function AnunciosWorkspacePage() {
                 <p className="text-xs text-muted-foreground">
                   Regra: {roiMetrics.attributionRule} Período: {roiMetrics.periodLabel}
                 </p>
+              )}
+              {ltvMetrics && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
+                  <div className="rounded-lg bg-muted/30 px-3 py-2">
+                    <span className="text-xs text-muted-foreground block">ROAS Real</span>
+                    <strong className="text-sm font-mono text-emerald-600">{Number(ltvMetrics.roas || 0).toFixed(2)}x</strong>
+                  </div>
+                  <div className="rounded-lg bg-muted/30 px-3 py-2">
+                    <span className="text-xs text-muted-foreground block">LTV Médio</span>
+                    <strong className="text-sm font-mono text-foreground">{formatMoney(ltvMetrics.averageLtvCents || 0)}</strong>
+                  </div>
+                  <div className="rounded-lg bg-muted/30 px-3 py-2">
+                    <span className="text-xs text-muted-foreground block">CAC Atribuído</span>
+                    <strong className="text-sm font-mono text-foreground">{formatMoney(ltvMetrics.attributedCacCents ?? ltvMetrics.cacCents ?? 0)}</strong>
+                  </div>
+                  <div className="rounded-lg bg-muted/30 px-3 py-2">
+                    <span className="text-xs text-muted-foreground block">Recompra</span>
+                    <strong className="text-sm font-mono text-foreground">{Number(ltvMetrics.repeatPurchaseRate || 0).toFixed(1)}%</strong>
+                  </div>
+                </div>
               )}
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -1062,12 +1065,44 @@ function AnunciosWorkspacePage() {
                   ))}
                 </div>
                 {discoveredPixels.length > 0 && activationSheetPlatform === "meta_ads" && (
-                  <div className="pt-2 space-y-1">
-                    <Label className="text-xs font-semibold text-muted-foreground">Pixels CAPI Descobertos</Label>
+                  <div className="pt-2 space-y-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <Label className="text-xs font-semibold text-muted-foreground">
+                        Pixels CAPI Descobertos ({discoveredPixels.length})
+                      </Label>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={isImportingPixels}
+                        onClick={async () => {
+                          setIsImportingPixels(true);
+                          try {
+                            const imp = await importDiscoveredMetaPixelsToSourcesFn({
+                              data: {
+                                pixels: discoveredPixels.map((px) => ({
+                                  id: px.id,
+                                  name: px.name,
+                                  accountId: px.accountId || null,
+                                })),
+                              },
+                            });
+                            toast.success(`${imp.importedCount} pixel(s) importado(s) para Fontes & Multi-Pixels!`);
+                          } catch (err: any) {
+                            toast.error(err?.message || "Falha ao importar pixels.");
+                          } finally {
+                            setIsImportingPixels(false);
+                          }
+                        }}
+                        className="h-11 sm:h-8 rounded-lg text-xs font-semibold cursor-pointer"
+                      >
+                        {isImportingPixels ? "Importando..." : "Importar Todos para Multi-Pixels"}
+                      </Button>
+                    </div>
                     <div className="flex flex-wrap gap-2">
                       {discoveredPixels.map((px) => (
                         <Button
-                          key={px.id}
+                          key={`${px.accountId || "meta"}-${px.id}`}
                           type="button"
                           size="sm"
                           variant="ghost"
@@ -1075,7 +1110,7 @@ function AnunciosWorkspacePage() {
                             setMetaPixelId(px.id);
                             toast.success(`Pixel ${px.id} selecionado!`);
                           }}
-                          className="h-8 rounded-lg text-xs font-mono border border-border/50 min-h-11 sm:min-h-0"
+                          className="h-11 sm:h-8 rounded-lg text-xs font-mono border border-border/50"
                         >
                           {px.name} ({px.id})
                         </Button>

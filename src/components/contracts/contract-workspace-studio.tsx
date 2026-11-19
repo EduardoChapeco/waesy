@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
+  ArrowRight,
   Bell,
   Bold,
   Check,
@@ -38,6 +39,7 @@ import {
 } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { toast } from "sonner";
+import { readFileAsDataUrl } from "@/lib/media-utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -173,15 +175,6 @@ interface ContractWorkspaceStudioProps {
   mode: "create" | "edit";
   initialContract?: any;
   initialFolderId?: string | null;
-}
-
-function readFileAsDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = () => reject(new Error("Não foi possível ler o arquivo selecionado."));
-    reader.readAsDataURL(file);
-  });
 }
 
 function mapAutoPositionedFieldsToDto(
@@ -354,8 +347,8 @@ export function ContractWorkspaceStudio({
     Array.isArray(initialContract?.observers) ? initialContract.observers : [],
   );
 
-  // Estado de UI da workstation
-  const [leftTab, setLeftTab] = useState<"documento" | "assinantes" | "envio">(
+  // Estado de UI da workstation em 4 etapas lineares
+  const [leftTab, setLeftTab] = useState<"documento" | "assinantes" | "posicionamento" | "envio">(
     isSealed ? "envio" : "documento",
   );
   const [sourceMode, setSourceMode] = useState<"compose" | "upload" | "crm">(
@@ -1307,6 +1300,51 @@ export function ContractWorkspaceStudio({
         </div>
       </header>
 
+      {/* Stepper Linear Superior 4 Etapas */}
+      <div className="border-b border-border bg-card px-4 py-2 shrink-0">
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-2 overflow-x-auto table-container">
+          {[
+            { id: "documento" as const, label: "1. Minuta & Redação", stepNum: 1 },
+            { id: "assinantes" as const, label: "2. Signatários & Canais", stepNum: 2 },
+            { id: "posicionamento" as const, label: "3. Posicionamento A4", stepNum: 3 },
+            { id: "envio" as const, label: "4. Selagem & Disparo", stepNum: 4 },
+          ].map((st) => {
+            const isCurrent = leftTab === st.id;
+            const stepOrderMap = { documento: 1, assinantes: 2, posicionamento: 3, envio: 4 };
+            const isCompleted = stepOrderMap[leftTab] > st.stepNum;
+            return (
+              <button
+                key={st.id}
+                type="button"
+                onClick={() => setLeftTab(st.id)}
+                className={cn(
+                  "flex items-center gap-2 h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 rounded-lg text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0",
+                  isCurrent
+                    ? "bg-primary text-primary-foreground shadow-2xs"
+                    : isCompleted
+                    ? "bg-primary/10 text-primary border border-primary/20"
+                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                )}
+              >
+                <span
+                  className={cn(
+                    "size-5 rounded-full flex items-center justify-center text-3xs font-bold shrink-0",
+                    isCurrent
+                      ? "bg-background text-foreground"
+                      : isCompleted
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  {isCompleted ? <Check className="size-3" /> : st.stepNum}
+                </span>
+                <span>{st.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Workstation Dual-Column (Coluna 2 Contextual + Folha A4 Interativa) */}
       <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
         {/* Coluna 2 Contextual (Painel de Edição, Upload, Assinantes, Pastas & Rastreamento) */}
@@ -1316,8 +1354,8 @@ export function ContractWorkspaceStudio({
             mobilePane === "panel" ? "flex flex-1 lg:flex-initial" : "hidden lg:flex",
           )}
         >
-          {/* Seletor Contextual de 3 Etapas */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 border-b border-border bg-muted/30 p-1 gap-1 shrink-0">
+          {/* Seletor Contextual de 4 Etapas */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 border-b border-border bg-muted/30 p-1 gap-1 shrink-0">
             <button
               type="button"
               onClick={() => setLeftTab("documento")}
@@ -1341,6 +1379,18 @@ export function ContractWorkspaceStudio({
               )}
             >
               Assinantes ({signers.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setLeftTab("posicionamento")}
+              className={cn(
+                "h-11 min-h-11 sm:h-9 sm:min-h-0 rounded-md text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                leftTab === "posicionamento"
+                  ? "bg-card text-foreground shadow-2xs border border-border/70"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              Campos ({signatureFields.length})
             </button>
             <button
               type="button"
@@ -1926,43 +1976,135 @@ export function ContractWorkspaceStudio({
                   })}
                 </div>
 
-                {/* Paleta de Campos para Arrastar na Folha A4 */}
-                {!isLocked && (
-                  <div className="space-y-3 pt-3 border-t border-border/70">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-semibold text-foreground">
-                        Inserir campo para {signerVisualList[selectedSignerIdx]?.name || "Signatário"}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={handleAutoPosition}
-                        className="text-xs font-medium text-primary hover:underline rounded px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        Auto-posicionar
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      {FIELD_TAGS.map((tag) => {
-                        const Icon = tag.icon;
-                        return (
-                          <button
-                            key={tag.type}
-                            type="button"
-                            onClick={() => handleAddFieldToPage(tag.type)}
-                            className="flex items-center gap-2 px-3 h-11 min-h-11 sm:h-9 sm:min-h-0 rounded-lg border border-border bg-background hover:bg-muted text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          >
-                            <Icon className="size-3.5 text-primary shrink-0" />
-                            <span className="truncate">{tag.label}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
               </>
             )}
 
-            {/* TAB 3: COFRE, PASTAS, RASTREAMENTO & AUDITORIA */}
+            {/* TAB 3: POSICIONAMENTO DE CAMPOS & ASSINATURAS (Folha A4) */}
+            {leftTab === "posicionamento" && (
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                    Posicionamento na Folha A4
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Selecione o signatário e adicione os campos interativos sobre a folha. Arraste ou redimensione diretamente no canvas.
+                  </p>
+                </div>
+
+                {/* Seletor do Signatário Ativo */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-muted-foreground">Signatário Ativo</Label>
+                  <Select
+                    value={String(selectedSignerIdx)}
+                    onValueChange={(v) => setSelectedSignerIdx(Number(v))}
+                  >
+                    <SelectTrigger className="h-11 sm:h-9 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {signers.map((s, idx) => (
+                        <SelectItem key={idx} value={String(idx)}>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="size-2 rounded-full shrink-0 waesy-dyn-bg"
+                              style={{ "--dyn-bg": s.colorCode || TOKEN_HEX.blue600 } as React.CSSProperties}
+                            />
+                            <span>{s.name || `Signatário ${idx + 1}`}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Auto-posicionamento Inteligente */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleAutoPosition}
+                  className="w-full h-11 min-h-11 sm:h-9 sm:min-h-0 text-xs font-semibold gap-2 border-primary/30 text-primary hover:bg-primary/5"
+                >
+                  <Sparkles className="size-4" />
+                  <span>Auto-posicionar Assinaturas</span>
+                </Button>
+
+                {/* Campos Rápidos para Inserir */}
+                <div className="space-y-2 pt-2 border-t border-border/70">
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    Inserir Campo na Página {currentPage}
+                  </Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {FIELD_TAGS.map((tag) => {
+                      const Icon = tag.icon;
+                      return (
+                        <button
+                          key={tag.type}
+                          type="button"
+                          disabled={isLocked}
+                          onClick={() => handleAddFieldToPage(tag.type)}
+                          className="flex items-center gap-2 px-3 h-11 min-h-11 sm:h-9 sm:min-h-0 rounded-lg border border-border bg-background hover:bg-muted text-xs font-medium text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring text-left"
+                        >
+                          <Icon className="size-4 text-primary shrink-0" />
+                          <span className="truncate">{tag.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Lista de Campos na Página Atual */}
+                <div className="space-y-2 pt-2 border-t border-border/70">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-foreground">Campos na Página {currentPage}</span>
+                    <span className="text-muted-foreground font-mono">
+                      {signatureFields.filter((f) => f.page === currentPage).length} campo(s)
+                    </span>
+                  </div>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {signatureFields.filter((f) => f.page === currentPage).length === 0 ? (
+                      <p className="text-2xs text-muted-foreground p-3 rounded-lg bg-muted/20 text-center">
+                        Nenhum campo nesta página. Use os botões acima ou auto-posicione.
+                      </p>
+                    ) : (
+                      signatureFields
+                        .filter((f) => f.page === currentPage)
+                        .map((f) => {
+                          const s = signers[f.signerIndex] || signers[0];
+                          return (
+                            <div
+                              key={f.id}
+                              className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/30 border border-border/60 text-xs"
+                            >
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span
+                                  className="size-2 rounded-full shrink-0 waesy-dyn-bg"
+                                  style={{ "--dyn-bg": s?.colorCode || TOKEN_HEX.blue600 } as React.CSSProperties}
+                                />
+                                <span className="font-medium text-foreground truncate">
+                                  {f.label || f.type}
+                                </span>
+                                <span className="text-2xs text-muted-foreground truncate">
+                                  ({s?.name || `Signatário ${f.signerIndex + 1}`})
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                aria-label={`Remover campo ${f.label || f.type}`}
+                                onClick={() => setSignatureFields((prev) => prev.filter((item) => item.id !== f.id))}
+                                className="text-muted-foreground hover:text-destructive p-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              >
+                                <Trash2 className="size-4" />
+                              </button>
+                            </div>
+                          );
+                        })
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 4: COFRE, PASTAS, RASTREAMENTO & AUDITORIA */}
             {leftTab === "envio" && (
               <>
                 {/* Pasta Real do Cofre Multi-Tenant */}
@@ -2224,6 +2366,53 @@ export function ContractWorkspaceStudio({
               </>
             )}
           </div>
+
+          {/* Navegação Linear Entre as 4 Etapas */}
+          <div className="p-4 border-t border-border bg-card shrink-0 flex items-center justify-between gap-2">
+            {leftTab !== "documento" ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (leftTab === "assinantes") setLeftTab("documento");
+                  else if (leftTab === "posicionamento") setLeftTab("assinantes");
+                  else if (leftTab === "envio") setLeftTab("posicionamento");
+                }}
+                className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 text-xs font-semibold gap-1"
+              >
+                <ArrowLeft className="size-4" />
+                <span>Voltar</span>
+              </Button>
+            ) : <div />}
+
+            {leftTab !== "envio" ? (
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => {
+                  if (leftTab === "documento") setLeftTab("assinantes");
+                  else if (leftTab === "assinantes") setLeftTab("posicionamento");
+                  else if (leftTab === "posicionamento") setLeftTab("envio");
+                }}
+                className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-4 text-xs font-semibold gap-1 bg-primary text-primary-foreground"
+              >
+                <span>Avançar</span>
+                <ArrowRight className="size-4" />
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleSealAndSend}
+                disabled={isSealing || isLocked}
+                className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-4 text-xs font-semibold gap-2 bg-emerald-600 hover:bg-emerald-700 text-primary-foreground"
+              >
+                {isSealing ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <Send className="size-4" />}
+                <span>Selar e Enviar</span>
+              </Button>
+            )}
+          </div>
         </aside>
 
         {/* Área Principal (Canvas A4 Interativo + Prompt de Assinatura Imediata do Criador) */}
@@ -2251,7 +2440,7 @@ export function ContractWorkspaceStudio({
                 }}
                 className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-4 text-xs font-semibold gap-2"
               >
-                <PenTool className="size-3.5" />
+                <PenTool className="size-4" />
                 <span>
                   {userProfile?.savedSignature ? "Assinar com 1 Toque" : "Assinar Agora"}
                 </span>
@@ -2277,6 +2466,8 @@ export function ContractWorkspaceStudio({
               sourceFileMime={sourceFileMime}
               sourceFileName={sourceFileName}
               readOnly={isLocked}
+              isEditingInPage={leftTab === "documento" && sourceMode === "compose"}
+              onContentMarkdownChange={setContentMarkdown}
             />
           </div>
 

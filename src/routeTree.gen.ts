@@ -126,10 +126,13 @@ import { Route as AdminMasterVitrinesRouteImport } from './routes/admin-master.v
 import { Route as ApiOpenapiDotjsonRouteImport } from './routes/api.openapi[.]json'
 import { Route as ApiSecurityTelemetryRouteImport } from './routes/api.security-telemetry'
 import { Route as ApiWebmcpDotjsonRouteImport } from './routes/api.webmcp[.]json'
+import { Route as AppSlugRouteImport } from './routes/app.$slug'
 import { Route as AssinarTokenRouteImport } from './routes/assinar.$token'
 import { Route as AssinaturaTokenRouteImport } from './routes/assinatura.$token'
+import { Route as AuthPortalSelectorRouteImport } from './routes/auth.portal-selector'
 import { Route as CStoreSlugRouteImport } from './routes/c.$storeSlug'
 import { Route as GSlugRouteImport } from './routes/g.$slug'
+import { Route as OnboardingEmpresaRouteImport } from './routes/onboarding.empresa'
 import { Route as ReclamarNovoRouteImport } from './routes/reclamar.novo'
 import { Route as VerificarSerialRouteImport } from './routes/verificar.$serial'
 import { Route as ViajanteTokenRouteImport } from './routes/viajante.$token'
@@ -143,6 +146,7 @@ import { Route as WorkspaceCopilotRouteImport } from './routes/workspace.copilot
 import { Route as WorkspaceCrmRouteImport } from './routes/workspace.crm'
 import { Route as WorkspaceDesignSystemRouteImport } from './routes/workspace.design-system'
 import { Route as WorkspaceLicitacoesRouteImport } from './routes/workspace.licitacoes'
+import { Route as WorkspaceMatchTimeRouteImport } from './routes/workspace.match-time'
 import { Route as WorkspaceMiningRouteImport } from './routes/workspace.mining'
 import { Route as WorkspaceNotificacoesRouteImport } from './routes/workspace.notificacoes'
 import { Route as WorkspaceQualidadeRouteImport } from './routes/workspace.qualidade'
@@ -255,6 +259,7 @@ import { Route as ApiCronAiJobsRouteImport } from './routes/api.cron.ai-jobs'
 import { Route as ApiCronAiScheduledTasksRouteImport } from './routes/api.cron.ai-scheduled-tasks'
 import { Route as ApiCronAiTasksRouteImport } from './routes/api.cron.ai-tasks'
 import { Route as ApiCronMiningWorkerRouteImport } from './routes/api.cron.mining-worker'
+import { Route as ApiCronWhatsappSyncRouteImport } from './routes/api.cron.whatsapp-sync'
 import { Route as ApiFeedMetaDotcsvRouteImport } from './routes/api.feed.meta[.]csv'
 import { Route as ApiFeedXmlRouteImport } from './routes/api.feed.xml'
 import { Route as ApiInternalWhatsappOutboxWorkerRouteImport } from './routes/api.internal.whatsapp-outbox-worker'
@@ -266,6 +271,7 @@ import { Route as ApiWebhooksPaymentsRouteImport } from './routes/api.webhooks.p
 import { Route as ApiWebhooksPixRouteImport } from './routes/api.webhooks.pix'
 import { Route as ApiWebhooksShipmentRouteImport } from './routes/api.webhooks.shipment'
 import { Route as ApiWebhooksWhatsappRouteImport } from './routes/api.webhooks.whatsapp'
+import { Route as AppPreviewSlugRouteImport } from './routes/app.preview.$slug'
 import { Route as ClaimReivindicarEntityIdRouteImport } from './routes/claim.reivindicar.$entityId'
 import { Route as ClaimReputacaoEntityIdRouteImport } from './routes/claim.reputacao.$entityId'
 import { Route as MConsentLeadIdRouteImport } from './routes/m.consent.$leadId'
@@ -396,6 +402,7 @@ import { Route as WorkspacePedidosTempoPreparoRouteImport } from './routes/works
 import { Route as WorkspacePedidosTrocasRouteImport } from './routes/workspace.pedidos.trocas'
 import { Route as WorkspaceRelatoriosGastronomiaRouteImport } from './routes/workspace.relatorios.gastronomia'
 import { Route as WorkspaceRelatoriosMetasRouteImport } from './routes/workspace.relatorios.metas'
+import { Route as WorkspaceRhIndexRouteImport } from './routes/workspace.rh.index'
 import { Route as WorkspaceRhComplianceRouteImport } from './routes/workspace.rh.compliance'
 import { Route as WorkspaceRhFolhaRouteImport } from './routes/workspace.rh.folha'
 import { Route as WorkspaceRhPontoRouteImport } from './routes/workspace.rh.ponto'
@@ -412,6 +419,7 @@ import { Route as WorkspaceTurismoEmbarquesRouteImport } from './routes/workspac
 import { Route as WorkspaceTurismoFornecedoresRouteImport } from './routes/workspace.turismo.fornecedores'
 import { Route as WorkspaceTurismoHoteisRouteImport } from './routes/workspace.turismo.hoteis'
 import { Route as WorkspaceTurismoIncidentesRouteImport } from './routes/workspace.turismo.incidentes'
+import { Route as WorkspaceTurismoMinhasVendasRouteImport } from './routes/workspace.turismo.minhas-vendas'
 import { Route as WorkspaceTurismoOportunidadesRouteImport } from './routes/workspace.turismo.oportunidades'
 import { Route as WorkspaceTurismoRadarRouteImport } from './routes/workspace.turismo.radar'
 import { Route as WorkspaceTurismoReacomodacaoRouteImport } from './routes/workspace.turismo.reacomodacao'
@@ -1071,6 +1079,11 @@ const ApiWebmcpDotjsonRoute = ApiWebmcpDotjsonRouteImport.update({
   path: '/api/webmcp.json',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppSlugRoute = AppSlugRouteImport.update({
+  id: '/app/$slug',
+  path: '/app/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AssinarTokenRoute = AssinarTokenRouteImport.update({
   id: '/assinar/$token',
   path: '/assinar/$token',
@@ -1081,6 +1094,11 @@ const AssinaturaTokenRoute = AssinaturaTokenRouteImport.update({
   path: '/assinatura/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthPortalSelectorRoute = AuthPortalSelectorRouteImport.update({
+  id: '/auth/portal-selector',
+  path: '/auth/portal-selector',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CStoreSlugRoute = CStoreSlugRouteImport.update({
   id: '/c/$storeSlug',
   path: '/c/$storeSlug',
@@ -1089,6 +1107,11 @@ const CStoreSlugRoute = CStoreSlugRouteImport.update({
 const GSlugRoute = GSlugRouteImport.update({
   id: '/g/$slug',
   path: '/g/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingEmpresaRoute = OnboardingEmpresaRouteImport.update({
+  id: '/onboarding/empresa',
+  path: '/onboarding/empresa',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReclamarNovoRoute = ReclamarNovoRouteImport.update({
@@ -1154,6 +1177,11 @@ const WorkspaceDesignSystemRoute = WorkspaceDesignSystemRouteImport.update({
 const WorkspaceLicitacoesRoute = WorkspaceLicitacoesRouteImport.update({
   id: '/licitacoes',
   path: '/licitacoes',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
+const WorkspaceMatchTimeRoute = WorkspaceMatchTimeRouteImport.update({
+  id: '/match-time',
+  path: '/match-time',
   getParentRoute: () => WorkspaceRoute,
 } as any)
 const WorkspaceMiningRoute = WorkspaceMiningRouteImport.update({
@@ -1724,6 +1752,11 @@ const ApiCronMiningWorkerRoute = ApiCronMiningWorkerRouteImport.update({
   path: '/api/cron/mining-worker',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCronWhatsappSyncRoute = ApiCronWhatsappSyncRouteImport.update({
+  id: '/api/cron/whatsapp-sync',
+  path: '/api/cron/whatsapp-sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiFeedMetaDotcsvRoute = ApiFeedMetaDotcsvRouteImport.update({
   id: '/api/feed/meta.csv',
   path: '/api/feed/meta.csv',
@@ -1778,6 +1811,11 @@ const ApiWebhooksShipmentRoute = ApiWebhooksShipmentRouteImport.update({
 const ApiWebhooksWhatsappRoute = ApiWebhooksWhatsappRouteImport.update({
   id: '/api/webhooks/whatsapp',
   path: '/api/webhooks/whatsapp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppPreviewSlugRoute = AppPreviewSlugRouteImport.update({
+  id: '/app/preview/$slug',
+  path: '/app/preview/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClaimReivindicarEntityIdRoute =
@@ -2505,6 +2543,11 @@ const WorkspaceRelatoriosMetasRoute =
     path: '/metas',
     getParentRoute: () => WorkspaceRelatoriosRoute,
   } as any)
+const WorkspaceRhIndexRoute = WorkspaceRhIndexRouteImport.update({
+  id: '/rh/',
+  path: '/rh/',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
 const WorkspaceRhComplianceRoute = WorkspaceRhComplianceRouteImport.update({
   id: '/rh/compliance',
   path: '/rh/compliance',
@@ -2592,6 +2635,12 @@ const WorkspaceTurismoIncidentesRoute =
   WorkspaceTurismoIncidentesRouteImport.update({
     id: '/turismo/incidentes',
     path: '/turismo/incidentes',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
+const WorkspaceTurismoMinhasVendasRoute =
+  WorkspaceTurismoMinhasVendasRouteImport.update({
+    id: '/turismo/minhas-vendas',
+    path: '/turismo/minhas-vendas',
     getParentRoute: () => WorkspaceRoute,
   } as any)
 const WorkspaceTurismoOportunidadesRoute =
@@ -3114,10 +3163,13 @@ export interface FileRoutesByFullPath {
   '/api/openapi.json': typeof ApiOpenapiDotjsonRoute
   '/api/security-telemetry': typeof ApiSecurityTelemetryRoute
   '/api/webmcp.json': typeof ApiWebmcpDotjsonRoute
+  '/app/$slug': typeof AppSlugRoute
   '/assinar/$token': typeof AssinarTokenRoute
   '/assinatura/$token': typeof AssinaturaTokenRoute
+  '/auth/portal-selector': typeof AuthPortalSelectorRoute
   '/c/$storeSlug': typeof CStoreSlugRoute
   '/g/$slug': typeof GSlugRoute
+  '/onboarding/empresa': typeof OnboardingEmpresaRoute
   '/reclamar/novo': typeof ReclamarNovoRoute
   '/verificar/$serial': typeof VerificarSerialRoute
   '/viajante/$token': typeof ViajanteTokenRoute
@@ -3130,6 +3182,7 @@ export interface FileRoutesByFullPath {
   '/workspace/crm': typeof WorkspaceCrmRoute
   '/workspace/design-system': typeof WorkspaceDesignSystemRoute
   '/workspace/licitacoes': typeof WorkspaceLicitacoesRoute
+  '/workspace/match-time': typeof WorkspaceMatchTimeRoute
   '/workspace/mining': typeof WorkspaceMiningRoute
   '/workspace/notificacoes': typeof WorkspaceNotificacoesRoute
   '/workspace/qualidade': typeof WorkspaceQualidadeRoute
@@ -3230,6 +3283,7 @@ export interface FileRoutesByFullPath {
   '/api/cron/ai-scheduled-tasks': typeof ApiCronAiScheduledTasksRoute
   '/api/cron/ai-tasks': typeof ApiCronAiTasksRoute
   '/api/cron/mining-worker': typeof ApiCronMiningWorkerRoute
+  '/api/cron/whatsapp-sync': typeof ApiCronWhatsappSyncRoute
   '/api/feed/meta.csv': typeof ApiFeedMetaDotcsvRoute
   '/api/feed/xml': typeof ApiFeedXmlRoute
   '/api/internal/whatsapp-outbox-worker': typeof ApiInternalWhatsappOutboxWorkerRoute
@@ -3241,6 +3295,7 @@ export interface FileRoutesByFullPath {
   '/api/webhooks/pix': typeof ApiWebhooksPixRoute
   '/api/webhooks/shipment': typeof ApiWebhooksShipmentRoute
   '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRouteWithChildren
+  '/app/preview/$slug': typeof AppPreviewSlugRoute
   '/claim/reivindicar/$entityId': typeof ClaimReivindicarEntityIdRoute
   '/claim/reputacao/$entityId': typeof ClaimReputacaoEntityIdRoute
   '/m/consent/$leadId': typeof MConsentLeadIdRoute
@@ -3359,6 +3414,7 @@ export interface FileRoutesByFullPath {
   '/workspace/turismo/fornecedores': typeof WorkspaceTurismoFornecedoresRoute
   '/workspace/turismo/hoteis': typeof WorkspaceTurismoHoteisRoute
   '/workspace/turismo/incidentes': typeof WorkspaceTurismoIncidentesRoute
+  '/workspace/turismo/minhas-vendas': typeof WorkspaceTurismoMinhasVendasRoute
   '/workspace/turismo/oportunidades': typeof WorkspaceTurismoOportunidadesRoute
   '/workspace/turismo/radar': typeof WorkspaceTurismoRadarRoute
   '/workspace/turismo/reacomodacao': typeof WorkspaceTurismoReacomodacaoRoute
@@ -3404,6 +3460,7 @@ export interface FileRoutesByFullPath {
   '/workspace/pacotes/': typeof WorkspacePacotesIndexRoute
   '/workspace/pdv/': typeof WorkspacePdvIndexRoute
   '/workspace/pedidos/': typeof WorkspacePedidosIndexRoute
+  '/workspace/rh/': typeof WorkspaceRhIndexRoute
   '/workspace/squads/': typeof WorkspaceSquadsIndexRoute
   '/workspace/turismo/': typeof WorkspaceTurismoIndexRoute
   '/conta/classificados/novo': typeof StoreContaClassificadosNovoRoute
@@ -3580,10 +3637,13 @@ export interface FileRoutesByTo {
   '/api/openapi.json': typeof ApiOpenapiDotjsonRoute
   '/api/security-telemetry': typeof ApiSecurityTelemetryRoute
   '/api/webmcp.json': typeof ApiWebmcpDotjsonRoute
+  '/app/$slug': typeof AppSlugRoute
   '/assinar/$token': typeof AssinarTokenRoute
   '/assinatura/$token': typeof AssinaturaTokenRoute
+  '/auth/portal-selector': typeof AuthPortalSelectorRoute
   '/c/$storeSlug': typeof CStoreSlugRoute
   '/g/$slug': typeof GSlugRoute
+  '/onboarding/empresa': typeof OnboardingEmpresaRoute
   '/reclamar/novo': typeof ReclamarNovoRoute
   '/verificar/$serial': typeof VerificarSerialRoute
   '/viajante/$token': typeof ViajanteTokenRoute
@@ -3596,6 +3656,7 @@ export interface FileRoutesByTo {
   '/workspace/crm': typeof WorkspaceCrmRoute
   '/workspace/design-system': typeof WorkspaceDesignSystemRoute
   '/workspace/licitacoes': typeof WorkspaceLicitacoesRoute
+  '/workspace/match-time': typeof WorkspaceMatchTimeRoute
   '/workspace/mining': typeof WorkspaceMiningRoute
   '/workspace/notificacoes': typeof WorkspaceNotificacoesRoute
   '/workspace/qualidade': typeof WorkspaceQualidadeRoute
@@ -3696,6 +3757,7 @@ export interface FileRoutesByTo {
   '/api/cron/ai-scheduled-tasks': typeof ApiCronAiScheduledTasksRoute
   '/api/cron/ai-tasks': typeof ApiCronAiTasksRoute
   '/api/cron/mining-worker': typeof ApiCronMiningWorkerRoute
+  '/api/cron/whatsapp-sync': typeof ApiCronWhatsappSyncRoute
   '/api/feed/meta.csv': typeof ApiFeedMetaDotcsvRoute
   '/api/feed/xml': typeof ApiFeedXmlRoute
   '/api/internal/whatsapp-outbox-worker': typeof ApiInternalWhatsappOutboxWorkerRoute
@@ -3707,6 +3769,7 @@ export interface FileRoutesByTo {
   '/api/webhooks/pix': typeof ApiWebhooksPixRoute
   '/api/webhooks/shipment': typeof ApiWebhooksShipmentRoute
   '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRouteWithChildren
+  '/app/preview/$slug': typeof AppPreviewSlugRoute
   '/claim/reivindicar/$entityId': typeof ClaimReivindicarEntityIdRoute
   '/claim/reputacao/$entityId': typeof ClaimReputacaoEntityIdRoute
   '/m/consent/$leadId': typeof MConsentLeadIdRoute
@@ -3824,6 +3887,7 @@ export interface FileRoutesByTo {
   '/workspace/turismo/fornecedores': typeof WorkspaceTurismoFornecedoresRoute
   '/workspace/turismo/hoteis': typeof WorkspaceTurismoHoteisRoute
   '/workspace/turismo/incidentes': typeof WorkspaceTurismoIncidentesRoute
+  '/workspace/turismo/minhas-vendas': typeof WorkspaceTurismoMinhasVendasRoute
   '/workspace/turismo/oportunidades': typeof WorkspaceTurismoOportunidadesRoute
   '/workspace/turismo/radar': typeof WorkspaceTurismoRadarRoute
   '/workspace/turismo/reacomodacao': typeof WorkspaceTurismoReacomodacaoRoute
@@ -3869,6 +3933,7 @@ export interface FileRoutesByTo {
   '/workspace/pacotes': typeof WorkspacePacotesIndexRoute
   '/workspace/pdv': typeof WorkspacePdvIndexRoute
   '/workspace/pedidos': typeof WorkspacePedidosIndexRoute
+  '/workspace/rh': typeof WorkspaceRhIndexRoute
   '/workspace/squads': typeof WorkspaceSquadsIndexRoute
   '/workspace/turismo': typeof WorkspaceTurismoIndexRoute
   '/conta/classificados/novo': typeof StoreContaClassificadosNovoRoute
@@ -4054,10 +4119,13 @@ export interface FileRoutesById {
   '/api/openapi.json': typeof ApiOpenapiDotjsonRoute
   '/api/security-telemetry': typeof ApiSecurityTelemetryRoute
   '/api/webmcp.json': typeof ApiWebmcpDotjsonRoute
+  '/app/$slug': typeof AppSlugRoute
   '/assinar/$token': typeof AssinarTokenRoute
   '/assinatura/$token': typeof AssinaturaTokenRoute
+  '/auth/portal-selector': typeof AuthPortalSelectorRoute
   '/c/$storeSlug': typeof CStoreSlugRoute
   '/g/$slug': typeof GSlugRoute
+  '/onboarding/empresa': typeof OnboardingEmpresaRoute
   '/reclamar/novo': typeof ReclamarNovoRoute
   '/verificar/$serial': typeof VerificarSerialRoute
   '/viajante/$token': typeof ViajanteTokenRoute
@@ -4070,6 +4138,7 @@ export interface FileRoutesById {
   '/workspace/crm': typeof WorkspaceCrmRoute
   '/workspace/design-system': typeof WorkspaceDesignSystemRoute
   '/workspace/licitacoes': typeof WorkspaceLicitacoesRoute
+  '/workspace/match-time': typeof WorkspaceMatchTimeRoute
   '/workspace/mining': typeof WorkspaceMiningRoute
   '/workspace/notificacoes': typeof WorkspaceNotificacoesRoute
   '/workspace/qualidade': typeof WorkspaceQualidadeRoute
@@ -4171,6 +4240,7 @@ export interface FileRoutesById {
   '/api/cron/ai-scheduled-tasks': typeof ApiCronAiScheduledTasksRoute
   '/api/cron/ai-tasks': typeof ApiCronAiTasksRoute
   '/api/cron/mining-worker': typeof ApiCronMiningWorkerRoute
+  '/api/cron/whatsapp-sync': typeof ApiCronWhatsappSyncRoute
   '/api/feed/meta.csv': typeof ApiFeedMetaDotcsvRoute
   '/api/feed/xml': typeof ApiFeedXmlRoute
   '/api/internal/whatsapp-outbox-worker': typeof ApiInternalWhatsappOutboxWorkerRoute
@@ -4182,6 +4252,7 @@ export interface FileRoutesById {
   '/api/webhooks/pix': typeof ApiWebhooksPixRoute
   '/api/webhooks/shipment': typeof ApiWebhooksShipmentRoute
   '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRouteWithChildren
+  '/app/preview/$slug': typeof AppPreviewSlugRoute
   '/claim/reivindicar/$entityId': typeof ClaimReivindicarEntityIdRoute
   '/claim/reputacao/$entityId': typeof ClaimReputacaoEntityIdRoute
   '/m/consent/$leadId': typeof MConsentLeadIdRoute
@@ -4300,6 +4371,7 @@ export interface FileRoutesById {
   '/workspace/turismo/fornecedores': typeof WorkspaceTurismoFornecedoresRoute
   '/workspace/turismo/hoteis': typeof WorkspaceTurismoHoteisRoute
   '/workspace/turismo/incidentes': typeof WorkspaceTurismoIncidentesRoute
+  '/workspace/turismo/minhas-vendas': typeof WorkspaceTurismoMinhasVendasRoute
   '/workspace/turismo/oportunidades': typeof WorkspaceTurismoOportunidadesRoute
   '/workspace/turismo/radar': typeof WorkspaceTurismoRadarRoute
   '/workspace/turismo/reacomodacao': typeof WorkspaceTurismoReacomodacaoRoute
@@ -4345,6 +4417,7 @@ export interface FileRoutesById {
   '/workspace/pacotes/': typeof WorkspacePacotesIndexRoute
   '/workspace/pdv/': typeof WorkspacePdvIndexRoute
   '/workspace/pedidos/': typeof WorkspacePedidosIndexRoute
+  '/workspace/rh/': typeof WorkspaceRhIndexRoute
   '/workspace/squads/': typeof WorkspaceSquadsIndexRoute
   '/workspace/turismo/': typeof WorkspaceTurismoIndexRoute
   '/_store/conta/classificados/novo': typeof StoreContaClassificadosNovoRoute
@@ -4531,10 +4604,13 @@ export interface FileRouteTypes {
     | '/api/openapi.json'
     | '/api/security-telemetry'
     | '/api/webmcp.json'
+    | '/app/$slug'
     | '/assinar/$token'
     | '/assinatura/$token'
+    | '/auth/portal-selector'
     | '/c/$storeSlug'
     | '/g/$slug'
+    | '/onboarding/empresa'
     | '/reclamar/novo'
     | '/verificar/$serial'
     | '/viajante/$token'
@@ -4547,6 +4623,7 @@ export interface FileRouteTypes {
     | '/workspace/crm'
     | '/workspace/design-system'
     | '/workspace/licitacoes'
+    | '/workspace/match-time'
     | '/workspace/mining'
     | '/workspace/notificacoes'
     | '/workspace/qualidade'
@@ -4647,6 +4724,7 @@ export interface FileRouteTypes {
     | '/api/cron/ai-scheduled-tasks'
     | '/api/cron/ai-tasks'
     | '/api/cron/mining-worker'
+    | '/api/cron/whatsapp-sync'
     | '/api/feed/meta.csv'
     | '/api/feed/xml'
     | '/api/internal/whatsapp-outbox-worker'
@@ -4658,6 +4736,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/pix'
     | '/api/webhooks/shipment'
     | '/api/webhooks/whatsapp'
+    | '/app/preview/$slug'
     | '/claim/reivindicar/$entityId'
     | '/claim/reputacao/$entityId'
     | '/m/consent/$leadId'
@@ -4776,6 +4855,7 @@ export interface FileRouteTypes {
     | '/workspace/turismo/fornecedores'
     | '/workspace/turismo/hoteis'
     | '/workspace/turismo/incidentes'
+    | '/workspace/turismo/minhas-vendas'
     | '/workspace/turismo/oportunidades'
     | '/workspace/turismo/radar'
     | '/workspace/turismo/reacomodacao'
@@ -4821,6 +4901,7 @@ export interface FileRouteTypes {
     | '/workspace/pacotes/'
     | '/workspace/pdv/'
     | '/workspace/pedidos/'
+    | '/workspace/rh/'
     | '/workspace/squads/'
     | '/workspace/turismo/'
     | '/conta/classificados/novo'
@@ -4997,10 +5078,13 @@ export interface FileRouteTypes {
     | '/api/openapi.json'
     | '/api/security-telemetry'
     | '/api/webmcp.json'
+    | '/app/$slug'
     | '/assinar/$token'
     | '/assinatura/$token'
+    | '/auth/portal-selector'
     | '/c/$storeSlug'
     | '/g/$slug'
+    | '/onboarding/empresa'
     | '/reclamar/novo'
     | '/verificar/$serial'
     | '/viajante/$token'
@@ -5013,6 +5097,7 @@ export interface FileRouteTypes {
     | '/workspace/crm'
     | '/workspace/design-system'
     | '/workspace/licitacoes'
+    | '/workspace/match-time'
     | '/workspace/mining'
     | '/workspace/notificacoes'
     | '/workspace/qualidade'
@@ -5113,6 +5198,7 @@ export interface FileRouteTypes {
     | '/api/cron/ai-scheduled-tasks'
     | '/api/cron/ai-tasks'
     | '/api/cron/mining-worker'
+    | '/api/cron/whatsapp-sync'
     | '/api/feed/meta.csv'
     | '/api/feed/xml'
     | '/api/internal/whatsapp-outbox-worker'
@@ -5124,6 +5210,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/pix'
     | '/api/webhooks/shipment'
     | '/api/webhooks/whatsapp'
+    | '/app/preview/$slug'
     | '/claim/reivindicar/$entityId'
     | '/claim/reputacao/$entityId'
     | '/m/consent/$leadId'
@@ -5241,6 +5328,7 @@ export interface FileRouteTypes {
     | '/workspace/turismo/fornecedores'
     | '/workspace/turismo/hoteis'
     | '/workspace/turismo/incidentes'
+    | '/workspace/turismo/minhas-vendas'
     | '/workspace/turismo/oportunidades'
     | '/workspace/turismo/radar'
     | '/workspace/turismo/reacomodacao'
@@ -5286,6 +5374,7 @@ export interface FileRouteTypes {
     | '/workspace/pacotes'
     | '/workspace/pdv'
     | '/workspace/pedidos'
+    | '/workspace/rh'
     | '/workspace/squads'
     | '/workspace/turismo'
     | '/conta/classificados/novo'
@@ -5470,10 +5559,13 @@ export interface FileRouteTypes {
     | '/api/openapi.json'
     | '/api/security-telemetry'
     | '/api/webmcp.json'
+    | '/app/$slug'
     | '/assinar/$token'
     | '/assinatura/$token'
+    | '/auth/portal-selector'
     | '/c/$storeSlug'
     | '/g/$slug'
+    | '/onboarding/empresa'
     | '/reclamar/novo'
     | '/verificar/$serial'
     | '/viajante/$token'
@@ -5486,6 +5578,7 @@ export interface FileRouteTypes {
     | '/workspace/crm'
     | '/workspace/design-system'
     | '/workspace/licitacoes'
+    | '/workspace/match-time'
     | '/workspace/mining'
     | '/workspace/notificacoes'
     | '/workspace/qualidade'
@@ -5587,6 +5680,7 @@ export interface FileRouteTypes {
     | '/api/cron/ai-scheduled-tasks'
     | '/api/cron/ai-tasks'
     | '/api/cron/mining-worker'
+    | '/api/cron/whatsapp-sync'
     | '/api/feed/meta.csv'
     | '/api/feed/xml'
     | '/api/internal/whatsapp-outbox-worker'
@@ -5598,6 +5692,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/pix'
     | '/api/webhooks/shipment'
     | '/api/webhooks/whatsapp'
+    | '/app/preview/$slug'
     | '/claim/reivindicar/$entityId'
     | '/claim/reputacao/$entityId'
     | '/m/consent/$leadId'
@@ -5716,6 +5811,7 @@ export interface FileRouteTypes {
     | '/workspace/turismo/fornecedores'
     | '/workspace/turismo/hoteis'
     | '/workspace/turismo/incidentes'
+    | '/workspace/turismo/minhas-vendas'
     | '/workspace/turismo/oportunidades'
     | '/workspace/turismo/radar'
     | '/workspace/turismo/reacomodacao'
@@ -5761,6 +5857,7 @@ export interface FileRouteTypes {
     | '/workspace/pacotes/'
     | '/workspace/pdv/'
     | '/workspace/pedidos/'
+    | '/workspace/rh/'
     | '/workspace/squads/'
     | '/workspace/turismo/'
     | '/_store/conta/classificados/novo'
@@ -5848,10 +5945,13 @@ export interface RootRouteChildren {
   ApiOpenapiDotjsonRoute: typeof ApiOpenapiDotjsonRoute
   ApiSecurityTelemetryRoute: typeof ApiSecurityTelemetryRoute
   ApiWebmcpDotjsonRoute: typeof ApiWebmcpDotjsonRoute
+  AppSlugRoute: typeof AppSlugRoute
   AssinarTokenRoute: typeof AssinarTokenRoute
   AssinaturaTokenRoute: typeof AssinaturaTokenRoute
+  AuthPortalSelectorRoute: typeof AuthPortalSelectorRoute
   CStoreSlugRoute: typeof CStoreSlugRoute
   GSlugRoute: typeof GSlugRoute
+  OnboardingEmpresaRoute: typeof OnboardingEmpresaRoute
   ReclamarNovoRoute: typeof ReclamarNovoRoute
   VerificarSerialRoute: typeof VerificarSerialRoute
   ViajanteTokenRoute: typeof ViajanteTokenRoute
@@ -5864,6 +5964,7 @@ export interface RootRouteChildren {
   ApiCronAiScheduledTasksRoute: typeof ApiCronAiScheduledTasksRoute
   ApiCronAiTasksRoute: typeof ApiCronAiTasksRoute
   ApiCronMiningWorkerRoute: typeof ApiCronMiningWorkerRoute
+  ApiCronWhatsappSyncRoute: typeof ApiCronWhatsappSyncRoute
   ApiFeedMetaDotcsvRoute: typeof ApiFeedMetaDotcsvRoute
   ApiFeedXmlRoute: typeof ApiFeedXmlRoute
   ApiInternalWhatsappOutboxWorkerRoute: typeof ApiInternalWhatsappOutboxWorkerRoute
@@ -5875,6 +5976,7 @@ export interface RootRouteChildren {
   ApiWebhooksPixRoute: typeof ApiWebhooksPixRoute
   ApiWebhooksShipmentRoute: typeof ApiWebhooksShipmentRoute
   ApiWebhooksWhatsappRoute: typeof ApiWebhooksWhatsappRouteWithChildren
+  AppPreviewSlugRoute: typeof AppPreviewSlugRoute
   ClaimReivindicarEntityIdRoute: typeof ClaimReivindicarEntityIdRoute
   ClaimReputacaoEntityIdRoute: typeof ClaimReputacaoEntityIdRoute
   MConsentLeadIdRoute: typeof MConsentLeadIdRoute
@@ -6719,6 +6821,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWebmcpDotjsonRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/$slug': {
+      id: '/app/$slug'
+      path: '/app/$slug'
+      fullPath: '/app/$slug'
+      preLoaderRoute: typeof AppSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/assinar/$token': {
       id: '/assinar/$token'
       path: '/assinar/$token'
@@ -6733,6 +6842,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssinaturaTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/portal-selector': {
+      id: '/auth/portal-selector'
+      path: '/auth/portal-selector'
+      fullPath: '/auth/portal-selector'
+      preLoaderRoute: typeof AuthPortalSelectorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/c/$storeSlug': {
       id: '/c/$storeSlug'
       path: '/c/$storeSlug'
@@ -6745,6 +6861,13 @@ declare module '@tanstack/react-router' {
       path: '/g/$slug'
       fullPath: '/g/$slug'
       preLoaderRoute: typeof GSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/empresa': {
+      id: '/onboarding/empresa'
+      path: '/onboarding/empresa'
+      fullPath: '/onboarding/empresa'
+      preLoaderRoute: typeof OnboardingEmpresaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reclamar/novo': {
@@ -6836,6 +6959,13 @@ declare module '@tanstack/react-router' {
       path: '/licitacoes'
       fullPath: '/workspace/licitacoes'
       preLoaderRoute: typeof WorkspaceLicitacoesRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/match-time': {
+      id: '/workspace/match-time'
+      path: '/match-time'
+      fullPath: '/workspace/match-time'
+      preLoaderRoute: typeof WorkspaceMatchTimeRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/mining': {
@@ -7622,6 +7752,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCronMiningWorkerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cron/whatsapp-sync': {
+      id: '/api/cron/whatsapp-sync'
+      path: '/api/cron/whatsapp-sync'
+      fullPath: '/api/cron/whatsapp-sync'
+      preLoaderRoute: typeof ApiCronWhatsappSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/feed/meta.csv': {
       id: '/api/feed/meta.csv'
       path: '/api/feed/meta.csv'
@@ -7697,6 +7834,13 @@ declare module '@tanstack/react-router' {
       path: '/api/webhooks/whatsapp'
       fullPath: '/api/webhooks/whatsapp'
       preLoaderRoute: typeof ApiWebhooksWhatsappRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/preview/$slug': {
+      id: '/app/preview/$slug'
+      path: '/app/preview/$slug'
+      fullPath: '/app/preview/$slug'
+      preLoaderRoute: typeof AppPreviewSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/claim/reivindicar/$entityId': {
@@ -8609,6 +8753,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceRelatoriosMetasRouteImport
       parentRoute: typeof WorkspaceRelatoriosRoute
     }
+    '/workspace/rh/': {
+      id: '/workspace/rh/'
+      path: '/rh'
+      fullPath: '/workspace/rh/'
+      preLoaderRoute: typeof WorkspaceRhIndexRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/workspace/rh/compliance': {
       id: '/workspace/rh/compliance'
       path: '/rh/compliance'
@@ -8719,6 +8870,13 @@ declare module '@tanstack/react-router' {
       path: '/turismo/incidentes'
       fullPath: '/workspace/turismo/incidentes'
       preLoaderRoute: typeof WorkspaceTurismoIncidentesRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/turismo/minhas-vendas': {
+      id: '/workspace/turismo/minhas-vendas'
+      path: '/turismo/minhas-vendas'
+      fullPath: '/workspace/turismo/minhas-vendas'
+      preLoaderRoute: typeof WorkspaceTurismoMinhasVendasRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/turismo/oportunidades': {
@@ -9833,6 +9991,7 @@ interface WorkspaceRouteChildren {
   WorkspaceCrmRoute: typeof WorkspaceCrmRoute
   WorkspaceDesignSystemRoute: typeof WorkspaceDesignSystemRoute
   WorkspaceLicitacoesRoute: typeof WorkspaceLicitacoesRoute
+  WorkspaceMatchTimeRoute: typeof WorkspaceMatchTimeRoute
   WorkspaceMiningRoute: typeof WorkspaceMiningRoute
   WorkspaceNotificacoesRoute: typeof WorkspaceNotificacoesRoute
   WorkspaceQualidadeRoute: typeof WorkspaceQualidadeRoute
@@ -9954,6 +10113,7 @@ interface WorkspaceRouteChildren {
   WorkspaceTurismoFornecedoresRoute: typeof WorkspaceTurismoFornecedoresRoute
   WorkspaceTurismoHoteisRoute: typeof WorkspaceTurismoHoteisRoute
   WorkspaceTurismoIncidentesRoute: typeof WorkspaceTurismoIncidentesRoute
+  WorkspaceTurismoMinhasVendasRoute: typeof WorkspaceTurismoMinhasVendasRoute
   WorkspaceTurismoOportunidadesRoute: typeof WorkspaceTurismoOportunidadesRoute
   WorkspaceTurismoRadarRoute: typeof WorkspaceTurismoRadarRoute
   WorkspaceTurismoReacomodacaoRoute: typeof WorkspaceTurismoReacomodacaoRoute
@@ -9985,6 +10145,7 @@ interface WorkspaceRouteChildren {
   WorkspacePacotesIndexRoute: typeof WorkspacePacotesIndexRoute
   WorkspacePdvIndexRoute: typeof WorkspacePdvIndexRoute
   WorkspacePedidosIndexRoute: typeof WorkspacePedidosIndexRoute
+  WorkspaceRhIndexRoute: typeof WorkspaceRhIndexRoute
   WorkspaceTurismoIndexRoute: typeof WorkspaceTurismoIndexRoute
   WorkspaceBuilderDocumentIdEditorRoute: typeof WorkspaceBuilderDocumentIdEditorRoute
   WorkspaceCatalogoCategoriasIdRoute: typeof WorkspaceCatalogoCategoriasIdRoute
@@ -10026,6 +10187,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceCrmRoute: WorkspaceCrmRoute,
   WorkspaceDesignSystemRoute: WorkspaceDesignSystemRoute,
   WorkspaceLicitacoesRoute: WorkspaceLicitacoesRoute,
+  WorkspaceMatchTimeRoute: WorkspaceMatchTimeRoute,
   WorkspaceMiningRoute: WorkspaceMiningRoute,
   WorkspaceNotificacoesRoute: WorkspaceNotificacoesRoute,
   WorkspaceQualidadeRoute: WorkspaceQualidadeRoute,
@@ -10152,6 +10314,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceTurismoFornecedoresRoute: WorkspaceTurismoFornecedoresRoute,
   WorkspaceTurismoHoteisRoute: WorkspaceTurismoHoteisRoute,
   WorkspaceTurismoIncidentesRoute: WorkspaceTurismoIncidentesRoute,
+  WorkspaceTurismoMinhasVendasRoute: WorkspaceTurismoMinhasVendasRoute,
   WorkspaceTurismoOportunidadesRoute: WorkspaceTurismoOportunidadesRoute,
   WorkspaceTurismoRadarRoute: WorkspaceTurismoRadarRoute,
   WorkspaceTurismoReacomodacaoRoute: WorkspaceTurismoReacomodacaoRoute,
@@ -10183,6 +10346,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspacePacotesIndexRoute: WorkspacePacotesIndexRoute,
   WorkspacePdvIndexRoute: WorkspacePdvIndexRoute,
   WorkspacePedidosIndexRoute: WorkspacePedidosIndexRoute,
+  WorkspaceRhIndexRoute: WorkspaceRhIndexRoute,
   WorkspaceTurismoIndexRoute: WorkspaceTurismoIndexRoute,
   WorkspaceBuilderDocumentIdEditorRoute: WorkspaceBuilderDocumentIdEditorRoute,
   WorkspaceCatalogoCategoriasIdRoute: WorkspaceCatalogoCategoriasIdRoute,
@@ -10255,10 +10419,13 @@ const rootRouteChildren: RootRouteChildren = {
   ApiOpenapiDotjsonRoute: ApiOpenapiDotjsonRoute,
   ApiSecurityTelemetryRoute: ApiSecurityTelemetryRoute,
   ApiWebmcpDotjsonRoute: ApiWebmcpDotjsonRoute,
+  AppSlugRoute: AppSlugRoute,
   AssinarTokenRoute: AssinarTokenRoute,
   AssinaturaTokenRoute: AssinaturaTokenRoute,
+  AuthPortalSelectorRoute: AuthPortalSelectorRoute,
   CStoreSlugRoute: CStoreSlugRoute,
   GSlugRoute: GSlugRoute,
+  OnboardingEmpresaRoute: OnboardingEmpresaRoute,
   ReclamarNovoRoute: ReclamarNovoRoute,
   VerificarSerialRoute: VerificarSerialRoute,
   ViajanteTokenRoute: ViajanteTokenRoute,
@@ -10271,6 +10438,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCronAiScheduledTasksRoute: ApiCronAiScheduledTasksRoute,
   ApiCronAiTasksRoute: ApiCronAiTasksRoute,
   ApiCronMiningWorkerRoute: ApiCronMiningWorkerRoute,
+  ApiCronWhatsappSyncRoute: ApiCronWhatsappSyncRoute,
   ApiFeedMetaDotcsvRoute: ApiFeedMetaDotcsvRoute,
   ApiFeedXmlRoute: ApiFeedXmlRoute,
   ApiInternalWhatsappOutboxWorkerRoute: ApiInternalWhatsappOutboxWorkerRoute,
@@ -10282,6 +10450,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiWebhooksPixRoute: ApiWebhooksPixRoute,
   ApiWebhooksShipmentRoute: ApiWebhooksShipmentRoute,
   ApiWebhooksWhatsappRoute: ApiWebhooksWhatsappRouteWithChildren,
+  AppPreviewSlugRoute: AppPreviewSlugRoute,
   ClaimReivindicarEntityIdRoute: ClaimReivindicarEntityIdRoute,
   ClaimReputacaoEntityIdRoute: ClaimReputacaoEntityIdRoute,
   MConsentLeadIdRoute: MConsentLeadIdRoute,

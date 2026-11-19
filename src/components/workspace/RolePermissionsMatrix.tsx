@@ -6,15 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getRolePermissionsMatrix, saveRolePermissionsMatrix } from "@/services/services-erp.functions";
+import { getAvailableRolesForNiche } from "@/lib/rbac-permissions";
 
-export const AVAILABLE_ROLES = [
-  { key: "manager", name: "Gerente / Administrador" },
-  { key: "seller", name: "Vendedor / Comercial" },
-  { key: "cashier", name: "Operador de Caixa / Frente de Caixa" },
-  { key: "operator", name: "Profissional / Atendente" },
-  { key: "support", name: "Suporte / SAC" },
-  { key: "stockkeeper", name: "Estoquista" },
-];
+export const AVAILABLE_ROLES = getAvailableRolesForNiche();
 
 export interface PermissionModuleItem {
   key: string;
@@ -146,15 +140,108 @@ export const MODULE_PERMISSIONS_CATALOG: PermissionModuleItem[] = [
   },
 ];
 
+export const TOURISM_MODULE_PERMISSIONS_CATALOG: PermissionModuleItem[] = [
+  {
+    key: "propostas",
+    label: "Vendas & Propostas Turísticas",
+    description: "Criação de cotações, propostas de viagem e acompanhamento do funil individual.",
+    actions: [
+      { key: "access", label: "Acessar" },
+      { key: "create", label: "Criar" },
+      { key: "edit", label: "Editar Próprias" },
+      { key: "view_all", label: "Ver Toda a Agência", isSpecial: true },
+    ],
+  },
+  {
+    key: "comissoes",
+    label: "Comissões, Faixas & Recibos Por Fora",
+    description: "Alteração de faixas, tabela de Over, liberação e pagamento externo à folha CLT.",
+    actions: [
+      { key: "access", label: "Ver Minhas Vendas" },
+      { key: "view_all", label: "Ver Toda a Agência", isSpecial: true },
+      { key: "edit", label: "Editar Regras e Faixas", isSpecial: true },
+      { key: "pay", label: "Emitir Recibo Por Fora", isSpecial: true },
+    ],
+  },
+  {
+    key: "metas",
+    label: "Metas & Projeções Estatísticas",
+    description: "Visualização de metas pessoais e definição gerencial de metas globais.",
+    actions: [
+      { key: "access", label: "Ver Minha Meta" },
+      { key: "view_all", label: "Ver Metas da Agência", isSpecial: true },
+      { key: "edit", label: "Definir / Editar Metas", isSpecial: true },
+    ],
+  },
+  {
+    key: "operadoras",
+    label: "Operadoras, Custos & Cancelamento",
+    description: "Cadastro de operadoras, % de retenção de Over e políticas de multa.",
+    actions: [
+      { key: "access", label: "Consultar" },
+      { key: "edit", label: "Editar Operadoras e Regras", isSpecial: true },
+      { key: "delete", label: "Excluir", isSpecial: true },
+    ],
+  },
+  {
+    key: "viagens",
+    label: "Viagens, Embarques & Vouchers",
+    description: "Operação pós-venda, passageiros, localizadores, check-in e embarques.",
+    actions: [
+      { key: "access", label: "Acessar" },
+      { key: "edit", label: "Editar Operacional" },
+      { key: "edit_financials", label: "Alterar Custo Líq. e Margem", isSpecial: true },
+    ],
+  },
+  {
+    key: "clientes",
+    label: "Clientes & Passageiros (CRM)",
+    description: "Gestão da carteira de viajantes e documentos pessoais.",
+    actions: [
+      { key: "access", label: "Acessar" },
+      { key: "create", label: "Criar" },
+      { key: "edit", label: "Editar" },
+      { key: "view_phones", label: "Ver Contatos Sem Máscara", isSpecial: true },
+    ],
+  },
+  {
+    key: "financeiro",
+    label: "Financeiro & Cobrança Operadoras",
+    description: "Borderôs de operadoras, Contas a Pagar/Receber, NFS-e e conciliação bancária.",
+    actions: [
+      { key: "access", label: "Acessar" },
+      { key: "blind_closing_audit", label: "Conciliar Recebimentos", isSpecial: true },
+    ],
+  },
+  {
+    key: "folha_rh",
+    label: "Recursos Humanos & Folha CLT",
+    description: "Folha salarial CLT, ponto eletrônico, prontuários e recibos separados.",
+    actions: [
+      { key: "access", label: "Acessar" },
+      { key: "edit_salaries", label: "Editar Salários CLT", isSpecial: true },
+      { key: "close_payroll", label: "Fechar Folha CLT", isSpecial: true },
+    ],
+  },
+];
+
 export interface RolePermissionsMatrixProps {
   roleKey?: string;
   roleName?: string;
   storeId?: string;
+  storeNiche?: string;
 }
 
-export function RolePermissionsMatrix({ roleKey: initialRoleKey, roleName: initialRoleName }: RolePermissionsMatrixProps) {
+export function RolePermissionsMatrix({
+  roleKey: initialRoleKey,
+  roleName: initialRoleName,
+  storeNiche,
+}: RolePermissionsMatrixProps) {
+  const rolesForNiche = getAvailableRolesForNiche(storeNiche);
+  const modulesCatalog =
+    storeNiche === "tourism" ? TOURISM_MODULE_PERMISSIONS_CATALOG : MODULE_PERMISSIONS_CATALOG;
   const [selectedRoleKey, setSelectedRoleKey] = useState<string>(initialRoleKey || "manager");
-  const currentRole = AVAILABLE_ROLES.find((r) => r.key === selectedRoleKey) || { key: selectedRoleKey, name: initialRoleName || selectedRoleKey };
+  const currentRole = rolesForNiche.find((r) => r.key === selectedRoleKey) || { key: selectedRoleKey, name: initialRoleName || selectedRoleKey };
   const roleKey = currentRole.key;
   const roleName = currentRole.name;
   const [permissions, setPermissions] = useState<Record<string, Record<string, boolean>>>({});
@@ -259,7 +346,7 @@ export function RolePermissionsMatrix({ roleKey: initialRoleKey, roleName: initi
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {AVAILABLE_ROLES.map((r) => (
+                {rolesForNiche.map((r) => (
                   <SelectItem key={r.key} value={r.key} className="text-xs">
                     {r.name}
                   </SelectItem>
@@ -289,7 +376,7 @@ export function RolePermissionsMatrix({ roleKey: initialRoleKey, roleName: initi
       </div>
 
       <div className="space-y-4">
-        {MODULE_PERMISSIONS_CATALOG.map((mod) => {
+        {modulesCatalog.map((mod) => {
           const modState = permissions[mod.key] || {};
           return (
             <div

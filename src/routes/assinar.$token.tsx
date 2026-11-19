@@ -1,7 +1,28 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { FileSignature, ShieldCheck, CheckCircle2, Lock, Hash, AlertCircle, Loader2, ArrowRight, FileText, Calendar, Camera, RefreshCcw, ExternalLink, Download } from "lucide-react";
+import {
+  FileSignature,
+  ShieldCheck,
+  CheckCircle2,
+  Lock,
+  Hash,
+  AlertCircle,
+  Loader2,
+  ArrowRight,
+  FileText,
+  Calendar,
+  Camera,
+  RefreshCcw,
+  ExternalLink,
+  Download,
+  PenTool,
+  Type,
+  Upload,
+  Check,
+  Trash2,
+  KeyRound,
+} from "lucide-react";
 import { toast } from "sonner";
 import { ContractMarkdownRenderer } from "@/components/contracts/contract-markdown-renderer";
 
@@ -52,6 +73,86 @@ function SignContractPage() {
   const [signatureImage, setSignatureImage] = useState("");
   const [saveSignatureToProfile, setSaveSignatureToProfile] = useState(false);
   const [isSignedLocal, setIsSignedLocal] = useState(envelope?.status === "signed");
+
+  // Modalidade de Assinatura Multimodal
+  type SignatureMethod = "draw" | "type" | "upload" | "saved" | "govbr";
+  const [signatureMethod, setSignatureMethod] = useState<SignatureMethod>("draw");
+  const [typedName, setTypedName] = useState(envelope?.signer_name || "");
+  const [cursiveStyle, setCursiveStyle] = useState(0);
+
+  // OTP 6 Dígitos para Autenticação Avançada
+  const [otpCode, setOtpCode] = useState("");
+  const [otpCooldown, setOtpCooldown] = useState(0);
+
+  useEffect(() => {
+    if (otpCooldown <= 0) return;
+    const timer = setTimeout(() => setOtpCooldown((prev) => prev - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [otpCooldown]);
+
+  const handleResendOtp = useCallback(() => {
+    setOtpCooldown(60);
+    toast.success(`Código de verificação reenviado para ${envelope?.signer_email || envelope?.signer_phone || "seu canal de contato"}.`);
+  }, [envelope]);
+
+  const generateCursiveSignatureImage = useCallback((name: string, styleIdx = 0) => {
+    if (typeof document === "undefined") return "";
+    const canvas = document.createElement("canvas");
+    canvas.width = 640;
+    canvas.height = 200;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return "";
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const fontFamilies = [
+      'italic 44px "Brush Script MT", "Segoe Script", "Great Vibes", cursive',
+      'italic 40px "Caveat", "Dancing Script", "Lucida Handwriting", cursive',
+      'italic 38px "Parisienne", "Allura", "Alex Brush", cursive',
+    ];
+    ctx.font = fontFamilies[styleIdx % fontFamilies.length] || fontFamilies[0];
+    ctx.fillStyle = "black";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(name.trim() || "Assinatura", canvas.width / 2, canvas.height / 2 - 10);
+
+    ctx.beginPath();
+    ctx.strokeStyle = "navy";
+    ctx.lineWidth = 2;
+    ctx.moveTo(canvas.width / 4, canvas.height / 2 + 30);
+    ctx.bezierCurveTo(
+      canvas.width / 2,
+      canvas.height / 2 + 40,
+      (canvas.width * 5) / 8,
+      canvas.height / 2 + 15,
+      (canvas.width * 3) / 4,
+      canvas.height / 2 + 28,
+    );
+    ctx.stroke();
+
+    return canvas.toDataURL("image/png");
+  }, []);
+
+  const handleSignatureFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Por favor, selecione um arquivo de imagem válido (PNG, JPG).");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("O arquivo deve ter no máximo 2MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const dataUrl = evt.target?.result as string;
+      if (dataUrl) {
+        setSignatureImage(dataUrl);
+        toast.success("Imagem da assinatura carregada com sucesso.");
+      }
+    };
+    reader.readAsDataURL(file);
+  }, []);
 
   useEffect(() => {
     if (search?.error) {
@@ -180,6 +281,16 @@ function SignContractPage() {
       return;
     }
 
+    if (envelope?.auth_level === "advanced" && otpCode.trim().length < 6) {
+      toast.error("Por favor, informe o código de validação OTP de 6 dígitos.");
+      return;
+    }
+
+    if (!signatureImage && signatureMethod !== "govbr") {
+      toast.error("Por favor, registre a sua assinatura (desenhar, digitar ou subir imagem) antes de concluir.");
+      return;
+    }
+
     const screenRes = typeof window !== "undefined" ? `${window.innerWidth}x${window.innerHeight}` : undefined;
     const tz = typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : undefined;
 
@@ -274,7 +385,7 @@ function SignContractPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <ExternalLink className="size-3.5" />
+                  <ExternalLink className="size-4" />
                   <span>Abrir Original</span>
                 </a>
               </Button>
@@ -354,14 +465,14 @@ function SignContractPage() {
                   }
                   className="rounded-lg text-xs font-semibold gap-2 h-11 min-h-11 sm:h-9 sm:min-h-0 px-4"
                 >
-                  <Download className="size-3.5" />
+                  <Download className="size-4" />
                   <span>Baixar Comprovante PDF</span>
                 </Button>
                 {contract?.verification_code && (
                   <Button asChild size="sm" className="rounded-lg text-xs font-bold gap-2 h-11 min-h-11 sm:h-9 sm:min-h-0 px-5">
                     <Link to="/verify/document/$code" params={{ code: contract.verification_code }}>
                       <span>Ver Certificado Público de Autenticidade</span>
-                      <ArrowRight className="size-3.5" />
+                      <ArrowRight className="size-4" />
                     </Link>
                   </Button>
                 )}
@@ -402,7 +513,7 @@ function SignContractPage() {
                 </h3>
                 {selfieUploaded && (
                   <span className="ml-auto inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                    <CheckCircle2 className="size-3.5" /> Capturada
+                    <CheckCircle2 className="size-4" /> Capturada
                   </span>
                 )}
               </div>
@@ -443,7 +554,7 @@ function SignContractPage() {
                       onClick={retakeSelfie}
                       className="h-8 px-3 rounded-lg text-xs font-semibold bg-muted text-foreground hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
                     >
-                      <RefreshCcw className="size-3 inline mr-1" />
+                      <RefreshCcw className="size-4 inline mr-1" />
                       Refazer
                     </button>
                   </div>
@@ -464,89 +575,330 @@ function SignContractPage() {
 
             <canvas ref={canvasRef} className="hidden" />
 
-            {/* Pad de Assinatura Tátil & Consentimento Legal */}
-            <div className="border border-primary/30 bg-card rounded-lg p-5 sm:p-6 space-y-5 ">
-              {/* Card de Destaque: Assinatura Oficial GOV.BR (Exibido estritamente quando a API estiver configurada e ativa no Hub) */}
-              {govBrConfig?.isGovBrEnabled && govBrConfig?.authUrl && (
-                <>
-                  <div className="p-4 sm:p-5 rounded-lg border border-blue-500/30 bg-blue-500/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm text-foreground flex items-center gap-2">
-                          <ShieldCheck className="size-4 text-blue-600 dark:text-blue-400" />
-                          Assinatura com Conta GOV.BR
-                        </span>
-                        <Badge variant="outline" className="text-2xs font-semibold border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/10">
-                          Nível Prata / Ouro
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        Autenticação eletrônica avançada com presunção legal e fé pública expressa pela Lei Federal nº 14.063/2020.
-                      </p>
+            {/* Pad de Assinatura Multimodal & Consentimento Legal */}
+            <div className="border border-primary/30 bg-card rounded-lg p-5 sm:p-6 space-y-5">
+              {/* Autenticação OTP de 6 Dígitos (Exibida para envelopes com nível avançado) */}
+              {envelope.auth_level === "advanced" && (
+                <div className="p-4 rounded-lg border border-border/80 bg-muted/10 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <KeyRound className="size-4 text-primary" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-foreground">
+                        Autenticação OTP de 6 Dígitos
+                      </span>
                     </div>
-
+                    <Badge variant="outline" className="text-2xs font-mono">
+                      Obrigatório
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Um código de validação foi despachado para{" "}
+                    <strong className="text-foreground">
+                      {envelope.signer_phone || envelope.signer_email || "seu canal de contato"}
+                    </strong>
+                    . Digite o código de 6 dígitos para validar a autenticidade da sua assinatura.
+                  </p>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      placeholder="000000"
+                      className="w-36 h-11 px-3 text-center text-lg font-mono tracking-widest rounded-lg border border-border bg-background text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    />
                     <Button
                       type="button"
-                      onClick={() => {
-                        if (!consent) {
-                          toast.error("Marque o consentimento abaixo antes de prosseguir com o GOV.BR.");
-                          return;
-                        }
-                        window.location.href = govBrConfig.authUrl;
-                      }}
-                      disabled={!consent}
-                      className="w-full sm:w-auto rounded-lg text-xs font-bold h-11 px-6 bg-primary hover:bg-primary/90 text-primary-foreground shrink-0 min-h-11 cursor-pointer shadow-xs gap-2"
+                      variant="outline"
+                      size="sm"
+                      disabled={otpCooldown > 0}
+                      onClick={handleResendOtp}
+                      className="h-11 min-h-11 sm:h-9 sm:min-h-0 rounded-lg text-xs"
                     >
-                      <ExternalLink className="size-4" />
-                      <span>Assinar com GOV.BR</span>
+                      <RefreshCcw className="size-4 mr-1" />
+                      {otpCooldown > 0 ? `Reenviar em ${otpCooldown}s` : "Reenviar Código"}
                     </Button>
                   </div>
-
-                  <div className="relative flex items-center justify-center my-2">
-                    <div className="border-t border-border/70 w-full" />
-                    <span className="bg-card px-3 text-xs text-muted-foreground uppercase tracking-wider font-semibold">
-                      ou desenhe sua assinatura no celular
-                    </span>
-                  </div>
-                </>
+                </div>
               )}
 
-              {/* 1-Click Signature Card: Assinatura Salva do Perfil */}
-              {savedSig?.savedSignature && (
+              {/* Seletor de Modalidades de Assinatura */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Forma de Assinatura
+                  </span>
+                  {signatureImage && (
+                    <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600 dark:text-emerald-400">
+                      <CheckCircle2 className="size-3" /> Assinatura Ativa
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={signatureMethod === "draw" ? "default" : "outline"}
+                    onClick={() => setSignatureMethod("draw")}
+                    className="h-11 min-h-11 sm:h-9 sm:min-h-0 rounded-lg text-xs font-semibold gap-2"
+                  >
+                    <PenTool className="size-4" />
+                    <span>Desenhar</span>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={signatureMethod === "type" ? "default" : "outline"}
+                    onClick={() => {
+                      setSignatureMethod("type");
+                      if (!signatureImage && (typedName || envelope.signer_name)) {
+                        const img = generateCursiveSignatureImage(typedName || envelope.signer_name, cursiveStyle);
+                        if (img) setSignatureImage(img);
+                      }
+                    }}
+                    className="h-11 min-h-11 sm:h-9 sm:min-h-0 rounded-lg text-xs font-semibold gap-2"
+                  >
+                    <Type className="size-4" />
+                    <span>Digitar Nome</span>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={signatureMethod === "upload" ? "default" : "outline"}
+                    onClick={() => setSignatureMethod("upload")}
+                    className="h-11 min-h-11 sm:h-9 sm:min-h-0 rounded-lg text-xs font-semibold gap-2"
+                  >
+                    <Upload className="size-4" />
+                    <span>Subir Imagem</span>
+                  </Button>
+
+                  {savedSig?.savedSignature && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={signatureMethod === "saved" ? "default" : "outline"}
+                      onClick={() => {
+                        setSignatureMethod("saved");
+                        setSignatureImage(savedSig.savedSignature);
+                      }}
+                      className="h-11 min-h-11 sm:h-9 sm:min-h-0 rounded-lg text-xs font-semibold gap-2"
+                    >
+                      <FileSignature className="size-4" />
+                      <span>Assinatura Salva</span>
+                    </Button>
+                  )}
+
+                  {govBrConfig?.isGovBrEnabled && govBrConfig?.authUrl && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={signatureMethod === "govbr" ? "default" : "outline"}
+                      onClick={() => setSignatureMethod("govbr")}
+                      className="h-11 min-h-11 sm:h-9 sm:min-h-0 rounded-lg text-xs font-semibold gap-2"
+                    >
+                      <ShieldCheck className="size-4" />
+                      <span>GOV.BR</span>
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Área Específica da Modalidade Ativa */}
+              {signatureMethod === "draw" && (
+                <div className="space-y-2">
+                  <SignatureCanvasPad onSave={setSignatureImage} />
+                </div>
+              )}
+
+              {signatureMethod === "type" && (
+                <div className="space-y-4 p-4 rounded-lg border border-border/80 bg-muted/10">
+                  <div className="space-y-2">
+                    <label htmlFor="typed-signer-name" className="text-xs font-semibold text-foreground">
+                      Nome para assinatura caligráfica
+                    </label>
+                    <input
+                      id="typed-signer-name"
+                      type="text"
+                      value={typedName}
+                      onChange={(e) => {
+                        setTypedName(e.target.value);
+                        const img = generateCursiveSignatureImage(e.target.value, cursiveStyle);
+                        if (img) setSignatureImage(img);
+                      }}
+                      placeholder="Digite seu nome completo"
+                      className="w-full h-11 px-3 rounded-lg border border-border bg-background text-foreground text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs text-muted-foreground">Estilo da letra:</span>
+                    {[0, 1, 2].map((idx) => (
+                      <Button
+                        key={idx}
+                        type="button"
+                        size="sm"
+                        variant={cursiveStyle === idx ? "default" : "outline"}
+                        onClick={() => {
+                          setCursiveStyle(idx);
+                          const img = generateCursiveSignatureImage(typedName || envelope.signer_name, idx);
+                          if (img) {
+                            setSignatureImage(img);
+                            toast.success(`Estilo caligráfico ${idx + 1} selecionado.`);
+                          }
+                        }}
+                        className="h-11 min-h-11 sm:h-8 sm:min-h-0 text-xs rounded-lg"
+                      >
+                        Estilo {idx + 1}
+                      </Button>
+                    ))}
+                  </div>
+
+                  <div className="p-4 rounded-lg border border-border bg-card flex flex-col items-center justify-center min-h-24">
+                    {signatureImage ? (
+                      <img src={signatureImage} alt="Assinatura Cursiva Gerada" className="max-h-20 object-contain" />
+                    ) : (
+                      <span className="text-xs text-muted-foreground italic font-serif text-base">
+                        {typedName || envelope.signer_name || "Prévia da assinatura"}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {signatureMethod === "upload" && (
+                <div className="space-y-4">
+                  <div className="p-6 rounded-lg border-2 border-dashed border-border/80 bg-muted/10 flex flex-col items-center justify-center text-center space-y-3">
+                    <Upload className="size-8 text-muted-foreground" />
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-foreground">
+                        Selecione uma imagem da sua assinatura manuscrita
+                      </p>
+                      <p className="text-2xs text-muted-foreground">
+                        Formatos aceitos: PNG, JPG ou JPEG (máximo 2MB)
+                      </p>
+                    </div>
+                    <label className="cursor-pointer inline-flex items-center gap-2 h-11 min-h-11 sm:h-9 sm:min-h-0 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors focus-within:ring-2 focus-within:ring-ring">
+                      <Upload className="size-4" />
+                      <span>Escolher Arquivo</span>
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/jpg"
+                        onChange={handleSignatureFileUpload}
+                        className="sr-only"
+                      />
+                    </label>
+                  </div>
+
+                  {signatureImage && (
+                    <div className="p-4 rounded-lg border border-border bg-card flex items-center justify-between gap-3">
+                      <img src={signatureImage} alt="Assinatura enviada" className="max-h-16 object-contain" />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setSignatureImage("");
+                          toast.info("Assinatura removida.");
+                        }}
+                        className="h-11 min-h-11 sm:h-8 sm:min-h-0 text-xs text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="size-4 mr-1" />
+                        Remover
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {signatureMethod === "saved" && savedSig?.savedSignature && (
                 <div className="p-4 rounded-lg border border-primary/30 bg-primary/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 font-semibold text-xs text-foreground">
-                      <FileSignature className="size-3.5 text-primary" />
+                      <FileSignature className="size-4 text-primary" />
                       Assinatura Salva no seu Perfil
                     </div>
                     <p className="text-2xs text-muted-foreground">
-                      Você possui uma assinatura digital registrada. Utilize-a com 1 toque sem desenhar novamente.
+                      Você possui uma assinatura digital registrada na plataforma.
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
                     <img
                       src={savedSig.savedSignature}
                       alt="Assinatura Salva"
-                      className="h-9 max-w-30 object-contain bg-background rounded-lg border border-border p-1"
+                      className="h-9 max-w-32 object-contain bg-background rounded-lg border border-border p-1"
                     />
                     <Button
                       type="button"
                       size="sm"
                       variant="outline"
-                      className="rounded-lg text-xs font-semibold h-9 px-3 cursor-pointer min-h-11 sm:min-h-0"
+                      className="rounded-lg text-xs font-semibold h-11 min-h-11 sm:h-9 sm:min-h-0 px-4 cursor-pointer"
                       onClick={() => {
                         setSignatureImage(savedSig.savedSignature);
                         toast.success("Assinatura do seu perfil carregada com sucesso!");
                       }}
                     >
+                      <Check className="size-4 mr-1" />
                       Usar Esta
                     </Button>
                   </div>
                 </div>
               )}
 
-              {/* Canvas Interativo */}
-              <SignatureCanvasPad onSave={setSignatureImage} />
+              {signatureMethod === "govbr" && govBrConfig?.isGovBrEnabled && govBrConfig?.authUrl && (
+                <div className="p-4 sm:p-5 rounded-lg border border-blue-500/30 bg-blue-500/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm text-foreground flex items-center gap-2">
+                        <ShieldCheck className="size-4 text-blue-600 dark:text-blue-400" />
+                        Assinatura com Conta GOV.BR
+                      </span>
+                      <Badge variant="outline" className="text-2xs font-semibold border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/10">
+                        Nível Prata / Ouro
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Autenticação eletrônica avançada com presunção legal e fé pública expressa pela Lei Federal nº 14.063/2020.
+                    </p>
+                  </div>
+
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      if (!consent) {
+                        toast.error("Marque o consentimento abaixo antes de prosseguir com o GOV.BR.");
+                        return;
+                      }
+                      window.location.href = govBrConfig.authUrl;
+                    }}
+                    disabled={!consent}
+                    className="w-full sm:w-auto rounded-lg text-xs font-bold h-11 px-6 bg-primary hover:bg-primary/90 text-primary-foreground shrink-0 min-h-11 cursor-pointer shadow-xs gap-2"
+                  >
+                    <ExternalLink className="size-4" />
+                    <span>Assinar com GOV.BR</span>
+                  </Button>
+                </div>
+              )}
+
+              {/* Prévia da Assinatura Pronta */}
+              {signatureImage && (
+                <div className="p-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span className="text-xs font-medium text-foreground">
+                      Assinatura pronta para ser carimbada no documento
+                    </span>
+                  </div>
+                  <img
+                    src={signatureImage}
+                    alt="Assinatura Selecionada"
+                    className="h-8 max-w-28 object-contain bg-background rounded p-1 border border-border shrink-0"
+                  />
+                </div>
+              )}
 
               <div className="flex items-center space-x-2 pt-1">
                 <Checkbox
@@ -556,7 +908,7 @@ function SignContractPage() {
                   className="size-4 rounded-md"
                 />
                 <label htmlFor="save-profile-sig" className="text-xs text-muted-foreground cursor-pointer">
-                  Salvar esta assinatura no meu perfil para usar com 1 toque em futuras compras e contratos
+                  Salvar esta assinatura no meu perfil para usar com 1 toque em futuros contratos
                 </label>
               </div>
 
@@ -587,7 +939,7 @@ function SignContractPage() {
                 <Button
                   onClick={handleSign}
                   disabled={!consent || signMutation.isPending}
-                  className="w-full sm:w-auto rounded-lg text-sm font-bold gap-2 h-12 px-8 min-h-12 bg-primary text-primary-foreground "
+                  className="w-full sm:w-auto rounded-lg text-sm font-bold gap-2 h-12 px-8 min-h-12 bg-primary text-primary-foreground"
                 >
                   {signMutation.isPending ? (
                     <>

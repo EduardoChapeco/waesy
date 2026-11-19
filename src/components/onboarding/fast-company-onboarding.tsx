@@ -27,11 +27,14 @@ import {
   Scissors,
   Calculator,
   Scale,
+  Smartphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import type { BrandedAppTemplateId } from "@/types/branded-app";
 import { fastRegisterCompany } from "@/services/company-mvp.functions";
 import { setTenantContext } from "@/services/identity.functions";
 import { setClientContextCookies } from "@/lib/context-auth";
@@ -227,6 +230,38 @@ export function FastCompanyOnboarding({
   // 5. Identidade Visual
   const [logoUrl, setLogoUrl] = useState("");
   const [bannerUrl, setBannerUrl] = useState("");
+
+  // 6. App Oficial Padronizado & Marketplace
+  const resolveDefaultTemplate = (catId: string): BrandedAppTemplateId => {
+    if (catId === "turismo" || catId === "hoteis" || catId === "hospedagem") return "tourism_cvc";
+    if (catId === "gastronomia" || catId === "delivery" || catId === "mercado") return "delivery_ifood";
+    if (catId === "events") return "events_sympla";
+    if (
+      catId === "salao" ||
+      catId === "barbearia" ||
+      catId === "clinica" ||
+      catId === "servicos" ||
+      catId === "oficina" ||
+      catId === "contabilidade" ||
+      catId === "advocacia"
+    ) {
+      return "services_agenda";
+    }
+    if (catId === "comercio") return "ecommerce_retail";
+    return "standard_catalog";
+  };
+  const [activateBrandedApp, setActivateBrandedApp] = useState(true);
+  const [waesyMarketplaceEnabled, setWaesyMarketplaceEnabled] = useState(true);
+  const [appTemplateId, setAppTemplateId] = useState<BrandedAppTemplateId>(() =>
+    resolveDefaultTemplate(resolveInitialQuickCategory(initialVertical, initialSegment)),
+  );
+  const [enableApiQuoter, setEnableApiQuoter] = useState(true);
+  const [enableCorporateTravel, setEnableCorporateTravel] = useState(true);
+  const [corporateAppUrl, setCorporateAppUrl] = useState("");
+
+  useEffect(() => {
+    setAppTemplateId(resolveDefaultTemplate(category));
+  }, [category]);
 
   // Estados de Controle & IA
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -516,6 +551,16 @@ export function FastCompanyOnboarding({
           instagram: instagram.trim() || undefined,
           cnpj: cnpj.replace(/\D/g, "") || undefined,
           onboardingJobId: aiJobId || undefined,
+          waesy_marketplace_enabled: waesyMarketplaceEnabled,
+          activateBrandedApp,
+          appTemplateId,
+          appNicheFeatures: {
+            enableApiQuoter,
+            enableCorporateTravel,
+            corporateAppUrl: corporateAppUrl.trim() || undefined,
+            enableClientPortal: true,
+            enableInstallPrompt: true,
+          },
         },
       });
 
@@ -944,12 +989,124 @@ export function FastCompanyOnboarding({
                     bucket="avatars"
                     aspectPreset="square"
                     variant="avatar"
+                    appLogoMode
                     className="size-full"
-                    helperText="Formato quadrado"
+                    helperText="Formato quadrado proporcionalizado"
                   />
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* ── ETAPA 6: APP OFICIAL & MARKETPLACE ── */}
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center gap-2 border-b border-border/40 pb-2">
+              <Smartphone className="size-4 text-primary" />
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                6. App Oficial Padronizado & Marketplace
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-4 rounded-xl border border-border bg-background flex items-center justify-between gap-3">
+                <div className="space-y-1 min-w-0">
+                  <p className="text-xs font-bold text-foreground">Ativar App Oficial (/app)</p>
+                  <p className="text-xs text-muted-foreground">
+                    Catálogo PWA padronizado e instalável com layout do seu nicho
+                  </p>
+                </div>
+                <Switch
+                  checked={activateBrandedApp}
+                  onCheckedChange={setActivateBrandedApp}
+                  aria-label="Ativar App Oficial"
+                />
+              </div>
+
+              <div className="p-4 rounded-xl border border-border bg-background flex items-center justify-between gap-3">
+                <div className="space-y-1 min-w-0">
+                  <p className="text-xs font-bold text-foreground">Perfil no Marketplace Waesy</p>
+                  <p className="text-xs text-muted-foreground">
+                    Exibir empresa na rede Waesy (/loja) para descoberta orgânica
+                  </p>
+                </div>
+                <Switch
+                  checked={waesyMarketplaceEnabled}
+                  onCheckedChange={setWaesyMarketplaceEnabled}
+                  aria-label="Publicar perfil no Marketplace Waesy"
+                />
+              </div>
+            </div>
+
+            {activateBrandedApp && (
+              <div className="p-4 rounded-xl border border-border bg-muted/20 space-y-3">
+                <div className="space-y-2">
+                  <p className="text-xs font-bold text-foreground">Modelo Padrão do App</p>
+                  <div className="flex flex-wrap gap-2">
+                    {(
+                      [
+                        { id: "tourism_cvc", label: "Turismo (Agência / Pacotes)" },
+                        { id: "delivery_ifood", label: "Delivery & Cardápio" },
+                        { id: "events_sympla", label: "Eventos & Ingressos" },
+                        { id: "services_agenda", label: "Serviços & Agenda" },
+                        { id: "ecommerce_retail", label: "Loja & E-commerce" },
+                        { id: "standard_catalog", label: "Catálogo Padrão" },
+                      ] as Array<{ id: BrandedAppTemplateId; label: string }>
+                    ).map((tpl) => (
+                      <button
+                        key={tpl.id}
+                        type="button"
+                        onClick={() => setAppTemplateId(tpl.id)}
+                        className={`h-11 min-h-11 px-3 rounded-xl text-xs font-semibold border cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                          appTemplateId === tpl.id
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-background text-foreground border-border hover:bg-muted"
+                        }`}
+                      >
+                        {tpl.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {appTemplateId === "tourism_cvc" && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/50">
+                    <div className="flex items-center justify-between gap-2 p-3 rounded-lg bg-background border border-border/70">
+                      <span className="text-xs font-semibold text-foreground">
+                        Cotação Direta na API (Voos/Hotéis)
+                      </span>
+                      <Switch
+                        checked={enableApiQuoter}
+                        onCheckedChange={setEnableApiQuoter}
+                        aria-label="Ativar cotação direta na API"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between gap-2 p-3 rounded-lg bg-background border border-border/70">
+                      <span className="text-xs font-semibold text-foreground">
+                        Botão Viagens Corporativas
+                      </span>
+                      <Switch
+                        checked={enableCorporateTravel}
+                        onCheckedChange={setEnableCorporateTravel}
+                        aria-label="Ativar botão de viagens corporativas"
+                      />
+                    </div>
+                    {enableCorporateTravel && (
+                      <div className="sm:col-span-2 space-y-1">
+                        <label className="text-xs font-semibold text-muted-foreground">
+                          Link do App Corporativo (opcional — deixe em branco para usar o portal integrado)
+                        </label>
+                        <Input
+                          value={corporateAppUrl}
+                          onChange={(e) => setCorporateAppUrl(e.target.value)}
+                          placeholder="https://corporativo.suaagencia.com.br"
+                          className="h-11 min-h-11 rounded-xl text-xs bg-background"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Botão de Finalização Canônico */}
@@ -1067,10 +1224,10 @@ export function FastCompanyOnboarding({
         <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-2 text-xs text-muted-foreground">
           <p className="font-bold text-foreground flex items-center gap-2">
             <CheckCircle2 className="size-3.5 text-emerald-500" />
-            <span>Perfil Oficial no Diretório e Guia</span>
+            <span>App Oficial & Perfil no Marketplace</span>
           </p>
           <p className="text-2xs leading-relaxed">
-            Assim que você concluir, sua empresa aparecerá na vitrine pública com link oficial (<code className="text-foreground font-mono">waesy.com.br/loja/{cleanSlug}</code>) e integração direta com o WhatsApp comercial e painel de gestão.
+            Ao concluir, seu App Oficial padronizado (<code className="text-foreground font-mono">waesy.com.br/app/{cleanSlug}</code>) e seu Perfil no Marketplace (<code className="text-foreground font-mono">waesy.com.br/loja/{cleanSlug}</code>) serão provisionados com sincronização ao vivo.
           </p>
         </div>
       </div>

@@ -14,6 +14,7 @@ import {
   BadgePercent,
   Store,
   Layers,
+  Navigation,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
@@ -25,6 +26,7 @@ import { formatMoney } from "@/lib/money";
 import { listPriceTables } from "@/services/price-tables.functions";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
 import { RequestQuoteModal } from "@/components/commerce/request-quote-modal";
+import { FieldRoutesView } from "@/components/workspace/crm/field-routes-view";
 
 export const Route = createFileRoute("/workspace/b2b/")({
   head: () => ({
@@ -66,6 +68,7 @@ const B2B_CATEGORIES = [
 
 function WorkspaceB2BShowcasePage() {
   const { feed, priceTables } = Route.useLoaderData() as any;
+  const [activeHubTab, setActiveHubTab] = useState<"catalog" | "field_routes">("catalog");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("todos");
   const [quoteProduct, setQuoteProduct] = useState<any | null>(null);
@@ -133,9 +136,45 @@ function WorkspaceB2BShowcasePage() {
         }
       />
 
-      {/* ── 2. Banner de Destaque B2B (Informativo e Transparente) ── */}
-      <div className="rounded-xl border border-border/80 bg-card p-4 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-2xs">
-        <div className="space-y-2 max-w-2xl">
+      {/* ── Sub-Aba Canônica B2B: Catálogo Atacado vs Rotas de Campo ── */}
+      <div className="flex items-center gap-2 border-b border-border/60 pb-2">
+        <Button
+          type="button"
+          variant={activeHubTab === "catalog" ? "outline" : "ghost"}
+          onClick={() => setActiveHubTab("catalog")}
+          className="h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Package className="size-4 text-primary" />
+          <span>Compras & Atacado</span>
+        </Button>
+        <Button
+          type="button"
+          variant={activeHubTab === "field_routes" ? "outline" : "ghost"}
+          onClick={() => setActiveHubTab("field_routes")}
+          className="h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Navigation className="size-4 text-primary" />
+          <span>Rotas GPS de Campo</span>
+        </Button>
+        <Button
+          asChild
+          variant="ghost"
+          className="h-11 min-h-11 px-4 text-xs font-medium text-muted-foreground hover:text-foreground gap-2 ml-auto hidden sm:inline-flex cursor-pointer"
+        >
+          <Link to="/workspace/catalogo/tabelas">
+            <Layers className="size-4" />
+            <span>Tabelas de Preço</span>
+          </Link>
+        </Button>
+      </div>
+
+      {activeHubTab === "field_routes" ? (
+        <FieldRoutesView />
+      ) : (
+        <>
+          {/* ── 2. Banner de Destaque B2B (Informativo e Transparente) ── */}
+          <div className="rounded-xl border border-border/80 bg-card p-4 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="space-y-2 max-w-2xl">
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-2xs font-bold bg-primary/10 text-primary border border-primary/20">
               <BadgePercent className="size-3" />
@@ -322,6 +361,8 @@ function WorkspaceB2BShowcasePage() {
             );
           })}
         </div>
+      )}
+        </>
       )}
 
       {quoteProduct?.store_id ? (

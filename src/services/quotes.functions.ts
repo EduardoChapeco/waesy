@@ -18,6 +18,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { ingestOmnichannelLead } from "./omnichannel-lead-ingestion";
+import { withDataPayload } from "./cart-helpers";
 
 // ============================================================
 // Schemas de I/O
@@ -138,13 +139,6 @@ export interface QuoteMessageDTO {
  body: string;
  is_internal: boolean;
  created_at: string;
-}
-
-function withDataPayload<T extends z.ZodTypeAny>(schema: T) {
- return z.union([
-   schema,
-   z.object({ data: schema }).transform((val) => val.data as z.infer<T>),
- ]);
 }
 
 // ============================================================

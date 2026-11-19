@@ -111,7 +111,7 @@ export function CvcNavigationDock({
       aria-label="Canais de Viagem e Turismo (CVC & Decolar)"
       className={cn("w-full py-1", className)}
     >
-      <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scroll-area-carousel no-scrollbar py-2 px-1 snap-x snap-mandatory">
+      <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scroll-area-carousel no-scrollbar py-3 px-2 snap-x snap-mandatory">
         {menuList.map((item) => {
           const isActive = activeId === item.id;
           const conf = ICON_MAP[item.iconName] || ICON_MAP.SuitcaseRolling;
@@ -123,7 +123,7 @@ export function CvcNavigationDock({
               type="button"
               onClick={() => onSelect(item.id)}
               className={cn(
-                "relative group flex flex-col items-center justify-between p-2 rounded-2xl border text-center transition-colors cursor-pointer select-none snap-start shrink-0 min-w-20 sm:min-w-24 h-24 sm:h-28 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "relative group flex flex-col items-center justify-between p-2 rounded-2xl border text-center transition-colors cursor-pointer select-none snap-start shrink-0 min-w-24 h-24 sm:h-28 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 isActive
                   ? "bg-foreground text-background border-foreground  scale-102"
                   : "bg-card text-foreground border-border/70 hover:border-foreground/30 hover:bg-muted/40"

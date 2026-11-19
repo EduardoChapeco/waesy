@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseTimeToMinutes, getConnectionWarning } from "./SectionFlights";
+import { parseTimeToMinutes, getConnectionWarning } from "@/lib/tourism/flight-connections";
 import type { Flight } from "@/services/proposals";
 
 describe("SectionFlights — Cálculo e Alertas de Conexão Aérea (GAP-01)", () => {

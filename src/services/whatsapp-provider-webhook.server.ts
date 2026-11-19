@@ -1,16 +1,32 @@
 import { createHash } from "node:crypto";
 import { getServerClient } from "@/lib/supabase";
+import { firstNonEmptyString as firstString, noStoreJsonResponse as json } from "@/lib/utils";
 import { decryptSecret } from "@/lib/crypto-vault.server";
 import { decryptConversationMessageForThread, encryptConversationMessageForThread, redactConversationPayload } from "@/lib/conversation-crypto.server";
 import { verifyWebhookSignature } from "@/lib/webhook-signature";
 import { dispatchWhatsAppInboundFlows, resolveWhatsAppIdentity } from "@/services/whatsapp-automation-runtime.server";
+import { getEnvVar } from "@/lib/env";
+import { isRawLidOrSyntheticName } from "@/lib/chat-media-attachment";
+import { buildBrazilPhoneVariants } from "@/lib/phone-match";
+import { resolveContactCaptureSuppression } from "@/lib/whatsapp-contact-suppression.server";
 import {
   extractWhatsAppGroupContext,
   extractWhatsAppReferralAndTokens,
+  extractParticipantPhone,
+  normalizePhoneE164,
   correlateAndPersistInboundWhatsAppAttribution,
 } from "@/services/omnichannel-attribution.server";
 import { isBrokenOrMissingMediaUri } from "@/lib/whatsapp-media-utils";
-import { hydrateMediaFromEvolution, type EvolutionInstanceRecord } from "@/services/whatsapp-media.server";
+import {
+  hydrateMediaFromEvolution,
+  resolveEvolutionCredentialsForInstance,
+  type EvolutionInstanceRecord,
+} from "@/services/whatsapp-media.server";
+import {
+  reconcileEvolutionWebhookIfNeeded,
+  runEvolutionDeltaSyncForInstance,
+} from "@/services/whatsapp-evolution-sync.server";
+import { isUniqueViolationError } from "@/services/whatsapp-message-persistence.server";
 
 export type UnofficialWhatsAppProvider = "evolution_api" | "wasender_api";
 // Payloads de providers externos são deliberadamente dinâmicos; o boundary é validado pelos normalizadores.
@@ -48,9 +64,7 @@ type NormalizedDelivery = { externalMessageId: string; deliveryStatus: "sent" | 
 
 function hashBody(rawBody: string) { return createHash("sha256").update(rawBody).digest("hex"); }
 function stableKey(parts: unknown[]) { return createHash("sha256").update(parts.map((part) => JSON.stringify(part)).join("|")).digest("hex"); }
-function json(payload: Record<string, unknown>, status = 200) { return new Response(JSON.stringify(payload), { status, headers: { "content-type": "application/json", "cache-control": "no-store" } }); }
 function secretConfig(value: string | null): Record<string, unknown> { if (!value) return {}; try { return JSON.parse(decryptSecret(value)) as Record<string, unknown>; } catch { return {}; } }
-function firstString(...values: unknown[]): string | null { return values.find((v): v is string => typeof v === "string" && v.trim().length > 0)?.trim() || null; }
 function eventTime(value: unknown, fallback = new Date().toISOString()): string { const number = Number(value); if (!Number.isFinite(number) || number <= 0) return fallback; return new Date(number < 2_000_000_000 ? number * 1000 : number).toISOString(); }
 function normalizedPhone(value: unknown): string | null { const digits = String(value || "").replace(/\D/g, ""); return digits.length >= 7 ? `+${digits}` : null; }
 function remotePhone(value: unknown): string | null {
@@ -184,11 +198,17 @@ export function messageText(item: JsonObject): string {
 }
 function eventName(body: JsonObject): string { return (firstString(body.event, body.type) || "messages.upsert").toLowerCase().replace(/_/g, "."); }
 function messageItems(body: JsonObject): JsonObject[] {
-  const data = body.data || {};
-  const messages = data.messages;
-  if (Array.isArray(messages)) return messages.filter((item): item is JsonObject => Boolean(item && typeof item === "object"));
+  const data = (body.data || {}) as any;
+  if (Array.isArray(data)) {
+    return data.filter((item): item is JsonObject => Boolean(item && typeof item === "object"));
+  }
+  const messages = data.messages ?? body.messages;
+  if (Array.isArray(messages)) {
+    return messages.filter((item): item is JsonObject => Boolean(item && typeof item === "object"));
+  }
   if (messages && typeof messages === "object") return [messages as JsonObject];
-  return [data as JsonObject];
+  if (data && typeof data === "object" && Object.keys(data).length > 0) return [data as JsonObject];
+  return body.key || body.message ? [body] : [];
 }
 function statusItems(body: JsonObject): JsonObject[] {
   const data = body.data || {};
@@ -293,11 +313,21 @@ export function normalizeUnofficialDelivery(provider: UnofficialWhatsAppProvider
 function deliveryRank(value: string | null): number { return ({ accepted: 1, sent: 2, delivered: 3, read: 4, failed: 5 } as Record<string, number>)[value || ""] || 0; }
 function campaignDeliveryRank(value: string | null): number { return ({ eligible: 0, queued: 1, accepted: 2, sent: 3, failed: 3, delivered: 4, read: 5 } as Record<string, number>)[value || ""] ?? -1; }
 
-export async function persistDelivery(db: ReturnType<typeof getServerClient>, provider: UnofficialWhatsAppProvider, instance: JsonObject, body: JsonObject, delivery: NormalizedDelivery) {
+export async function persistDelivery(
+  db: ReturnType<typeof getServerClient>,
+  provider: UnofficialWhatsAppProvider,
+  instance: JsonObject,
+  body: JsonObject,
+  delivery: NormalizedDelivery,
+  options?: { existingEventId?: string },
+) {
   const storeId = String(instance.store_id);
   const phoneNumberId = String(instance.instance_key);
   const eventKey = stableKey(["delivery", provider, instance.id, delivery.externalMessageId, delivery.deliveryStatus, delivery.occurredAt, delivery.remoteJid]);
-  const { data: providerEvent, error: providerEventError } = await db.from("whatsapp_provider_webhook_events").upsert({ provider, instance_id: instance.id, store_id: storeId, event_key: eventKey, event_type: "status", external_message_id: delivery.externalMessageId, payload_hash: hashBody(JSON.stringify(body)), payload: delivery.payload, signature_verified: true }, { onConflict: "provider,instance_id,event_key", ignoreDuplicates: true }).select("id, processing_status").maybeSingle();
+  const eventLookup = options?.existingEventId
+    ? await db.from("whatsapp_provider_webhook_events").select("id, processing_status").eq("id", options.existingEventId).maybeSingle()
+    : await db.from("whatsapp_provider_webhook_events").upsert({ provider, instance_id: instance.id, store_id: storeId, event_key: eventKey, event_type: "status", external_message_id: delivery.externalMessageId, payload_hash: hashBody(JSON.stringify(body)), payload: delivery.payload, signature_verified: true }, { onConflict: "provider,instance_id,event_key", ignoreDuplicates: true }).select("id, processing_status").maybeSingle();
+  const { data: providerEvent, error: providerEventError } = eventLookup;
   if (providerEventError) throw providerEventError;
   // ignoreDuplicates retorna data nula quando uma entrega concorrente já criou o evento.
   if (!providerEvent || providerEvent.processing_status === "processed") return { eventKey, duplicate: true, matchedMessages: 0 };
@@ -325,7 +355,71 @@ export async function persistDelivery(db: ReturnType<typeof getServerClient>, pr
   return { eventKey, matchedMessages: messages?.length || 0 };
 }
 
-export async function persistInboundMessage(db: ReturnType<typeof getServerClient>, provider: UnofficialWhatsAppProvider, instance: JsonObject, body: JsonObject, message: NormalizedMessage) {
+function isGroupThreadRow(row: any, groupJid?: string | null): boolean {
+  if (!row) return false;
+  const tType = String(row.thread_type || "").toLowerCase();
+  if (tType === "group") return true;
+  const meta = (row.metadata && typeof row.metadata === "object" ? row.metadata : {}) as Record<string, any>;
+  if (meta.is_group === true) return true;
+  const entity = String(row.entity_id || "").trim().toLowerCase();
+  if (entity.includes("@g.us")) return true;
+  if (/^120363\d{10,}$/.test(entity.replace(/\D/g, ""))) return true;
+  const metaJid = String(meta.whatsapp_jid || meta.remote_jid || "").trim().toLowerCase();
+  if (metaJid.includes("@g.us")) return true;
+  if (groupJid && (entity === groupJid.toLowerCase() || metaJid === groupJid.toLowerCase())) return true;
+  return false;
+}
+
+function isChannelThreadRow(row: any): boolean {
+  if (!row) return false;
+  if (String(row.thread_type || "").toLowerCase() === "channel") return true;
+  const meta = (row.metadata && typeof row.metadata === "object" ? row.metadata : {}) as Record<string, any>;
+  if (meta.is_channel === true) return true;
+  return String(row.entity_id || "").toLowerCase().includes("@newsletter");
+}
+
+function isParticipantDisplaySameAsSender(candidate: string | null | undefined, message: NormalizedMessage): boolean {
+  if (!candidate) return true;
+  const clean = candidate.trim().toLowerCase();
+  if (!clean || clean === "grupo whatsapp" || isSyntheticSelfLabel(clean)) return true;
+  if (/^\+?\d{10,}$/.test(clean.replace(/[\s()-]/g, ""))) return true;
+  if (message.pushName && clean === message.pushName.trim().toLowerCase()) return true;
+  if (message.senderPhone && clean === message.senderPhone.trim().toLowerCase()) return true;
+  return false;
+}
+
+async function resolveGroupSubjectFromEvolution(instance: JsonObject, groupJid: string | null): Promise<string | null> {
+  if (!groupJid || !groupJid.includes("@g.us")) return null;
+  try {
+    const creds = resolveEvolutionCredentialsForInstance(instance as any);
+    if (!creds?.baseUrl || !creds?.apiKey || !creds?.externalName) return null;
+    const cleanBase = creds.baseUrl.replace(/\/+$/, "");
+    const res = await fetch(
+      `${cleanBase}/group/findGroupInfos/${encodeURIComponent(creds.externalName)}?groupJid=${encodeURIComponent(groupJid)}`,
+      {
+        method: "GET",
+        headers: { apikey: creds.apiKey },
+        signal: AbortSignal.timeout(3000),
+      },
+    ).catch(() => null);
+    if (!res || !res.ok) return null;
+    const json = (await res.json().catch(() => null)) as any;
+    const subject = firstString(json?.subject, json?.data?.subject, json?.name);
+    if (!subject || isSyntheticSelfLabel(subject) || /^\+?\d{10,}$/.test(subject.trim())) return null;
+    return subject;
+  } catch {
+    return null;
+  }
+}
+
+export async function persistInboundMessage(
+  db: ReturnType<typeof getServerClient>,
+  provider: UnofficialWhatsAppProvider,
+  instance: JsonObject,
+  body: JsonObject,
+  message: NormalizedMessage,
+  options?: { existingEventId?: string },
+) {
   const isGroupJid = Boolean(message.isGroup || (message.externalUserId && message.externalUserId.endsWith("@g.us")));
   const isLidJid = Boolean(
     !isGroupJid &&
@@ -335,30 +429,39 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
   if (!message.phone && !isGroupJid && !isLidJid) return { ignored: "without_phone" };
   const storeId = String(instance.store_id);
   const eventKey = stableKey(["message", provider, instance.id, message.externalMessageId]);
-  const { data: event, error: eventError } = await db.from("whatsapp_provider_webhook_events").upsert({ provider, instance_id: instance.id, store_id: storeId, event_key: eventKey, event_type: message.fromMe ? "outbound_echo" : "message", external_message_id: message.externalMessageId, payload_hash: hashBody(JSON.stringify(body)), payload: message.payload, signature_verified: true }, { onConflict: "provider,instance_id,event_key", ignoreDuplicates: true }).select("id, processing_status").maybeSingle();
+  const eventLookup = options?.existingEventId
+    ? await db.from("whatsapp_provider_webhook_events").select("id, processing_status").eq("id", options.existingEventId).maybeSingle()
+    : await db.from("whatsapp_provider_webhook_events").upsert({ provider, instance_id: instance.id, store_id: storeId, event_key: eventKey, event_type: message.fromMe ? "outbound_echo" : "message", external_message_id: message.externalMessageId, payload_hash: hashBody(JSON.stringify(body)), payload: message.payload, signature_verified: true }, { onConflict: "provider,instance_id,event_key", ignoreDuplicates: true }).select("id, processing_status").maybeSingle();
+  const { data: event, error: eventError } = eventLookup;
   if (eventError) throw eventError;
   // A ausência de data significa duplicata sob concorrência, não um novo evento.
   if (!event || event.processing_status === "processed") return { duplicate: true };
+  const resolvedGroupJid = isGroupJid ? (message.groupJid || message.externalUserId) : null;
+  const resolvedGroupSubject =
+    isGroupJid
+      ? ((!isParticipantDisplaySameAsSender(message.groupSubject, message) ? message.groupSubject : null) ||
+         (await resolveGroupSubjectFromEvolution(instance, resolvedGroupJid)))
+      : null;
+
   const identityPhoneSeed = isGroupJid
-    ? (message.groupJid || message.externalUserId || message.phone || "0000000")
+    ? (resolvedGroupJid || "120363000000000000@g.us")
     : (message.phone || message.externalUserId || "0000000");
   const identity = await resolveWhatsAppIdentity({
     storeId,
     instanceId: instance.id,
     provider,
-    externalUserId: message.externalUserId,
+    externalUserId: isGroupJid ? resolvedGroupJid : message.externalUserId,
     phone: identityPhoneSeed,
     displayName: isGroupJid
-      ? (message.groupSubject || null)
+      ? (resolvedGroupSubject || null)
       : (message.fromMe ? null : message.pushName),
   });
   if (!identity) return { ignored: "identity_not_resolved" };
-  const cleanDigits = (message.phone || message.groupJid || message.externalUserId || "").replace(/\D/g, "");
+  const cleanDigits = isGroupJid ? "" : (message.phone || message.externalUserId || "").replace(/\D/g, "");
   const threadLookupFilters = isGroupJid
     ? [
         `channel_identity_id.eq.${identity.id}`,
-        ...(message.groupJid ? [`entity_id.eq.${message.groupJid}`] : []),
-        ...(cleanDigits.length >= 8 ? [`entity_id.eq.+${cleanDigits}`, `entity_id.eq.${cleanDigits}`] : []),
+        ...(resolvedGroupJid ? [`entity_id.eq.${resolvedGroupJid}`] : []),
       ]
     : [
         `channel_identity_id.eq.${identity.id}`,
@@ -366,16 +469,26 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
         ...(message.externalUserId ? [`entity_id.eq.${message.externalUserId}`] : []),
         ...(cleanDigits.length >= 8 ? [`entity_id.eq.${cleanDigits}`, `entity_id.eq.+${cleanDigits}`] : []),
       ];
-  let { data: thread } = await db
+  let threadLookupQuery = db
     .from("chat_threads")
-    .select("id, metadata, guest_name, group_subject, primary_phone_e164, lead_id, attribution")
+    .select("id, thread_type, entity_id, metadata, guest_name, group_subject, primary_phone_e164, lead_id, attribution")
     .eq("store_id", storeId)
-    .or(threadLookupFilters.join(","))
+    .or(threadLookupFilters.join(","));
+  if (isGroupJid) {
+    threadLookupQuery = threadLookupQuery.eq("thread_type", "group");
+  }
+  const { data: threadCandidates } = await threadLookupQuery
     .order("updated_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .limit(10);
+  let thread =
+    ((threadCandidates as any[]) || []).find((cand) =>
+      isGroupJid
+        ? isGroupThreadRow(cand, resolvedGroupJid)
+        : !isGroupThreadRow(cand) && !isChannelThreadRow(cand),
+    ) || null;
+  const groupDigitsSeed = isGroupJid && resolvedGroupJid ? resolvedGroupJid.replace(/\D/g, "") : "";
   const syntheticEmail = isGroupJid
-    ? `${cleanDigits || "grupo"}@grupo.whatsapp.waesy`
+    ? `${groupDigitsSeed || "grupo"}@grupo.whatsapp.waesy`
     : `${cleanDigits || "contato"}@whatsapp.waesy`;
   if (!thread) {
     const safeIdentityName =
@@ -384,8 +497,12 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
       !/^\+?\d{14,}$/.test(identity.display_name.trim())
         ? identity.display_name
         : null;
+    const safeGroupIdentityName =
+      safeIdentityName && !isParticipantDisplaySameAsSender(safeIdentityName, message) && !safeIdentityName.startsWith("+120363")
+        ? safeIdentityName
+        : null;
     const safeGuestName = isGroupJid
-      ? (message.groupSubject || (safeIdentityName && !safeIdentityName.startsWith("+120363") ? safeIdentityName : "Grupo WhatsApp"))
+      ? (resolvedGroupSubject || safeGroupIdentityName || "Grupo WhatsApp")
       : (!message.fromMe && message.pushName && !isSyntheticSelfLabel(message.pushName) && !/^\+?\d{14,}$/.test(message.pushName.trim()))
         ? message.pushName
         : (safeIdentityName || message.phone || `Contato WhatsApp #${cleanDigits.slice(-4) || "LID"}`);
@@ -398,10 +515,43 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
             last_seen_at: message.occurredAt,
           }]
         : [];
+    let autoMatchedLeadId: string | null = null;
+    let autoMatchedCustomerId: string | null = null;
+    const suppressionForNewThread = !isGroupJid && !isLidJid && message.phone
+      ? await resolveContactCaptureSuppression(db, {
+          storeId,
+          identityId: identity?.id || null,
+          identityRow: identity || null,
+          phone: message.phone,
+        }).catch(() => ({ suppressed: false }))
+      : { suppressed: false };
+    if (!isGroupJid && !isLidJid && message.phone && !suppressionForNewThread.suppressed) {
+      try {
+        const phoneVariants = buildBrazilPhoneVariants(message.phone);
+        if (phoneVariants.length > 0) {
+          const { data: matchedLead } = await db
+            .from("leads_crm")
+            .select("id, customer_id")
+            .eq("store_id", storeId)
+            .or(phoneVariants.map((v) => `phone.eq.${v}`).join(","))
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (matchedLead?.id) {
+            autoMatchedLeadId = matchedLead.id;
+            autoMatchedCustomerId = matchedLead.customer_id || null;
+          }
+        }
+      } catch {
+        // Opcional em bases ou mocks legados
+      }
+    }
     const created = await db.from("chat_threads").insert({
       store_id: storeId,
       channel_instance_id: instance.id,
       channel_identity_id: identity.id,
+      ...(autoMatchedLeadId ? { lead_id: autoMatchedLeadId } : {}),
+      ...(autoMatchedCustomerId ? { customer_id: autoMatchedCustomerId } : {}),
       guest_name: safeGuestName,
       guest_email: syntheticEmail,
       group_subject: isGroupJid ? (message.groupSubject || null) : null,
@@ -425,6 +575,7 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
         is_lid: isLidJid,
         remote_jid: message.externalUserId,
         whatsapp_jid: message.externalUserId,
+        ...(autoMatchedLeadId ? { active_lead_id: autoMatchedLeadId } : {}),
         ...(isGroupJid && message.groupSubject ? { group_subject: message.groupSubject } : {}),
         ...(initialParticipants.length > 0 ? { participants: initialParticipants } : {}),
         ...(!isGroupJid && message.pushName ? { push_name: message.pushName } : {}),
@@ -556,6 +707,8 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
       encryption_version: 1,
       provider,
       external_message_id: message.externalMessageId,
+      provider_message_id: message.externalMessageId,
+      provider_name: provider,
       delivery_status: "sent",
       sent_at: message.occurredAt,
       attachments: message.attachments,
@@ -568,7 +721,13 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
       },
       created_at: message.occurredAt,
     }).select("id").single();
-    if (deviceInsertError) throw deviceInsertError;
+    if (deviceInsertError) {
+      if (isUniqueViolationError(deviceInsertError)) {
+        if (event?.id) await db.from("whatsapp_provider_webhook_events").update({ processing_status: "processed", processed_at: new Date().toISOString(), error_message: null }).eq("id", event.id);
+        return { threadId: thread.id, messageId: null, reconciled: "duplicate_external_id_ignored" };
+      }
+      throw deviceInsertError;
+    }
 
     if (
       createdDeviceMsg?.id &&
@@ -592,6 +751,8 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
     }
 
     const currentThreadMeta = (thread.metadata && typeof thread.metadata === "object" ? thread.metadata : {}) as Record<string, unknown>;
+    const occurredMs = Date.parse(message.occurredAt) || Date.now();
+    const prevCursorMs = Number(currentThreadMeta.sync_cursor_ms || 0);
     await db.from("chat_threads").update({
       last_message_text: message.text.slice(0, 200),
       last_message_at: message.occurredAt,
@@ -601,6 +762,8 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
         handoff_mode: "human_active",
         ai_auto_reply_enabled: false,
         last_device_reply_at: message.occurredAt,
+        history_bootstrap_done: true,
+        sync_cursor_ms: Math.max(prevCursorMs, occurredMs),
       },
     }).eq("id", thread.id).eq("store_id", storeId);
 
@@ -630,6 +793,8 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
       encryption_version: 1,
       provider,
       external_message_id: message.externalMessageId,
+      provider_message_id: message.externalMessageId,
+      provider_name: provider,
       delivery_status: "delivered",
       sent_at: message.occurredAt,
       attachments: message.attachments,
@@ -648,15 +813,28 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
       },
       created_at: message.occurredAt,
     }).select("id").single();
-    if (insertError) throw insertError;
-    insertedMessageId = createdMsg?.id || null;
+    if (insertError) {
+      if (isUniqueViolationError(insertError)) {
+        const { data: dupRow } = await db
+          .from("chat_messages")
+          .select("id")
+          .eq("thread_id", thread.id)
+          .eq("external_message_id", message.externalMessageId)
+          .maybeSingle();
+        insertedMessageId = dupRow?.id || null;
+      } else {
+        throw insertError;
+      }
+    } else {
+      insertedMessageId = createdMsg?.id || null;
+    }
 
     if (
       insertedMessageId &&
       provider === "evolution_api" &&
       message.externalMessageId &&
-      message.media?.type &&
-      isBrokenOrMissingMediaUri(message.media.url, message.messageType)
+      (message.media?.type || ["audio", "image", "video", "document", "sticker"].includes(message.messageType)) &&
+      isBrokenOrMissingMediaUri(message.media?.url, message.messageType)
     ) {
       await hydrateMediaFromEvolution({
         db,
@@ -668,7 +846,17 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
         remoteJid: message.externalUserId,
         fromMe: false,
         messageType: message.messageType,
-        preferredMime: message.media.mimetype,
+        preferredMime: message.media?.mimetype,
+      }).catch(() => null);
+    }
+
+    if (insertedMessageId && message.messageType === "audio") {
+      const { transcribeAudioMediaServer } = await import("@/services/whatsapp-media-intelligence.server");
+      await transcribeAudioMediaServer({
+        db,
+        storeId,
+        threadId: thread.id,
+        messageId: insertedMessageId,
       }).catch(() => null);
     }
   }
@@ -678,7 +866,7 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
 
     const shouldHealGuestName = !hasManualOverride && Boolean(
       isGroupJid
-        ? (message.groupSubject && (!thread.guest_name || thread.guest_name === "Grupo WhatsApp" || /^\+?\d+$/.test(String(thread.guest_name).trim())))
+        ? (resolvedGroupSubject && (!thread.guest_name || thread.guest_name === "Grupo WhatsApp" || /^\+?\d+$/.test(String(thread.guest_name).trim()) || isParticipantDisplaySameAsSender(thread.guest_name, message)))
         : (message.pushName && !isSyntheticSelfLabel(message.pushName) && !/^\+?\d{14,}$/.test(message.pushName.trim()) && (isSyntheticSelfLabel(thread.guest_name) || thread.guest_name === message.phone || thread.guest_name === cleanDigits || /^\+?\d{10,}$/.test(String(thread.guest_name || "").trim()) || String(thread.guest_name || "").startsWith("Contato WhatsApp")))
     );
 
@@ -695,17 +883,21 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
       nextParticipants = nextParticipants.slice(0, 40);
     }
 
+    const occurredMs = Date.parse(message.occurredAt) || Date.now();
+    const prevCursorMs = Number(existingMeta.sync_cursor_ms || 0);
     const updatedMeta = {
       ...existingMeta,
       is_group: isGroupJid,
-      ...(isGroupJid && message.groupSubject ? { group_subject: message.groupSubject } : {}),
+      history_bootstrap_done: true,
+      sync_cursor_ms: Math.max(prevCursorMs, occurredMs),
+      ...(isGroupJid && resolvedGroupSubject ? { group_subject: resolvedGroupSubject } : {}),
       ...(nextParticipants.length > 0 ? { participants: nextParticipants } : {}),
       ...(!isGroupJid && message.pushName ? { push_name: message.pushName } : {}),
     };
 
     await db.from("chat_threads").update({
-      ...(shouldHealGuestName ? { guest_name: isGroupJid ? message.groupSubject : message.pushName } : {}),
-      ...(isGroupJid && message.groupSubject ? { group_subject: message.groupSubject } : {}),
+      ...(shouldHealGuestName ? { guest_name: isGroupJid ? resolvedGroupSubject : message.pushName } : {}),
+      ...(isGroupJid && resolvedGroupSubject ? { group_subject: resolvedGroupSubject } : {}),
       ...(!isGroupJid && message.phone ? { primary_phone_e164: message.phone } : {}),
       metadata: updatedMeta,
       last_customer_message_at: message.occurredAt,
@@ -725,7 +917,11 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
           pushName: message.pushName,
           text: message.text,
           payload: message.payload,
-          existingThreadMeta: updatedMeta,
+          existingThreadMeta: {
+            ...updatedMeta,
+            ...(identity?.contact_scope ? { contact_scope: identity.contact_scope } : {}),
+            ...(identity?.suppress_lead_capture ? { suppress_lead_capture: true } : {}),
+          },
           existingThreadAttribution: (thread as any).attribution || null,
         });
       } catch {
@@ -896,9 +1092,172 @@ export function verifyUnofficialWebhookAuth(params: {
   return false;
 }
 
+async function touchInstanceWebhookHeartbeat(
+  db: ReturnType<typeof getServerClient>,
+  instance: JsonObject,
+  eventNameValue: string,
+) {
+  const pub = (instance.public_config && typeof instance.public_config === "object"
+    ? instance.public_config
+    : {}) as Record<string, unknown>;
+  const prevAtMs = typeof pub.last_webhook_at === "string" ? Date.parse(pub.last_webhook_at) || 0 : 0;
+  const needsHeal = instance.status !== "connected" && instance.status !== "revoked";
+  const staleHeartbeat = !prevAtMs || Date.now() - prevAtMs > 30_000;
+  if (!needsHeal && !staleHeartbeat) return;
+
+  const nowIso = new Date().toISOString();
+  await db
+    .from("whatsapp_channel_instances")
+    .update({
+      ...(needsHeal ? { status: "connected", is_active: true, last_error_code: null, last_error_message: null } : {}),
+      public_config: {
+        ...pub,
+        last_webhook_at: nowIso,
+        last_webhook_event: eventNameValue,
+        ...(needsHeal ? { last_connected_at: nowIso, last_webhook_state: "open", session_revoked: false } : {}),
+      },
+      last_health_check_at: nowIso,
+      updated_at: nowIso,
+    })
+    .eq("id", instance.id);
+}
+
+async function persistMetadataSyncEvents(
+  db: ReturnType<typeof getServerClient>,
+  instance: JsonObject,
+  eventNameValue: string,
+  body: JsonObject,
+): Promise<number> {
+  const storeId = String(instance.store_id);
+  const rawList = Array.isArray(body.data)
+    ? body.data
+    : body.data && typeof body.data === "object"
+      ? [body.data]
+      : [];
+  const items = rawList.filter((it): it is JsonObject => Boolean(it && typeof it === "object")).slice(0, 15);
+  if (items.length === 0) return 0;
+
+  const nowIso = new Date().toISOString();
+  let updatedCount = 0;
+
+  for (const item of items) {
+    const jid = firstString(item.id, item.remoteJid, item.jid, item.groupJid);
+    if (!jid || jid === "status@broadcast" || jid.endsWith("@broadcast")) continue;
+    const lowerJid = jid.toLowerCase();
+    const isGroup = lowerJid.endsWith("@g.us");
+    const digits = jid.replace(/@.*$/, "").replace(/\D/g, "");
+    const rawName = firstString(item.subject, item.name, item.pushName, item.verifiedName);
+    const safeName = rawName && !isRawLidOrSyntheticName(rawName, digits) ? rawName : null;
+    const avatarUrl = firstString(item.profilePicUrl, item.profilePictureUrl, item.pictureUrl, item.imgUrl);
+
+    if (isGroup && eventNameValue.startsWith("group")) {
+      const participantsRaw = Array.isArray(item.participants) ? item.participants.slice(0, 40) : null;
+      const participants = participantsRaw
+        ? participantsRaw.map((p: any) => ({
+            jid: String(p?.id || p?.jid || ""),
+            phone: extractParticipantPhone(p?.phoneNumber || p?.pn || p?.id || p?.jid),
+            name: firstString(p?.pushName, p?.name),
+            admin: Boolean(p?.admin),
+          }))
+        : null;
+
+      await db
+        .from("whatsapp_groups_directory")
+        .upsert(
+          {
+            store_id: storeId,
+            instance_id: instance.id,
+            group_jid: jid,
+            ...(safeName ? { subject: safeName } : {}),
+            ...(avatarUrl && avatarUrl.startsWith("http") ? { avatar_url: avatarUrl } : {}),
+            ...(participants ? { participants_count: participants.length } : {}),
+            updated_at: nowIso,
+          },
+          { onConflict: "instance_id,group_jid" },
+        )
+        .then(() => undefined, () => undefined);
+
+      const { data: groupThread } = await db
+        .from("chat_threads")
+        .select("id, metadata, guest_name")
+        .eq("store_id", storeId)
+        .or(`entity_id.eq.${jid},metadata->>whatsapp_jid.eq.${jid}`)
+        .limit(1)
+        .maybeSingle();
+
+      if (groupThread?.id) {
+        const prevMeta = (groupThread.metadata && typeof groupThread.metadata === "object"
+          ? groupThread.metadata
+          : {}) as JsonObject;
+        await db
+          .from("chat_threads")
+          .update({
+            ...(safeName ? { guest_name: safeName, group_subject: safeName, subject: `Grupo: ${safeName}` } : {}),
+            metadata: {
+              ...prevMeta,
+              is_group: true,
+              whatsapp_jid: jid,
+              ...(safeName ? { group_subject: safeName } : {}),
+              ...(avatarUrl && avatarUrl.startsWith("http") ? { avatar_url: avatarUrl } : {}),
+              ...(participants ? { participants, participants_count: participants.length } : {}),
+            },
+            updated_at: nowIso,
+          })
+          .eq("id", groupThread.id);
+        updatedCount += 1;
+      }
+      continue;
+    }
+
+    const altPhone = !isGroup ? normalizePhoneE164(item.phoneNumber || item.pn || jid) : null;
+    const filters = [`metadata->>whatsapp_jid.eq.${jid}`, `entity_id.eq.${jid}`];
+    if (altPhone) filters.push(`primary_phone_e164.eq.${altPhone}`);
+
+    const { data: targetThread } = await db
+      .from("chat_threads")
+      .select("id, guest_name, metadata")
+      .eq("store_id", storeId)
+      .or(filters.join(","))
+      .limit(1)
+      .maybeSingle();
+
+    if (targetThread?.id) {
+      const prevMeta = (targetThread.metadata && typeof targetThread.metadata === "object"
+        ? targetThread.metadata
+        : {}) as JsonObject;
+      const curName = String(targetThread.guest_name || "").trim();
+      const shouldRename =
+        Boolean(safeName) &&
+        (!curName ||
+          isRawLidOrSyntheticName(curName, digits) ||
+          curName.startsWith("Contato Meta") ||
+          curName.startsWith("WhatsApp ") ||
+          curName === "Cliente");
+
+      const patch: Record<string, any> = {
+        metadata: {
+          ...prevMeta,
+          ...(avatarUrl && avatarUrl.startsWith("http") ? { avatar_url: avatarUrl } : {}),
+          ...(safeName && !isGroup ? { push_name: safeName } : {}),
+          ...(safeName && isGroup ? { group_subject: safeName } : {}),
+        },
+        updated_at: nowIso,
+      };
+      if (shouldRename && safeName) {
+        patch.guest_name = safeName;
+        if (isGroup) patch.group_subject = safeName;
+      }
+      await db.from("chat_threads").update(patch).eq("id", targetThread.id);
+      updatedCount += 1;
+    }
+  }
+
+  return updatedCount;
+}
+
 export async function handleUnofficialWhatsAppWebhook(request: Request, provider: UnofficialWhatsAppProvider, instanceKey: string) {
   const rawBody = await request.text();
-  if (new TextEncoder().encode(rawBody).byteLength > 1_048_576) return json({ error: "Webhook payload too large" }, 413);
+  if (new TextEncoder().encode(rawBody).byteLength > 2_097_152) return json({ error: "Webhook payload too large" }, 413);
   let body: JsonObject;
   try { body = JSON.parse(rawBody) as JsonObject; } catch { return json({ error: "Invalid JSON payload" }, 400); }
   const db = getServerClient();
@@ -912,7 +1271,7 @@ export async function handleUnofficialWhatsAppWebhook(request: Request, provider
   ];
   const { data: instance, error: instanceError } = await db
     .from("whatsapp_channel_instances")
-    .select("id, store_id, provider, instance_key, external_instance_id, secret_payload_encrypted, is_active, status, public_config")
+    .select("id, store_id, provider, instance_key, external_instance_id, webhook_url, display_phone_number, sync_mode, secret_payload_encrypted, is_active, status, public_config")
     .eq("provider", provider)
     .or(lookupClauses.join(","))
     .order("updated_at", { ascending: false })
@@ -921,7 +1280,7 @@ export async function handleUnofficialWhatsAppWebhook(request: Request, provider
   if (instanceError || !instance) return json({ error: "Unknown WhatsApp instance" }, 404);
   const secrets = secretConfig(instance.secret_payload_encrypted);
   const secret = firstString(secrets.webhook_secret, secrets.webhookSecret, secrets.secret, secrets.api_key);
-  const masterApiKey = process.env.EVOLUTION_API_KEY?.trim() || null;
+  const masterApiKey = getEnvVar("EVOLUTION_API_KEY")?.trim() || null;
   const allowUnsigned = Boolean((instance.public_config as Record<string, unknown> | null)?.allow_unsigned_webhook);
 
   const reqUrl = new URL(request.url, "https://waesy.com.br");
@@ -966,7 +1325,7 @@ export async function handleUnofficialWhatsAppWebhook(request: Request, provider
         .maybeSingle();
 
       if (duplicate) {
-        const baseUrl = firstString(currentPublicConfig.base_url as string | undefined, secrets.base_url as string | undefined, process.env.EVOLUTION_API_URL);
+        const baseUrl = firstString(currentPublicConfig.base_url as string | undefined, secrets.base_url as string | undefined, getEnvVar("EVOLUTION_API_URL"));
         const logoutKey = firstString(secrets.api_key as string | undefined, masterApiKey);
         const extId = instance.external_instance_id || instance.instance_key;
         if (baseUrl && logoutKey && extId) {
@@ -1017,6 +1376,7 @@ export async function handleUnofficialWhatsAppWebhook(request: Request, provider
       ...(isRevoked ? { session_revoked: true, last_revoked_at: nowIso } : {}),
       ...(pairingCode ? { pairing_code: pairingCode } : {}),
       last_webhook_state: state,
+      last_webhook_event: name,
       last_webhook_at: nowIso,
       last_status_reason: statusReason || null,
     };
@@ -1029,13 +1389,60 @@ export async function handleUnofficialWhatsAppWebhook(request: Request, provider
       last_health_check_at: nowIso,
       updated_at: nowIso,
     }).eq("id", instance.id);
+
+    if (name === "connection.update" && statusMap === "connected" && provider === "evolution_api") {
+      const updatedInstanceSnapshot = {
+        ...instance,
+        status: statusMap,
+        public_config: nextPublicConfig,
+      };
+      await reconcileEvolutionWebhookIfNeeded(db, updatedInstanceSnapshot as any, false).catch(() => null);
+      const lastSyncMs = Date.parse(String(nextPublicConfig.last_auto_sync_at || nextPublicConfig.last_synced_at || 0)) || 0;
+      if (instance.status !== "connected" || !lastSyncMs || Date.now() - lastSyncMs > 5 * 60_000) {
+        await runEvolutionDeltaSyncForInstance({
+          db,
+          instance: updatedInstanceSnapshot as any,
+          storeId: String(instance.store_id),
+          mode: "auto_connect",
+          maxChats: 15,
+          messagesPerChat: 10,
+          force: instance.status !== "connected",
+        }).catch(() => null);
+      }
+    }
+
     return json({ ok: true, provider, instance: instanceKey, event: name, status: statusMap });
   }
   const isRevoke = name.includes("delete") || name.includes("revoke");
-  const isDelivery = !isRevoke && (name.includes("update") || name.includes("receipt") || name.includes("status"));
+  const isGroupEvent =
+    name === "groups.upsert" ||
+    name === "group.update" ||
+    name === "groups.update" ||
+    name === "group.participants.update" ||
+    name === "group-participants.update";
+  const isChatMetaEvent = name === "chats.upsert" || name === "chats.update";
+  const isContactMetaEvent = name === "contacts.upsert" || name === "contacts.update";
+  const isPresenceOrCall = name === "presence.update" || name.startsWith("call");
+  if (isPresenceOrCall) {
+    return json({ ok: true, ignored: name, provider, instance: instanceKey });
+  }
+  const isDelivery =
+    !isRevoke &&
+    !isGroupEvent &&
+    !isChatMetaEvent &&
+    !isContactMetaEvent &&
+    (name === "messages.update" ||
+      name === "message.update" ||
+      name.includes("receipt") ||
+      name.includes("ack") ||
+      name === "message_status" ||
+      name.includes("status"));
   const results: unknown[] = [];
   try {
-    if (isRevoke) {
+    if (isGroupEvent || isChatMetaEvent || isContactMetaEvent) {
+      const updated = await persistMetadataSyncEvents(db, instance, name, body);
+      results.push({ metadataUpdated: updated });
+    } else if (isRevoke) {
       const revokedIds = extractRevokedMessageIds(body);
       const occurredAt = eventTime(body.timestamp || body.data?.timestamp);
       for (const externalId of revokedIds) {
@@ -1055,7 +1462,15 @@ export async function handleUnofficialWhatsAppWebhook(request: Request, provider
         if (delivery) results.push(await persistDelivery(db, provider, instance, body, delivery));
       }
     } else {
-      for (const item of messageItems(body)) {
+      const rawItems = messageItems(body);
+      const itemsToProcess =
+        name === "messages.set" && rawItems.length > 25
+          ? [...rawItems]
+              .sort((a, b) => Number(b.messageTimestamp || 0) - Number(a.messageTimestamp || 0))
+              .slice(0, 25)
+              .reverse()
+          : rawItems;
+      for (const item of itemsToProcess) {
         const proto = item.message?.protocolMessage || item.protocolMessage;
         if (proto && (proto.type === 0 || proto.type === "REVOKE" || String(proto.type).toUpperCase() === "REVOKE")) {
           const protoKeyId = firstString(proto.key?.id, proto.keyId);
@@ -1068,9 +1483,157 @@ export async function handleUnofficialWhatsAppWebhook(request: Request, provider
         if (message) results.push(await persistInboundMessage(db, provider, instance, body, message));
       }
     }
+    await touchInstanceWebhookHeartbeat(db, instance, name).catch(() => null);
     return json({ ok: true, provider, instance: instanceKey, event: name, processed: results.length, results });
   } catch (error) {
     console.error("[whatsapp-provider-webhook] processing failure", error);
     return json({ error: "Webhook processing failed" }, 500);
   }
+}
+
+/**
+ * Drena e reprocessa eventos presos em `processing_status IN ('received', 'retryable_error')`.
+ * Eventos ja refletidos em `chat_messages` sao encerrados como `processed` sem duplicar mensagens;
+ * eventos historicos (> 24h) com payload redigido sao encerrados como `failed` com diagnostico claro.
+ */
+export async function replayPendingWebhookEvents(params: {
+  db: ReturnType<typeof getServerClient>;
+  limit?: number;
+}): Promise<{ checked: number; replayed: number; resolvedDuplicates: number; expired: number; failed: number }> {
+  const { db, limit = 15 } = params;
+  const minAgeIso = new Date(Date.now() - 15_000).toISOString();
+  const { data: pendingRows } = await db
+    .from("whatsapp_provider_webhook_events")
+    .select("id, provider, instance_id, store_id, event_type, external_message_id, payload, created_at")
+    .in("processing_status", ["received", "retryable_error"])
+    .lt("created_at", minAgeIso)
+    .order("created_at", { ascending: true })
+    .limit(Math.max(1, Math.min(limit, 40)));
+
+  const rows = pendingRows || [];
+  if (rows.length === 0) {
+    return { checked: 0, replayed: 0, resolvedDuplicates: 0, expired: 0, failed: 0 };
+  }
+
+  const instanceIds = Array.from(new Set(rows.map((r) => String(r.instance_id)).filter(Boolean)));
+  const { data: instRows } = await db
+    .from("whatsapp_channel_instances")
+    .select("id, store_id, provider, instance_key, external_instance_id, status, public_config")
+    .in("id", instanceIds);
+  const instMap = new Map<string, JsonObject>();
+  for (const i of instRows || []) instMap.set(String(i.id), i as JsonObject);
+
+  const extIds = Array.from(new Set(rows.map((r) => r.external_message_id).filter((v): v is string => Boolean(v))));
+  const existingMsgSet = new Set<string>();
+  if (extIds.length > 0) {
+    const { data: msgs } = await db
+      .from("chat_messages")
+      .select("external_message_id")
+      .in("external_message_id", extIds);
+    for (const m of msgs || []) {
+      if (m.external_message_id) existingMsgSet.add(String(m.external_message_id));
+    }
+  }
+
+  let replayed = 0;
+  let resolvedDuplicates = 0;
+  let expired = 0;
+  let failed = 0;
+  const nowMs = Date.now();
+
+  for (const row of rows) {
+    const nowIso = new Date().toISOString();
+    const extId = row.external_message_id ? String(row.external_message_id) : null;
+    if (extId && existingMsgSet.has(extId)) {
+      await db
+        .from("whatsapp_provider_webhook_events")
+        .update({ processing_status: "processed", processed_at: nowIso, error_message: null })
+        .eq("id", row.id);
+      resolvedDuplicates += 1;
+      continue;
+    }
+
+    const inst = instMap.get(String(row.instance_id));
+    if (!inst) {
+      await db
+        .from("whatsapp_provider_webhook_events")
+        .update({ processing_status: "failed", processed_at: nowIso, error_message: "Instância removida antes do replay." })
+        .eq("id", row.id);
+      expired += 1;
+      continue;
+    }
+
+    const ageMs = nowMs - Date.parse(String(row.created_at || nowIso));
+    const payload = (row.payload && typeof row.payload === "object" ? row.payload : {}) as JsonObject;
+    const provider = (row.provider === "wasender_api" ? "wasender_api" : "evolution_api") as UnofficialWhatsAppProvider;
+
+    try {
+      if (row.event_type === "status") {
+        const delivery = normalizedDelivery(provider, { event: "messages.update" }, payload);
+        if (delivery) {
+          await persistDelivery(db, provider, inst, { event: "messages.update" }, delivery, {
+            existingEventId: String(row.id),
+          });
+          replayed += 1;
+          continue;
+        }
+      } else {
+        const msg = normalizedMessage(provider, { event: "messages.upsert" }, payload);
+        const hasValidTarget = Boolean(
+          msg &&
+          (msg.phone || msg.isGroup || (msg.externalUserId && msg.externalUserId.endsWith("@lid"))),
+        );
+        const hasRealText = Boolean(
+          msg?.text &&
+          msg.text !== "[Mensagem WhatsApp]" &&
+          !msg.text.includes("[REDACTED"),
+        );
+        if (msg && hasValidTarget && (hasRealText || ageMs < 60 * 60_000)) {
+          const res = await persistInboundMessage(db, provider, inst, { event: "messages.upsert" }, msg, {
+            existingEventId: String(row.id),
+          });
+          if (res && ("ignored" in res || "duplicate" in res)) {
+            await db
+              .from("whatsapp_provider_webhook_events")
+              .update({ processing_status: "processed", processed_at: nowIso, error_message: null })
+              .eq("id", row.id);
+          }
+          replayed += 1;
+          continue;
+        }
+      }
+
+      if (ageMs > 24 * 3600_000) {
+        await db
+          .from("whatsapp_provider_webhook_events")
+          .update({
+            processing_status: "failed",
+            processed_at: nowIso,
+            error_message: "Evento historico expirado (>24h) com payload redigido.",
+          })
+          .eq("id", row.id);
+        expired += 1;
+      } else {
+        await db
+          .from("whatsapp_provider_webhook_events")
+          .update({
+            processing_status: "retryable_error",
+            error_message: "Payload insuficiente para replay imediato.",
+          })
+          .eq("id", row.id);
+        failed += 1;
+      }
+    } catch (err: any) {
+      await db
+        .from("whatsapp_provider_webhook_events")
+        .update({
+          processing_status: ageMs > 24 * 3600_000 ? "failed" : "retryable_error",
+          error_message: String(err?.message || "Replay error").slice(0, 240),
+        })
+        .eq("id", row.id);
+      failed += 1;
+    }
+  }
+
+  return { checked: rows.length, replayed, resolvedDuplicates, expired, failed };
 }

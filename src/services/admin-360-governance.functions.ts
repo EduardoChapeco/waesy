@@ -19,7 +19,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/start-server-core";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity } from "@/lib/server-access";
+import { getServerIdentity, requirePlatformAdmin } from "@/lib/server-access";
 import { captureRequestTelemetry } from "@/lib/network-telemetry.server";
 
 // ============================================================================
@@ -36,55 +36,6 @@ export async function computeSha256Digest(data: unknown): Promise<string> {
   const hashBuffer = await globalThis.crypto.subtle.digest("SHA-256", msgBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-// ============================================================================
-// GUARDA AUTÔNOMO DE PLATAFORMA MASTER
-// ============================================================================
-
-/**
- * Valida se a identidade ativa possui privilégio de platform_admin (Master Admin).
- * Não impõe dependência de store_id para permitir governança global do ecossistema.
- */
-async function requirePlatformAdmin() {
-  const identity = await getServerIdentity();
-  if (!identity.id) {
-    throw new Error("Não autenticado. Por favor, faça login.");
-  }
-
-  if (identity.role === "platform_admin" || identity.isPlatformAdmin) {
-    return identity;
-  }
-
-  const db = getServerClient();
-  const { data: p } = await db
-    .from("profiles")
-    .select("role")
-    .eq("id", identity.id)
-    .maybeSingle();
-
-  if (p?.role === "platform_admin") {
-    return { ...identity, role: "platform_admin", isPlatformAdmin: true };
-  }
-
-  const { isBootstrapPlatformAdminEmail } = await import("@/lib/identity.server");
-  const { data: userData, error: userFetchError } = await db.auth.admin.getUserById(identity.id);
-  if (userFetchError) {
-    console.warn("[360-governance] Falha ao consultar e-mail do usuário na auth admin:", userFetchError.message);
-  }
-
-  const email = userData?.user?.email?.toLowerCase();
-
-  if (email && isBootstrapPlatformAdminEmail(email)) {
-    const { error: promotionError } = await db.from("profiles").update({ role: "platform_admin" }).eq("id", identity.id);
-    if (promotionError) {
-      console.error("[360-governance] Falha ao persistir promoção para platform_admin:", promotionError);
-      throw new Error("Não foi possível confirmar a autorização administrativa.");
-    }
-    return { ...identity, role: "platform_admin", isPlatformAdmin: true };
-  }
-
-  throw new Error("Acesso negado. Apenas administradores globais master podem realizar esta ação.");
 }
 
 // ============================================================================

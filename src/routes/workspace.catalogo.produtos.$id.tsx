@@ -42,8 +42,8 @@ import {
   listStoreBrands,
 } from "@/services/admin-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
-import { getNicheCatalogContext } from "@/lib/catalog-niche-context";
-import { getNicheSemantics } from "@/lib/niche-semantics";
+import { getNicheCatalogContext } from "@/lib/niches/catalog-niche-context";
+import { getNicheSemantics } from "@/lib/niches/niche-semantics";
 
 export const Route = createFileRoute("/workspace/catalogo/produtos/$id")({
   head: () => ({ meta: [{ title: "Editor Avançado de Produto | Workspace Waesy" }] }),

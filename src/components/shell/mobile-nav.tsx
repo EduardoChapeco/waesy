@@ -389,7 +389,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
                         onClick={toggleAccountSwitcher}
                         aria-label={item.label || "Perfil"}
                         className={cn(
-                          "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                          "flex-1 min-w-11 h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                           isProfileActive || isItemActive
                             ? "text-foreground font-bold"
                             : "text-muted-foreground hover:text-foreground"
@@ -464,7 +464,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
                         ...(item.text_color ? { color: item.text_color } : {}),
                       }}
                       className={cn(
-                        "h-12 min-h-11 px-2 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                        "flex-1 min-w-11 h-12 min-h-11 px-1 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                         isItemActive
                           ? "text-foreground font-bold"
                           : "text-muted-foreground hover:text-foreground"
@@ -501,7 +501,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
                     to="/conta/conversas"
                     aria-label="Chat"
                     className={cn(
-                      "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "flex-1 min-w-11 h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       isChatActive
                         ? "text-foreground font-semibold"
                         : "text-muted-foreground hover:text-foreground"
@@ -516,7 +516,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
                     to="/feed"
                     aria-label="Feed"
                     className={cn(
-                      "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "flex-1 min-w-11 h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       isFeedActive
                         ? "text-foreground font-semibold"
                         : "text-muted-foreground hover:text-foreground"
@@ -531,7 +531,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
                     to="/explorer"
                     aria-label="Explorar"
                     className={cn(
-                      "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "flex-1 min-w-11 h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       isExploreActive
                         ? "text-foreground font-semibold"
                         : "text-muted-foreground hover:text-foreground"
@@ -546,7 +546,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
                     to={isAuthenticated ? "/conta/pedidos" : "/entrar"}
                     aria-label="Compras"
                     className={cn(
-                      "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "flex-1 min-w-11 h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       isPurchasesActive
                         ? "text-foreground font-semibold"
                         : "text-muted-foreground hover:text-foreground"
@@ -569,7 +569,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
                     onClick={toggleAccountSwitcher}
                     aria-label="Perfil"
                     className={cn(
-                      "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "flex-1 min-w-11 h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       isProfileActive
                         ? "text-foreground font-semibold"
                         : "text-muted-foreground hover:text-foreground"

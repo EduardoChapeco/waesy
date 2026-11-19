@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { getAgencySalesAndCommissionConfigFn } from "@/services/travel-pre-boarding-and-commissions.functions";
 import { ArrowLeft, Plane, Building2, Users, FileText, Ticket, Calendar, Phone, Mail, Copy, Check, ExternalLink, Plus, Printer, Download, Luggage, Shield, Clock, Car, RefreshCw, FileCheck2, Loader2, Compass, AlertTriangle, CheckCircle2, Trash2, Edit2, CreditCard, Receipt, ShieldAlert, DollarSign, Building, Barcode, Calculator } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
@@ -11,14 +12,18 @@ import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { getTripAggregate, saveConfirmationItem, saveTripPassenger, deleteTripPassenger, saveTripFinancialDetails, type TripAggregateDTO, type TripConfirmationItemDTO, type TripPassengerDTO } from "@/services/travel-lifecycle.functions";
+import { getTripAggregate, saveConfirmationItem, saveTripPassenger, deleteTripPassenger, saveTripFinancialDetails, updateTripPortalCustomization, type TripAggregateDTO, type TripConfirmationItemDTO, type TripPassengerDTO } from "@/services/travel-lifecycle.functions";
+import { TripOperationalStructureEditor, TripOfficialDocumentsPanel } from "@/components/tourism/trips/trip-post-sale-editors";
+import { MediaGalleryField } from "@/components/ui/media-gallery-field";
+import { ImageUpload } from "@/components/ui/image-upload";
+import { Textarea } from "@/components/ui/textarea";
 import { importInfotravelBookingToTrip, syncInfotravelTrip } from "@/services/infotravel";
 import { processBoletoOcr } from "@/services/travel-operator-ocr.functions";
 import { VoucherBoardingCard } from "@/components/tourism/voucher-boarding-card";
 import { OperatorVoucherImportSheet } from "@/components/tourism/vouchers/operator-voucher-import-sheet";
 import { exportElementAsPdf } from "@/lib/pdf-export";
 import { formatMoney } from "@/lib/money";
-import { FAMOUS_HOTEL_PRESETS } from "@/lib/hotel-presets";
+import { FAMOUS_HOTEL_PRESETS } from "@/lib/tourism/hotel-presets";
 import { CancellationPenaltyCalculatorDialog } from "@/components/turismo/cancellation-penalty-calculator-dialog";
 
 export const Route = createFileRoute("/workspace/turismo/viagens/$id")({
@@ -42,7 +47,7 @@ export const Route = createFileRoute("/workspace/turismo/viagens/$id")({
   component: WorkspaceTripDetailPage,
 });
 
-type ActiveTab = "overview" | "passengers" | "services" | "locators" | "contract" | "vouchers" | "financial";
+type ActiveTab = "overview" | "passengers" | "services" | "locators" | "contract" | "vouchers" | "financial" | "portal";
 
 function checkDocumentValidity(
   expiryDateStr?: string | null,
@@ -110,11 +115,40 @@ function WorkspaceTripDetailPage() {
   const [financialPaymentMethod, setFinancialPaymentMethod] = useState<string>(
     tripFinancialDetails.payment_method || aggregate?.trip?.payment_method || "boleto_parcelado"
   );
-  const [financialInstallments, setFinancialInstallments] = useState<any[]>(
-    Array.isArray(tripFinancialDetails.installments) ? tripFinancialDetails.installments : []
-  );
+  const [financialInstallments, setFinancialInstallments] = useState<any[]>(() => {
+    const canonicalBoletos = Array.isArray(aggregate?.boletos) ? aggregate.boletos : [];
+    if (canonicalBoletos.length > 0) {
+      return canonicalBoletos.map((b: any) => ({
+        id: b.id,
+        installment_number: b.installment_number,
+        total_installments: b.total_installments,
+        due_date: b.due_date,
+        amount_cents: b.amount_cents,
+        digitable_line: b.digitable_line || "",
+        pdf_url: b.boleto_pdf_url || "",
+        receipt_file_url: b.receipt_file_url || null,
+        bank_name: b.operator_slug || undefined,
+        status:
+          b.status === "reconciled" || b.status === "paid"
+            ? "paid"
+            : b.status === "receipt_uploaded"
+              ? "receipt_uploaded"
+              : b.status === "overdue"
+                ? "overdue"
+                : "pending",
+        paid_at: b.reconciled_at || null,
+      }));
+    }
+    return Array.isArray(tripFinancialDetails.installments) ? tripFinancialDetails.installments : [];
+  });
   const [isOcrBoletoLoading, setIsOcrBoletoLoading] = useState(false);
   const [isSavingFinancial, setIsSavingFinancial] = useState(false);
+
+  const { data: tripCommPermissions } = useQuery({
+    queryKey: ["trip-detail-financial-rbac"],
+    queryFn: () => getAgencySalesAndCommissionConfigFn({ data: {} }),
+  });
+  const canEditTripFinancials = Boolean(tripCommPermissions?.isManagerOrOwner);
   const [isAddInstallmentOpen, setIsAddInstallmentOpen] = useState(false);
   const [newInstNumber, setNewInstNumber] = useState(1);
   const [newInstTotal, setNewInstTotal] = useState(10);
@@ -122,6 +156,23 @@ function WorkspaceTripDetailPage() {
   const [newInstAmountCents, setNewInstAmountCents] = useState(0);
   const [newInstDigitableLine, setNewInstDigitableLine] = useState("");
   const [newInstBankName, setNewInstBankName] = useState("Banco");
+
+  // ── Estados do Portal do Viajante Personalizado (Fotos, Vídeos e Dicas) ──
+  const initialPortalContent = ((aggregate?.trip as any)?.portal_content && typeof (aggregate?.trip as any)?.portal_content === "object")
+    ? (aggregate?.trip as any).portal_content
+    : {};
+  const [portalCoverUrl, setPortalCoverUrl] = useState<string>(aggregate?.trip?.cover_image_url || "");
+  const [portalWelcomeNote, setPortalWelcomeNote] = useState<string>(initialPortalContent.welcome_note || "");
+  const [portalMediaItems, setPortalMediaItems] = useState<any[]>(
+    Array.isArray(initialPortalContent.portal_media) ? initialPortalContent.portal_media : [],
+  );
+  const [portalTipsList, setPortalTipsList] = useState<Array<{ id: string; category: string; title: string; description: string }>>(
+    Array.isArray(initialPortalContent.portal_tips) ? initialPortalContent.portal_tips : [],
+  );
+  const [newTipCategory, setNewTipCategory] = useState("Dica");
+  const [newTipTitle, setNewTipTitle] = useState("");
+  const [newTipDescription, setNewTipDescription] = useState("");
+  const [isSavingPortal, setIsSavingPortal] = useState(false);
 
   // Modal de Adicionar Localizador
   const [isAddLocatorOpen, setIsAddLocatorOpen] = useState(false);
@@ -407,7 +458,7 @@ function WorkspaceTripDetailPage() {
               disabled={isInfotravelBusy}
               className="rounded-lg text-xs font-bold gap-2 h-11 px-4 sm:px-3 border-sky-500/30 text-sky-700 hover:bg-sky-500/10 cursor-pointer"
             >
-              {isInfotravelBusy ? <Loader2 className="size-4 sm:size-3.5 animate-spin" /> : <Plane className="size-4 sm:size-3.5" />}
+              {isInfotravelBusy ? <Loader2 className="size-4 sm:size-3.5 animate-spin motion-reduce:animate-none" /> : <Plane className="size-4 sm:size-3.5" />}
               <span>Importar InfoTravel</span>
             </Button>
             <Button
@@ -417,7 +468,7 @@ function WorkspaceTripDetailPage() {
               disabled={isInfotravelBusy}
               className="rounded-lg text-xs font-bold gap-2 h-11 px-4 sm:px-3 border-sky-500/30 text-sky-700 hover:bg-sky-500/10 cursor-pointer"
             >
-              <RefreshCw className={`size-4 sm:size-3.5 ${isInfotravelBusy ? "animate-spin" : ""}`} />
+              <RefreshCw className={`size-4 sm:size-3.5 ${isInfotravelBusy ? "animate-spin motion-reduce:animate-none" : ""}`} />
               <span>Sincronizar GDS</span>
             </Button>
             <Button
@@ -486,18 +537,19 @@ function WorkspaceTripDetailPage() {
                   return;
                 }
                 const origin = typeof window !== "undefined" ? window.location.origin : "";
-                const walletUrl = `${origin}/viajante/carteira`;
-                const contractUrl = (trip as any).contract_token ? `${origin}/contrato/${(trip as any).contract_token}` : "";
+                const travelerPortalUrl = `${origin}/viajante/viagem/${trip.id}`;
+                const contractToken = aggregate.contract?.public_token || (trip as any).contract_token || "";
+                const contractUrl = contractToken ? `${origin}/contrato/${contractToken}` : "";
                 const msg = encodeURIComponent(
-                  `Olá ${trip.client_name}! ️ Segue o seu Kit de Viagem para ${trip.destination_city} (Ref: ${trip.trip_number}):\n\n` +
-                  `️ Carteira Digital de Embarque & Vouchers: ${walletUrl}\n` +
-                  (contractUrl ? ` Contrato de Intermediação Assinado: ${contractUrl}\n\n` : "\n") +
+                  `Olá ${trip.client_name}! Segue o seu Kit de Viagem para ${trip.destination_city} (Ref: ${trip.trip_number}):\n\n` +
+                  `Portal Minha Viagem & Vouchers: ${travelerPortalUrl}\n` +
+                  (contractUrl ? `Contrato de Intermediação Assinado: ${contractUrl}\n\n` : "\n") +
                   `Estamos à disposição no plantão da agência para qualquer apoio antes ou durante a viagem!`
                 );
-                window.open(`https://wa.me/55${rawPhone}?text=${msg}`, "_blank");
+                window.open(`https://wa.me/55${rawPhone}?text=${msg}`, "_blank", "noopener,noreferrer");
                 toast.success("Abrindo WhatsApp com Kit de Viagem...");
               }}
-              className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-11 px-4 sm:px-3 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer shadow-xs"
+              className="rounded-lg text-xs font-bold gap-2 h-11 px-4 sm:px-3 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
             >
               <WhatsappLogo size={16} weight="fill" />
               <span>Disparar Kit WhatsApp</span>
@@ -620,6 +672,18 @@ function WorkspaceTripDetailPage() {
           <CreditCard className="size-3.5" />
           <span>Financeiro, Boletos e Comissões</span>
         </button>
+
+        <button /* focus-visible:ring-2 */
+          onClick={() => setActiveTab("portal")} /* focus-visible:ring-2 */
+          className={`h-11 px-4 py-2 text-xs font-bold transition-colors border-b-2 whitespace-nowrap flex items-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/20 outline-none rounded-t ${
+            activeTab === "portal"
+              ? "border-primary text-foreground"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <ExternalLink className="size-3.5" />
+          <span>Portal do Viajante</span>
+        </button>
       </div>
 
       {/* ── 3. CONTEÚDO DAS ABAS ── */}
@@ -656,7 +720,11 @@ function WorkspaceTripDetailPage() {
               <label className="flex items-start gap-2 p-3 rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/30 transition-colors cursor-pointer">
                 <input
                   type="checkbox"
-                  defaultChecked={Boolean((trip as any).contract_token)}
+                  defaultChecked={Boolean(
+                    (trip as any).contract_token ||
+                      aggregate.contract?.status === "signed" ||
+                      aggregate.contract?.status === "completed",
+                  )}
                   className="mt-1 size-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
                 />
                 <div className="space-y-1 min-w-0">
@@ -835,44 +903,52 @@ function WorkspaceTripDetailPage() {
               </div>
 
               {/* Boletos / Linhas digitáveis se houver */}
-              {trip.financial_details?.installments && trip.financial_details.installments.length > 0 && (
+              {((Array.isArray(aggregate.boletos) && aggregate.boletos.length > 0) ||
+                (trip.financial_details?.installments && trip.financial_details.installments.length > 0)) && (
                 <div className="space-y-2 pt-2 border-t border-border/60">
                   <span className="text-xs font-bold text-foreground flex items-center gap-2">
                     <Barcode className="size-4 text-primary" /> Parcelas / Boletos Bancários
                   </span>
                   <div className="divide-y divide-border/60 rounded-lg border border-border/60 bg-muted/10">
-                    {trip.financial_details.installments.map((inst: any, idx: number) => (
-                      <div key={idx} className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                        <div className="space-y-1">
-                          <span className="font-bold text-foreground">
-                            Parcela {inst.number || idx + 1}: {inst.amount_cents ? formatMoney(inst.amount_cents) : "—"}
-                          </span>
-                          {inst.due_date && (
-                            <p className="text-xs text-muted-foreground/75 text-muted-foreground">Vencimento: {inst.due_date}</p>
-                          )}
-                          {inst.barcode && (
-                            <p className="font-mono text-xs text-muted-foreground break-all">
-                              Linha: {inst.barcode}
-                            </p>
+                    {(Array.isArray(aggregate.boletos) && aggregate.boletos.length > 0
+                      ? aggregate.boletos
+                      : trip.financial_details.installments
+                    ).map((inst: any, idx: number) => {
+                      const barcodeValue = inst.digitable_line || inst.barcode || "";
+                      const instNum = inst.installment_number || inst.number || idx + 1;
+                      return (
+                        <div key={inst.id || idx} className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                          <div className="space-y-1">
+                            <span className="font-bold text-foreground">
+                              Parcela {instNum}: {inst.amount_cents ? formatMoney(inst.amount_cents) : "—"}
+                            </span>
+                            {inst.due_date && (
+                              <p className="text-xs text-muted-foreground/75 text-muted-foreground">Vencimento: {inst.due_date}</p>
+                            )}
+                            {barcodeValue && (
+                              <p className="font-mono text-xs text-muted-foreground break-all">
+                                Linha: {barcodeValue}
+                              </p>
+                            )}
+                          </div>
+                          {barcodeValue && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                navigator.clipboard.writeText(barcodeValue);
+                                toast.success("Código do boleto copiado!");
+                              }}
+                              className="rounded-lg text-xs font-bold gap-2 h-11 self-start sm:self-auto px-3 cursor-pointer"
+                            >
+                              <Copy className="size-3" />
+                              <span>Copiar Código</span>
+                            </Button>
                           )}
                         </div>
-                        {inst.barcode && (
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => { /* focus-visible:ring-2 */
-                              navigator.clipboard.writeText(inst.barcode);
-                              toast.success("Código do boleto copiado!");
-                            }}
-                            className="rounded-lg text-xs font-bold gap-2 h-11 self-start sm:self-auto px-3 cursor-pointer"
-                          >
-                            <Copy className="size-3" />
-                            <span>Copiar Código</span>
-                          </Button>
-                        )}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -897,18 +973,18 @@ function WorkspaceTripDetailPage() {
                   >
                     <div>
                       <span className="font-bold text-foreground">
-                        {f.origin}  {f.destination}
+                        {(f.origin_iata || f.origin || "Origem")} → {(f.destination_iata || f.destination || "Destino")}
                       </span>
                       <p className="text-xs text-muted-foreground/75 text-muted-foreground">
-                        {f.airline || "Cia Aérea"} • Voo {f.flight_number || "—"} {f.date && `• ${f.date}`}
+                        {f.airline_name || f.airline || "Cia Aérea"} • Voo {f.flight_number || "—"} {f.date && `• ${f.date}`}
                       </p>
                     </div>
 
                     <div className="flex items-center gap-3 font-mono text-xs text-muted-foreground/75">
-                      {f.locator && (
+                      {(f.locator || f.locator_code) && (
                         <div className="bg-card px-3 py-1 rounded-lg border border-border/80">
                           <span className="text-xs text-muted-foreground block uppercase">PNR</span>
-                          <span className="font-bold text-foreground">{f.locator}</span>
+                          <span className="font-bold text-foreground">{f.locator || f.locator_code}</span>
                         </div>
                       )}
                       {(f.departure_time || f.arrival_time) && (
@@ -940,10 +1016,10 @@ function WorkspaceTripDetailPage() {
                     className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-2 text-xs"
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <span className="font-bold text-foreground">{h.name}</span>
-                      {h.confirmation && (
+                      <span className="font-bold text-foreground">{h.hotel_name || h.name}</span>
+                      {(h.confirmation || h.confirmation_id) && (
                         <span className="font-mono text-xs bg-card px-2 py-1 rounded border border-border">
-                          Loc: {h.confirmation}
+                          Loc: {h.confirmation || h.confirmation_id}
                         </span>
                       )}
                     </div>
@@ -951,8 +1027,8 @@ function WorkspaceTripDetailPage() {
                     <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground/75 text-muted-foreground">
                       <span>Regime: <strong className="text-foreground">{h.meal_plan || "Café"}</strong></span>
                       <span>Quarto: <strong className="text-foreground">{h.room_type || "Standard"}</strong></span>
-                      <span>Check-in: <strong className="text-foreground">{h.checkin || "—"}</strong></span>
-                      <span>Check-out: <strong className="text-foreground">{h.checkout || "—"}</strong></span>
+                      <span>Check-in: <strong className="text-foreground">{h.checkin_date || h.checkin || "—"}</strong></span>
+                      <span>Check-out: <strong className="text-foreground">{h.checkout_date || h.checkout || "—"}</strong></span>
                     </div>
                   </div>
                 ))}
@@ -1036,6 +1112,14 @@ function WorkspaceTripDetailPage() {
               )}
             </div>
           )}
+
+          <TripOperationalStructureEditor
+            aggregate={aggregate}
+            onSaved={async () => {
+              const updated = await getTripAggregate({ data: { tripId: trip.id } }).catch(() => null);
+              if (updated) setAggregate(updated);
+            }}
+          />
         </div>
       )}
 
@@ -1239,7 +1323,7 @@ function WorkspaceTripDetailPage() {
                     <div key={idx} className="p-3 rounded bg-background text-xs space-y-1">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <span className="font-bold text-foreground">
-                          {tr.title || tr.description || tr.vehicle || `Transfer #${idx + 1}`}
+                          {tr.title || tr.name || tr.description || tr.vehicle || `Transfer #${idx + 1}`}
                         </span>
                         {(tr.type || tr.vehicle) && (
                           <span className="px-2 py-1 rounded bg-muted text-xs font-mono text-muted-foreground">
@@ -1247,9 +1331,14 @@ function WorkspaceTripDetailPage() {
                           </span>
                         )}
                       </div>
-                      <p className="text-muted-foreground">
-                        {tr.route || `${tr.pickup || tr.pickup_location || "Origem"} → ${tr.dropoff || tr.dropoff_location || "Destino"}`}
-                      </p>
+                      {(tr.route || tr.pickup || tr.pickup_location || tr.dropoff || tr.dropoff_location) && (
+                        <p className="text-muted-foreground">
+                          {tr.route ||
+                            [tr.pickup || tr.pickup_location, tr.dropoff || tr.dropoff_location]
+                              .filter(Boolean)
+                              .join(" → ")}
+                        </p>
+                      )}
                       {(tr.service_date || tr.date || tr.pickup_time || tr.dropoff_time) && (
                         <span className="text-xs text-muted-foreground block font-mono">
                           {[
@@ -1417,12 +1506,14 @@ function WorkspaceTripDetailPage() {
                 <Badge
                   variant="outline"
                   className={`text-xs font-bold uppercase ${
-                    aggregate.contract.status === "signed"
+                    aggregate.contract.status === "signed" || aggregate.contract.status === "completed"
                       ? "text-emerald-600 border-emerald-500/30 bg-emerald-500/10"
                       : "text-warning-strong border-warning/30 bg-warning/10"
                   }`}
                 >
-                  {aggregate.contract.status === "signed" ? "Assinado" : "Pendente de Assinatura"}
+                  {aggregate.contract.status === "signed" || aggregate.contract.status === "completed"
+                    ? "Assinado"
+                    : "Pendente de Assinatura"}
                 </Badge>
               </div>
 
@@ -1431,10 +1522,20 @@ function WorkspaceTripDetailPage() {
                 <p className="text-muted-foreground leading-relaxed text-xs text-muted-foreground/75">
                   {aggregate.contract.package_summary}
                 </p>
-                <div className="pt-2 flex items-center gap-2">
-                  <Button asChild  variant="outline" className="rounded-lg text-xs font-bold h-11 min-h-11 px-3 text-xs">
+                <div className="pt-2 flex flex-wrap items-center gap-2">
+                  <Button asChild variant="outline" className="rounded-lg text-xs font-bold h-11 min-h-11 px-3">
                     <Link to="/workspace/turismo/contratos">Abrir Central de Contratos</Link>
                   </Button>
+                  {(aggregate.contract as any).public_token && (
+                    <Button asChild variant="ghost" className="rounded-lg text-xs font-bold h-11 min-h-11 px-3">
+                      <Link
+                        to="/contrato/$token"
+                        params={{ token: String((aggregate.contract as any).public_token) }}
+                      >
+                        Ver Portal de Assinatura
+                      </Link>
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -1442,11 +1543,19 @@ function WorkspaceTripDetailPage() {
             <div className="py-8 text-center text-xs text-muted-foreground space-y-2">
               <FileCheck2 className="size-8 mx-auto text-muted-foreground/50" />
               <p>Nenhum contrato digital foi gerado automaticamente.</p>
-              <Button asChild  className="rounded-lg text-xs font-bold h-11 min-h-11 px-3 text-xs">
+              <Button asChild className="rounded-lg text-xs font-bold h-11 min-h-11 px-3">
                 <Link to="/workspace/turismo/contratos">Emitir Novo Contrato</Link>
               </Button>
             </div>
           )}
+
+          <TripOfficialDocumentsPanel
+            aggregate={aggregate}
+            onChanged={async () => {
+              const updated = await getTripAggregate({ data: { tripId: trip.id } }).catch(() => null);
+              if (updated) setAggregate(updated);
+            }}
+          />
         </div>
       )}
 
@@ -1563,9 +1672,13 @@ function WorkspaceTripDetailPage() {
                 <Input
                   type="number"
                   step="0.01"
+                  disabled={!canEditTripFinancials}
                   value={(financialGrossCents / 100).toFixed(2)}
-                  onChange={(e) => setFinancialGrossCents(Math.round(parseFloat(e.target.value || "0") * 100))}
-                  className="h-9 text-xs rounded-lg font-mono"
+                  onChange={(e) => {
+                    if (!canEditTripFinancials) return;
+                    setFinancialGrossCents(Math.round(parseFloat(e.target.value || "0") * 100));
+                  }}
+                  className="h-11 text-xs rounded-lg font-mono disabled:opacity-75"
                 />
               </div>
 
@@ -1574,19 +1687,27 @@ function WorkspaceTripDetailPage() {
                 <Input
                   type="number"
                   step="0.01"
+                  disabled={!canEditTripFinancials}
                   value={(financialOperatorNetCents / 100).toFixed(2)}
-                  onChange={(e) => setFinancialOperatorNetCents(Math.round(parseFloat(e.target.value || "0") * 100))}
-                  className="h-9 text-xs rounded-lg font-mono"
+                  onChange={(e) => {
+                    if (!canEditTripFinancials) return;
+                    setFinancialOperatorNetCents(Math.round(parseFloat(e.target.value || "0") * 100));
+                  }}
+                  className="h-11 text-xs rounded-lg font-mono disabled:opacity-75"
                 />
               </div>
 
               <div className="space-y-2">
                 <Label className="text-xs font-semibold">Operadora / Consolidadora</Label>
                 <Input
+                  disabled={!canEditTripFinancials}
                   value={financialOperatorName}
-                  onChange={(e) => setFinancialOperatorName(e.target.value)}
+                  onChange={(e) => {
+                    if (!canEditTripFinancials) return;
+                    setFinancialOperatorName(e.target.value);
+                  }}
                   placeholder="Ex: CVC, Trend, Orinter, Visual"
-                  className="h-9 text-xs rounded-lg"
+                  className="h-11 text-xs rounded-lg disabled:opacity-75"
                 />
               </div>
 
@@ -1596,9 +1717,13 @@ function WorkspaceTripDetailPage() {
                   type="number"
                   min="0"
                   max="100"
+                  disabled={!canEditTripFinancials}
                   value={financialAgentPercent}
-                  onChange={(e) => setFinancialAgentPercent(Number(e.target.value || 0))}
-                  className="h-9 text-xs rounded-lg font-mono"
+                  onChange={(e) => {
+                    if (!canEditTripFinancials) return;
+                    setFinancialAgentPercent(Number(e.target.value || 0));
+                  }}
+                  className="h-11 text-xs rounded-lg font-mono disabled:opacity-75"
                 />
               </div>
             </div>
@@ -1607,7 +1732,7 @@ function WorkspaceTripDetailPage() {
               <div className="space-y-2">
                 <Label className="text-xs font-semibold">Forma de Pagamento Contratada</Label>
                 <Select value={financialPaymentMethod} onValueChange={setFinancialPaymentMethod}>
-                  <SelectTrigger className="h-9 text-xs rounded-lg">
+                  <SelectTrigger className="h-11 text-xs rounded-lg">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -1749,17 +1874,26 @@ function WorkspaceTripDetailPage() {
             ) : (
               <div className="border border-border/70 rounded-lg overflow-hidden divide-y divide-border/60">
                 {financialInstallments.map((inst, idx) => {
-                  const isPaid = inst.status === "paid";
+                  const isPaid = inst.status === "paid" || inst.status === "reconciled";
+                  const isReceiptUploaded = inst.status === "receipt_uploaded";
                   return (
                     <div key={inst.id || idx} className="p-3 bg-card hover:bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <button /* focus-visible:ring-2 */
+                        <button
                           type="button"
-                          onClick={() => { /* focus-visible:ring-2 */
+                          onClick={() => {
                             setFinancialInstallments((prev) =>
                               prev.map((item, i) =>
                                 i === idx
-                                  ? { ...item, status: item.status === "paid" ? "pending" : "paid", paid_at: item.status === "paid" ? null : new Date().toISOString() }
+                                  ? {
+                                      ...item,
+                                      status:
+                                        item.status === "paid" || item.status === "reconciled" ? "pending" : "paid",
+                                      paid_at:
+                                        item.status === "paid" || item.status === "reconciled"
+                                          ? null
+                                          : new Date().toISOString(),
+                                    }
                                   : item
                               )
                             );
@@ -1781,10 +1915,14 @@ function WorkspaceTripDetailPage() {
                             <Badge
                               variant={isPaid ? "default" : "secondary"}
                               className={`text-xs px-2 py-0 font-bold ${
-                                isPaid ? "bg-emerald-600 text-primary-foreground" : "bg-muted text-muted-foreground"
+                                isPaid
+                                  ? "bg-emerald-600 text-primary-foreground"
+                                  : isReceiptUploaded
+                                    ? "bg-primary/15 text-primary border border-primary/30"
+                                    : "bg-muted text-muted-foreground"
                               }`}
                             >
-                              {isPaid ? "PAGA" : "PENDENTE"}
+                              {isPaid ? "PAGA" : isReceiptUploaded ? "COMPROVANTE ENVIADO" : "PENDENTE"}
                             </Badge>
                             {inst.bank_name && (
                               <span className="text-xs text-muted-foreground">({inst.bank_name})</span>
@@ -1843,12 +1981,13 @@ function WorkspaceTripDetailPage() {
               </div>
             )}
 
-            {/* BOTÃO SALVAR ALTERAÇÕES FINANCEIRAS */}
-            <div className="flex justify-end pt-3">
-              <Button
-                type="button"
-                disabled={isSavingFinancial}
-                onClick={async () => { /* focus-visible:ring-2 */
+            {/* BOTÃO SALVAR ALTERAÇÕES FINANCEIRAS (EXCLUSIVO GESTOR / FINANCEIRO) */}
+            {canEditTripFinancials ? (
+              <div className="flex justify-end pt-3">
+                <Button
+                  type="button"
+                  disabled={isSavingFinancial}
+                  onClick={async () => { /* focus-visible:ring-2 */
                   setIsSavingFinancial(true);
                   try {
                     await saveTripFinancialDetails({
@@ -1863,9 +2002,19 @@ function WorkspaceTripDetailPage() {
                         paymentMethod: financialPaymentMethod,
                         installmentsCount: financialInstallments.length || undefined,
                         externalFinanceUrl: financialExternalUrl || undefined,
-                        installments: financialInstallments,
+                        installments: financialInstallments.map((it) => ({
+                          ...it,
+                          status:
+                            it.status === "paid" || it.status === "reconciled"
+                              ? ("paid" as const)
+                              : it.status === "overdue"
+                                ? ("overdue" as const)
+                                : ("pending" as const),
+                        })),
                       },
                     });
+                    const updated = await getTripAggregate({ data: { tripId: trip.id } }).catch(() => null);
+                    if (updated) setAggregate(updated);
                     toast.success("Dados financeiros e boletos salvos com sucesso!");
                   } catch (err: any) {
                     toast.error(err?.message || "Erro ao salvar dados financeiros.");
@@ -1873,12 +2022,17 @@ function WorkspaceTripDetailPage() {
                     setIsSavingFinancial(false);
                   }
                 }}
-                className="rounded-lg text-xs font-bold gap-2 h-11 px-5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer"
+                className="rounded-lg text-xs font-bold gap-2 h-11 px-5 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
               >
-                {isSavingFinancial ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
-                <span>{isSavingFinancial ? "Salvando..." : "Salvar Alterações Financeiras"}</span>
-              </Button>
-            </div>
+                {isSavingFinancial ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <CheckCircle2 className="size-4" />}
+                  <span>{isSavingFinancial ? "Salvando..." : "Salvar Financeiro"}</span>
+                </Button>
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground pt-2">
+                Edição financeira e ajuste de comissão restritos à gerência/financeiro.
+              </p>
+            )}
           </div>
 
           {/* MODAL PARA ADICIONAR PARCELA MANUAL */}
@@ -1997,6 +2151,173 @@ function WorkspaceTripDetailPage() {
               </div>
             </SheetContent>
           </Sheet>
+        </div>
+      )}
+
+      {/* ABA 8: PORTAL DO VIAJANTE (MÍDIAS, VÍDEOS, CAPA & DICAS PÓS-VENDA) */}
+      {activeTab === "portal" && (
+        <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/80 space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/60">
+            <div>
+              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
+                Personalizar Portal Minha Viagem
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Fotos, vídeos do destino e dicas práticas exibidas diretamente no painel do passageiro.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button asChild variant="outline" className="h-11 px-4 rounded-lg text-xs font-semibold gap-2">
+                <a href={`/viajante/viagem/${trip.id}`} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="size-3.5" />
+                  <span>Abrir Portal do Viajante</span>
+                </a>
+              </Button>
+              <Button
+                type="button"
+                disabled={isSavingPortal}
+                onClick={async () => {
+                  setIsSavingPortal(true);
+                  try {
+                    await updateTripPortalCustomization({
+                      data: {
+                        tripId: trip.id,
+                        coverImageUrl: portalCoverUrl || null,
+                        welcomeNote: portalWelcomeNote || null,
+                        portalMedia: portalMediaItems,
+                        portalTips: portalTipsList,
+                      },
+                    });
+                    const updated = await getTripAggregate({ data: { tripId: trip.id } }).catch(() => null);
+                    if (updated) setAggregate(updated);
+                    toast.success("Portal do Viajante atualizado!");
+                  } catch (err: any) {
+                    toast.error(err?.message || "Erro ao salvar personalização do portal.");
+                  } finally {
+                    setIsSavingPortal(false);
+                  }
+                }}
+                className="h-11 px-5 rounded-lg text-xs font-bold gap-2 cursor-pointer"
+              >
+                {isSavingPortal ? <Loader2 className="size-3.5 animate-spin" /> : null}
+                <span>Salvar Portal</span>
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-xs font-bold text-foreground">Foto de Capa da Viagem</Label>
+            <ImageUpload
+              value={portalCoverUrl}
+              onChange={(url) => setPortalCoverUrl(url)}
+              onRemove={() => setPortalCoverUrl("")}
+              aspectPreset="free"
+              allowAspectSwitch={true}
+              bucket="cms-media"
+              helperText="Capa exibida em Minhas Viagens e no topo do Guia do Passageiro"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-xs font-bold text-foreground">Mensagem de Boas-vindas & Orientações Gerais</Label>
+            <Textarea
+              value={portalWelcomeNote}
+              onChange={(e) => setPortalWelcomeNote(e.target.value)}
+              placeholder="Escreva boas-vindas, regras de bagagem, recomendações de clima ou informações de embarque..."
+              className="min-h-24 text-xs rounded-lg"
+            />
+          </div>
+
+          <div className="space-y-2 pt-2 border-t border-border/50">
+            <MediaGalleryField
+              label="Galeria de Fotos & Vídeos do Destino"
+              items={portalMediaItems}
+              onChange={setPortalMediaItems}
+              bucket="cms-media"
+              allowVideos={true}
+              defaultAspectPreset="16:9"
+            />
+          </div>
+
+          <div className="space-y-3 pt-2 border-t border-border/50">
+            <Label className="text-xs font-bold text-foreground block">
+              Dicas Práticas & Recomendações ({portalTipsList.length})
+            </Label>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <Input
+                value={newTipCategory}
+                onChange={(e) => setNewTipCategory(e.target.value)}
+                placeholder="Categoria (Ex: Clima)"
+                className="h-11 text-xs rounded-lg"
+              />
+              <Input
+                value={newTipTitle}
+                onChange={(e) => setNewTipTitle(e.target.value)}
+                placeholder="Título da dica"
+                className="h-11 text-xs rounded-lg sm:col-span-2"
+              />
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Input
+                value={newTipDescription}
+                onChange={(e) => setNewTipDescription(e.target.value)}
+                placeholder="Descrição completa da recomendação para o passageiro..."
+                className="h-11 text-xs rounded-lg flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  if (!newTipTitle.trim() || !newTipDescription.trim()) {
+                    toast.info("Informe título e descrição da dica.");
+                    return;
+                  }
+                  setPortalTipsList((prev) => [
+                    ...prev,
+                    {
+                      id: `tip_${Date.now()}`,
+                      category: newTipCategory.trim() || "Dica",
+                      title: newTipTitle.trim(),
+                      description: newTipDescription.trim(),
+                    },
+                  ]);
+                  setNewTipTitle("");
+                  setNewTipDescription("");
+                }}
+                className="h-11 px-4 rounded-lg text-xs font-bold gap-1 shrink-0"
+              >
+                <Plus className="size-3.5" />
+                <span>Adicionar Dica</span>
+              </Button>
+            </div>
+
+            {portalTipsList.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {portalTipsList.map((tip, tIdx) => (
+                  <div key={tip.id || tIdx} className="p-3 rounded-lg border border-border bg-muted/20 flex items-start justify-between gap-2 text-xs">
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-2xs">{tip.category}</Badge>
+                        <span className="font-bold text-foreground truncate">{tip.title}</span>
+                      </div>
+                      <p className="text-muted-foreground break-words">{tip.description}</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      aria-label="Remover dica"
+                      onClick={() => setPortalTipsList((prev) => prev.filter((_, i) => i !== tIdx))}
+                      className="h-11 w-11 p-0 text-destructive shrink-0"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -2120,21 +2441,24 @@ function WorkspaceTripDetailPage() {
                   value={passengerForm.email}
                   onChange={(e) => setPassengerForm((p) => ({ ...p, email: e.target.value }))}
                   placeholder="cliente@email.com"
-                  className="h-9 text-xs rounded-lg"
+                  className="h-11 text-xs rounded-lg"
                 />
               </div>
             </div>
 
             <div className="flex items-center gap-2 pt-2">
-              <input
-                type="checkbox"
-                id="isLeadCheck"
-                checked={passengerForm.isLeadPassenger}
-                onChange={(e) => setPassengerForm((p) => ({ ...p, isLeadPassenger: e.target.checked }))}
-                className="size-4 rounded border-border text-primary focus:ring-primary"
-              />
-              <label htmlFor="isLeadCheck" className="text-xs font-medium text-foreground cursor-pointer">
-                Passageiro Titular / Responsável pela Reserva
+              <label
+                htmlFor="isLeadCheck"
+                className="min-h-11 inline-flex items-center gap-2 text-xs font-medium text-foreground cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  id="isLeadCheck"
+                  checked={passengerForm.isLeadPassenger}
+                  onChange={(e) => setPassengerForm((p) => ({ ...p, isLeadPassenger: e.target.checked }))}
+                  className="size-5 rounded border-border text-primary focus-visible:ring-2 focus-visible:ring-primary"
+                />
+                <span>Passageiro Titular / Responsável pela Reserva</span>
               </label>
             </div>
           </div>
@@ -2143,7 +2467,7 @@ function WorkspaceTripDetailPage() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setIsPassengerSheetOpen(false)} /* focus-visible:ring-2 */
+              onClick={() => setIsPassengerSheetOpen(false)}
               className="h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer"
             >
               Cancelar
@@ -2151,10 +2475,10 @@ function WorkspaceTripDetailPage() {
             <Button
               type="button"
               disabled={savePassengerMut.isPending || Boolean(passengerForm.fullName) === false}
-              onClick={() => savePassengerMut.mutate(passengerForm)} /* focus-visible:ring-2 */
-              className="h-11 px-5 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs"
+              onClick={() => savePassengerMut.mutate(passengerForm)}
+              className="h-11 px-5 rounded-lg text-xs font-bold gap-2 cursor-pointer"
             >
-              {savePassengerMut.isPending ? <Loader2 className="size-3.5 animate-spin" /> : null}
+              {savePassengerMut.isPending ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : null}
               <span>Salvar Passageiro</span>
             </Button>
           </SheetFooter>
@@ -2187,7 +2511,7 @@ function WorkspaceTripDetailPage() {
                     setLocatorForm((prev) => ({ ...prev, itemType: val }))
                   }
                 >
-                  <SelectTrigger className="h-9 text-xs rounded-lg">
+                  <SelectTrigger className="h-11 text-xs rounded-lg">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -2215,7 +2539,7 @@ function WorkspaceTripDetailPage() {
                         setLocatorForm((prev) => ({
                           ...prev,
                           providerName: preset.name,
-                          notes: `${preset.city}/${preset.state}${preset.regime_options?.[0] ? ` · ${preset.regime_options[0]}` : ""} · ⭐ ${preset.stars} estrelas`,
+                          notes: `${preset.city}/${preset.state}${preset.regime_options?.[0] ? ` · ${preset.regime_options[0]}` : ""} · ${preset.stars} estrelas`,
                         }));
                         toast.success(`Dados de ${preset.name} carregados com sucesso!`);
                       }

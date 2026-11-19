@@ -42,10 +42,16 @@ export const UpsertTravelInterestSchema = z.object({
   contactId: z.string().uuid("ID do contato é obrigatório"),
   title: z.string().min(3, "Título descritivo é obrigatório"),
   destinations: z.array(z.string()).min(1, "Ao menos um destino deve ser informado"),
+  destinationTags: z.array(z.any()).optional(),
   destinationCategories: z.array(z.string()).optional().default([]),
   preferredOrigins: z.array(z.string()).optional().default([]),
+  periodTags: z.array(z.string()).optional().default([]),
+  flexibilityDays: z.number().int().min(0).max(60).optional().default(3),
+  roomOccupancies: z.array(z.any()).optional(),
+  rawIntentMarkdown: z.string().optional().nullable(),
+  leadId: z.string().uuid().optional().nullable(),
   dates: z.object({
-    flexibility: z.enum(["exact_dates", "specific_month", "specific_season", "flexible_anytime"]),
+    flexibility: z.enum(["exact_dates", "specific_month", "specific_season", "flexible_anytime", "unspecified"]),
     targetMonths: z.array(z.string()).optional().default([]),
     exactDepartureDate: z.string().optional().nullable(),
     exactReturnDate: z.string().optional().nullable(),
@@ -107,6 +113,7 @@ export const BulkImportInterestsSchema = z.object({
         maxInstallmentCents: z.number().int().positive().optional().nullable(),
         adults: z.number().int().min(1).default(2),
         children: z.number().int().min(0).default(0),
+        childrenAges: z.array(z.number().int().min(0).max(17)).optional().default([]),
         notes: z.string().optional().nullable(),
       })
     )
@@ -329,15 +336,21 @@ export const upsertTravelInterestFn = createServerFn({ method: "POST" })
       contact_id: data.contactId,
       title: data.title.trim(),
       destinations: data.destinations,
+      destination_tags: data.destinationTags || [],
       destination_categories: data.destinationCategories || [],
       preferred_origins: data.preferredOrigins || [],
       dates: data.dates,
+      period_tags: data.periodTags || [],
+      flexibility_days: data.flexibilityDays ?? 3,
       party: data.party,
+      room_occupancies: data.roomOccupancies || [],
       budget: data.budget,
       inclusions_wanted: data.inclusionsWanted || [],
       hotel_preferences: data.hotelPreferences || {},
       urgency: data.urgency,
-      source_inquiry_text: data.sourceInquiryText?.trim() || null,
+      raw_intent_markdown: data.rawIntentMarkdown?.trim() || null,
+      lead_id: data.leadId || null,
+      source_inquiry_text: data.sourceInquiryText?.trim() || data.rawIntentMarkdown?.trim() || null,
       source_quote_id: data.sourceQuoteId || null,
       captured_by_user_id: staff.id,
       expires_at: expiresAt,
@@ -348,15 +361,38 @@ export const upsertTravelInterestFn = createServerFn({ method: "POST" })
       payload.id = data.id;
     }
 
-    const { data: saved, error } = await supabase
+    let { data: saved, error } = await supabase
       .from("travel_interests")
       .upsert(payload)
       .select()
       .single();
 
+    if (error && /42703|column .* does not exist|PGRST204/i.test(`${error.code || ""} ${error.message || ""}`)) {
+      for (const col of ["destination_tags", "period_tags", "flexibility_days", "room_occupancies", "raw_intent_markdown", "lead_id"]) {
+        delete payload[col];
+      }
+      ({ data: saved, error } = await supabase
+        .from("travel_interests")
+        .upsert(payload)
+        .select()
+        .single());
+    }
+
     if (error) {
       console.error("[upsertTravelInterestFn] Error:", error);
       throw new Error(`Falha ao salvar interesse de viagem: ${error.message}`);
+    }
+
+    if (saved?.id) {
+      import("./opportunity-radar.functions")
+        .then((mod) =>
+          mod.internalEvaluateDemandAgainstAllSupply({
+            storeId: staff.store_id,
+            interestId: saved.id,
+            leadId: data.leadId || null,
+          })
+        )
+        .catch(() => {});
     }
 
     return saved;
@@ -386,8 +422,18 @@ export async function internalEvaluateOfferMatches(
     return { matchesFound: 0, newOpportunitiesCreated: 0 };
   }
 
-  // Extrair TravelOffer ou sintetizar a partir dos atributos
-  const offerPayload: TravelOffer = classified.attributes?.excelencia_offer || {
+  // 1.5 Extrair TravelOffer ou sintetizar a partir dos atributos + dynamic_fields
+  const dyn = (classified.dynamic_fields || {}) as Record<string, any>;
+  const attrs = (classified.attributes || {}) as Record<string, any>;
+  const resolvedDestCity = attrs.destination || dyn.destination || classified.city_name || classified.title;
+  const resolvedDepartureDate = attrs.departure_date || dyn.departure_date || "";
+  const resolvedReturnDate = attrs.return_date || dyn.return_date || "";
+  const resolvedInstallments = Number(attrs.installments_count || dyn.max_installments || 10);
+  const resolvedInstallmentCents =
+    Number(attrs.installment_cents || dyn.installment_cents || 0) ||
+    Math.round((classified.price_cents || 0) / Math.max(1, resolvedInstallments));
+
+  const offerPayload: TravelOffer = attrs.excelencia_offer || {
     id: classified.id,
     operator: {
       code: "INTERNAL",
@@ -397,47 +443,57 @@ export async function internalEvaluateOfferMatches(
     },
     destination: {
       title: classified.title,
-      city: classified.attributes?.destination || classified.title,
-      country: classified.attributes?.country || "Brasil",
-      regionCategory: classified.attributes?.region_category || "nacional",
+      city: resolvedDestCity,
+      country: attrs.country || dyn.destination_country || "Brasil",
+      destinationIata: attrs.arrival_iata || dyn.arrival_iata || undefined,
+      originIata: attrs.departure_iata || dyn.departure_iata || undefined,
+      originCity: attrs.origin_city || dyn.origin_city || undefined,
+      regionCategory: attrs.region_category || "nacional",
     },
     dates: {
-      departureDate: classified.attributes?.departure_date || new Date().toISOString().slice(0, 10),
-      returnDate: classified.attributes?.return_date || new Date().toISOString().slice(0, 10),
-      durationNights: Number(classified.attributes?.nights_count || 5),
-      displayRangeText: classified.attributes?.dates_label || "Data a consultar",
+      departureDate: resolvedDepartureDate,
+      returnDate: resolvedReturnDate,
+      durationNights: Number(attrs.nights_count || 5),
+      displayRangeText: attrs.dates_label || (resolvedDepartureDate || "Data a consultar"),
     },
     airfare: {
-      included: Boolean(classified.attributes?.has_flights),
-      airline: classified.attributes?.airline || "Aéreo Selecionado",
-      departureOriginCity: classified.attributes?.origin_city || "Chapecó / Região",
-      baggageIncluded: Boolean(classified.attributes?.baggage_included),
+      included: Boolean(attrs.has_flights ?? dyn.package_type === "aereo"),
+      airline: attrs.airline || "Aéreo Selecionado",
+      departureOriginCity: attrs.origin_city || dyn.origin_city || "Chapecó / Região",
+      baggageIncluded: Boolean(attrs.baggage_included),
     },
     hotels: [
       {
-        hotelId: classified.attributes?.hotel_id || "hotel-default",
-        hotelName: classified.attributes?.hotel_name || classified.title,
-        categoryStars: Number(classified.attributes?.hotel_stars || 4),
-        mealPlan: classified.attributes?.meal_plan || "breakfast",
-        mealPlanLabel: classified.attributes?.meal_plan_label || "Café da manhã",
-        roomType: classified.attributes?.room_type || "Standard",
-        inclusions: classified.attributes?.included_items || [],
+        hotelId: attrs.hotel_id || dyn.hotel_id || "hotel-default",
+        hotelName: attrs.hotel_name || dyn.hotel_name || classified.title,
+        categoryStars: Number(attrs.hotel_stars || dyn.hotel_stars || 4),
+        mealPlan: attrs.meal_plan || dyn.meal_plan || "breakfast",
+        mealPlanLabel: attrs.meal_plan_label || dyn.meal_plan || "Café da manhã",
+        roomType: attrs.room_type || "Standard",
+        inclusions: attrs.included_items || dyn.inclusions || [],
       },
     ],
     transfers: {
-      included: Boolean(classified.attributes?.has_transfers ?? true),
+      included: Boolean(attrs.has_transfers ?? true),
       transferType: "in_out",
     },
+    inclusions: attrs.included_items || dyn.inclusions || [],
+    party: {
+      adults: 2,
+      children: 0,
+      infants: 0,
+      childAges: [],
+      labelMode: "couple",
+    },
     pricing: {
-      priceBasis: classified.attributes?.price_basis || "per_person",
-      priceBasisLabel: classified.attributes?.price_basis === "total_package" ? "Total do pacote" : "Por pessoa",
+      priceBasis: attrs.price_basis || dyn.pricing_mode || "per_person",
+      priceBasisLabel:
+        (attrs.price_basis || dyn.pricing_mode) === "total_package" ? "Total do pacote" : "Por pessoa",
       totalPackagePriceCents: classified.price_cents || 0,
     },
     paymentTermsSnapshot: {
-      installmentCount: Number(classified.attributes?.installments_count || 10),
-      installmentAmountCents: Math.round(
-        (classified.price_cents || 0) / Number(classified.attributes?.installments_count || 10)
-      ),
+      installmentCount: resolvedInstallments,
+      installmentAmountCents: resolvedInstallmentCents,
       totalAmountCents: classified.price_cents || 0,
       shortStoryLabel: "Sem juros",
       interestRule: "zero_interest",
@@ -454,94 +510,179 @@ export async function internalEvaluateOfferMatches(
     .eq("store_id", storeId)
     .in("status", ["open", "matched"]);
 
-  if (interestsError || !rawInterests || rawInterests.length === 0) {
-    return { matchesFound: 0, newOpportunitiesCreated: 0 };
-  }
-
   const interests: TravelInterest[] = [];
   const contactsMap: Record<string, CommercialContact> = {};
 
-  for (const r of rawInterests) {
-    if (!r.contact || r.contact.status === "opted_out") continue;
+  if (!interestsError && rawInterests && rawInterests.length > 0) {
+    for (const r of rawInterests) {
+      if (!r.contact || r.contact.status === "opted_out") continue;
 
-    const c: CommercialContact = {
-      id: r.contact.id,
-      tenantId: r.contact.store_id,
-      name: r.contact.name,
-      phone: r.contact.phone,
-      email: r.contact.email,
-      instagramHandle: r.contact.instagram_handle,
-      city: r.contact.city,
-      preferredChannel: r.contact.preferred_channel || "whatsapp",
-      status: r.contact.status || "active",
-      notes: r.contact.notes,
-      linkedCrmLeadId: r.contact.linked_crm_lead_id,
-      linkedCustomerId: r.contact.linked_customer_id,
-      createdAt: r.contact.created_at,
-      updatedAt: r.contact.updated_at,
-    };
-    contactsMap[c.id] = c;
+      const c: CommercialContact = {
+        id: r.contact.id,
+        tenantId: r.contact.store_id,
+        name: r.contact.name,
+        phone: r.contact.phone,
+        email: r.contact.email,
+        instagramHandle: r.contact.instagram_handle,
+        city: r.contact.city,
+        preferredChannel: r.contact.preferred_channel || "whatsapp",
+        status: r.contact.status || "active",
+        notes: r.contact.notes,
+        linkedCrmLeadId: r.contact.linked_crm_lead_id,
+        linkedCustomerId: r.contact.linked_customer_id,
+        createdAt: r.contact.created_at,
+        updatedAt: r.contact.updated_at,
+      };
+      contactsMap[c.id] = c;
 
-    interests.push({
-      id: r.id,
-      contactId: r.contact_id,
-      tenantId: r.store_id,
-      title: r.title,
-      destinations: r.destinations || [],
-      destinationCategories: r.destination_categories || [],
-      preferredOrigins: r.preferred_origins || [],
-      dates: r.dates || { flexibility: "flexible_anytime" },
-      party: r.party || { adults: 2, children: 0 },
-      budget: r.budget || {},
-      inclusionsWanted: r.inclusions_wanted || [],
-      hotelPreferences: r.hotel_preferences,
-      urgency: r.urgency || "moderate",
-      status: r.status || "open",
-      sourceInquiryText: r.source_inquiry_text,
-      expiresAt: r.expires_at,
-      createdAt: r.created_at,
-      updatedAt: r.updated_at,
-    });
+      const rParty = r.party || { adults: 2, children: 0 };
+      const hydratedChildAges = Array.isArray(rParty.childAges)
+        ? rParty.childAges
+        : Array.isArray(rParty.childrenAges)
+          ? rParty.childrenAges
+          : [];
+
+      interests.push({
+        id: r.id,
+        contactId: r.contact_id,
+        leadId: r.lead_id || r.contact.linked_crm_lead_id || null,
+        tenantId: r.store_id,
+        title: r.title,
+        destinations: r.destinations || [],
+        destinationTags: Array.isArray(r.destination_tags) ? r.destination_tags : undefined,
+        destinationCategories: r.destination_categories || [],
+        preferredOrigins: r.preferred_origins || [],
+        periodTags: Array.isArray(r.period_tags) ? r.period_tags : undefined,
+        flexibilityDays: typeof r.flexibility_days === "number" ? r.flexibility_days : undefined,
+        dates: r.dates || { flexibility: "unspecified" as any },
+        party: { ...rParty, childAges: hydratedChildAges },
+        roomOccupancies: Array.isArray(r.room_occupancies) ? r.room_occupancies : undefined,
+        budget: r.budget || {},
+        inclusionsWanted: r.inclusions_wanted || [],
+        hotelPreferences: r.hotel_preferences,
+        urgency: r.urgency || "moderate",
+        status: r.status || "open",
+        sourceInquiryText: r.source_inquiry_text,
+        expiresAt: r.expires_at,
+        createdAt: r.created_at,
+        updatedAt: r.updated_at,
+      });
+    }
   }
 
   // 3. Executar o motor determinístico
-  const matches = evaluateInterestBacklogAgainstOffer(offerPayload, interests, contactsMap);
+  const matches = interests.length > 0 ? evaluateInterestBacklogAgainstOffer(offerPayload, interests, contactsMap) : [];
 
   let createdCount = 0;
 
-  // 4. Persistir matches qualificados (score >= 60)
+  // 4. Persistir matches qualificados preservando status humano existente (`dismissed`/`approached`/`promoted_to_crm`)
   for (const match of matches) {
-    const matchPayload = {
+    const { data: existingMatch } = await supabase
+      .from("travel_opportunity_matches")
+      .select("id, status")
+      .eq("interest_id", match.interestId)
+      .eq("offer_id", match.offerId)
+      .maybeSingle();
+
+    const currentStatus = String(existingMatch?.status || "new").toLowerCase();
+    const preservedStatus =
+      existingMatch?.id && currentStatus !== "new" && currentStatus !== "open"
+        ? existingMatch.status
+        : "new";
+
+    const matchPayload: Record<string, any> = {
       store_id: storeId,
       interest_id: match.interestId,
       offer_id: match.offerId,
       contact_id: match.contactId,
+      lead_id: match.leadId || null,
       match_score: match.matchScore,
       is_high_priority: match.isHighPriority,
       dimensions: match.dimensions,
       approach_draft: match.approachDraft,
       offer_snapshot: match.offerSnapshot,
-      status: "new",
+      status: preservedStatus,
       matched_at: match.matchedAt,
+      requires_child_requote: Boolean(match.requiresChildRequote),
+      simulated_total_cents: match.simulatedTotalCents ?? match.offerSnapshot.totalPriceCents ?? null,
+      child_simulation: match.childSimulation || {},
+      historical_check: match.historicalCheck || {},
+      already_proposed_recently: Boolean(match.alreadyProposedRecently),
+      warnings: match.warnings || [],
+      match_tier: match.matchTier || (match.isHighPriority ? "exact_match" : "strong_match"),
+      match_version: "unified_v2",
       updated_at: new Date().toISOString(),
     };
 
-    const { error: upsertError } = await supabase
+    let { error: upsertError } = await supabase
       .from("travel_opportunity_matches")
       .upsert(matchPayload, { onConflict: "interest_id,offer_id" });
 
+    if (upsertError && /42703|column .* does not exist|PGRST204/i.test(`${upsertError.code || ""} ${upsertError.message || ""}`)) {
+      for (const col of [
+        "lead_id",
+        "requires_child_requote",
+        "simulated_total_cents",
+        "child_simulation",
+        "historical_check",
+        "already_proposed_recently",
+        "warnings",
+        "match_tier",
+        "match_version",
+      ]) {
+        delete matchPayload[col];
+      }
+      ({ error: upsertError } = await supabase
+        .from("travel_opportunity_matches")
+        .upsert(matchPayload, { onConflict: "interest_id,offer_id" }));
+    }
+
     if (!upsertError) {
       createdCount++;
-      // Atualizar status do interesse para "matched"
       await supabase
         .from("travel_interests")
         .update({ status: "matched", updated_at: new Date().toISOString() })
-        .eq("id", match.interestId);
+        .eq("id", match.interestId)
+        .eq("status", "open");
     }
   }
 
+  // 5. Propagar também para leads ativos no Funil CRM via Radar Unificado (`sourceClassifiedId`)
+  let crmMatchesFound = 0;
+  try {
+    const [{ internalEvaluateSupplyAgainstAllLeads }, { normalizeLegacyOfferToCanonical }] = await Promise.all([
+      import("./opportunity-radar.functions"),
+      import("@/lib/travel/opportunity-matching-engine"),
+    ]);
+    const canonicalOffer = normalizeLegacyOfferToCanonical({
+      id: classified.id,
+      source_type: dyn.extracted_via_ocr ? "ocr_quote" : "catalog_package",
+      title: classified.title,
+      destination_city: resolvedDestCity,
+      destination_iata: attrs.arrival_iata || dyn.arrival_iata || null,
+      origin_city: attrs.origin_city || dyn.origin_city || null,
+      origin_iata: attrs.departure_iata || dyn.departure_iata || null,
+      departure_date: resolvedDepartureDate || null,
+      return_date: resolvedReturnDate || null,
+      total_cents: classified.price_cents || 0,
+      adults_count: 2,
+      children_count: 0,
+      inclusions: attrs.included_items || dyn.inclusions || [],
+      meal_plan: attrs.meal_plan_label || dyn.meal_plan || null,
+      hotel_stars: Number(attrs.hotel_stars || dyn.hotel_stars || 0) || null,
+    });
+    const radarRes = await internalEvaluateSupplyAgainstAllLeads({
+      storeId,
+      offer: canonicalOffer,
+      sourceClassifiedId: classified.id,
+    });
+    crmMatchesFound = radarRes.matchedCount;
+  } catch {
+    // Isolado para não interromper publicação
+  }
+
   return {
-    matchesFound: matches.length,
+    matchesFound: Math.max(matches.length, crmMatchesFound),
     newOpportunitiesCreated: createdCount,
   };
 }
@@ -627,36 +768,80 @@ export const bulkImportInterestsFn = createServerFn({ method: "POST" })
         .limit(1)
         .maybeSingle();
       if (existingInterest?.id) continue;
-      const { error: iErr } = await supabase
-        .from("travel_interests")
-        .insert({
-          contact_id: contactId,
-          store_id: staff.store_id,
-          title,
-          destinations: item.destinations,
-          dates: {
-            flexibility: item.targetMonth ? "specific_month" : "flexible_anytime",
-            targetMonths: item.targetMonth ? [item.targetMonth] : [],
+      const itemChildAges = Array.isArray(item.childrenAges)
+        ? item.childrenAges.filter((a) => Number.isFinite(a) && a >= 0 && a <= 17)
+        : [];
+      const interestPayload: Record<string, any> = {
+        contact_id: contactId,
+        store_id: staff.store_id,
+        title,
+        destinations: item.destinations,
+        destination_tags: item.destinations.map((d) => ({
+          label: d.trim(),
+          normalized: d.trim().toLowerCase(),
+          source: "import",
+        })),
+        dates: {
+          flexibility: item.targetMonth ? "specific_month" : "unspecified",
+          targetMonths: item.targetMonth ? [item.targetMonth] : [],
+        },
+        party: {
+          adults: item.adults,
+          children: Math.max(item.children, itemChildAges.length),
+          childAges: itemChildAges,
+          childrenAges: itemChildAges,
+          roomConfiguration: item.adults > 2 || itemChildAges.length > 0 ? "family" : "double",
+        },
+        room_occupancies: [
+          {
+            roomNumber: 1,
+            roomLabel: "Quarto 1",
+            adultsCount: item.adults,
+            childrenCount: Math.max(item.children, itemChildAges.length),
+            childrenAges: itemChildAges,
           },
-          party: {
-            adults: item.adults,
-            children: item.children,
-            childrenAges: [],
-            roomConfiguration: "family",
-          },
-          budget: {
-            maxInstallmentCents: item.maxInstallmentCents || null,
-            preferredInstallments: 12,
-            priceBasisPreference: "per_person",
-          },
-          inclusionsWanted: ["all_inclusive", "aereo_incluso"],
-          urgency: "moderate",
-          status: "open",
-          source_inquiry_text: item.notes?.trim() || "Importado via Lote de Inteligência Comercial",
-        });
+        ],
+        budget: {
+          maxInstallmentCents: item.maxInstallmentCents || null,
+          preferredInstallments: 12,
+          priceBasisPreference: "per_person",
+        },
+        inclusions_wanted: ["all_inclusive", "aereo_incluso"],
+        urgency: "moderate",
+        status: "open",
+        source_inquiry_text: item.notes?.trim() || "Importado via Lote de Inteligência Comercial",
+      };
+
+      const { data: savedInterest, error: iErr } = await (async () => {
+        let res = await supabase
+          .from("travel_interests")
+          .insert(interestPayload)
+          .select("id")
+          .single();
+
+        if (
+          res.error &&
+          /42703|column .* does not exist|PGRST204/i.test(`${res.error.code || ""} ${res.error.message || ""}`)
+        ) {
+          delete interestPayload.destination_tags;
+          delete interestPayload.room_occupancies;
+          res = await supabase.from("travel_interests").insert(interestPayload).select("id").single();
+        }
+        return res;
+      })();
 
       if (!iErr) {
         importedInterests++;
+        if (savedInterest?.id) {
+          import("./opportunity-radar.functions")
+            .then((mod) =>
+              mod.internalEvaluateDemandAgainstAllSupply({
+                storeId: staff.store_id,
+                interestId: String(savedInterest.id),
+              })
+            )
+            .catch(() => {});
+        }
       }
     }
 
@@ -724,6 +909,12 @@ export const listOpportunityMatchesFn = createServerFn({ method: "GET" })
       contactId: r.contact_id,
       matchScore: Number(r.match_score),
       isHighPriority: Boolean(r.is_high_priority),
+      requiresChildRequote: Boolean(r.requires_child_requote),
+      simulatedTotalCents: r.simulated_total_cents != null ? Number(r.simulated_total_cents) : null,
+      childSimulation: r.child_simulation || null,
+      historicalCheck: r.historical_check || null,
+      alreadyProposedRecently: Boolean(r.already_proposed_recently),
+      warnings: Array.isArray(r.warnings) ? r.warnings : [],
       dimensions: r.dimensions || [],
       approachDraft: r.approach_draft,
       offerSnapshot: r.offer_snapshot || {},
@@ -821,7 +1012,14 @@ export const promoteOpportunityToCrmLeadFn = createServerFn({ method: "POST" })
       snapshot.totalPriceCents ||
       (snapshot.installmentCents ? snapshot.installmentCents * (snapshot.installmentCount || 10) : 0);
 
-    // 1. Criar o Lead formal no CRM
+    // 1. Criar o Lead formal no CRM preservando destinos estruturados, datas e quartos/idades 0-17
+    const interestDates = (interest?.dates || {}) as Record<string, any>;
+    const interestParty = (interest?.party || {}) as Record<string, any>;
+    const interestChildAges = Array.isArray(interestParty.childAges)
+      ? interestParty.childAges
+      : Array.isArray(interestParty.childrenAges)
+        ? interestParty.childrenAges
+        : [];
     const leadResult = await createLead({
       data: {
         fullName: contact.name,
@@ -829,8 +1027,20 @@ export const promoteOpportunityToCrmLeadFn = createServerFn({ method: "POST" })
         email: contact.email || undefined,
         title: `Oportunidade Match: ${snapshot.title || interest?.title || "Pacote de Viagem"}`,
         destination: snapshot.destinationCity || (interest?.destinations ? interest.destinations[0] : null),
-        paxAdults: interest?.party?.adults || 2,
-        paxChildren: interest?.party?.children || 0,
+        destinationTags: Array.isArray(interest?.destination_tags) ? interest.destination_tags : undefined,
+        periodTags: Array.isArray(interest?.period_tags) ? interest.period_tags : undefined,
+        targetMonths: Array.isArray(interestDates.targetMonths) ? interestDates.targetMonths : undefined,
+        flexibilityDays: typeof interest?.flexibility_days === "number" ? interest.flexibility_days : 3,
+        dateFlexibilityMode:
+          interestDates.flexibility === "flexible_anytime" ? "flexible_anytime" : undefined,
+        travelStart: interestDates.exactDepartureDate || null,
+        travelEnd: interestDates.exactReturnDate || null,
+        roomOccupancies: Array.isArray(interest?.room_occupancies) ? interest.room_occupancies : undefined,
+        paxAdults: interestParty.adults || 2,
+        paxChildren: Math.max(interestParty.children || 0, interestChildAges.length),
+        paxInfants: interestChildAges.filter((a: number) => a <= 1).length,
+        paxAges: interestChildAges,
+        rawIntentMarkdown: interest?.raw_intent_markdown || interest?.source_inquiry_text || null,
         estimatedValueCents: estimatedValueCents,
         source: "radar_comercial_match",
         leadSourceDetail: `Oportunidade gerada pelo Radar de Inteligência Comercial (Score: ${match.match_score}/100)`,

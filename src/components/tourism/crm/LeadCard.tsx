@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
-import { MessageSquare, Clock, MapPin, Calendar, Users, CheckCircle2, ChevronRight, ChevronLeft, UserCheck, MoreVertical, Edit3, FileText, Plane, Trash2, AlertTriangle, Paperclip, ShieldCheck } from 'lucide-react';
+import { MessageSquare, Clock, MapPin, Calendar, Users, CheckCircle2, ChevronRight, ChevronLeft, UserCheck, MoreVertical, Edit3, FileText, Plane, Trash2, AlertTriangle, Paperclip, ShieldCheck, Bell, Sparkles, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { formatMoney } from '@/lib/money';
-import { formatDateOnlyBr } from '@/lib/datetime';
+import { formatDateOnlyBr, formatCompactDateTime } from '@/lib/datetime';
 import { cn } from '@/lib/utils';
 
 export interface LeadCardProps {
@@ -84,21 +84,36 @@ export function LeadCard({
     };
   }, [lead.last_contacted_at, lead.created_at]);
 
-  // Pax formatting
+  // Pax & room formatting (preserving child ages when present)
   const paxBreakdown = useMemo(() => {
-    const adults = lead.pax_adults || 1;
-    const children = lead.pax_children || 0;
+    const rooms = Array.isArray(lead.room_occupancies)
+      ? lead.room_occupancies
+      : Array.isArray(lead.custom_fields?.room_occupancies)
+        ? lead.custom_fields.room_occupancies
+        : [];
+    const adults = rooms.length > 0
+      ? rooms.reduce((s: number, r: any) => s + Number(r.adultsCount || 1), 0)
+      : (lead.pax_adults || 1);
+    const childAges: number[] = Array.isArray(lead.children_ages) && lead.children_ages.length > 0
+      ? lead.children_ages
+      : Array.isArray(lead.pax_ages) && lead.pax_ages.length > 0
+        ? lead.pax_ages
+        : rooms.flatMap((r: any) => (Array.isArray(r.childrenAges) ? r.childrenAges : []));
+    const children = Math.max(lead.pax_children || 0, childAges.length);
     const infants = lead.pax_infants || 0;
     const total = adults + children + infants;
     const parts: string[] = [];
-    if (adults > 0) parts.push(`${adults} ADT`);
-    if (children > 0) parts.push(`${children} CHD`);
-    if (infants > 0) parts.push(`${infants} INF`);
+    if (rooms.length > 1) parts.push(`${rooms.length} qtos`);
+    if (adults > 0) parts.push(`${adults} adt`);
+    if (children > 0) {
+      parts.push(childAges.length > 0 ? `${children} cri (${childAges.join(", ")}a)` : `${children} cri`);
+    }
+    if (infants > 0 && childAges.length === 0) parts.push(`${infants} inf`);
     return {
-      total: `${total} Pax`,
-      detail: parts.join(', '),
+      total: parts.length > 0 ? parts.join(" · ") : `${total} Pax`,
+      detail: parts.join(", "),
     };
-  }, [lead.pax_adults, lead.pax_children, lead.pax_infants]);
+  }, [lead.pax_adults, lead.pax_children, lead.pax_infants, lead.children_ages, lead.pax_ages, lead.room_occupancies, lead.custom_fields]);
 
   // Travel dates formatting (civil date-only, sem shift -1 dia em UTC-3)
   const travelPeriod = useMemo(() => {
@@ -192,6 +207,37 @@ export function LeadCard({
       dotColor: 'bg-warning',
     };
   }, [lead.temperature, lead.custom_fields, lead.estimated_value_cents, staleness.isCold]);
+
+  const leadTags = useMemo(() => {
+    const raw = Array.isArray(lead.tags)
+      ? lead.tags
+      : Array.isArray(lead.custom_fields?.tags)
+        ? lead.custom_fields.tags
+        : [];
+    return raw.filter((t: any) => typeof t === "string" && t.trim().length > 0);
+  }, [lead.tags, lead.custom_fields?.tags]);
+
+  const reminderMeta = useMemo(() => {
+    const dueStr = lead.follow_up_at || lead.custom_fields?.next_followup_at;
+    if (!dueStr) return null;
+    const dueTime = new Date(dueStr).getTime();
+    if (isNaN(dueTime)) return null;
+    const isOverdue = dueTime < Date.now();
+    const isToday = new Date(dueStr).toDateString() === new Date().toDateString();
+    return {
+      dueStr,
+      isOverdue,
+      isToday,
+      label: formatCompactDateTime(dueStr),
+    };
+  }, [lead.follow_up_at, lead.custom_fields?.next_followup_at]);
+
+  const isBonitoOrNoronha = useMemo(() => {
+    const d = String(lead.destination || "").toLowerCase();
+    if (d.includes("bonito")) return "Bonito (Voucher Único)";
+    if (d.includes("noronha")) return "Noronha (Taxa TPA)";
+    return null;
+  }, [lead.destination]);
 
   return (
     <div
@@ -343,6 +389,55 @@ export function LeadCard({
           <div className="flex items-center justify-between gap-2 pt-1">
             <span className="font-mono tabular-nums font-bold text-sm text-foreground">
               {formatMoney(lead.estimated_value_cents)}
+            </span>
+          </div>
+        )}
+
+        {/* Tags Avançadas no Card do Kanban */}
+        {leadTags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1 pt-1">
+            {leadTags.slice(0, 3).map((tag: string) => (
+              <span
+                key={tag}
+                className="text-3xs font-semibold px-2 py-1 rounded-md bg-muted/60 border border-border/70 text-muted-foreground truncate max-w-28"
+              >
+                {tag}
+              </span>
+            ))}
+            {leadTags.length > 3 && (
+              <span className="text-3xs font-bold px-2 py-1 rounded-md bg-muted text-muted-foreground">
+                +{leadTags.length - 3}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Avisos de Lembrete / Alarme de Follow-up */}
+        {reminderMeta && (
+          <div
+            className={cn(
+              "text-3xs font-mono font-bold px-2 py-1 rounded-md inline-flex items-center gap-2",
+              reminderMeta.isOverdue
+                ? "bg-rose-500/10 text-rose-600 border border-rose-500/30"
+                : reminderMeta.isToday
+                  ? "bg-warning/10 text-warning border border-warning/30"
+                  : "bg-muted text-muted-foreground border border-border/60",
+            )}
+          >
+            <Bell className="size-3 shrink-0" />
+            <span className="truncate">
+              {reminderMeta.isOverdue ? "Atrasado: " : reminderMeta.isToday ? "Hoje: " : "Alarme: "}
+              {reminderMeta.label}
+            </span>
+          </div>
+        )}
+
+        {/* Alerta de Destino Inteligente (Bonito, Noronha) */}
+        {isBonitoOrNoronha && (
+          <div className="pt-1">
+            <span className="text-3xs font-bold px-2 py-1 rounded-md bg-warning/10 text-warning-strong border border-warning/30 inline-flex items-center gap-1">
+              <Sparkles className="size-3 shrink-0" />
+              <span>{isBonitoOrNoronha}</span>
             </span>
           </div>
         )}

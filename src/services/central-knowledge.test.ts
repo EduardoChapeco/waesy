@@ -7,7 +7,8 @@
  * - Banco Hoteleiro & Resorts com Amenidades e Quartos
  */
 
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { getServerClient } from "@/lib/supabase";
 
 // Mock @tanstack/react-start
 vi.mock("@tanstack/react-start", () => ({
@@ -44,6 +45,88 @@ import { searchCentralVehicles, searchCentralServices, searchCentralCities, sear
 
 describe("Banco Central de Conhecimento & Dados Globais (Waesy Enterprise)", () => {
   describe("1. Malha Aérea & Aeroportos Globais", () => {
+    beforeEach(() => {
+      const seedAirports = [
+        {
+          id: "airport-gru",
+          iata_code: "GRU",
+          icao_code: "SBGR",
+          name: "Aeroporto Internacional de São Paulo/Guarulhos",
+          city: "São Paulo / Guarulhos",
+          state_province: "SP",
+          country: "Brasil",
+          country_code: "BR",
+          latitude: -23.435556,
+          longitude: -46.473056,
+          timezone: "America/Sao_Paulo",
+          is_commercial: true,
+        },
+        {
+          id: "airport-xap",
+          iata_code: "XAP",
+          icao_code: "SBCH",
+          name: "Aeroporto Serafin Enoss Bertaso",
+          city: "Chapecó",
+          state_province: "SC",
+          country: "Brasil",
+          country_code: "BR",
+          latitude: -27.134167,
+          longitude: -52.656667,
+          timezone: "America/Sao_Paulo",
+          is_commercial: true,
+        },
+        {
+          id: "airport-mco",
+          iata_code: "MCO",
+          icao_code: "KMCO",
+          name: "Aeroporto Internacional de Orlando",
+          city: "Orlando",
+          state_province: "FL",
+          country: "Estados Unidos",
+          country_code: "US",
+          latitude: 28.429444,
+          longitude: -81.308889,
+          timezone: "America/New_York",
+          is_commercial: true,
+        },
+      ];
+
+      vi.mocked(getServerClient).mockReturnValue({
+        from: () => {
+          let rows = [...seedAirports];
+          const builder: any = {
+            select: () => builder,
+            eq: (col: string, val: unknown) => {
+              rows = rows.filter((r: Record<string, unknown>) => r[col] === val);
+              return builder;
+            },
+            or: (expr: string) => {
+              const terms = Array.from(expr.matchAll(/ilike\.%([^%,)]+)%/gi))
+                .map((m) => m[1].toLowerCase());
+              if (terms.length > 0) {
+                rows = rows.filter((r) => {
+                  const hay = [r.iata_code, r.icao_code, r.name, r.city, r.country]
+                    .filter(Boolean)
+                    .join(" ")
+                    .toLowerCase();
+                  return terms.some((t) => hay.includes(t));
+                });
+              }
+              return builder;
+            },
+            order: () => builder,
+            limit: (n: number) => {
+              rows = rows.slice(0, n);
+              return builder;
+            },
+            maybeSingle: () => Promise.resolve({ data: rows[0] ?? null, error: null }),
+            then: (resolve: (val: { data: typeof seedAirports; error: null }) => unknown) =>
+              Promise.resolve(resolve({ data: rows, error: null })),
+          };
+          return builder;
+        },
+      } as any);
+    });
     it("deve encontrar aeroporto por código IATA exato (ex: GRU)", async () => {
       const result = await searchGlobalAirports({ data: { query: "GRU" } });
       expect(result.airports.length).toBeGreaterThan(0);

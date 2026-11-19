@@ -33,7 +33,11 @@ function isPlatformAdminUser(session: any): boolean {
 }
 
 export const Route = createFileRoute("/workspace")({
-  beforeLoad: async () => {
+  beforeLoad: async ({ location }) => {
+    const requestedPath =
+      location?.pathname && location.pathname.startsWith("/workspace")
+        ? `${location.pathname}${location.searchStr || ""}`
+        : "/workspace";
     let session: any = null;
     try {
       session = await getUserSession();
@@ -75,7 +79,7 @@ export const Route = createFileRoute("/workspace")({
               email: browserSession.user.email,
               role: "owner",
               store_id: storeId,
-              memberships: storeId ? [{ store_id: storeId, role: "owner", name: "Minha Empresa" }] : [],
+              memberships: storeId ? [{ store_id: storeId, role: "owner", name: userMeta.store_name || "Unidade Corporativa" }] : [],
             };
           }
         }
@@ -97,7 +101,7 @@ export const Route = createFileRoute("/workspace")({
           return { session: null, needsClientHydration: true };
         }
 
-        throw redirect({ to: "/entrar", search: { returnUrl: "/workspace" } });
+        throw redirect({ to: "/entrar", search: { returnUrl: requestedPath } });
       }
 
       let hasAnyAuthCookie = false;
@@ -108,7 +112,7 @@ export const Route = createFileRoute("/workspace")({
       } catch {}
 
       if (!hasAnyAuthCookie) {
-        throw redirect({ to: "/entrar", search: { returnUrl: "/workspace" } });
+        throw redirect({ to: "/entrar", search: { returnUrl: requestedPath } });
       }
 
       return { session: null, needsClientHydration: true };
@@ -123,6 +127,11 @@ export const Route = createFileRoute("/workspace")({
       session?.role === "admin" ||
       session?.role === "manager" ||
       session?.role === "seller" ||
+      session?.role === "cashier" ||
+      session?.role === "finance" ||
+      session?.role === "content" ||
+      session?.role === "stock" ||
+      session?.role === "support" ||
       session?.role === "collaborator" ||
       isPlatformAdmin;
 
@@ -130,12 +139,16 @@ export const Route = createFileRoute("/workspace")({
     // Quem não possui loja/empresa não pode ver o workspace nem ferramentas operacionais.
     // É redirecionado imediatamente para o cadastro do seu negócio.
     if (!hasStore && session?.user) {
-      throw redirect({ to: "/criar-negocio" });
+      throw redirect({ to: "/onboarding/empresa" });
     }
 
     return { session };
   },
-  loader: async ({ context }) => {
+  loader: async ({ context, location }) => {
+    const requestedPath =
+      location?.pathname && location.pathname.startsWith("/workspace")
+        ? `${location.pathname}${location.searchStr || ""}`
+        : "/workspace";
     try {
       let session: any = (context as any)?.session;
       if (!session) {
@@ -179,7 +192,7 @@ export const Route = createFileRoute("/workspace")({
                 email: browserSession.user.email,
                 role: "owner",
                 store_id: storeId,
-                memberships: storeId ? [{ store_id: storeId, role: "owner", name: "Minha Empresa" }] : [],
+                memberships: storeId ? [{ store_id: storeId, role: "owner", name: userMeta.store_name || "Unidade Corporativa" }] : [],
               };
             }
           }
@@ -198,7 +211,7 @@ export const Route = createFileRoute("/workspace")({
           } catch {}
 
           if (!hasClientAuth) {
-            throw redirect({ to: "/entrar", search: { returnUrl: "/workspace" } });
+            throw redirect({ to: "/entrar", search: { returnUrl: requestedPath } });
           }
         } else {
           let hasAnyAuthCookie = false;
@@ -209,7 +222,7 @@ export const Route = createFileRoute("/workspace")({
           } catch {}
 
           if (!hasAnyAuthCookie) {
-            throw redirect({ to: "/entrar", search: { returnUrl: "/workspace" } });
+            throw redirect({ to: "/entrar", search: { returnUrl: requestedPath } });
           }
         }
       }
@@ -223,12 +236,17 @@ export const Route = createFileRoute("/workspace")({
         session?.role === "admin" ||
         session?.role === "manager" ||
         session?.role === "seller" ||
+        session?.role === "cashier" ||
+        session?.role === "finance" ||
+        session?.role === "content" ||
+        session?.role === "stock" ||
+        session?.role === "support" ||
         session?.role === "collaborator" ||
         isPlatformAdmin ||
         (context as any)?.needsClientHydration;
 
       if (!hasStore && session?.user) {
-        throw redirect({ to: "/criar-negocio" });
+        throw redirect({ to: "/onboarding/empresa" });
       }
 
       const [onboardingData, ecosystemConfig] = await Promise.all([
@@ -372,7 +390,7 @@ function WorkspaceLayout() {
             email: browserSession.user.email,
             role: (userMeta.role as any) || "owner",
             store_id: storeId,
-            memberships: storeId ? [{ store_id: storeId, role: "owner", name: "Minha Empresa" }] : [],
+            memberships: storeId ? [{ store_id: storeId, role: "owner", name: userMeta.store_name || "Unidade Corporativa" }] : [],
           });
           setIsHydratingAuth(false);
           return;
@@ -501,6 +519,11 @@ function WorkspaceLayout() {
     session?.role === "admin" ||
     session?.role === "manager" ||
     session?.role === "seller" ||
+    session?.role === "cashier" ||
+    session?.role === "finance" ||
+    session?.role === "content" ||
+    session?.role === "stock" ||
+    session?.role === "support" ||
     session?.role === "collaborator" ||
     isPlatformAdmin;
 
@@ -545,10 +568,10 @@ function WorkspaceLayout() {
           </p>
           <div className="flex flex-wrap gap-2 pt-2">
             <Button asChild variant="outline" className="h-11 min-h-11">
-              <Link to="/conta">Minha Conta</Link>
+              <Link to="/workspace/configuracoes/sessoes">Minhas Sessões</Link>
             </Button>
             <Button asChild variant="outline" className="h-11 min-h-11">
-              <Link to="/">Voltar ao Início</Link>
+              <Link to="/auth/portal-selector">Voltar ao Portal</Link>
             </Button>
           </div>
         </div>

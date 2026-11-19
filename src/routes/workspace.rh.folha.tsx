@@ -33,6 +33,7 @@ import { OfficialPayslipModal, type OfficialPayslipData } from "@/components/hr/
 import { EmployeeDossierModal } from "@/components/hr/employee-dossier-modal";
 import { PayrollKanbanBoard, type KanbanPayrollItem, type KanbanPayrollStage } from "@/components/hr/payroll-kanban-board";
 import { MedicalCertificateModal } from "@/components/hr/medical-certificate-modal";
+import { HrSubmoduleNavigation } from "@/components/hr/HrSubmoduleNavigation";
 import {
   Wallet,
   ArrowDownRight,
@@ -48,6 +49,7 @@ import {
   Plus,
   Calculator,
   Printer,
+  DollarSign,
   AlertCircle,
   Building2,
   ShieldCheck,
@@ -366,6 +368,7 @@ function HrPayrollPage() {
 
   // Dossiê Digital, ASO & Benefícios em Lote
   const [selectedDossierEmployee, setSelectedDossierEmployee] = useState<StoreEmployeeDTO | null>(null);
+  const [dossierInitialTab, setDossierInitialTab] = useState<"aso" | "commercial">("aso");
   const [isBatchBenefitsOpen, setIsBatchBenefitsOpen] = useState(false);
   const [batchDeptForm, setBatchDeptForm] = useState({
     departmentName: "Operações",
@@ -689,6 +692,12 @@ function HrPayrollPage() {
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-6 max-w-7xl mx-auto">
+      {/* ── NAVEGAÇÃO DE SUBMÓDULOS DE RH / DP ── */}
+      <HrSubmoduleNavigation
+        activeModule="folha"
+        totalEmployees={storeEmployees.length}
+      />
+
       {/* ── CABEÇALHO SOBERANO RH & DP ── */}
       <PageHeader
         title="Folha de Pagamento Contábil CLT/PJ"
@@ -762,6 +771,18 @@ function HrPayrollPage() {
           </div>
         }
       />
+
+      <div className="p-3 rounded-xl border border-border bg-muted/40 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2 text-foreground">
+          <ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+          <span>
+            <strong>Separação Trabalhista:</strong> Comissões e premiações comerciais de turismo pagas &ldquo;por fora&rdquo; não entram neste holerite CLT e possuem recibos próprios.
+          </span>
+        </div>
+        <Button asChild variant="outline" size="sm" className="h-11 min-h-11 sm:h-9 focus-visible:ring-2">
+          <Link to="/workspace/turismo/minhas-vendas">Abrir Painel & Recibos Por Fora</Link>
+        </Button>
+      </div>
 
       {/* ── BARRA DE SELEÇÃO DE COMPETÊNCIA & ABAS SOBERANAS ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card p-3 rounded-lg border border-border min-w-0">
@@ -1302,7 +1323,23 @@ function HrPayrollPage() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => setSelectedDossierEmployee(emp)}
+                    onClick={() => {
+                      setDossierInitialTab("commercial");
+                      setSelectedDossierEmployee(emp);
+                    }}
+                    className="flex-1 h-11 min-h-11 sm:h-9 text-xs font-bold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                  >
+                    <DollarSign className="size-3.5 text-primary" />
+                    <span>Vendas & Prêmios</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setDossierInitialTab("aso");
+                      setSelectedDossierEmployee(emp);
+                    }}
                     className="flex-1 h-11 min-h-11 sm:h-9 text-xs font-bold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                   >
                     <FolderLock className="size-3.5 text-primary" />
@@ -1545,6 +1582,7 @@ function HrPayrollPage() {
         isOpen={Boolean(selectedDossierEmployee)}
         onClose={() => setSelectedDossierEmployee(null)}
         employee={selectedDossierEmployee}
+        initialTab={dossierInitialTab}
         onSaved={() => router.invalidate()}
       />
 

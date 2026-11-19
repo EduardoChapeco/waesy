@@ -1,7 +1,8 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
+import { openOrCreateWhatsAppThreadForLead, listWhatsAppThreadsForLeadPicker } from "@/services/chat-quick-actions.functions";
 import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Users, Headphones, Search, Plus, Phone, Mail, ArrowUpRight, TrendingUp, MessageCircle, ExternalLink, ChevronRight, Filter, DollarSign, Kanban, CheckCircle2, Clock, UserCheck, Building2, Tag, ShieldCheck, MoreHorizontal, SlidersHorizontal, X, ChevronDown, ChevronUp, Globe, Share2, Brain } from "lucide-react";
+import { Users, Headphones, Search, Plus, Phone, Mail, ArrowUpRight, TrendingUp, MessageCircle, ExternalLink, ChevronRight, Filter, DollarSign, Kanban, CheckCircle2, Clock, UserCheck, Building2, Tag, ShieldCheck, MoreHorizontal, SlidersHorizontal, X, ChevronDown, ChevronUp, Globe, Share2, Brain, Calendar, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -10,16 +11,20 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { FilterBottomSheet, FilterTriggerButton } from "@/components/workspace/filter-bottom-sheet";
 import { StorePersonasMatrix } from "@/components/workspace/crm/store-personas-matrix";
 import { WhatsAppLeadsInbox } from "@/components/workspace/crm/whatsapp-leads-inbox";
-import { listCustomers, listLeads, updateLeadStatus, promoteLeadToCustomer, persistLeadMove } from "@/services/crm.functions";
+import { RotaryQueueView } from "@/components/workspace/crm/rotary-queue-view";
+import { FieldRoutesView } from "@/components/workspace/crm/field-routes-view";
+import { listCustomers, listLeads, updateLeadStatus, promoteLeadToCustomer, persistLeadMove, updateLeadDetails } from "@/services/crm.functions";
 import { formatKanbanActionError } from "@/lib/niches/kanban-niche-taxonomy";
 import { toast } from "sonner";
 import { getDashboardData } from "@/services/dashboard.functions";
 import { getEntityUnifiedTimeline } from "@/services/domain-events.functions";
 import { NicheKanbanBoard, NicheKanbanCardData } from "@/components/workspace/kanban/niche-kanban-board";
+import { AdvancedLeadTagsPicker } from "@/components/tourism/crm/advanced-lead-tags-picker";
+import { LeadRemindersManager } from "@/components/tourism/crm/lead-reminders-manager";
 import { UnifiedEntityTimeline } from "@/components/workspace/timeline/unified-entity-timeline";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { useNicheTaxonomy } from "@/hooks/use-niche-taxonomy";
-import { NicheId } from "@/lib/niche-manifest";
+import { NicheId } from "@/lib/niches/niche-manifest";
 import { formatMoney } from "@/lib/money";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { EmptyState, ErrorState } from "@/components/state/states";
@@ -60,7 +65,48 @@ export default function WorkspaceCrmPage() {
   const dashboardMetrics = loaderData.dashboardMetrics || null;
   const loadError = loaderData.loadError || null;
   const router = useRouter();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [threadPickerOpen, setThreadPickerOpen] = useState(false);
+  const [threadQuery, setThreadQuery] = useState("");
+  const [threadResults, setThreadResults] = useState<any[]>([]);
+  const [isLoadingThreads, setIsLoadingThreads] = useState(false);
+  const [isOpeningWhatsApp, setIsOpeningWhatsApp] = useState(false);
+
+  const handleOpenWhatsAppForLead = async (leadId: string, explicitThreadId?: string) => {
+    setIsOpeningWhatsApp(true);
+    try {
+      const res = await openOrCreateWhatsAppThreadForLead({
+        data: {
+          leadId,
+          ...(explicitThreadId ? { threadId: explicitThreadId } : {}),
+        },
+      });
+      toast.success(res.created ? "Conversa WhatsApp iniciada e vinculada ao lead!" : "Conversa WhatsApp vinculada!");
+      setSelectedEntity(null);
+      setThreadPickerOpen(false);
+      await navigate({
+        to: "/workspace/atendimento/chat" as any,
+        search: { threadId: res.threadId, leadId } as any,
+      });
+    } catch (err: any) {
+      toast.error(err?.message || "Nao foi possivel abrir ou vincular conversa WhatsApp.");
+    } finally {
+      setIsOpeningWhatsApp(false);
+    }
+  };
+
+  const loadWhatsAppThreadsForPicker = async (q: string) => {
+    setIsLoadingThreads(true);
+    try {
+      const rows = await listWhatsAppThreadsForLeadPicker({ data: { query: q.trim() || undefined, limit: 20 } });
+      setThreadResults(rows || []);
+    } catch {
+      setThreadResults([]);
+    } finally {
+      setIsLoadingThreads(false);
+    }
+  };
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
@@ -68,7 +114,7 @@ export default function WorkspaceCrmPage() {
   const [tagFilter, setTagFilter] = useState<string>("all");
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [showMetricsMobile, setShowMetricsMobile] = useState(false);
-  const [activeTab, setActiveTab] = useState<"clientes" | "funil" | "personas" | "whatsapp">("clientes");
+  const [activeTab, setActiveTab] = useState<"clientes" | "funil" | "personas" | "whatsapp" | "rotary" | "rotas">("clientes");
   const { nicheId } = useNicheTaxonomy();
   const [selectedEntity, setSelectedEntity] = useState<{ id: string; name: string; type: "lead" | "customer" } | null>(null);
 
@@ -102,7 +148,14 @@ export default function WorkspaceCrmPage() {
       contactName: l.full_name,
       contactPhone: l.phone,
       tags: l.tags || [],
+      followUpAt: l.follow_up_at || null,
+      source: l.source || l.lead_source_detail || null,
       custom_fields: l.custom_fields || null,
+      metadata: {
+        ...(l.custom_fields || {}),
+        follow_up_at: l.follow_up_at,
+        source: l.source || l.lead_source_detail,
+      },
     }));
   }, [leads]);
 
@@ -341,6 +394,34 @@ export default function WorkspaceCrmPage() {
           <StatefulNavIcon icon={MessageCircle} active={activeTab === "whatsapp"} size={16} className="size-4 shrink-0" />
           <span>Leads WhatsApp</span>
         </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("rotary")}
+          aria-pressed={activeTab === "rotary"}
+          className={`h-11 min-h-11 px-3 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+            activeTab === "rotary"
+              ? "bg-rail-active text-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-rail-hover"
+          }`}
+        >
+          <StatefulNavIcon icon={Calendar} active={activeTab === "rotary"} size={16} className="size-4 shrink-0" />
+          <span>Dia a Dia (Carteira)</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("rotas")}
+          aria-pressed={activeTab === "rotas"}
+          className={`h-11 min-h-11 px-3 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+            activeTab === "rotas"
+              ? "bg-rail-active text-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-rail-hover"
+          }`}
+        >
+          <StatefulNavIcon icon={Navigation} active={activeTab === "rotas"} size={16} className="size-4 shrink-0" />
+          <span>Rotas GPS</span>
+        </button>
       </div>
 
       {activeTab === "funil" ? (
@@ -359,6 +440,10 @@ export default function WorkspaceCrmPage() {
         <StorePersonasMatrix />
       ) : activeTab === "whatsapp" ? (
         <WhatsAppLeadsInbox />
+      ) : activeTab === "rotary" ? (
+        <RotaryQueueView />
+      ) : activeTab === "rotas" ? (
+        <FieldRoutesView />
       ) : (
         <>
           {/* ── 2. Grid de Métricas (Visível sempre no Desktop; Alternável no Mobile) ── */}
@@ -753,11 +838,38 @@ export default function WorkspaceCrmPage() {
                 ) : null}
               </div>
 
-              <div className="flex items-center gap-2 pt-1">
+              <div className="flex flex-wrap items-center gap-2 pt-1">
                 <Button
+                  type="button"
                   size="sm"
                   variant="default"
-                  className="flex-1 text-xs h-11 min-h-11 gap-2"
+                  disabled={isOpeningWhatsApp}
+                  onClick={() => void handleOpenWhatsAppForLead(selectedLead.id)}
+                  className="flex-1 text-xs h-11 min-h-11 gap-2 cursor-pointer"
+                >
+                  <MessageCircle className="size-4" />
+                  <span>{isOpeningWhatsApp ? "Abrindo..." : "Atender no WhatsApp"}</span>
+                </Button>
+
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const nextOpen = !threadPickerOpen;
+                    setThreadPickerOpen(nextOpen);
+                    if (nextOpen) void loadWhatsAppThreadsForPicker(threadQuery);
+                  }}
+                  className="text-xs h-11 min-h-11 gap-2 cursor-pointer"
+                >
+                  <Share2 className="size-3.5" />
+                  <span>{threadPickerOpen ? "Fechar Vinculo" : "Vincular Chat"}</span>
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-xs h-11 min-h-11 gap-2"
                   asChild
                 >
                   <Link
@@ -792,6 +904,100 @@ export default function WorkspaceCrmPage() {
                   <UserCheck className="size-3.5" />
                   Virar Cliente
                 </Button>
+              </div>
+
+              {threadPickerOpen && (
+                <div className="mt-2 p-3 rounded-xl border border-border/70 bg-background space-y-2">
+                  <p className="text-xs font-semibold text-foreground">
+                    Selecione uma conversa WhatsApp existente (inclusive contatos sem numero visivel)
+                  </p>
+                  <Input
+                    value={threadQuery}
+                    onChange={(e) => {
+                      setThreadQuery(e.target.value);
+                      void loadWhatsAppThreadsForPicker(e.target.value);
+                    }}
+                    placeholder="Buscar conversa por nome, telefone ou ultima mensagem..."
+                    className="h-11 text-xs"
+                  />
+                  <div className="max-h-44 overflow-y-auto space-y-1">
+                    {isLoadingThreads ? (
+                      <p className="text-xs text-muted-foreground text-center py-3">Buscando conversas...</p>
+                    ) : threadResults.length === 0 ? (
+                      <p className="text-xs text-muted-foreground text-center py-3">Nenhuma conversa encontrada.</p>
+                    ) : (
+                      threadResults.map((th) => (
+                        <button
+                          key={th.id}
+                          type="button"
+                          disabled={isOpeningWhatsApp}
+                          onClick={() => void handleOpenWhatsAppForLead(selectedLead.id, th.id)}
+                          className="w-full min-h-11 px-3 py-2 rounded-lg border border-border/60 bg-card hover:bg-muted/50 text-left flex items-center justify-between gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold text-foreground truncate">
+                              {th.group_subject || th.guest_name || th.primary_phone_e164 || "Conversa WhatsApp"}
+                            </p>
+                            <p className="text-2xs text-muted-foreground truncate">
+                              {th.primary_phone_e164 || th.entity_id}{th.last_message_text ? ` · ${th.last_message_text}` : ""}
+                            </p>
+                          </div>
+                          <Badge variant={th.lead_id === selectedLead.id ? "default" : "outline"} className="text-2xs shrink-0">
+                            {th.lead_id === selectedLead.id ? "Vinculada" : "Vincular"}
+                          </Badge>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Gestão Avançada de Tags do Lead */}
+              <div className="pt-3 border-t border-border/40 space-y-2">
+                <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
+                  Tags & Segmentação Comercial
+                </span>
+                <AdvancedLeadTagsPicker
+                  tags={selectedLead.tags || []}
+                  onChange={async (nextTags: string[]) => {
+                    try {
+                      await updateLeadDetails({
+                        data: {
+                          leadId: selectedLead.id,
+                          tags: nextTags,
+                        },
+                      });
+                      toast.success("Tags atualizadas com sucesso!");
+                      refetchLeads();
+                    } catch (e: any) {
+                      toast.error("Erro ao atualizar tags: " + (e?.message || "falha desconhecida"));
+                    }
+                  }}
+                />
+              </div>
+
+              {/* Gestão de Lembretes & Alarmes de Follow-up */}
+              <div className="pt-3 border-t border-border/40">
+                <LeadRemindersManager
+                  reminders={selectedLead.custom_fields?.reminders || []}
+                  onChange={async (nextReminders: any[], nextDue?: string | null) => {
+                    try {
+                      await updateLeadDetails({
+                        data: {
+                          leadId: selectedLead.id,
+                          follow_up_at: nextDue ?? null,
+                          custom_fields: {
+                            ...(selectedLead.custom_fields || {}),
+                            reminders: nextReminders,
+                          },
+                        },
+                      });
+                      refetchLeads();
+                    } catch (e: any) {
+                      toast.error("Erro ao atualizar lembretes: " + (e?.message || "falha desconhecida"));
+                    }
+                  }}
+                />
               </div>
             </div>
           )}

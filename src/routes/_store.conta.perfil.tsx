@@ -17,19 +17,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { maskCpf, maskPhone, normalizeGenderValue } from "@/lib/formatters";
 import { User, Camera, ExternalLink, Loader2, Image as ImageIcon, Trash2, Check, Briefcase, Link as LinkIcon, ShieldCheck, Eye, EyeOff, Building2, ShieldAlert, Phone, Calendar, Lock, Plus, Info, CheckCircle2, AlertCircle, PenTool } from "lucide-react";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Switch } from "@/components/ui/switch";
 import { ProfessionalResumeEditor, ResumeDataDTO } from "@/components/profile/professional-resume-editor";
 import { SavedSignatureSettingsCard } from "@/components/contracts/saved-signature-settings";
-
-function normalizeGenderValue(g?: string): "feminino" | "masculino" | "outro" | "prefiro_nao_dizer" {
-  if (!g || g === "not_informed") return "prefiro_nao_dizer";
-  if (g === "female" || g === "feminino") return "feminino";
-  if (g === "male" || g === "masculino") return "masculino";
-  if (g === "other" || g === "non_binary" || g === "outro") return "outro";
-  return "prefiro_nao_dizer";
-}
 
 export const Route = createFileRoute("/_store/conta/perfil")({
   head: () => ({ meta: [{ title: "Meu Perfil | Waesy" }] }),
@@ -46,22 +39,6 @@ export const Route = createFileRoute("/_store/conta/perfil")({
   },
   component: ProfileCivilPage,
 });
-
-function maskCpf(value: string): string {
-  const digits = value.replace(/\D/g, "").slice(0, 11);
-  return digits
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
-    .replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/, "$1.$2.$3-$4");
-}
-
-function maskPhone(value: string): string {
-  const digits = value.replace(/\D/g, "").slice(0, 11);
-  if (digits.length <= 10) {
-    return digits.replace(/(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3").trim();
-  }
-  return digits.replace(/(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3").trim();
-}
 
 function ProfileCivilPage() {
   const { profile: rawProfile } = (Route.useLoaderData() as any) || {};

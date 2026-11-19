@@ -375,4 +375,38 @@ describe("CHALLENGER STRESS-TEST — Builder Platform & Store Guessing Eliminati
     const resolvedDoc = await resolveStoreContext(adminIdentity, null, "doc-target-456");
     expect(resolvedDoc).toBe("store-target-any");
   });
+
+  it("ADV-12: Requisições de Workspace (/workspace) NUNCA são rebaixadas para civil por resíduos de cookies waesy_active_context=civil", async () => {
+    mockGetUser.mockResolvedValue({
+      data: {
+        user: { id: "user-owner-999", email: "owner@empresa.com" },
+      },
+    });
+
+    mockDbProfilesResult = {
+      data: { id: "user-owner-999", full_name: "Empresário Titular", role: "customer" },
+    };
+
+    mockDbMembersResult = {
+      data: [{ store_id: "store-empresa-123", role: "owner" }],
+    };
+
+    mockDbStoresResult = {
+      data: [{ id: "store-empresa-123", name: "Empresa do Titular", slug: "empresa", settings: {} }],
+    };
+
+    // Navegador envia cookie residual civil da vitrine, mas o referer é de /workspace/configuracoes
+    mockCookies["waesy_active_context"] = "civil";
+    mockHeaders["cookie"] = "waesy_active_context=civil; waesy_active_tenant=store-empresa-123";
+    mockHeaders["referer"] = "https://waesy.com.br/workspace/configuracoes";
+
+    const identity = await getServerIdentity();
+
+    // Deve preservar o contexto corporativo e a loja ativa da empresa
+    expect(identity.id).toBe("user-owner-999");
+    expect(identity.store_id).toBe("store-empresa-123");
+    expect(identity.role).toBe("owner");
+    expect(identity.isCivilContext).toBe(false);
+    expect(identity.activeContext).toBe("store");
+  });
 });

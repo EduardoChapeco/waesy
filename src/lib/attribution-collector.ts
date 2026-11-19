@@ -36,6 +36,11 @@ export interface ClientAttributionSnapshot {
   landingUrl?: string;
   referrer?: string;
   userAgent?: string;
+  clientCity?: string;
+  clientState?: string;
+  gpsLatitude?: number;
+  gpsLongitude?: number;
+  gpsSource?: string;
   firstTouch?: {
     source: string;
     campaign?: string;
@@ -160,6 +165,34 @@ export function collectClientAttribution(): ClientAttributionSnapshot {
 
   // 5. First-Touch Attribution Persistence (Resolução contínua entre sessões)
   let firstTouch: ClientAttributionSnapshot["firstTouch"] = undefined;
+  let clientCity: string | undefined;
+  let clientState: string | undefined;
+  let gpsLatitude: number | undefined;
+  let gpsLongitude: number | undefined;
+  let gpsSource: string | undefined;
+  try {
+    const rawGeo = localStorage.getItem("waesy_client_geo");
+    if (rawGeo) {
+      const parsedGeo = JSON.parse(rawGeo);
+      if (parsedGeo?.city && parsedGeo.city !== "Global") {
+        clientCity = String(parsedGeo.city);
+      }
+      if (parsedGeo?.state) {
+        clientState = String(parsedGeo.state);
+      }
+      if (typeof parsedGeo?.lat === "number" && Number.isFinite(parsedGeo.lat)) {
+        gpsLatitude = parsedGeo.lat;
+      }
+      if (typeof parsedGeo?.lng === "number" && Number.isFinite(parsedGeo.lng)) {
+        gpsLongitude = parsedGeo.lng;
+      }
+      if (parsedGeo?.source) {
+        gpsSource = String(parsedGeo.source);
+      } else if (gpsLatitude !== undefined && gpsLongitude !== undefined) {
+        gpsSource = "browser_gps_consented";
+      }
+    }
+  } catch {}
   try {
     const rawFt = localStorage.getItem("waesy_first_touch");
     if (rawFt) {
@@ -202,6 +235,11 @@ export function collectClientAttribution(): ClientAttributionSnapshot {
     landingUrl,
     referrer,
     userAgent: navigator.userAgent,
+    clientCity,
+    clientState,
+    gpsLatitude,
+    gpsLongitude,
+    gpsSource,
     firstTouch,
   };
 }

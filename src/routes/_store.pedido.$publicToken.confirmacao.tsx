@@ -19,6 +19,9 @@ export const Route = createFileRoute("/_store/pedido/$publicToken/confirmacao")(
  head: () => ({
  meta: [{ title: "Pedido Confirmado | Waesy" }],
  }),
+ validateSearch: (search: Record<string, unknown>): { app?: string } => ({
+   app: typeof search?.app === "string" ? search.app : undefined,
+ }),
   loader: async ({ params }) => {
     try {
       const order = await getOrderByToken({ data: { token: params.publicToken } }).catch(() => null);
@@ -34,9 +37,16 @@ export const Route = createFileRoute("/_store/pedido/$publicToken/confirmacao")(
 function ConfirmationPage() {
   const { order: initialOrder } = ((Route.useLoaderData() as any) || {});
   const { publicToken } = Route.useParams();
- const [order, setOrder] = useState<any>(initialOrder);
- const [isAuditOpen, setIsAuditOpen] = useState(false);
- const trackedPurchaseRef = useRef<string | null>(null);
+  const search = Route.useSearch();
+  const [order, setOrder] = useState<any>(initialOrder);
+  const [isAuditOpen, setIsAuditOpen] = useState(false);
+  const trackedPurchaseRef = useRef<string | null>(null);
+
+  const targetAppSlug =
+    search?.app ||
+    (order as any)?.stores?.slug ||
+    (order as any)?.store?.slug ||
+    null;
 
   // Contrato Digital do Pedido
   const [isGeneratingContract, setIsGeneratingContract] = useState(false);
@@ -784,6 +794,14 @@ function ConfirmationPage() {
  </a>
  </Button>
  )}
+ {targetAppSlug ? (
+ <Button asChild size="lg" className="rounded-lg font-bold text-sm bg-foreground text-background hover:bg-foreground/90">
+ <Link to="/app/$slug" params={{ slug: targetAppSlug }}>
+ Voltar ao Aplicativo <ArrowRight className="ml-2 size-4" />
+ </Link>
+ </Button>
+ ) : (
+ <>
  <Button asChild size="lg" variant="outline" className="rounded-lg font-bold text-sm">
  <Link to="/conta/pedidos">Acompanhar Pedido</Link>
  </Button>
@@ -792,6 +810,8 @@ function ConfirmationPage() {
  Continuar Comprando <ArrowRight className="ml-2 size-4" />
  </Link>
  </Button>
+ </>
+ )}
  </div>
 
  {/* Modal de Auditoria de 3 Cliques */}

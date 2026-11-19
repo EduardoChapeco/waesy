@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
+import { KdsStationsSheet } from "@/components/pos/kds-stations-sheet";
 
 // ─── Estações de Preparo ──────────────────────────────────────────
 type PrepStation = "all" | "chapa" | "forno" | "bebidas" | "sobremesas";
@@ -96,6 +97,7 @@ function KDSDashboard() {
  const [stationFilter, setStationFilter] = useState<PrepStation>("all");
  const [itemsSummaryOpen, setItemsSummaryOpen] = useState(false);
  const [orderToPrint, setOrderToPrint] = useState<any | null>(null);
+ const [stationsSheetOpen, setStationsSheetOpen] = useState(false);
 
  // Polling a cada 3s para atualização em tempo real
  const { data: orders } = useQuery({
@@ -296,6 +298,16 @@ function KDSDashboard() {
 
  {/* Controles */}
  <div className="flex items-center gap-2">
+ <Button
+ variant="outline"
+ size="sm"
+ onClick={() => setStationsSheetOpen(true)}
+ className="gap-2 text-xs font-bold rounded-lg min-h-11 px-4"
+ >
+ <ChefHat className="size-3.5 text-primary" />
+ <span>Praças KDS</span>
+ </Button>
+
  <Button
  variant="outline"
  size="sm"
@@ -596,6 +608,11 @@ function KDSDashboard() {
  </DialogFooter>
  </DialogContent>
  </Dialog>
+
+ <KdsStationsSheet
+   open={stationsSheetOpen}
+   onOpenChange={setStationsSheetOpen}
+ />
  </div>
  </NicheOperationalGuard>
  );

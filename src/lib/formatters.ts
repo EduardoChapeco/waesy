@@ -44,3 +44,39 @@ export function formatDate(date: string | Date | null | undefined): string {
     return String(date);
   }
 }
+
+export function maskCpf(value: string): string {
+  const digits = String(value || "").replace(/\D/g, "").slice(0, 11);
+  return digits
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
+    .replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/, "$1.$2.$3-$4");
+}
+
+export function maskPhone(value: string): string {
+  const digits = String(value || "").replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 6) {
+    return digits.replace(/(\d{2})(\d+)/, "($1) $2");
+  }
+  if (digits.length <= 10) {
+    return digits
+      .replace(/(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3")
+      .replace(/-$/, "")
+      .trim();
+  }
+  return digits
+    .replace(/(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3")
+    .replace(/-$/, "")
+    .trim();
+}
+
+export function normalizeGenderValue(
+  g?: string
+): "feminino" | "masculino" | "outro" | "prefiro_nao_dizer" {
+  if (!g || g === "not_informed") return "prefiro_nao_dizer";
+  if (g === "female" || g === "feminino") return "feminino";
+  if (g === "male" || g === "masculino") return "masculino";
+  if (g === "other" || g === "non_binary" || g === "outro") return "outro";
+  return "prefiro_nao_dizer";
+}

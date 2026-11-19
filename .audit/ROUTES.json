@@ -1,14 +1,14 @@
 {
-  "totalRoutes": 440,
+  "totalRoutes": 477,
   "shellDistribution": {
-    "Admin Master Shell": 38,
-    "Mobile Native Shell": 10,
-    "Headless API / MCP": 24,
-    "Storefront Shell (Responsive B2C)": 179,
-    "Workspace Shell (Desktop/Mobile Split)": 189
+    "Admin Master Shell": 40,
+    "Headless API / MCP": 35,
+    "Mobile Native Shell": 11,
+    "Storefront Shell (Responsive B2C)": 189,
+    "Workspace Shell (Desktop/Mobile Split)": 202
   },
   "nicheDistribution": {
-    "Núcleo Genérico (Cross-Niche)": 393,
+    "Núcleo Genérico (Cross-Niche)": 430,
     "Turismo & Viagens": 37,
     "Eventos & Festas": 6,
     "Gastronomia & Restaurantes": 4
@@ -205,6 +205,16 @@
       "status": "ACTIVE"
     },
     {
+      "file": "admin-master.landings.tsx",
+      "routePath": "/admin-master/landings",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
       "file": "admin-master.logistica.tsx",
       "routePath": "/admin-master/logistica",
       "shell": "Admin Master Shell",
@@ -309,7 +319,7 @@
       "routePath": "/admin-master/seguranca/certificados",
       "shell": "Admin Master Shell",
       "niche": "Núcleo Genérico (Cross-Niche)",
-      "hasMobileView": false,
+      "hasMobileView": true,
       "hasLoader": true,
       "hasErrorBoundary": false,
       "status": "ACTIVE"
@@ -337,6 +347,16 @@
     {
       "file": "admin-master.simlabs.tsx",
       "routePath": "/admin-master/simlabs",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "admin-master.subsistemas.tsx",
+      "routePath": "/admin-master/subsistemas",
       "shell": "Admin Master Shell",
       "niche": "Núcleo Genérico (Cross-Niche)",
       "hasMobileView": true,
@@ -395,9 +415,29 @@
       "status": "ACTIVE"
     },
     {
+      "file": "api.ai.jobs.process.ts",
+      "routePath": "/api/ai/jobs/process",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
       "file": "api.ai.stream.ts",
       "routePath": "/api/ai/stream",
       "shell": "Mobile Native Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.ai.transcribe.ts",
+      "routePath": "/api/ai/transcribe",
+      "shell": "Headless API / MCP",
       "niche": "Núcleo Genérico (Cross-Niche)",
       "hasMobileView": false,
       "hasLoader": false,
@@ -465,8 +505,48 @@
       "status": "ACTIVE"
     },
     {
+      "file": "api.cron.ai-jobs.ts",
+      "routePath": "/api/cron/ai-jobs",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.cron.ai-scheduled-tasks.ts",
+      "routePath": "/api/cron/ai-scheduled-tasks",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.cron.ai-tasks.ts",
+      "routePath": "/api/cron/ai-tasks",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
       "file": "api.cron.mining-worker.ts",
       "routePath": "/api/cron/mining-worker",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.cron.whatsapp-sync.ts",
+      "routePath": "/api/cron/whatsapp-sync",
       "shell": "Headless API / MCP",
       "niche": "Núcleo Genérico (Cross-Niche)",
       "hasMobileView": false,
@@ -547,6 +627,56 @@
     {
       "file": "api.security-telemetry.ts",
       "routePath": "/api/security-telemetry",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.v1.extensions.download.ts",
+      "routePath": "/api/v1/extensions/download",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.v1.ingest.infotravel-quotes.ts",
+      "routePath": "/api/v1/ingest/infotravel-quotes",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.v1.ingest.infotravel-reservations.ts",
+      "routePath": "/api/v1/ingest/infotravel-reservations",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.v1.ingest.whatsapp-contacts.ts",
+      "routePath": "/api/v1/ingest/whatsapp-contacts",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.v1.ingest.whoami.ts",
+      "routePath": "/api/v1/ingest/whoami",
       "shell": "Headless API / MCP",
       "niche": "Núcleo Genérico (Cross-Niche)",
       "hasMobileView": false,
@@ -655,6 +785,16 @@
       "status": "ACTIVE"
     },
     {
+      "file": "app.$slug.tsx",
+      "routePath": "/app/$slug",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
       "file": "assinar.$token.tsx",
       "routePath": "/assinar/$token",
       "shell": "Storefront Shell (Responsive B2C)",
@@ -715,12 +855,32 @@
       "status": "ACTIVE"
     },
     {
+      "file": "g.$slug.tsx",
+      "routePath": "/g/$slug",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
       "file": "home.tsx",
       "routePath": "/home",
       "shell": "Storefront Shell (Responsive B2C)",
       "niche": "Núcleo Genérico (Cross-Niche)",
       "hasMobileView": false,
       "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "m.consent.$leadId.tsx",
+      "routePath": "/m/consent/$leadId",
+      "shell": "Mobile Native Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
       "hasErrorBoundary": false,
       "status": "ACTIVE"
     },
@@ -775,6 +935,36 @@
       "status": "ACTIVE"
     },
     {
+      "file": "sitemap-classificados[.]xml.ts",
+      "routePath": "/sitemap-classificados[/]xml",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "sitemap-empresas[.]xml.ts",
+      "routePath": "/sitemap-empresas[/]xml",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "sitemap-index[.]xml.ts",
+      "routePath": "/sitemap-index[/]xml",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
       "file": "sitemap-news[.]xml.ts",
       "routePath": "/sitemap-news[/]xml",
       "shell": "Storefront Shell (Responsive B2C)",
@@ -787,6 +977,16 @@
     {
       "file": "sitemap-products[.]xml.ts",
       "routePath": "/sitemap-products[/]xml",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "sitemap-produtos[.]xml.ts",
+      "routePath": "/sitemap-produtos[/]xml",
       "shell": "Storefront Shell (Responsive B2C)",
       "niche": "Núcleo Genérico (Cross-Niche)",
       "hasMobileView": false,
@@ -925,8 +1125,78 @@
       "status": "ACTIVE"
     },
     {
+      "file": "workspace.associacao.tsx",
+      "routePath": "/workspace/associacao",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.atendimento.atendentes.tsx",
+      "routePath": "/workspace/atendimento/atendentes",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.atendimento.chat.tsx",
+      "routePath": "/workspace/atendimento/chat",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.atendimento.filas.tsx",
+      "routePath": "/workspace/atendimento/filas",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.atendimento.grupos.tsx",
+      "routePath": "/workspace/atendimento/grupos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.atendimento.horarios.tsx",
+      "routePath": "/workspace/atendimento/horarios",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
       "file": "workspace.atendimento.index.tsx",
       "routePath": "/workspace/atendimento",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.atendimento.whatsapp.tsx",
+      "routePath": "/workspace/atendimento/whatsapp",
       "shell": "Workspace Shell (Desktop/Mobile Split)",
       "niche": "Núcleo Genérico (Cross-Niche)",
       "hasMobileView": true,
@@ -971,6 +1241,16 @@
       "niche": "Núcleo Genérico (Cross-Niche)",
       "hasMobileView": false,
       "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.builder.index.tsx",
+      "routePath": "/workspace/builder",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
       "hasErrorBoundary": false,
       "status": "ACTIVE"
     },
@@ -1069,8 +1349,8 @@
       "routePath": "/workspace/catalogo/colecoes",
       "shell": "Workspace Shell (Desktop/Mobile Split)",
       "niche": "Núcleo Genérico (Cross-Niche)",
-      "hasMobileView": true,
-      "hasLoader": true,
+      "hasMobileView": false,
+      "hasLoader": false,
       "hasErrorBoundary": false,
       "status": "ACTIVE"
     },
@@ -1159,7 +1439,7 @@
       "routePath": "/workspace/cms/avaliacoes",
       "shell": "Workspace Shell (Desktop/Mobile Split)",
       "niche": "Núcleo Genérico (Cross-Niche)",
-      "hasMobileView": false,
+      "hasMobileView": true,
       "hasLoader": true,
       "hasErrorBoundary": false,
       "status": "ACTIVE"
@@ -1307,6 +1587,16 @@
     {
       "file": "workspace.configuracoes.parceiros.tsx",
       "routePath": "/workspace/configuracoes/parceiros",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.configuracoes.planos.tsx",
+      "routePath": "/workspace/configuracoes/planos",
       "shell": "Workspace Shell (Desktop/Mobile Split)",
       "niche": "Núcleo Genérico (Cross-Niche)",
       "hasMobileView": true,
@@ -2049,8 +2339,8 @@
       "routePath": "/workspace/master/influencers",
       "shell": "Workspace Shell (Desktop/Mobile Split)",
       "niche": "Núcleo Genérico (Cross-Niche)",
-      "hasMobileView": true,
-      "hasLoader": true,
+      "hasMobileView": false,
+      "hasLoader": false,
       "hasErrorBoundary": false,
       "status": "ACTIVE"
     },
@@ -2069,7 +2359,7 @@
       "routePath": "/workspace/moderacao",
       "shell": "Workspace Shell (Desktop/Mobile Split)",
       "niche": "Núcleo Genérico (Cross-Niche)",
-      "hasMobileView": true,
+      "hasMobileView": false,
       "hasLoader": false,
       "hasErrorBoundary": false,
       "status": "ACTIVE"
@@ -2079,8 +2369,8 @@
       "routePath": "/workspace/moderacao/kyc",
       "shell": "Workspace Shell (Desktop/Mobile Split)",
       "niche": "Núcleo Genérico (Cross-Niche)",
-      "hasMobileView": true,
-      "hasLoader": true,
+      "hasMobileView": false,
+      "hasLoader": false,
       "hasErrorBoundary": false,
       "status": "ACTIVE"
     },
@@ -2171,6 +2461,16 @@
       "niche": "Núcleo Genérico (Cross-Niche)",
       "hasMobileView": true,
       "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.ordens-servico.index.tsx",
+      "routePath": "/workspace/ordens-servico",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
       "hasErrorBoundary": false,
       "status": "ACTIVE"
     },
@@ -2279,14 +2579,24 @@
       "routePath": "/workspace/pedidos/gestor",
       "shell": "Workspace Shell (Desktop/Mobile Split)",
       "niche": "Núcleo Genérico (Cross-Niche)",
-      "hasMobileView": true,
-      "hasLoader": true,
+      "hasMobileView": false,
+      "hasLoader": false,
       "hasErrorBoundary": false,
       "status": "ACTIVE"
     },
     {
       "file": "workspace.pedidos.index.tsx",
       "routePath": "/workspace/pedidos",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.pedidos.tempo-preparo.tsx",
+      "routePath": "/workspace/pedidos/tempo-preparo",
       "shell": "Workspace Shell (Desktop/Mobile Split)",
       "niche": "Núcleo Genérico (Cross-Niche)",
       "hasMobileView": true,
@@ -2349,6 +2659,26 @@
       "routePath": "/workspace/reservas",
       "shell": "Workspace Shell (Desktop/Mobile Split)",
       "niche": "Gastronomia & Restaurantes",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.rh.compliance.tsx",
+      "routePath": "/workspace/rh/compliance",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.rh.folha.tsx",
+      "routePath": "/workspace/rh/folha",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
       "hasMobileView": true,
       "hasLoader": true,
       "hasErrorBoundary": false,
@@ -2471,7 +2801,7 @@
       "niche": "Turismo & Viagens",
       "hasMobileView": true,
       "hasLoader": true,
-      "hasErrorBoundary": false,
+      "hasErrorBoundary": true,
       "status": "ACTIVE"
     },
     {
@@ -2659,7 +2989,7 @@
       "routePath": "/workspace/turismo/propostas",
       "shell": "Workspace Shell (Desktop/Mobile Split)",
       "niche": "Turismo & Viagens",
-      "hasMobileView": true,
+      "hasMobileView": false,
       "hasLoader": true,
       "hasErrorBoundary": false,
       "status": "ACTIVE"
@@ -2910,7 +3240,7 @@
       "shell": "Storefront Shell (Responsive B2C)",
       "niche": "Núcleo Genérico (Cross-Niche)",
       "hasMobileView": true,
-      "hasLoader": false,
+      "hasLoader": true,
       "hasErrorBoundary": false,
       "status": "ACTIVE"
     },
@@ -2929,7 +3259,7 @@
       "routePath": "/cardapio",
       "shell": "Storefront Shell (Responsive B2C)",
       "niche": "Núcleo Genérico (Cross-Niche)",
-      "hasMobileView": false,
+      "hasMobileView": true,
       "hasLoader": true,
       "hasErrorBoundary": false,
       "status": "ACTIVE"
@@ -2957,6 +3287,16 @@
     {
       "file": "_store.categoria.$slug.tsx",
       "routePath": "/categoria/$slug",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.chamado.$ticketId.tsx",
+      "routePath": "/chamado/$ticketId",
       "shell": "Storefront Shell (Responsive B2C)",
       "niche": "Núcleo Genérico (Cross-Niche)",
       "hasMobileView": true,
@@ -3745,6 +4085,16 @@
       "status": "ACTIVE"
     },
     {
+      "file": "_store.explorer.tsx",
+      "routePath": "/explorer",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
       "file": "_store.f.$slug.tsx",
       "routePath": "/f/$slug",
       "shell": "Storefront Shell (Responsive B2C)",
@@ -4009,7 +4359,7 @@
       "routePath": "/mural",
       "shell": "Storefront Shell (Responsive B2C)",
       "niche": "Núcleo Genérico (Cross-Niche)",
-      "hasMobileView": false,
+      "hasMobileView": true,
       "hasLoader": true,
       "hasErrorBoundary": false,
       "status": "ACTIVE"
@@ -4250,7 +4600,7 @@
       "shell": "Storefront Shell (Responsive B2C)",
       "niche": "Núcleo Genérico (Cross-Niche)",
       "hasMobileView": true,
-      "hasLoader": false,
+      "hasLoader": true,
       "hasErrorBoundary": false,
       "status": "ACTIVE"
     },
@@ -4267,6 +4617,26 @@
     {
       "file": "_store.servicos.tsx",
       "routePath": "/servicos",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.sistemas.$slug.tsx",
+      "routePath": "/sistemas/$slug",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.sistemas.index.tsx",
+      "routePath": "/sistemas",
       "shell": "Storefront Shell (Responsive B2C)",
       "niche": "Núcleo Genérico (Cross-Niche)",
       "hasMobileView": true,

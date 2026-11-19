@@ -1,17 +1,40 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, CheckCircle2, FileSearch, Plane, RefreshCw, ShieldCheck, XCircle } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  FileSearch,
+  FileText,
+  Loader2,
+  Plane,
+  Plus,
+  RefreshCw,
+  ShieldCheck,
+  Sparkles,
+  Upload,
+  XCircle,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
   applyReviewedTravelDocumentToTrip,
   applyTravelOcrToDraft,
+  ingestTravelDocumentForReview,
   listTravelDocumentIngestions,
 } from "@/services/travel-canonical-pipeline.functions";
 import { listStoreTrips } from "@/services/travel-lifecycle.functions";
@@ -39,6 +62,15 @@ export default function TravelDocumentReviewPage() {
   const [clientEmail, setClientEmail] = useState("");
   const [clientPhone, setClientPhone] = useState("");
 
+  // Estado para Ingestão/Upload de Novo Documento OCR
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [uploadSourceKind, setUploadSourceKind] = useState<"operator_quote" | "voucher" | "reservation_confirmation" | "payment_receipt">("operator_quote");
+  const [uploadFileName, setUploadFileName] = useState("");
+  const [uploadFileBase64, setUploadFileBase64] = useState("");
+  const [uploadFileMime, setUploadFileMime] = useState("");
+  const [uploadRawText, setUploadRawText] = useState("");
+  const [isProcessingUpload, setIsProcessingUpload] = useState(false);
+
   const documentsQuery = useQuery({
     queryKey: ["travel-document-ingestions", status],
     queryFn: () => listTravelDocumentIngestions({ data: { status } }),
@@ -58,6 +90,62 @@ export default function TravelDocumentReviewPage() {
     () => documents.find((document: any) => document.id === selectedId) || documents[0],
     [documents, selectedId],
   );
+
+  useEffect(() => {
+    if (selected?.extraction) {
+      const ext = selected.extraction as any;
+      if (ext.client_name) setClientName(ext.client_name);
+      if (ext.client_email) setClientEmail(ext.client_email);
+      if (ext.client_phone) setClientPhone(ext.client_phone);
+    }
+  }, [selected?.id]);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadFileName(file.name);
+    setUploadFileMime(file.type || "application/pdf");
+    const reader = new FileReader();
+    reader.onload = () => {
+      const raw = String(reader.result || "");
+      const b64 = raw.includes(",") ? raw.split(",")[1] : raw;
+      setUploadFileBase64(b64);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleIngestDocument = async () => {
+    if (!uploadFileBase64 && !uploadRawText.trim()) {
+      toast.error("Selecione um arquivo PDF/imagem ou cole o texto do orçamento.");
+      return;
+    }
+    setIsProcessingUpload(true);
+    const toastId = toast.loading("Lendo e processando documento com OCR...");
+    try {
+      const res = await ingestTravelDocumentForReview({
+        data: {
+          sourceKind: uploadSourceKind,
+          fileName: uploadFileName || (uploadRawText ? "Texto colado" : "documento.pdf"),
+          fileMime: uploadFileMime || "application/pdf",
+          fileBase64: uploadFileBase64 || undefined,
+          rawText: uploadRawText.trim() || undefined,
+        },
+      });
+      toast.success("Documento processado com OCR e adicionado para revisão!", { id: toastId });
+      setIsUploadDialogOpen(false);
+      setUploadFileBase64("");
+      setUploadFileName("");
+      setUploadRawText("");
+      if (res?.ingestionId) {
+        setSelectedId(res.ingestionId);
+      }
+      queryClient.invalidateQueries({ queryKey: ["travel-document-ingestions"] });
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao processar OCR do documento.", { id: toastId });
+    } finally {
+      setIsProcessingUpload(false);
+    }
+  };
 
   const applyDraftMutation = useMutation({
     mutationFn: () => applyTravelOcrToDraft({
@@ -114,15 +202,23 @@ export default function TravelDocumentReviewPage() {
     <main className="flex w-full flex-col gap-5 px-4 py-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-primary">Turismo · Governança documental</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-primary">Turismo · Governança documental</p>
           <h1 className="mt-1 text-2xl font-black tracking-tight">Revisão de ingestões OCR</h1>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
             Nenhum documento da operadora vira reserva automaticamente. Revise a evidência, escolha o destino e aplique com trilha de auditoria.
           </p>
         </div>
-        <Button variant="outline" className="focus-visible:ring-2 focus-visible:ring-ring" onClick={() => documentsQuery.refetch()} disabled={documentsQuery.isFetching}>
-          <RefreshCw className={documentsQuery.isFetching ? "mr-2 size-4 animate-spin motion-reduce:animate-none" : "mr-2 size-4"} /> Atualizar fila
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setIsUploadDialogOpen(true)}
+            className="min-h-11 h-11 px-4 gap-2 font-semibold bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+          >
+            <Upload className="size-4" /> Escanear Novo Documento (OCR)
+          </Button>
+          <Button variant="outline" className="min-h-11 h-11 focus-visible:ring-2 focus-visible:ring-ring cursor-pointer" onClick={() => documentsQuery.refetch()} disabled={documentsQuery.isFetching}>
+            <RefreshCw className={documentsQuery.isFetching ? "mr-2 size-4 animate-spin motion-reduce:animate-none" : "mr-2 size-4"} /> Atualizar fila
+          </Button>
+        </div>
       </header>
 
       <div className="grid gap-5 lg:grid-cols-3">
@@ -162,7 +258,21 @@ export default function TravelDocumentReviewPage() {
                 <p className="mt-1 truncate font-mono text-xs text-muted-foreground">SHA {document.content_sha256 || "não disponível"}</p>
               </button>
             ))}
-            {documents.length === 0 && <div className="p-8 text-center text-sm text-muted-foreground">A fila está vazia.</div>}
+            {documents.length === 0 && (
+              <div className="p-8 text-center space-y-3 text-muted-foreground">
+                <FileSearch className="size-8 mx-auto text-muted-foreground/60" />
+                <p className="text-sm font-medium text-foreground">A fila está vazia</p>
+                <p className="text-xs text-muted-foreground max-w-xs mx-auto">
+                  Envie um arquivo PDF de cotação ou voucher para escanear com OCR e revisar os dados.
+                </p>
+                <Button
+                  onClick={() => setIsUploadDialogOpen(true)}
+                  className="min-h-11 h-11 px-4 text-xs font-semibold bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                >
+                  <Upload className="size-3.5 mr-2" /> Escanear Documento
+                </Button>
+              </div>
+            )}
           </div>
         </Card>
 
@@ -233,6 +343,93 @@ export default function TravelDocumentReviewPage() {
           )}
         </Card>
       </div>
+
+      {/* DIALOG DE UPLOAD E ESCANEAMENTO OCR */}
+      <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Upload className="size-5 text-primary" />
+              <span>Escanear Documento Operacional (OCR)</span>
+            </DialogTitle>
+            <DialogDescription>
+              Envie um PDF de cotação da operadora, voucher ou print, ou cole o texto do orçamento.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div>
+              <Label className="text-xs font-semibold">Tipo do Documento</Label>
+              <Select value={uploadSourceKind} onValueChange={(val: any) => setUploadSourceKind(val)}>
+                <SelectTrigger className="h-11 min-h-11 text-xs mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="operator_quote">Cotação de Operadora B2B (CVC, Orinter, FRT, Azul, etc.)</SelectItem>
+                  <SelectItem value="voucher">Voucher de Reserva Confirmada</SelectItem>
+                  <SelectItem value="reservation_confirmation">Confirmação de Reserva de Hotel/Voo</SelectItem>
+                  <SelectItem value="payment_receipt">Comprovante de Pagamento / Carnê</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-xs font-semibold">Arquivo (PDF ou Imagem)</Label>
+              <input
+                type="file"
+                accept="application/pdf,image/*"
+                onChange={handleFileUpload}
+                className="mt-1 block w-full text-xs text-muted-foreground file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 file:cursor-pointer cursor-pointer"
+              />
+              {uploadFileName && (
+                <p className="mt-1 text-2xs text-success font-medium flex items-center gap-1">
+                  <CheckCircle2 className="size-3" /> {uploadFileName} pronto para OCR
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label className="text-xs font-semibold">Ou Cole o Texto do Orçamento / WhatsApp</Label>
+              <Textarea
+                rows={4}
+                value={uploadRawText}
+                onChange={(e) => setUploadRawText(e.target.value)}
+                placeholder="Cole aqui o texto copiado da operadora, GDS ou conversa com o cliente..."
+                className="mt-1 text-xs"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsUploadDialogOpen(false)}
+              className="h-11 min-h-11 text-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={handleIngestDocument}
+              disabled={isProcessingUpload || (!uploadFileBase64 && !uploadRawText.trim())}
+              className="h-11 min-h-11 text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {isProcessingUpload ? (
+                <>
+                  <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+                  Processando OCR...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="size-4" />
+                  Escanear com OCR
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }

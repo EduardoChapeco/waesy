@@ -37,6 +37,8 @@ const CATEGORY_LABELS: Record<ObligationCategory, { label: string; icon: any; co
   rent: { label: "Aluguel e Imóvel", icon: Building2, color: "text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950 border-purple-200 dark:border-purple-800" },
   utilities: { label: "Água / Luz / Net", icon: Zap, color: "text-warning-strong bg-muted border-border" },
   payroll: { label: "Folha / Equipe", icon: Layers, color: "text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950 border-emerald-200 dark:border-emerald-800" },
+  off_payroll_award: { label: "Premiação Por Fora", icon: Layers, color: "text-primary bg-primary/10 border-primary/25" },
+  operator_net_payable: { label: "Net a Operadora", icon: Briefcase, color: "text-warning-strong bg-warning/10 border-warning/30" },
   tax: { label: "Tributos e DAS", icon: Landmark, color: "text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950 border-rose-200 dark:border-rose-800" },
   marketing: { label: "Marketing / Ads", icon: Tag, color: "text-pink-700 dark:text-pink-300 bg-pink-50 dark:bg-pink-950 border-pink-200 dark:border-pink-800" },
   software: { label: "Software / SaaS", icon: Receipt, color: "text-cyan-700 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800" },

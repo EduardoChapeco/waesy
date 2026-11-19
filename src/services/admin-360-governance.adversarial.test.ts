@@ -32,6 +32,13 @@ let currentTestIdentity: any = mockAdminUser;
 
 vi.mock("@/lib/server-access", () => ({
   getServerIdentity: vi.fn(async () => currentTestIdentity),
+  requirePlatformAdmin: vi.fn(async () => {
+    if (!currentTestIdentity?.id) throw new Error("Não autenticado. Por favor, faça login.");
+    if (!["platform_admin", "master"].includes(currentTestIdentity.role) && !currentTestIdentity.isPlatformAdmin) {
+      throw new Error("Acesso negado. Apenas administradores globais master podem realizar esta ação.");
+    }
+    return currentTestIdentity;
+  }),
 }));
 
 vi.mock("@tanstack/start-server-core", () => ({

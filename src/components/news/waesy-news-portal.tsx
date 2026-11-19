@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import type { NewsArticleDTO, SponsorDTO } from "@/services/news.functions";
 import type { BannerDTO } from "@/services/banner.functions";
+import { isUuid } from "@/lib/utils";
 import { listArticleComments, submitArticleComment } from "@/services/news.functions";
 import {
   CANONICAL_PROMETHEE_TABS,
@@ -133,10 +134,7 @@ export function WaesyNewsPortal({
   // Carrega comentários reais quando abre reportagem
   useEffect(() => {
     if (!activeArticle?.id) return;
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-      activeArticle.id,
-    );
-    if (!isUuid) {
+    if (!isUuid(activeArticle.id)) {
       setComments([]);
       return;
     }
@@ -314,10 +312,7 @@ export function WaesyNewsPortal({
     ]);
     setCommentText("");
 
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-      activeArticle.id,
-    );
-    if (isUuid) {
+    if (isUuid(activeArticle.id)) {
       try {
         await submitArticleComment({
           data: { articleId: activeArticle.id, contentText: clean },

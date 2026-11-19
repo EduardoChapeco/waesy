@@ -29,20 +29,20 @@ describe("Platform Route Inventory (446 Routes)", () => {
     (f) => !f.includes(".test.") && !f.includes(".spec.")
   );
 
-  it("audits total platform route inventory to match exactly 476 route source files", () => {
-    // Inventory Master canonical route source file count (+3 /sistemas, /sistemas/$slug, /admin-master/landings)
-    expect(allRouteSourceFiles.length).toBe(476);
-    expect(routePages.length).toBe(474);
+  it("audits total platform route inventory to match exactly 483 route source files", () => {
+    // Inventory Master canonical route source file count
+    expect(allRouteSourceFiles.length).toBe(483);
+    expect(routePages.length).toBe(481);
   });
 
-  it("verifies workspace operational management routes (201 operational routes + receipt route)", () => {
+  it("verifies workspace operational management routes (203 operational routes + receipt route)", () => {
     const workspaceRoutes = allRouteSourceFiles.filter(
       (f) => f.startsWith("workspace.") || f.startsWith("workspace_")
     );
-    expect(workspaceRoutes.length).toBe(202);
-    // 201 operational routes + 1 standalone receipt route
+    expect(workspaceRoutes.length).toBe(204);
+    // 203 operational routes + 1 standalone receipt route
     const operationalRoutes = workspaceRoutes.filter((f) => f.startsWith("workspace."));
-    expect(operationalRoutes.length).toBe(201);
+    expect(operationalRoutes.length).toBe(203);
   });
 
   it("verifies public store and vitrine routes (169 route files)", () => {

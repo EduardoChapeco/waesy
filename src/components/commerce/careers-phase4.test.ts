@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { builderRegistry } from "@/lib/builder-registry";
+import { builderRegistry } from "@/lib/builder/builder-registry";
 
 describe("Fase 4: Portal de Carreiras & Vagas com Integração RH", () => {
  it("builderRegistry deve registrar careers_hero_banner com campos de cultura", () => {

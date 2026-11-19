@@ -13,7 +13,7 @@ import {
   BeerBottle,
 } from "@phosphor-icons/react";
 
-import { Button } from "@/components/ui/button";
+import { RouteErrorFallback } from "@/components/state/route-error-fallback";
 import { PageSkeleton } from "@/components/state/loading";
 import { getModularSurfaceFeed, resolveSurfacePageExperienceDocument } from "@/services/surface-cms.functions";
 import { OmniPageRenderer } from "@/components/builder/OmniPageRenderer";
@@ -119,27 +119,18 @@ export const Route = createFileRoute("/_store/mercado")({
       return { banners: null, hotpages: null, marketplaceFeed: null, catalogProducts: null };
     }
   },
-  errorComponent: MercadoErrorComponent,
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorFallback
+      error={error}
+      reset={reset}
+      icon={Storefront}
+      title="Instabilidade ao carregar mercados"
+      description="Não foi possível carregar os supermercados e produtos no momento."
+    />
+  ),
   component: MercadoVerticalPage,
   pendingComponent: PageSkeleton,
 });
-
-function MercadoErrorComponent({ error, reset }: { error: any; reset: () => void }) {
-  return (
-    <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
-        <Storefront size={32} />
-      </div>
-      <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar mercados</h2>
-      <p className="text-sm text-muted-foreground max-w-md mx-auto">
-        {error?.message || "Não foi possível carregar os supermercados e produtos no momento."}
-      </p>
-      <Button onClick={reset} className="rounded-lg font-bold">
-        Tentar Novamente
-      </Button>
-    </div>
-  );
-}
 
 function MercadoVerticalPage() {
   const loaderData = (Route.useLoaderData?.() as any) || {};

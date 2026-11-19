@@ -18,6 +18,7 @@ import {
   Lock,
 } from "lucide-react";
 import { toast } from "sonner";
+import { toggleCommunityMembership } from "@/services/community.functions";
 
 export interface CommunityJoinSheetProps {
   isOpen: boolean;
@@ -54,12 +55,27 @@ export function CommunityJoinSheet({
   const rules = community.rules && community.rules.length > 0 ? community.rules : DEFAULT_RULES;
 
   const handleConfirmJoin = async () => {
+    if (!community.id) {
+      toast.error("Comunidade não identificada para confirmar participação.");
+      return;
+    }
     setIsJoining(true);
-    await new Promise((r) => setTimeout(r, 600));
-    setIsJoining(false);
-    toast.success(`Você agora faz parte da comunidade ${community.name}!`);
-    if (onJoinSuccess) onJoinSuccess();
-    onClose();
+    try {
+      const result = await toggleCommunityMembership({
+        data: { communityId: community.id },
+      });
+      toast.success(
+        result.isMember
+          ? `Você agora faz parte da comunidade ${community.name}!`
+          : `Vínculo com ${community.name} atualizado.`,
+      );
+      if (onJoinSuccess) onJoinSuccess();
+      onClose();
+    } catch (err: any) {
+      toast.error(err?.message || "Não foi possível confirmar sua participação.");
+    } finally {
+      setIsJoining(false);
+    }
   };
 
   return (

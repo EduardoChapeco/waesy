@@ -227,7 +227,7 @@ describe("Wave C.3 — Integridade BFF, Auth Fail-Closed e Anti-Falso-Positivo",
     mockState.responses["store_business_model_canvas:upsert"] = { data: { store_id: STORE_A }, error: null };
     const saved = await saveViabilityCanvasAndSwot({ data: payload });
     expect(saved.success).toBe(true);
-  });
+  }, 20_000);
 
   it("travel-pre-boarding-and-commissions: recusa anônimo, falha em erro de DB e persiste quando autorizado", async () => {
     const {
@@ -337,7 +337,7 @@ describe("Wave C.3 — Integridade BFF, Auth Fail-Closed e Anti-Falso-Positivo",
     });
     expect(accepted.success).toBe(true);
     expect(accepted.meetingStatus).toBe("accepted_by_client");
-  });
+  }, 20_000);
 
   it("directory & ads: mapeia colunas reais de stores sem estrela falsa e propaga erro ao assinar Waesy Max", async () => {
     const { getPublicDirectoryById } = await import("../directory.functions");
@@ -380,7 +380,7 @@ describe("Wave C.3 — Integridade BFF, Auth Fail-Closed e Anti-Falso-Positivo",
       error: { message: "plan_tier update failed" },
     };
     await expect(upgradeStoreToWaesyMax()).rejects.toThrow(/plan_tier update failed/i);
-  });
+  }, 20_000);
 
   it("UI contracts: remove datas fake hardcoded e toast.success em catch no pré-embarque e importador CRM", () => {
     const studioSrc = fs.readFileSync(

@@ -4,7 +4,62 @@
  * achados e perdidos, taxas aduaneiras e de trânsito, salas VIP, câmbio, transporte e direitos do passageiro.
  */
 
-import { type AirportRecord, getAirportByIata } from "@/lib/data/airports-catalog";
+import type { AirportRecord } from "@/types/airports";
+
+const CURATED_AIRPORT_BASES: Record<string, AirportRecord> = {
+  XAP: {
+    iata_code: "XAP",
+    icao_code: "SBCH",
+    name: "Aeroporto Serafin Enoss Bertaso",
+    city: "Chapecó",
+    state_province: "SC",
+    country: "Brasil",
+    country_code: "BR",
+    latitude: -27.134167,
+    longitude: -52.656667,
+    timezone: "America/Sao_Paulo",
+    is_commercial: true,
+  },
+  GRU: {
+    iata_code: "GRU",
+    icao_code: "SBGR",
+    name: "Aeroporto Internacional de São Paulo/Guarulhos",
+    city: "São Paulo",
+    state_province: "SP",
+    country: "Brasil",
+    country_code: "BR",
+    latitude: -23.435556,
+    longitude: -46.473056,
+    timezone: "America/Sao_Paulo",
+    is_commercial: true,
+  },
+  LIM: {
+    iata_code: "LIM",
+    icao_code: "SPJC",
+    name: "Aeroporto Internacional Jorge Chávez",
+    city: "Lima",
+    state_province: "",
+    country: "Peru",
+    country_code: "PE",
+    latitude: -12.0219,
+    longitude: -77.1143,
+    timezone: "America/Lima",
+    is_commercial: true,
+  },
+  CDG: {
+    iata_code: "CDG",
+    icao_code: "LFPG",
+    name: "Aeroporto Internacional Charles de Gaulle",
+    city: "Paris",
+    state_province: "",
+    country: "França",
+    country_code: "FR",
+    latitude: 49.0097,
+    longitude: 2.5479,
+    timezone: "Europe/Paris",
+    is_commercial: true,
+  },
+};
 
 export type OfficialSectorType =
   | "police"
@@ -576,15 +631,11 @@ const CURATED_PROFILES: Record<string, Partial<AirportRichProfile>> = {
 };
 
 /**
- * Constrói ou deriva o perfil rico de inteligência de qualquer aeroporto do catálogo.
+ * Constrói ou deriva o perfil rico de inteligência a partir de um registro de aeroporto (`airports_global`).
  * Se o aeroporto estiver em CURATED_PROFILES, utiliza os dados específicos curados.
- * Se for outro aeroporto, sintetiza um perfil canônico autêntico com órgãos reguladores
- * do país correspondente (ex: ANAC/PF/Receita para Brasil, TSA/CBP para EUA, etc.).
+ * Caso contrário, sintetiza órgãos reguladores e serviços conforme o país do aeroporto.
  */
-export function getEnrichedAirportProfile(iataCode: string): AirportRichProfile | null {
-  const base = getAirportByIata(iataCode);
-  if (!base) return null;
-
+export function buildEnrichedAirportProfile(base: AirportRecord): AirportRichProfile {
   const curated = CURATED_PROFILES[base.iata_code.toUpperCase()] || {};
 
   const isBrazil = base.country_code === "BR";
@@ -733,4 +784,15 @@ export function getEnrichedAirportProfile(iataCode: string): AirportRichProfile 
     nearby_points: curated.nearby_points || [],
     seo_description: `Guia oficial do Aeroporto ${base.name} (${base.iata_code}) em ${seoLoc}. Terminais, Polícia Federal, Receita Federal, Achados e Perdidos, taxas de embarque, cooperativas de táxi e direitos do passageiro.`,
   };
+}
+
+export function getEnrichedAirportProfile(
+  iataOrRecord: string | AirportRecord,
+): AirportRichProfile | null {
+  if (typeof iataOrRecord !== "string") {
+    return buildEnrichedAirportProfile(iataOrRecord);
+  }
+  const clean = iataOrRecord.trim().toUpperCase();
+  const base = CURATED_AIRPORT_BASES[clean];
+  return base ? buildEnrichedAirportProfile(base) : null;
 }

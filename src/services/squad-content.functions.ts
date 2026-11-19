@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getServerClient } from '@/lib/supabase';
 import { getServerIdentity, assertStoreAccess } from '@/lib/server-access';
 import { TOKEN_HEX } from '@/lib/design-tokens';
+import { escapeHtml } from '@/lib/sanitize';
 import { executeUnifiedAiCall } from '@/services/api-orchestrator.functions';
 
 export type PostFormat = 'single' | 'carousel' | 'story_reels';
@@ -58,11 +59,6 @@ export interface SquadGeneratedPost {
 }
 
 // ─── RENDERIZADOR DE TEMPLATE HTML5 1080x1080 ────────────────────────────────
-function escapeHtml(value: string): string {
-  const replacements: Record<string, string> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
-  return value.replace(/[&<>"']/g, (char) => replacements[char] || char);
-}
-
 export function renderSlideHTML5(params: {
   headline: string;
   body: string;

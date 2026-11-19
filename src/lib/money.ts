@@ -48,6 +48,28 @@ export function parseBRLToCents(val: string | null | undefined): number {
  return digits ? parseInt(digits, 10) : 0;
 }
 
+/**
+ * Converte entrada humana de salário mensal em R$ (ex: "3500", "3.500", "3500,50", "R$ 3.500,00")
+ * para centavos inteiros sem nunca sofrer truncamento/divisão por 100 em reedições.
+ */
+export function parseSalaryInputToCents(val: string | number | null | undefined): number | undefined {
+ if (val === null || val === undefined) return undefined;
+ if (typeof val === "number") {
+  return Number.isFinite(val) && val > 0 ? Math.round(val) : undefined;
+ }
+ const raw = String(val).replace(/R\$/gi, "").trim();
+ if (!raw) return undefined;
+ let normalized = raw.replace(/\s+/g, "");
+ if (normalized.includes(",")) {
+  normalized = normalized.replace(/\./g, "").replace(",", ".");
+ } else if (/^\d{1,3}(\.\d{3})+$/.test(normalized)) {
+  normalized = normalized.replace(/\./g, "");
+ }
+ const parsed = Number(normalized);
+ if (!Number.isFinite(parsed) || parsed <= 0) return undefined;
+ return Math.round(parsed * 100);
+}
+
 /** Aplica máscara progressiva de centavos enquanto o usuário digita (ex: "800" -> "8,00", "80000" -> "800,00"). */
 export function maskCurrencyBRL(val: string | number | null | undefined): string {
  if (val === null || val === undefined || val === "") return "";
@@ -56,4 +78,19 @@ export function maskCurrencyBRL(val: string | number | null | undefined): string
  const cents = parseInt(digits, 10);
  if (isNaN(cents) || cents === 0) return "0,00";
  return formatCentsToBRL(cents);
+}
+
+export function parseReaisToCents(raw: string, emptyAsZero = false): number | null {
+ const trimmed = (raw || "").trim();
+ const cleaned = trimmed.replace(/[^\d.,]/g, "");
+ if (!cleaned) return emptyAsZero ? 0 : null;
+ let normalized = cleaned;
+ if (cleaned.includes(",")) {
+ normalized = cleaned.replace(/\./g, "").replace(",", ".");
+ } else if (/^\d{1,3}(\.\d{3})+$/.test(cleaned)) {
+ normalized = cleaned.replace(/\./g, "");
+ }
+ const num = Number.parseFloat(normalized);
+ if (!Number.isFinite(num) || num < 0) return null;
+ return Math.round(num * 100);
 }

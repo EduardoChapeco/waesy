@@ -14,19 +14,17 @@ export const Route = createFileRoute("/admin-master/logs")({
   loader: async () => {
     try {
       const [logs, stats, forensicEvents] = await Promise.all([
-        getSystemLogs({ data: { limit: 150 } }).catch(() => []),
-        getSystemLogsStats().catch(() => ({
-          total: 0,
-          critical: 0,
-          errors: 0,
-          warnings: 0,
-          topRoutes: [],
-          lastErrorAt: null,
-        })),
-        getForensicAuditEvents({ data: { limit: 100 } }).catch(() => []),
+        getSystemLogs({ data: { limit: 150 } }),
+        getSystemLogsStats(),
+        getForensicAuditEvents({ data: { limit: 100 } }),
       ]);
-      return { logs: logs || [], stats, forensicEvents: forensicEvents || [] };
-    } catch (e) {
+      return {
+        logs: logs || [],
+        stats,
+        forensicEvents: forensicEvents || [],
+        loaderError: null as string | null,
+      };
+    } catch (e: any) {
       console.error("Erro ao carregar logs:", e);
       return {
         logs: [],
@@ -39,6 +37,7 @@ export const Route = createFileRoute("/admin-master/logs")({
           lastErrorAt: null,
         },
         forensicEvents: [],
+        loaderError: e?.message || "Falha ao carregar telemetria e logs de erro do servidor.",
       };
     }
   },
@@ -46,11 +45,12 @@ export const Route = createFileRoute("/admin-master/logs")({
 });
 
 function SystemLogsPage() {
-  const { logs, stats, forensicEvents } = (Route.useLoaderData?.() as {
+  const { logs, stats, forensicEvents, loaderError } = (Route.useLoaderData?.() as {
     logs: SystemLogItem[];
     stats: SystemLogsStats;
     forensicEvents: ForensicAuditEventItem[];
-  }) || { logs: [], stats: { total: 0, critical: 0, errors: 0, warnings: 0, topRoutes: [], lastErrorAt: null }, forensicEvents: [] };
+    loaderError?: string | null;
+  }) || { logs: [], stats: { total: 0, critical: 0, errors: 0, warnings: 0, topRoutes: [], lastErrorAt: null }, forensicEvents: [], loaderError: null };
 
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"errors" | "forensic">("errors");
@@ -202,6 +202,28 @@ function SystemLogsPage() {
       </div>
 
       {/* Abas Superiores Bilaterais */}
+      {loaderError && (
+        <div
+          role="alert"
+          className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+        >
+          <div className="flex items-start gap-3">
+            <AlertCircle className="size-5 text-destructive shrink-0 mt-1" />
+            <div className="space-y-1">
+              <p className="text-sm font-bold text-destructive">Erro real ao carregar telemetria do servidor</p>
+              <p className="text-xs text-destructive/90">{loaderError}</p>
+            </div>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleRefresh}
+            className="min-h-11 shrink-0 border-destructive/40 text-destructive hover:bg-destructive/10"
+          >
+            Tentar Novamente
+          </Button>
+        </div>
+      )}
       <div className="flex items-center gap-2 border-b border-border/60 pb-3">
         <Button
           variant={activeTab === "errors" ? "default" : "outline"}

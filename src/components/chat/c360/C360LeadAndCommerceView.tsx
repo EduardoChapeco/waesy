@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+﻿import { useEffect, useState } from "react";
 import {
   Target,
   Plane,
@@ -12,19 +12,25 @@ import {
   Plus,
   FileText,
   BadgePercent,
+  Search,
+  Link2,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { formatBRL, cn } from "@/lib/utils";
 import { formatDate } from "@/lib/datetime";
+import { searchStoreCrmLeads } from "@/services/chat-quick-actions.functions";
+import type { QuickComposerModalKind } from "@/components/chat/ChatQuickComposerModals";
 import { toast } from "sonner";
 
 const FUNNEL_STAGES = [
   { value: "new", label: "Novo Lead" },
   { value: "contacted", label: "Em Contato" },
   { value: "qualified", label: "Qualificado" },
-  { value: "proposal", label: "Proposta / OrÃ§amento" },
-  { value: "negotiation", label: "Em NegociaÃ§Ã£o" },
+  { value: "proposal", label: "Proposta / Orcamento" },
+  { value: "negotiation", label: "Em Negociacao" },
   { value: "won", label: "Fechado (Ganho)" },
   { value: "lost", label: "Perdido" },
 ] as const;
@@ -32,22 +38,53 @@ const FUNNEL_STAGES = [
 interface C360LeadAndCommerceViewProps {
   mode: "lead" | "quotes" | "vertical";
   niche?: string;
+  storeId?: string;
+  threadId?: string;
   data: any;
   onFunnelStageChange: (leadId: string, nextStage: string) => Promise<void>;
+  onLinkLead?: (leadId: string | null) => Promise<void>;
+  onQuickCreateLead?: () => void;
   onQuickSendMessage?: (text: string) => void;
-  onOpenQuickComposerModal?: (modal: "invoice" | "boleto" | "contract" | "quote" | "image_card") => void;
+  onOpenQuickComposerModal?: (modal: QuickComposerModalKind) => void;
 }
 
 export function C360LeadAndCommerceView({
   mode,
   niche = "general",
+  storeId,
+  threadId,
   data,
   onFunnelStageChange,
+  onLinkLead,
+  onQuickCreateLead,
   onQuickSendMessage,
   onOpenQuickComposerModal,
 }: C360LeadAndCommerceViewProps) {
   const [leadTab, setLeadTab] = useState<"geral" | "checklist" | "cotacoes">("geral");
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
+  const [leadSearchOpen, setLeadSearchOpen] = useState(false);
+  const [leadQuery, setLeadQuery] = useState("");
+  const [leadSearchResults, setLeadSearchResults] = useState<any[]>([]);
+  const [isSearchingLeads, setIsSearchingLeads] = useState(false);
+
+  useEffect(() => {
+    if (!leadSearchOpen || !storeId) return;
+    let active = true;
+    setIsSearchingLeads(true);
+    searchStoreCrmLeads({ data: { storeId, query: leadQuery.trim() || undefined, limit: 15 } })
+      .then((rows) => {
+        if (active) setLeadSearchResults(rows || []);
+      })
+      .catch(() => {
+        if (active) setLeadSearchResults([]);
+      })
+      .finally(() => {
+        if (active) setIsSearchingLeads(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [leadSearchOpen, leadQuery, storeId]);
 
   const linkedLead = data?.linkedLead || null;
   const opportunities: any[] = Array.isArray(data?.opportunities) ? data.opportunities : [];
@@ -68,43 +105,135 @@ export function C360LeadAndCommerceView({
 
     return (
       <div className="space-y-3">
+        {threadId && onLinkLead && (
+          <div className="rounded-xl border border-border/70 bg-card p-3 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-semibold text-foreground inline-flex items-center gap-1">
+                <Link2 className="size-3.5 text-primary" />
+                <span>Vinculo com Lead do CRM</span>
+              </span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setLeadSearchOpen((prev) => !prev)}
+                className="h-11 sm:h-8 min-h-11 sm:min-h-8 px-3 rounded-lg text-xs font-semibold gap-1 cursor-pointer"
+              >
+                <Search className="size-3.5" />
+                <span>{leadSearchOpen ? "Fechar Busca" : "Buscar Lead"}</span>
+              </Button>
+            </div>
+
+            {leadSearchOpen && (
+              <div className="space-y-2 pt-1">
+                <Input
+                  value={leadQuery}
+                  onChange={(e) => setLeadQuery(e.target.value)}
+                  placeholder="Nome, titulo, telefone ou destino..."
+                  className="h-11 sm:h-9 text-xs"
+                />
+                <div className="max-h-44 overflow-y-auto space-y-1">
+                  {isSearchingLeads ? (
+                    <p className="text-xs text-muted-foreground py-2 text-center">Buscando leads...</p>
+                  ) : leadSearchResults.length === 0 ? (
+                    <p className="text-xs text-muted-foreground py-2 text-center">Nenhum lead encontrado.</p>
+                  ) : (
+                    leadSearchResults.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={async () => {
+                          await onLinkLead(item.id);
+                          setLeadSearchOpen(false);
+                        }}
+                        className="w-full min-h-11 px-3 py-2 rounded-lg border border-border/60 bg-background hover:bg-muted/50 text-left flex items-center justify-between gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold text-foreground truncate">
+                            {item.title || item.full_name}
+                          </p>
+                          <p className="text-2xs text-muted-foreground truncate">
+                            {item.full_name}{item.phone ? ` · ${item.phone}` : ""}
+                          </p>
+                        </div>
+                        <Badge variant="outline" className="text-2xs shrink-0">
+                          {activeLead?.id === item.id ? "Vinculado" : "Vincular"}
+                        </Badge>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {!activeLead ? (
           <div className="rounded-xl border border-dashed border-border p-4 text-center space-y-2">
             <Target className="size-5 text-muted-foreground mx-auto" />
             <p className="text-xs font-medium text-foreground">Nenhuma oportunidade vinculada</p>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => onOpenQuickComposerModal?.("quote")}
-              className="min-h-11 sm:min-h-8 h-8 rounded-lg text-xs"
-            >
-              <Plus className="size-3.5 mr-1" />
-              Nova CotaÃ§Ã£o / Lead
-            </Button>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              {onQuickCreateLead && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="default"
+                  onClick={onQuickCreateLead}
+                  className="min-h-11 sm:min-h-9 h-11 sm:h-9 rounded-lg text-xs font-semibold cursor-pointer"
+                >
+                  <Plus className="size-3.5 mr-1" />
+                  <span>Criar Novo Lead</span>
+                </Button>
+              )}
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => onOpenQuickComposerModal?.("lead")}
+                className="min-h-11 sm:min-h-9 h-11 sm:h-9 rounded-lg text-xs cursor-pointer"
+              >
+                <Search className="size-3.5 mr-1" />
+                <span>Vincular Existente</span>
+              </Button>
+            </div>
           </div>
         ) : (
           <>
-            {/* CabeÃ§alho compacto do Card do Funil dentro do painel */}
+            {/* Cabecalho compacto do Card do Funil dentro do painel */}
             <div className="rounded-xl border border-border bg-card p-3 space-y-2">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <span className="text-xs font-medium text-muted-foreground block">
-                    Card do Funil
+                    Lead Vinculado no CRM
                   </span>
                   <h4 className="text-sm font-semibold text-foreground truncate">
-                    {activeLead.title || activeLead.destination_of_interest || "Oportunidade"}
+                    {activeLead.title || activeLead.full_name || activeLead.destination_of_interest || "Oportunidade"}
                   </h4>
                 </div>
-                <a
-                  href="/workspace/turismo"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-xs font-medium text-primary hover:underline inline-flex items-center gap-1 shrink-0"
-                >
-                  Kanban
-                  <ExternalLink className="size-3" />
-                </a>
+                <div className="flex items-center gap-1 shrink-0">
+                  {onLinkLead && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => void onLinkLead(null)}
+                      className="size-11 p-0 text-muted-foreground hover:text-destructive focus-visible:ring-2 focus-visible:ring-primary"
+                      title="Desvincular lead"
+                      aria-label="Desvincular lead"
+                    >
+                      <X className="size-3.5" />
+                    </Button>
+                  )}
+                  <a
+                    href={`/workspace/comercial?leadId=${encodeURIComponent(activeLead.id)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs font-medium text-primary hover:underline inline-flex items-center gap-1 shrink-0"
+                  >
+                    Kanban
+                    <ExternalLink className="size-3" />
+                  </a>
+                </div>
               </div>
 
               <div className="space-y-1">

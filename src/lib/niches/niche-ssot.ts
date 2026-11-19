@@ -10,6 +10,7 @@
  */
 
 import type { CanonicalVerticalId } from "@/lib/architecture/vertical-manifest";
+import { normalizeDiacriticText as normalizeText } from "@/lib/utils";
 
 export type UnifiedNicheId =
   | "beauty_salon"
@@ -33,6 +34,39 @@ export type UnifiedNicheId =
   | "events"
   | "organizations"
   | "generic";
+
+export type CommercialOperatingModel =
+  | "distribuidora_b2b_rota"
+  | "turismo_lazer"
+  | "turismo_corporativo"
+  | "varejo_recorrente"
+  | "servicos_agendados"
+  | "imoveis_veiculos"
+  | "standard";
+
+export function resolveCommercialOperatingModel(settings?: Record<string, any> | null): CommercialOperatingModel {
+  if (!settings) return "standard";
+  if (settings.commercial_operating_model) {
+    return settings.commercial_operating_model as CommercialOperatingModel;
+  }
+  const niche = settings.niche || settings.segment || settings.type || "";
+  if (settings.is_b2b_distributor || settings.segment === "distribuidora" || settings.type === "distribuidora") {
+    return "distribuidora_b2b_rota";
+  }
+  if (niche === "tourism") {
+    return settings.tourism_mode === "corporate" ? "turismo_corporativo" : "turismo_lazer";
+  }
+  if (["beauty_salon", "barbershop", "healthcare", "aesthetics_clinic", "dental", "services", "law_firm", "accounting"].includes(niche)) {
+    return "servicos_agendados";
+  }
+  if (["retail", "pharmacy", "market_perishables", "gastronomy"].includes(niche)) {
+    return "varejo_recorrente";
+  }
+  if (["real_estate", "automotive"].includes(niche)) {
+    return "imoveis_veiculos";
+  }
+  return "standard";
+}
 
 export type VerticalPlanSkuId =
   | "waesy_salon_beauty"
@@ -1662,14 +1696,6 @@ export const UNIFIED_NICHE_SPECS: Record<UnifiedNicheId, UnifiedNicheSpec> = {
     },
   },
 };
-
-function normalizeText(value: string): string {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
-}
 
 function tokenizeWords(value: string): Set<string> {
   const norm = normalizeText(value);
