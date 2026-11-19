@@ -50,8 +50,16 @@ export async function resolveTenantStoreId(capturedContext?: {
    }
  }
  if (host) {
- const parts = host.split(".");
- if (parts.length > 1 && parts[0] !== "www" && parts[0] !== "waesy" && parts[0] !== "usewaesy") {
+ const cleanHost = host.split(":")[0].trim().toLowerCase();
+ const isPreviewOrLocalHost =
+   cleanHost === "localhost" ||
+   cleanHost.endsWith(".localhost") ||
+   cleanHost.endsWith(".pages.dev") ||
+   cleanHost.endsWith(".workers.dev") ||
+   /^\d{1,3}(\.\d{1,3}){3}$/.test(cleanHost);
+ const parts = cleanHost.split(".");
+ const reservedSubdomains = new Set(["www", "waesy", "usewaesy", "api", "app", "admin"]);
+ if (!isPreviewOrLocalHost && parts.length > 2 && !reservedSubdomains.has(parts[0])) {
  const slugToMatch = parts[0];
  const db = getAnonServerClient();
  const { data: matchedStore } = await db

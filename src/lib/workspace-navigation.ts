@@ -804,6 +804,7 @@ const GROUP_B2B_PROCUREMENT: NavGroup = {
   items: [
     { path: "/workspace/b2b", label: "Compras B2B", icon: Briefcase },
     { path: "/workspace/licitacoes", label: "Licitações", icon: Scale },
+    { path: "/workspace/empresa/viagens", label: "Viagens da Empresa", icon: Building2 },
   ],
 };
 

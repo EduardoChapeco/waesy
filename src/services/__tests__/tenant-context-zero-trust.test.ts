@@ -15,6 +15,7 @@ const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY!;
 const pool = new pg.Pool({
   connectionString: `postgres://postgres.${projectRef}:${encodeURIComponent(dbPassword)}@aws-0-sa-east-1.pooler.supabase.com:6543/postgres`,
   ssl: { rejectUnauthorized: false },
+  connectionTimeoutMillis: 3000,
 });
 
 let isPoolConnected = false;

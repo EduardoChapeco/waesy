@@ -416,16 +416,21 @@ export const hireJobCandidate = createServerFn({ method: "POST" })
       throw new Error("Loja do processo seletivo não identificada.");
     }
 
-    // 2. Resolver perfil do usuário (se houver conta existente)
+    // 2. Resolver perfil do usuário (se houver conta existente — profiles não possui coluna email)
     let targetProfileId = app.candidate_profile_id || null;
     if (!targetProfileId && app.candidate_email) {
-      const { data: existingProfile } = await supabase
-        .from("profiles")
-        .select("id")
-        .ilike("email", app.candidate_email.trim())
-        .maybeSingle();
-      if (existingProfile?.id) {
-        targetProfileId = existingProfile.id;
+      try {
+        const { data: authUser } = await (supabase as any)
+          .schema("auth")
+          .from("users")
+          .select("id")
+          .ilike("email", app.candidate_email.trim())
+          .maybeSingle();
+        if (authUser?.id) {
+          targetProfileId = authUser.id;
+        }
+      } catch {
+        // segue sem vínculo auth.users caso o schema auth não esteja exposto
       }
     }
 

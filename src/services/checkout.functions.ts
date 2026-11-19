@@ -711,17 +711,28 @@ export const processCheckout = createServerFn({ method: "POST" })
       .catch((e) => console.warn("[checkout:stock-sync] Falha ao importar marketplace-hub:", e));
   }
 
-  if (result.orderId && params.storeId) {
-    const { notifyStoreStaff } = await import("@/lib/notifications/store-staff-notify");
-    await notifyStoreStaff({
-      db,
-      storeId: params.storeId,
-      type: "order",
-      title: "Novo Pedido Recebido",
-      message: `Pedido ${humanOrderId || result.orderToken || result.orderId.slice(0, 8)} recebido na loja.`,
-      linkUrl: "/workspace/pedidos",
-      authorName: (params as any).customerName || (params as any).customer?.name || null,
-    });
+  if (result.orderId) {
+    try {
+      const { data: orderMeta } = await db
+        .from("orders")
+        .select("store_id")
+        .eq("id", result.orderId)
+        .maybeSingle();
+      if (orderMeta?.store_id) {
+        const { notifyStoreStaff } = await import("@/lib/notifications/store-staff-notify");
+        await notifyStoreStaff({
+          db,
+          storeId: orderMeta.store_id,
+          type: "order",
+          title: "Novo Pedido Recebido",
+          message: `Pedido ${humanOrderId || result.orderToken || result.orderId.slice(0, 8)} recebido na loja.`,
+          linkUrl: "/workspace/pedidos",
+          authorName: params.customerName || null,
+        });
+      }
+    } catch {
+      // Notificação visual best-effort nunca bloqueia o retorno do checkout
+    }
   }
 
  return {

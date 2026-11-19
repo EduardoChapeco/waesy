@@ -1256,7 +1256,7 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
     handler: async (ctx, args) => {
       const { data, error } = await ctx.supabase
         .from("workspace_members")
-        .select("id, role, created_at, profile:profiles(id, full_name, email, avatar_url)")
+        .select("id, role, created_at, profile:profiles(id, full_name, avatar_url)")
         .eq("store_id", args.storeId);
 
       if (error) throw new Error(error.message);

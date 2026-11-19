@@ -38,13 +38,13 @@ export async function notifyStoreStaff({
     }
 
     const { data: memberRows } = await db
-      .from("store_members")
-      .select("user_id, profile_id")
-      .eq("store_id", storeId);
+      .from("workspace_members")
+      .select("profile_id")
+      .eq("store_id", storeId)
+      .neq("role", "customer");
 
     if (Array.isArray(memberRows)) {
       for (const m of memberRows) {
-        if (m?.user_id) recipientIds.add(String(m.user_id));
         if (m?.profile_id) recipientIds.add(String(m.profile_id));
       }
     }

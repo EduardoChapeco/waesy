@@ -45,6 +45,7 @@ interface SmartTravelBookingModalProps {
   basePriceCents: number;
   allowSharedRooms?: boolean;
   singleSupplementCents?: number;
+  maxInstallments?: number;
   seats?: BusSeatDTO[];
   onSuccess?: (result: any) => void;
 }
@@ -58,6 +59,7 @@ export function SmartTravelBookingModal({
   basePriceCents,
   allowSharedRooms = true,
   singleSupplementCents = 0,
+  maxInstallments = 12,
   seats = [],
   onSuccess,
 }: SmartTravelBookingModalProps) {
@@ -726,7 +728,7 @@ export function SmartTravelBookingModal({
                       <CreditCard className="size-5 mx-auto text-primary" />
                       <span className="text-xs font-bold block">Cartão de Crédito</span>
                       <span className="text-2xs text-muted-foreground block">
-                        Até {Math.min(36, Math.max(1, Number((tour as any)?.max_installments) || 12))}x
+                        Até {Math.min(36, Math.max(1, Number(maxInstallments) || 12))}x
                       </span>
                     </div>
 

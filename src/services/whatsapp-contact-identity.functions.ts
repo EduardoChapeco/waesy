@@ -74,7 +74,17 @@ export const upsertWhatsAppContactIdentity = createServerFn({ method: "POST" })
       } else if (!isGroup && phone) {
         threadSync.primary_phone_e164 = phone;
       }
-      if (data.customerId) threadSync.customer_id = data.customerId;
+      if (data.customerId) {
+        // chat_threads.customer_id referencia public.profiles(id), nunca customers_crm(id)
+        const { data: matchedProfile } = await db
+          .from("profiles")
+          .select("id")
+          .eq("id", data.customerId)
+          .maybeSingle();
+        if (matchedProfile?.id) {
+          threadSync.customer_id = matchedProfile.id;
+        }
+      }
       if (data.leadId) threadSync.lead_id = data.leadId;
 
       await db

@@ -459,7 +459,7 @@ export function TravelBookingDossierModal({
             )}
           </div>
 
-          {(adults !== 2 || children > 0) && (
+          {(adultsCount !== 2 || childrenCount > 0) && (
             <div className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-xs text-foreground" role="note">
               <span className="font-semibold">Base Tarifária Dupla (2 adultos):</span>{" "}
               alterações na quantidade de adultos ou inclusão de crianças passam por cotação e atualização de valor pela agência para seu aceite.

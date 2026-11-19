@@ -148,13 +148,28 @@ export function resolveMaxInstallmentsFromOptions(
 
   for (const opt of list) {
     const count = clampInstallments(opt.installments_count, 1);
-    const method = String(opt.method || "").toLowerCase();
-    if (method === "credit_card" || method === "card") {
+    const method = String(opt.method || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+    if (
+      method === "credit_card" ||
+      method === "card" ||
+      method.includes("cartao") ||
+      method.includes("credito") ||
+      method.includes("credit")
+    ) {
       if (count >= maxCard) {
         maxCard = count;
         cardInterestFree = !opt.has_interest;
       }
-    } else if (method === "boleto" || method === "financiamento_bancario") {
+    } else if (
+      method === "boleto" ||
+      method === "financiamento_bancario" ||
+      method.includes("boleto") ||
+      method.includes("carne") ||
+      method.includes("financiamento")
+    ) {
       if (count > maxBoleto) {
         maxBoleto = count;
       }

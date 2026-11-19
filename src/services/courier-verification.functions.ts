@@ -344,7 +344,7 @@ export const listCourierApplicationsForAudit = createServerFn({ method: "GET" })
     const supabase = getServerClient();
     let query = supabase
       .from("courier_onboarding_applications")
-      .select("*, profile:profiles(full_name, email, phone)")
+      .select("*, profile:profiles(full_name, phone)")
       .order("created_at", { ascending: false });
 
     if (data?.status && data.status !== "all") {

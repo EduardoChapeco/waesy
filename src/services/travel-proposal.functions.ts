@@ -1272,13 +1272,24 @@ export const createTravelProposal = createServerFn({ method: "POST" })
       });
 
       try {
+        let quoteProfileCustomerId: string | null = null;
+        if (resolvedCustomerId) {
+          const { data: matchedProfile } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("id", resolvedCustomerId)
+            .maybeSingle();
+          if (matchedProfile?.id) {
+            quoteProfileCustomerId = matchedProfile.id;
+          }
+        }
         const { data: quoteInserted } = await supabase
           .from("quotes")
           .insert({
             id: insertedId ? insertedId : undefined,
             store_id: effectiveStoreId,
             quote_number: quoteNumber,
-            customer_id: resolvedCustomerId,
+            customer_id: quoteProfileCustomerId,
             guest_name: resolvedClientName,
             guest_phone: resolvedClientWhatsapp,
             guest_email: resolvedClientEmail,
@@ -1967,7 +1978,7 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
     const supabase = getServerClient();
     const { data: proposal, error: lookupError } = await supabase
       .from("travel_proposals")
-      .select("id, store_id, public_token, snapshot_hash, options, visibility_mode, is_hidden, access_pin_hash, special_notes")
+      .select("id, store_id, title, destination_city, client_name, public_token, snapshot_hash, options, visibility_mode, is_hidden, access_pin_hash, special_notes")
       .eq("public_token", data.token)
       .maybeSingle();
 

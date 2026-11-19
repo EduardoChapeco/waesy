@@ -62,6 +62,8 @@ export const ContractWorkspaceStudio = NoopComponent;
 export const UnifiedProposalWorkspace = NoopComponent;
 export const ProposalCanvasRenderer = NoopComponent;
 export const ContractMarkdownRenderer = NoopComponent;
+export const AtendimentoChatWorkspace = NoopComponent;
+export const Customer360Sidebar = NoopComponent;
 
 export function parsePhoneNumber(value?: string) {
   const raw = typeof value === "string" ? value : "";

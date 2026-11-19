@@ -298,15 +298,10 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
     const cleanEmail = data.contactEmail?.trim().toLowerCase() || null;
 
     if (!profileId) {
-      // Tenta achar perfil existente por telefone ou email
-      let profileQuery = supabase.from("profiles").select("id").limit(1);
-      if (cleanEmail) {
-        profileQuery = profileQuery.or(`phone.eq.${cleanPhone},email.eq.${cleanEmail}`);
-      } else {
-        profileQuery = profileQuery.eq("phone", cleanPhone);
-      }
-
-      const { data: existingProfiles } = await profileQuery;
+      // Tenta achar perfil existente por telefone (profiles não possui coluna email)
+      const { data: existingProfiles } = cleanPhone
+        ? await supabase.from("profiles").select("id").eq("phone", cleanPhone).limit(1)
+        : { data: null };
       if (existingProfiles && existingProfiles.length > 0) {
         profileId = existingProfiles[0].id;
       } else if (formRow.quick_signup_enabled) {
@@ -319,7 +314,6 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
               id: newUserId,
               full_name: data.contactName.trim(),
               phone: cleanPhone,
-              email: cleanEmail,
               role: "customer",
               is_anonymous: true,
               terms_accepted_at: new Date().toISOString(),

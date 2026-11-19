@@ -65,6 +65,8 @@ const SSR_CLIENT_ONLY_COMPONENTS = [
   { subpath: "components/tourism/proposal/unified-proposal-workspace", barrel: "/components/tourism/proposal/index.ts", rel: "./unified-proposal-workspace" },
   { subpath: "components/tourism/proposal/proposal-canvas-renderer", barrel: "/components/tourism/proposal/index.ts", rel: "./proposal-canvas-renderer" },
   { subpath: "components/office/contract-markdown-renderer", barrel: "/components/office/index.ts", rel: "./contract-markdown-renderer" },
+  { subpath: "components/atendimento/AtendimentoChatWorkspace" },
+  { subpath: "components/chat/customer-360-sidebar", barrel: "/components/chat/index.ts", rel: "./customer-360-sidebar" },
 ];
 
 const clientOnlyServerCoreGuard = {

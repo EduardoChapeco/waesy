@@ -22,9 +22,11 @@ vi.mock("@tanstack/react-start", () => ({
 const mockMaybeSingle = vi.fn();
 const mockLimit = vi.fn(() => ({ maybeSingle: mockMaybeSingle }));
 const mockOr = vi.fn(() => ({ limit: mockLimit, maybeSingle: mockMaybeSingle }));
+const mockIlike = vi.fn(() => ({ limit: mockLimit, maybeSingle: mockMaybeSingle }));
 const mockOrder = vi.fn(() => ({ limit: vi.fn().mockResolvedValue({ data: [] }) }));
 const mockEq = vi.fn(() => ({
   or: mockOr,
+  ilike: mockIlike,
   limit: mockLimit,
   maybeSingle: mockMaybeSingle,
   order: mockOrder,
@@ -33,6 +35,7 @@ const mockEq = vi.fn(() => ({
 const mockSelect = vi.fn(() => ({
   eq: mockEq,
   or: mockOr,
+  ilike: mockIlike,
   limit: mockLimit,
   maybeSingle: mockMaybeSingle,
   in: vi.fn().mockResolvedValue({ count: 2 }),

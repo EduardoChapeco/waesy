@@ -200,7 +200,7 @@ describe("WorkspaceCanonicalToolbar & Bidirectional Proportional Layout Suite", 
 
     const root = process.cwd();
     const storefrontRoutes = [
-      "src/routes/_store.index.tsx",
+      "src/components/home/CommunityMarketplaceExperience.tsx",
       "src/routes/_store.beleza.tsx",
       "src/routes/_store.casa.tsx",
       "src/routes/_store.construcao.tsx",
