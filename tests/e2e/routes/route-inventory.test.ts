@@ -29,20 +29,20 @@ describe("Platform Route Inventory (446 Routes)", () => {
     (f) => !f.includes(".test.") && !f.includes(".spec.")
   );
 
-  it("audits total platform route inventory to match exactly 483 route source files", () => {
-    // Inventory Master canonical route source file count
-    expect(allRouteSourceFiles.length).toBe(483);
-    expect(routePages.length).toBe(481);
+  it("audits total platform route inventory to match exactly 484 route source files", () => {
+    // Inventory Master canonical route source file count (including workspace.turismo.minhas-vendas.tsx)
+    expect(allRouteSourceFiles.length).toBe(484);
+    expect(routePages.length).toBe(482);
   });
 
-  it("verifies workspace operational management routes (203 operational routes + receipt route)", () => {
+  it("verifies workspace operational management routes (204 operational routes + receipt route)", () => {
     const workspaceRoutes = allRouteSourceFiles.filter(
       (f) => f.startsWith("workspace.") || f.startsWith("workspace_")
     );
-    expect(workspaceRoutes.length).toBe(204);
-    // 203 operational routes + 1 standalone receipt route
+    expect(workspaceRoutes.length).toBe(205);
+    // 204 operational routes + 1 standalone receipt route
     const operationalRoutes = workspaceRoutes.filter((f) => f.startsWith("workspace."));
-    expect(operationalRoutes.length).toBe(203);
+    expect(operationalRoutes.length).toBe(204);
   });
 
   it("verifies public store and vitrine routes (169 route files)", () => {

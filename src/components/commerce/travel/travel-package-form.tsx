@@ -2370,7 +2370,7 @@ export function TravelPackageForm({
                 <input
                   type="range"
                   min={1}
-                  max={24}
+                  max={36}
                   step={1}
                   value={maxInstallments}
                   onChange={(e) => updatePaymentConditions("installments_max", Number(e.target.value))}
@@ -2382,8 +2382,9 @@ export function TravelPackageForm({
                   <span>6x</span>
                   <span>10x</span>
                   <span>12x</span>
-                  <span>18x</span>
+                  <span>16x</span>
                   <span>24x</span>
+                  <span>36x</span>
                 </div>
               </div>
 
@@ -2472,7 +2473,7 @@ export function TravelPackageForm({
                         onChange={(e) => updatePaymentConditions("boleto_installments", Number(e.target.value))}
                         className="w-full h-10 rounded-lg bg-background border border-border px-2 text-xs font-medium text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                       >
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 18, 24].map((n) => (
+                        {Array.from({ length: 36 }, (_, i) => i + 1).map((n) => (
                           <option key={n} value={n}>
                             Até {n}x {hasBoletoDownpayment ? `(Entrada + ${n - 1}x)` : "no Boleto"}
                           </option>

@@ -138,7 +138,7 @@ describe("Production Logs Forensic Remediation (2026-11-18)", () => {
     it("ships additive SQL migration for production indexes, digest search_path and cron throttle", () => {
       const sqlPath = path.resolve(
         process.cwd(),
-        "supabase/migrations/20270523000000_prod_logs_indexes_rpc_perf_and_schema_resilience.sql",
+        "supabase/migrations/20270523010000_prod_logs_indexes_rpc_perf_and_schema_resilience.sql",
       );
       const sql = fs.readFileSync(sqlPath, "utf8");
       expect(sql).toContain("idx_chat_messages_thread_created_desc");

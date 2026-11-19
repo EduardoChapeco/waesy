@@ -66,6 +66,11 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { sanitizeLeadCustomFieldsForProposal } from "@/lib/tourism/proposal-custom-fields";
+import {
+  resolveMaxInstallmentsFromOptions,
+  clampInstallments,
+  MAX_SUPPORTED_INSTALLMENTS,
+} from "@/lib/tourism/payment-policy";
 import { buildStructuredCustomFieldsSummaryRows } from "@/lib/niches/unified-field-bridge";
 import {
   type TravelerDossier,
@@ -614,11 +619,55 @@ export function TourismPipeCardDossier({
     const otherTaxesCents = Number(pricing.other_taxes_cents || 0);
     const discountCents = Number(pricing.discount_cents || 0);
 
+    // Resolução dinâmica de parcelamento e opções configuradas (sem teto artificial)
+    const optionsList = Array.isArray(pricing.installments_options)
+      ? pricing.installments_options
+      : Array.isArray(prop.installments_options)
+        ? prop.installments_options
+        : [];
+
+    const resolvedInst = resolveMaxInstallmentsFromOptions(
+      optionsList,
+      Number(pricing.max_installments || prop.max_installments || prop.installments_card || 10),
+    );
+
+    const explicitInstallments = Number(
+      pricing.installments_count ||
+      pricing.installments ||
+      prop.installments_count ||
+      prop.installments ||
+      (optionsList.length > 0 ? resolvedInst.maxInstallments : null) ||
+      pricing.max_installments ||
+      prop.max_installments ||
+      prop.installments_card ||
+      10,
+    );
+    const safeInstallments = clampInstallments(explicitInstallments, 10);
+
+    // Resolução de Entrada / Sinal configurado na proposta
+    let downPaymentCents = Number(
+      pricing.down_payment_cents ??
+      pricing.downpayment_cents ??
+      pricing.entry_cents ??
+      prop.down_payment_cents ??
+      0,
+    );
+    const downPaymentPct = Number(
+      pricing.downpayment_pct ??
+      pricing.down_payment_percent ??
+      prop.downpayment_pct ??
+      0,
+    );
+    if (downPaymentCents === 0 && downPaymentPct > 0 && totalCents > 0) {
+      downPaymentCents = Math.round(totalCents * (downPaymentPct / 100));
+    }
+
     let detectedMethod = paymentPlan.method || "credit_card";
     const prefRaw = String(
       prop.acceptance_preference ||
       pricing.payment_preference ||
       pricing.payment_terms ||
+      prop.conditions?.payment_terms ||
       ""
     ).toLowerCase();
 
@@ -628,17 +677,29 @@ export function TourismPipeCardDossier({
       detectedMethod = "credit_card";
     } else if (prefRaw.includes("boleto") || prefRaw.includes("faturado")) {
       detectedMethod = paymentPlanNiche === "turismo" ? "operator_boleto" : "bank_slip";
-    } else if (prefRaw.includes("entrada") || prefRaw.includes("sinal")) {
+    } else if (prefRaw.includes("entrada") || prefRaw.includes("sinal") || downPaymentCents > 0) {
       detectedMethod = paymentPlanNiche === "turismo" ? "split_deposit" : "entry_plus_installments";
     }
 
-    const terms =
-      pricing.payment_terms ||
-      (Array.isArray(pricing.installments_options) && pricing.installments_options.length > 0
-        ? pricing.installments_options.join(" | ")
-        : prop.conditions?.payment_terms || "");
-
-    const baseNotes = terms || `Condições vinculadas à proposta: ${prop.title || "Proposta"}`;
+    // Geração dinâmica e rica de termos contratuais sem hardcode
+    let formattedNotes = "";
+    if (pricing.payment_terms) {
+      formattedNotes = pricing.payment_terms;
+    } else if (prop.conditions?.payment_terms) {
+      formattedNotes = prop.conditions.payment_terms;
+    } else if (detectedMethod === "pix_cash") {
+      const pixDiscount = Number(pricing.pix_discount_percent ?? 5);
+      const pixTotal = Math.round(totalCents * (1 - pixDiscount / 100));
+      formattedNotes = `Pagamento à vista via PIX com ${pixDiscount}% de desconto (${formatMoney(pixTotal)})`;
+    } else if (detectedMethod === "split_deposit" || detectedMethod === "entry_plus_installments") {
+      const balance = Math.max(0, totalCents - downPaymentCents);
+      const perInst = safeInstallments > 0 ? Math.round(balance / safeInstallments) : balance;
+      formattedNotes = `Entrada de ${formatMoney(downPaymentCents)} + ${safeInstallments}x de ${formatMoney(perInst)}`;
+    } else {
+      const perInst = safeInstallments > 0 ? Math.round(totalCents / safeInstallments) : totalCents;
+      const methodLabel = detectedMethod === "operator_boleto" || detectedMethod === "bank_slip" ? "no boleto bancário" : "no cartão de crédito";
+      formattedNotes = `Até ${safeInstallments}x de ${formatMoney(perInst)} sem juros ${methodLabel}`;
+    }
 
     if (paymentPlanNiche === "turismo") {
       const flightEst = Math.round(totalCents * 0.45);
@@ -653,8 +714,10 @@ export function TourismPipeCardDossier({
         boarding_tax_cents: boardingTaxCents,
         insurance_cents: otherTaxesCents,
         commission_cents: commissionEst,
+        down_payment_cents: downPaymentCents,
+        installments_count: safeInstallments,
         method: detectedMethod,
-        notes: baseNotes,
+        notes: formattedNotes,
         is_synced: true,
       }));
     } else {
@@ -668,13 +731,21 @@ export function TourismPipeCardDossier({
         taxes_cents: otherTaxesCents,
         discount_cents: discountCents,
         margin_cents: Math.round(servicesEst * 0.25),
+        down_payment_cents: downPaymentCents,
+        installments_count: safeInstallments,
         method: detectedMethod,
-        notes: baseNotes,
+        notes: formattedNotes,
         is_synced: true,
       }));
     }
 
-    toast.success(`Plano financeiro sincronizado com a proposta "${prop.title || "Proposta"}"!`);
+    // Sincronização atômica imediata das condições na minuta contratual
+    if (totalCents > 0) {
+      setContractFormTotalCents(totalCents);
+    }
+    setContractFormPaymentConditions(formattedNotes);
+
+    toast.success(`Plano financeiro e contrato sincronizados com a proposta "${prop.title || "Proposta"}" (${safeInstallments}x)!`);
   };
 
   const computedTariffTotalCents = useMemo(() => {
@@ -5615,15 +5686,15 @@ export function TourismPipeCardDossier({
                     {(paymentPlanNiche === "turismo"
                       ? [
                           { id: "pix_cash", label: "PIX à Vista (com desconto)" },
-                          { id: "credit_card", label: "Cartão em até 10x/12x" },
-                          { id: "operator_boleto", label: "Boleto Operadora" },
-                          { id: "split_deposit", label: "Entrada + Saldo Parcelado" },
+                          { id: "credit_card", label: `Cartão de Crédito (${paymentPlan.installments_count || 10}x)` },
+                          { id: "operator_boleto", label: `Boleto Operadora (${paymentPlan.installments_count || 10}x)` },
+                          { id: "split_deposit", label: `Entrada + Saldo (${paymentPlan.installments_count || 10}x)` },
                         ]
                       : [
                           { id: "pix_cash", label: "PIX à Vista" },
-                          { id: "credit_card", label: "Cartão até 12x" },
-                          { id: "bank_slip", label: "Boleto Bancário PJ" },
-                          { id: "entry_plus_installments", label: "Sinal + Saldo Entrega" },
+                          { id: "credit_card", label: `Cartão até ${paymentPlan.installments_count || 12}x` },
+                          { id: "bank_slip", label: `Boleto PJ (${paymentPlan.installments_count || 1}x)` },
+                          { id: "entry_plus_installments", label: `Sinal + Saldo (${paymentPlan.installments_count || 2}x)` },
                         ]
                     ).map((m) => {
                       const active = paymentPlan.method === m.id;
@@ -5645,6 +5716,173 @@ export function TourismPipeCardDossier({
                     })}
                   </div>
 
+                  {/* Configuração Dinâmica de Parcelamento (1x até 36x sem salto de números) */}
+                  {paymentPlan.method !== "pix_cash" && (() => {
+                    const planTotal = computedTariffTotalCents > 0 ? computedTariffTotalCents : (formData.estimated_value_cents || 0);
+                    const isSplit = paymentPlan.method === "split_deposit" || paymentPlan.method === "entry_plus_installments";
+                    const planDownPayment = isSplit ? (paymentPlan.down_payment_cents || 0) : 0;
+                    const planBalance = Math.max(0, planTotal - planDownPayment);
+                    const safeCount = Math.max(1, paymentPlan.installments_count || 1);
+                    const simulatedMonthlyCents = Math.round(planBalance / safeCount);
+
+                    const handleSyncConditionsText = () => {
+                      let text = "";
+                      if (isSplit) {
+                        text = `Entrada de ${formatMoney(planDownPayment)} + ${safeCount}x de ${formatMoney(simulatedMonthlyCents)}`;
+                      } else if (paymentPlan.method === "operator_boleto" || paymentPlan.method === "bank_slip") {
+                        text = `Até ${safeCount}x de ${formatMoney(simulatedMonthlyCents)} no boleto faturado`;
+                      } else {
+                        text = `Até ${safeCount}x de ${formatMoney(simulatedMonthlyCents)} sem juros no cartão de crédito`;
+                      }
+                      setPaymentPlan((prev) => ({ ...prev, notes: text }));
+                      setContractFormPaymentConditions(text);
+                      toast.success("Condições sincronizadas na descrição e no contrato!");
+                    };
+
+                    return (
+                      <div className="p-4 rounded-xl border border-border/60 bg-muted/20 space-y-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border/40">
+                          <span className="text-xs font-bold text-foreground flex items-center gap-2">
+                            <CreditCard className="size-3.5 text-primary" />
+                            <span>Configuração de Parcelas (1x a 36x Livre)</span>
+                          </span>
+                          <span className="text-xs font-mono font-bold text-primary">
+                            {safeCount}x de {formatMoney(simulatedMonthlyCents)}
+                          </span>
+                        </div>
+
+                        {/* Presets Rápidos de Campanhas Canônicas */}
+                        <div className="space-y-2">
+                          <Label className="text-2xs text-muted-foreground font-semibold">
+                            Campanhas Frequentes de Parcelamento
+                          </Label>
+                          <div className="flex flex-wrap gap-2">
+                            {[1, 6, 10, 12, 16, 18, 24, 36].map((cnt) => {
+                              const isCur = paymentPlan.installments_count === cnt;
+                              return (
+                                <button
+                                  key={cnt}
+                                  type="button"
+                                  onClick={() =>
+                                    setPaymentPlan((prev) => ({ ...prev, installments_count: cnt }))
+                                  }
+                                  className={cn(
+                                    "h-11 min-h-11 px-3 rounded-lg border text-xs font-bold font-mono transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary",
+                                    isCur
+                                      ? "border-primary bg-primary text-primary-foreground"
+                                      : "border-border/70 bg-card text-muted-foreground hover:bg-muted"
+                                  )}
+                                >
+                                  {cnt}x
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Seletor Contínuo Completo 1 a 36 e Entrada */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                          <div className="space-y-1">
+                            <Label className="text-2xs text-muted-foreground font-semibold">
+                              Qtd. de Parcelas (1 a 36)
+                            </Label>
+                            <Select
+                              value={String(paymentPlan.installments_count || 10)}
+                              onValueChange={(val) =>
+                                setPaymentPlan((prev) => ({
+                                  ...prev,
+                                  installments_count: clampInstallments(val, 10),
+                                }))
+                              }
+                            >
+                              <SelectTrigger className="h-11 min-h-11 text-xs rounded-lg font-mono">
+                                <SelectValue placeholder="Selecione as parcelas..." />
+                              </SelectTrigger>
+                              <SelectContent className="max-h-60">
+                                {Array.from({ length: MAX_SUPPORTED_INSTALLMENTS }, (_, i) => i + 1).map((n) => (
+                                  <SelectItem key={n} value={String(n)}>
+                                    {n}x {n === 1 ? "(À vista)" : "parcelado"}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-1">
+                            <Label className="text-2xs text-muted-foreground font-semibold">
+                              Editar Qtd. Livremente
+                            </Label>
+                            <Input
+                              type="number"
+                              min={1}
+                              max={MAX_SUPPORTED_INSTALLMENTS}
+                              value={paymentPlan.installments_count || ""}
+                              onChange={(e) =>
+                                setPaymentPlan((prev) => ({
+                                  ...prev,
+                                  installments_count: clampInstallments(e.target.value, 1),
+                                }))
+                              }
+                              placeholder="1 a 36"
+                              className="h-11 min-h-11 text-xs rounded-lg font-mono"
+                            />
+                          </div>
+
+                          {isSplit && (
+                            <div className="space-y-1">
+                              <Label className="text-2xs text-muted-foreground font-semibold">
+                                Entrada / Sinal (R$)
+                              </Label>
+                              <Input
+                                type="number"
+                                value={paymentPlan.down_payment_cents ? paymentPlan.down_payment_cents / 100 : ""}
+                                onChange={(e) =>
+                                  setPaymentPlan((prev) => ({
+                                    ...prev,
+                                    down_payment_cents: Math.round(Number(e.target.value || 0) * 100),
+                                  }))
+                                }
+                                placeholder="R$ 0,00"
+                                className="h-11 min-h-11 text-xs rounded-lg font-mono"
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Card Resumo do Desdobramento Financeiro */}
+                        <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-lg bg-card border border-border/50 text-xs">
+                          <div className="flex flex-wrap gap-4 text-2xs text-muted-foreground">
+                            <span>
+                              Total: <strong className="text-foreground font-mono">{formatMoney(planTotal)}</strong>
+                            </span>
+                            {isSplit && (
+                              <span>
+                                Entrada: <strong className="text-foreground font-mono">{formatMoney(planDownPayment)}</strong>
+                              </span>
+                            )}
+                            <span>
+                              Saldo Parcelado: <strong className="text-foreground font-mono">{formatMoney(planBalance)}</strong>
+                            </span>
+                            <span>
+                              Valor Parcela: <strong className="text-primary font-mono">{safeCount}x de {formatMoney(simulatedMonthlyCents)}</strong>
+                            </span>
+                          </div>
+
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleSyncConditionsText}
+                            className="h-11 min-h-11 px-3 text-2xs font-semibold gap-2 cursor-pointer border-border/70 hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            <Sparkles className="size-3 text-primary" />
+                            <span>Atualizar Descrição das Condições</span>
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   <div className="space-y-1">
                     <Label className="text-2xs text-muted-foreground font-semibold">Condições do Plano Financeiro</Label>
                     <Input
@@ -5652,7 +5890,7 @@ export function TourismPipeCardDossier({
                       onChange={(e) => setPaymentPlan((prev) => ({ ...prev, notes: e.target.value }))}
                       placeholder={
                         paymentPlanNiche === "turismo"
-                          ? "Ex: 20% de entrada via PIX + 10x sem juros no cartão..."
+                          ? "Ex: 20% de entrada via PIX + 16x sem juros no cartão..."
                           : "Ex: 50% de sinal na aprovação + 50% na entrega técnica..."
                       }
                       className="h-11 min-h-11 text-xs rounded-lg"

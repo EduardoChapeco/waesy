@@ -1,5 +1,21 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-534: Sincronização Atômica 1-Clique de Proposta no Plano Financeiro e Contrato, Parcelamento Contínuo sem Lacunas de 1x a 36x e Remoção de Hardcodes em Formulários e Simulações
+- **Data (ISO):** 2026-11-19
+- **ID da Decisão:** DEC-534
+- **Contexto:**
+  1. A sincronização de propostas para o plano financeiro do lead (`applyProposalToPaymentPlan` em `TourismPipeCardDossier.tsx`) apresentava limitações na herança de modalidades de pagamento e condições contratuais, exigindo digitação manual repetitiva pelo agente.
+  2. Seletores de parcelamento em múltiplos formulários e simuladores continham arrays estáticos hardcoded (`[1, 2, ..., 12, 14, 15, 18, 24]`) que omitiam propositalmente parcelas intermediárias, destacando-se a ausência de 13x e 16x (usadas correntemente em campanhas sem juros de operadoras de turismo).
+  3. Schemas Zod de criação e atualização de propostas e pacotes impunham teto rígido de 24 parcelas (`.max(24)`), impedindo agências de ofertarem financiamentos flexíveis de até 36x no cartão ou boleto PJ.
+  4. A minuta contratual no dossiê não recebia a formatação automática das cláusulas de pagamento acordadas na proposta aprovada.
+- **Decisão Adotada:**
+  1. **Herança Atômica 1-Clique (`applyProposalToPaymentPlan`):** Sincronização automática integral de valor total, taxas de embarque, entrada em dinheiro/percentual, número exato de parcelas calculado e modalidade (`pix_cash`, `credit_card`, `operator_boleto`, `split_deposit`, `bank_slip`, `entry_plus_installments`), além de injeção direta da cláusula comercial em `contractFormPaymentConditions` e `contractFormTotalCents`.
+  2. **Parcelamento Contínuo 1x a 36x sem Saltos:** Substituição universal de listas pontuais por geradores dinâmicos `Array.from({ length: MAX_SUPPORTED_INSTALLMENTS }, (_, i) => i + 1)`, garantindo que todas as opções (inclusive 13x, 16x e até 36x) estejam plenamente disponíveis e selecionáveis.
+  3. **Ampliação de Teto nos Schemas Zod e Motor de Cálculo:** `travel-proposal.functions.ts`, `travel-catalog.functions.ts`, `travel-ai-extractor.functions.ts` e `proposal-payment-calc.ts` atualizados de `max(24)` para `max(36)` sem qualquer restrição arbitrária.
+  4. **Conformidade Modular e Ratchet DL-03:** Padronização de classes utilitárias para a grade modular estrita de 4px (`gap-2`, `space-y-2`), alcançando 0 violações P0/P1 no Design Lint.
+- **Fundamentação Teórica:** AGENTS.md (B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.10, B.22, B.25, B.26, B.28); WCAG 2.2 AA.
+- **Consequências:** Agências operam campanhas comerciais livres sem bloqueios de parcelamento (1x até 36x contínuo); sincronização imediata em 1 clique entre proposta, dossiê do lead e minuta contratual; zero divergências de dados entre CRM e Checkout.
+
 ## DEC-533: Selamento Canônico End-to-End de Criadores de Proposta e Cotação, Paridade Level-Up de Cruzeiros Marítimos e Mapas Náuticos, Fidelidade Cartográfica de Rotas no PDF/PNG, Webhook Multi-Domínio e Reconciliação CRM Transacional
 - **Data (ISO):** 2026-11-19
 - **ID da Decisão:** DEC-533

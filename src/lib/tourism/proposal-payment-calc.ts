@@ -144,7 +144,7 @@ export function buildInstallmentTable(
   }> = [],
 ): InstallmentOptionSummary[] {
   const safeTotal = Math.max(0, Math.round(totalCents));
-  const safeMax = Math.max(1, Math.min(24, Math.round(maxInstallments || 1)));
+  const safeMax = Math.max(1, Math.min(36, Math.round(maxInstallments || 1)));
   if (safeTotal <= 0) return [];
 
   const cardExplicitByCount = new Map<number, { valueCents: number; hasInterest: boolean }>();
@@ -152,7 +152,7 @@ export function buildInstallmentTable(
     if (opt.method && opt.method !== "credit_card" && opt.method !== "card" && opt.method !== "other") {
       continue;
     }
-    if (opt.installments_count >= 1 && opt.installments_count <= 24 && opt.installment_value_cents > 0) {
+    if (opt.installments_count >= 1 && opt.installments_count <= 36 && opt.installment_value_cents > 0) {
       cardExplicitByCount.set(opt.installments_count, {
         valueCents: Math.round(opt.installment_value_cents),
         hasInterest: opt.has_interest === true,
@@ -211,7 +211,7 @@ export function resolveProposalCommercialOffer(params: {
   const inferredMaxCard = cardOpts.reduce((acc, o) => Math.max(acc, o.installments_count || 1), 10);
   const maxInstallments = Math.max(
     1,
-    Math.min(24, Number(payCfg.max_installments || inferredMaxCard || 10)),
+    Math.min(36, Number(payCfg.max_installments || inferredMaxCard || 10)),
   );
   const interestFree =
     typeof payCfg.interest_free === "boolean"

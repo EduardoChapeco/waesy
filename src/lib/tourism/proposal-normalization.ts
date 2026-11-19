@@ -515,7 +515,7 @@ export function normalizeTransferItem<T extends Record<string, any>>(
       typeof obj.quantity === "number" && Number.isFinite(obj.quantity) && obj.quantity > 1
         ? Math.round(obj.quantity)
         : 1,
-    notes: (typeof obj.notes === "string" && obj.notes.trim()) || "",
+    ...(typeof obj.notes === "string" && obj.notes.trim() ? { notes: obj.notes.trim() } : {}),
     image_url: typeof obj.image_url === "string" && obj.image_url.trim() ? obj.image_url.trim() : null,
     meeting_point: typeof obj.meeting_point === "string" && obj.meeting_point.trim() ? obj.meeting_point.trim() : null,
     luggage_notes: typeof obj.luggage_notes === "string" && obj.luggage_notes.trim() ? obj.luggage_notes.trim() : null,

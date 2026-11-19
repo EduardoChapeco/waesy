@@ -36,7 +36,7 @@ export const ExtractedTravelAdSchema = z.object({
   inclusions: z.array(z.string()).default([]),
   highlights: z.array(z.string()).default([]),
   price_cents: z.number().int().nonnegative().optional().nullable(),
-  max_installments: z.number().int().min(1).max(24).default(12),
+  max_installments: z.number().int().min(1).max(36).default(12),
   installment_cents: z.number().int().nonnegative().optional().nullable(),
   pricing_mode: z.enum(["per_person", "total_package"]).default("per_person"),
   visibility: z.enum(["public", "unlisted"]).default("public"),

@@ -1498,8 +1498,8 @@ export function TravelPromoFlyerModal({
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      {[10, 12, 15, 16].map((cnt) => (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+                      {[10, 12, 15, 16, 18, 24, 36].map((cnt) => (
                         <button
                           key={cnt}
                           type="button"

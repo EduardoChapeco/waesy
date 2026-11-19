@@ -377,6 +377,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
     title: "Equipe & RH",
     description: "Colaboradores, salários, folha, ponto, comissões e vagas",
     tools: [
+      { title: "Painel RH", path: "/workspace/rh", icon: Users },
       { title: "Colaboradores", path: "/workspace/configuracoes/equipe", icon: Users },
       { title: "Salários", path: "/workspace/financeiro/funcionarios", icon: Users },
       { title: "Folha", path: "/workspace/rh/folha", icon: Wallet },

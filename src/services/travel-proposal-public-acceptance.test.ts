@@ -100,6 +100,7 @@ describe("aceite público de proposta", () => {
     const db = createDb({ proposal: {
       id: PROPOSAL_ID,
       store_id: STORE_ID,
+      lead_id: "lead-existing-123",
       public_token: TOKEN,
       snapshot_hash: SNAPSHOT,
       valid_until: new Date(Date.now() + 86_400_000).toISOString(),
@@ -315,6 +316,7 @@ describe("aceite público de proposta", () => {
     const db = createDb({ proposal: {
       id: PROPOSAL_ID,
       store_id: STORE_ID,
+      lead_id: "lead-existing-123",
       public_token: TOKEN,
       snapshot_hash: SNAPSHOT,
       status: "draft",

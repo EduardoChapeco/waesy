@@ -810,7 +810,7 @@ export function ProposalWebPageBuilder({
             <Input
               type="number"
               min={1}
-              max={24}
+              max={36}
               value={config.payment_display_config?.max_installments ?? ""}
               onChange={(e) =>
                 commitConfig({
@@ -821,7 +821,7 @@ export function ProposalWebPageBuilder({
                   },
                 })
               }
-              placeholder="Máx. parcelas (ex: 10)"
+              placeholder="Máx. parcelas (ex: 12 ou 16)"
               className="h-11 text-xs"
             />
           </div>

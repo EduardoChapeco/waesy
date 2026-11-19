@@ -636,7 +636,7 @@ function PublicTravelProposalPage() {
               asChild
               variant="outline"
               size="icon"
-              className="h-11 min-h-11 w-11 rounded-lg shrink-0 border-emerald-500/40 text-emerald-700 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+              className="size-11 min-h-11 min-w-11 sm:size-10 sm:min-h-0 sm:min-w-0 rounded-lg shrink-0 border-emerald-500/40 text-emerald-700 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
             >
               <a
                 href={`https://wa.me/${cleanWhatsapp}?text=${waConfirmMessage}`}
@@ -653,7 +653,7 @@ function PublicTravelProposalPage() {
             type="button"
             onClick={() => setIsCheckoutModalOpen(true)}
             disabled={cannotAccept}
-            className="flex-1 min-h-11 h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-11 sm:h-10 text-base md:text-sm rounded-lg flex-1 min-h-11 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
           >
             <ShieldCheck className="size-4 mr-2" />
             <span>{isAccepted ? "Aceite registrado" : "Registrar aceite"}</span>

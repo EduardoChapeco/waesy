@@ -53,6 +53,11 @@ vi.mock("@/services/financial-event-bus.service", () => ({
 import { approveTravelProposal } from "@/services/travel-proposal.functions";
 import { bookGroupTourReservation } from "@/services/group-tours.functions";
 import { processMultiDomainPaymentWebhook } from "@/services/multi-domain-payment-settlement.service";
+import {
+  buildInstallmentTable,
+  resolveProposalCommercialOffer,
+} from "@/lib/tourism/proposal-payment-calc";
+import { resolveMaxInstallmentsFromOptions } from "@/lib/tourism/payment-policy";
 
 describe("OPERAÇÃO VERDADE CANÔNICA — Bateria de Provas E2E (MF-01 a MF-04)", () => {
   beforeEach(() => {
@@ -467,6 +472,62 @@ describe("OPERAÇÃO VERDADE CANÔNICA — Bateria de Provas E2E (MF-01 a MF-04)
           amountCents: 850000,
         }),
       );
+    });
+  });
+
+  describe("MF-05: Sincronização Atômica de Proposta, Parcelamento Contínuo (1x a 36x) sem Pular 13x e 16x", () => {
+    it("deve calcular tabela de parcelas contínua até 16x e 36x contendo 13x e 16x sem lacunas", () => {
+      const table16 = buildInstallmentTable(579636, 16, true);
+      expect(table16).toHaveLength(16);
+      expect(table16.map((r) => r.count)).toEqual([
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+      ]);
+
+      const inst13 = table16.find((r) => r.count === 13);
+      expect(inst13).toBeDefined();
+      expect(inst13?.installmentCents).toBe(Math.round(579636 / 13));
+
+      const inst16 = table16.find((r) => r.count === 16);
+      expect(inst16).toBeDefined();
+      expect(inst16?.installmentCents).toBe(Math.round(579636 / 16));
+
+      const table36 = buildInstallmentTable(1000000, 36, true);
+      expect(table36).toHaveLength(36);
+      expect(table36[12].count).toBe(13);
+      expect(table36[15].count).toBe(16);
+      expect(table36[35].count).toBe(36);
+    });
+
+    it("deve resolver maxInstallments até 36x na oferta comercial e respeitar campanhas especiais de 16x", () => {
+      const offer16 = resolveProposalCommercialOffer({
+        totalCents: 579636,
+        paymentDisplayConfig: {
+          max_installments: 16,
+          interest_free: true,
+          show_card: true,
+        },
+      });
+      expect(offer16.maxInstallments).toBe(16);
+      expect(offer16.installmentTable).toHaveLength(16);
+
+      const offer36 = resolveProposalCommercialOffer({
+        totalCents: 1200000,
+        paymentDisplayConfig: {
+          max_installments: 36,
+          interest_free: false,
+          show_card: true,
+        },
+      });
+      expect(offer36.maxInstallments).toBe(36);
+      expect(offer36.installmentTable).toHaveLength(36);
+
+      const resolved = resolveMaxInstallmentsFromOptions([
+        { method: "credit_card", installments_count: 16, installment_value_cents: 36227 },
+        { method: "boleto", installments_count: 24, installment_value_cents: 24151 },
+      ]);
+      expect(resolved.maxCardInstallments).toBe(16);
+      expect(resolved.maxBoletoInstallments).toBe(24);
+      expect(resolved.maxInstallments).toBe(24);
     });
   });
 });

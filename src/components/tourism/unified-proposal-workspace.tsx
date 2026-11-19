@@ -5069,7 +5069,7 @@ export function UnifiedProposalWorkspace({
                             onChange={(e) => setBoletoInstallments(Number(e.target.value))}
                             className="w-full h-10 rounded-lg bg-background border border-border px-2 text-xs font-medium text-foreground"
                           >
-                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 18, 24].map((n) => (
+                            {Array.from({ length: 36 }, (_, i) => i + 1).map((n) => (
                               <option key={n} value={n}>
                                 Até {n}x {hasBoletoDownpayment ? `(Entrada + ${n - 1}x)` : "no Boleto"}
                               </option>
@@ -5155,7 +5155,7 @@ export function UnifiedProposalWorkspace({
                             onChange={(e) => setCardInstallments(Number(e.target.value))}
                             className="h-9 rounded-lg bg-background border border-border px-2 text-xs font-medium text-foreground"
                           >
-                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 18].map((n) => (
+                            {Array.from({ length: 36 }, (_, i) => i + 1).map((n) => (
                               <option key={n} value={n}>
                                 Até {n}x sem juros
                               </option>
