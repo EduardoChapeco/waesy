@@ -417,7 +417,6 @@ export const listChatThreads = createServerFn({ method: "GET" })
     }
   }
   }
- }
 
   const [deptSlaRes, forgottenLeadsRes] = await Promise.all([
     db

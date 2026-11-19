@@ -221,7 +221,6 @@ export default function TravelDocumentReviewPage() {
           </Button>
         </div>
       </header>
-      </header>
 
       <div className="grid gap-5 lg:grid-cols-3">
         <Card className="overflow-hidden">
