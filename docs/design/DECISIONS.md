@@ -1,5 +1,21 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-535: Paridade de Vitrine com Classificados Desktop, Desvinculação do Card Comercial da Capa Hero, Sticky Sidebar Contínuo ao Longo do Roteiro e Recomendações Dinâmicas de Pacotes
+- **Data (ISO):** 2026-11-19
+- **ID da Decisão:** DEC-535
+- **Contexto:**
+  1. No Proposal Studio e na proposta web interativa (`ProposalWebShowcase.tsx`), o card comercial de investimento (`ProposalCommercialPanel`) era indevidamente inserido na coluna direita da capa/hero quando o modo sticky era desativado ou em layouts divididos, ocupando metade do cabeçalho e desaparecendo durante a rolagem dos blocos de hotel, voo, cruzeiro e traslados.
+  2. Nos classificados de turismo (`ClassifiedDetailDesktop.tsx`), a capa/hero opera com largura total (panorâmica, mosaico ou dividida editorial), enquanto o painel comercial de preço e reserva acompanha continuamente o scroll do usuário na lateral direita em 5 colunas (`sticky top-20` / `sticky top-4`).
+  3. O bloco de pacotes relacionados (`related_packages`) continha apenas sugestões fixas sem aproveitar as opções reais de cotação da própria proposta ou pacotes alternativos da agência.
+  4. O componente da vitrine web carecia de posicionamento unificado entre o canvas do Proposal Studio (`top-4`) e a rota pública com barra de topo (`top-6` / `top-20`).
+- **Decisão Adotada:**
+  1. **Desvinculação Absoluta do Card Comercial da Capa Hero:** A seção de capa (`hero`) dedica 100% de sua área à apresentação do destino, fotografia e identidade da agência. No modo `split`, a divisão é puramente editorial: textos, títulos e badges à esquerda (7 colunas) e foto de capa em squircle com lightbox à direita (5 colunas).
+  2. **Card Comercial Sticky Contínuo (Padrão Classificados):** O painel comercial passa a residir exclusivamente na barra lateral direita (`lg:col-span-5 xl:col-span-4 lg:sticky lg:top-4 sm:lg:top-6 self-start space-y-4`), acompanhando todo o roteiro detalhado. No mobile (< lg), posiciona-se no topo do conteúdo logo após a capa, complementado pela barra inferior flutuante de 44px.
+  3. **Pacotes Relacionados com Opções Vivas:** Bloco `related_packages` atualizado para projetar dinamicamente os pacotes alternativos (`proposal.options`) com título, hotel, preço, parcelas e CTA de WhatsApp, mantendo o fallback de alta conversão quando a proposta possuir opção única.
+  4. **Conformidade com a Catraca Visual (DL-30):** Trilho de miniaturas da capa estruturado com `scroll-area-carousel`, mantendo 0 violações P0/P1/P3 no Design Lint.
+- **Fundamentação Teórica:** AGENTS.md (B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.10, B.22, B.26, B.28, B.31, B.32); WCAG 2.2 AA.
+- **Consequências:** Experiência de visualização e reserva idêntica à dos classificados desktop de alta conversão; zero compressão ou desaparecimento do card de preço ao rolar; hero editorial deslumbrante e focado na viagem.
+
 ## DEC-534: Sincronização Atômica 1-Clique de Proposta no Plano Financeiro e Contrato, Parcelamento Contínuo sem Lacunas de 1x a 36x e Remoção de Hardcodes em Formulários e Simulações
 - **Data (ISO):** 2026-11-19
 - **ID da Decisão:** DEC-534

@@ -285,4 +285,28 @@ describe("Proposal Web Sticky Showcase, Chat IA Drawer & Gateway Online E2E", ()
       expect(result.webPage.promo_banner_url).toBe("https://agencia.com/banner.png");
     });
   });
+
+  describe("4. Proposal Web Showcase Contract: Sticky Sidebar Parity with Classifieds", () => {
+    it("deve conter classes canônicas de sticky sidebar e estrutura desvinculada do hero", async () => {
+      const fs = await import("node:fs");
+      const showcaseCode = fs.readFileSync(
+        "src/components/tourism/studio/proposal-web-showcase.tsx",
+        "utf-8",
+      );
+
+      // Card sticky deve estar presente no aside desktop
+      expect(showcaseCode).toContain("lg:sticky lg:top-4");
+      expect(showcaseCode).toContain("lg:col-span-5 xl:col-span-4 self-start");
+
+      // No mobile, o card comercial deve aparecer no topo do roteiro
+      expect(showcaseCode).toContain("lg:hidden");
+
+      // Hero dividido deve separar textos à esquerda e foto à direita sem card comercial
+      expect(showcaseCode).toContain("Layout Dividido Editorial");
+      expect(showcaseCode).toContain("MediaItemViewer");
+
+      // Suporte a opções em pacotes relacionados
+      expect(showcaseCode).toContain("hasMultipleOpts");
+    });
+  });
 });

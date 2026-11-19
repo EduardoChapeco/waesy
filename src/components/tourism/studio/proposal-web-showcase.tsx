@@ -529,25 +529,111 @@ export function ProposalWebShowcase({
             <div className="p-4 sm:p-8 space-y-6">
               {heroLay === "immersive" && heroMedia.length > 0 && renderHeroMediaGallery()}
 
-              <div
-                className={cn(
-                  "grid gap-6 items-start",
-                  heroMedia.length > 0 && !compactPreview && !isStackedHero && !isStickyCardEnabled
-                    ? "lg:grid-cols-12"
-                    : !compactPreview && isStackedHero && !isStickyCardEnabled
-                      ? "lg:grid-cols-12"
-                      : "grid-cols-1",
-                )}
-              >
-                {/* Coluna Editorial + Mídia */}
-                <div
-                  className={cn(
-                    "space-y-4",
-                    !compactPreview && (heroMedia.length > 0 || isStackedHero) && !isStickyCardEnabled
-                      ? "lg:col-span-7"
-                      : "w-full",
-                  )}
-                >
+              {/* Layout Dividido Editorial (Apple / Magazine: Texto à Esquerda, Foto à Direita) */}
+              {heroLay === "split" && heroMedia.length > 0 ? (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                  <div className="lg:col-span-7 space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        {proposal.agency_logo_url && (
+                          <img
+                            src={proposal.agency_logo_url}
+                            alt={proposal.agency_name || "Agência"}
+                            className="h-10 w-auto max-w-36 object-contain rounded-lg bg-background p-1 border border-border"
+                          />
+                        )}
+                        <div>
+                          <p
+                            className={cn(
+                              "text-xs font-bold uppercase tracking-wider flex items-center gap-2",
+                              isDarkTheme ? "text-background/90" : "text-primary",
+                            )}
+                          >
+                            <svg width="8" height="8" viewBox="0 0 8 8" className="shrink-0" aria-hidden="true">
+                              <circle cx="4" cy="4" r="4" fill={webTheme.accentReadable} />
+                            </svg>
+                            <span>{proposal.agency_name || "Consultoria de Viagens"}</span>
+                          </p>
+                          {proposal.destination_city && (
+                            <p
+                              className={cn(
+                                "text-xs flex items-center gap-1",
+                                isDarkTheme ? "text-background/80" : "text-muted-foreground",
+                              )}
+                            >
+                              <MapPin className="size-3.5 shrink-0" />
+                              <span>{proposal.destination_city}</span>
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        {dateRangeText && (
+                          <Badge variant="outline" className="text-xs font-semibold gap-1 px-3 py-1">
+                            <Calendar className="size-3.5" />
+                            <span>{dateRangeText}</span>
+                          </Badge>
+                        )}
+                        {paxSummary && (
+                          <Badge variant="outline" className="text-xs font-semibold gap-1 px-3 py-1">
+                            <Users className="size-3.5" />
+                            <span>{paxSummary}</span>
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h1
+                        style={{ fontFamily: webTheme.headingFont }}
+                        className="text-2xl sm:text-3xl font-bold tracking-tight leading-tight break-words"
+                      >
+                        {webConfig.headline || proposal.title}
+                      </h1>
+                      {(webConfig.subheadline || proposal.subtitle) && (
+                        <p
+                          className={cn(
+                            "text-sm sm:text-base leading-relaxed",
+                            isDarkTheme ? "text-background/80" : "text-muted-foreground",
+                          )}
+                        >
+                          {webConfig.subheadline || proposal.subtitle}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-5 space-y-2">
+                    <MediaItemViewer
+                      item={heroMedia[0]}
+                      altFallback={proposal.title}
+                      defaultAspect="4 / 3"
+                      onOpenLightbox={
+                        heroMedia[0].type === "image" ? () => openHeroLightbox(heroMedia[0]) : undefined
+                      }
+                    />
+                    {heroMedia.length > 1 && (
+                      /* design-lint-ignore DL-30 reason:"Trilho horizontal de miniaturas da capa da proposta" expiry:"2027-12-31" */
+                      <div className="flex gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pt-1">
+                        {heroMedia.slice(1, 5).map((m, mIdx) => (
+                          <button
+                            key={m.id || mIdx}
+                            type="button"
+                            onClick={() => openHeroLightbox(m)}
+                            aria-label={`Ver foto ${mIdx + 2}`}
+                            className="size-14 rounded-lg overflow-hidden border border-border shrink-0 hover:opacity-80 transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            <img src={m.url} alt="" className="size-full object-cover" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                /* Demais Disposições da Capa (Mosaico 3, Bento 4, Imersivo, Galeria ou Minimal) */
+                <div className="space-y-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                       {proposal.agency_logo_url && (
@@ -583,12 +669,20 @@ export function ProposalWebShowcase({
                       </div>
                     </div>
 
-                    {dateRangeText && (
-                      <Badge variant="outline" className="text-xs font-semibold gap-1 px-3 py-1">
-                        <Calendar className="size-3.5" />
-                        <span>{dateRangeText}</span>
-                      </Badge>
-                    )}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {dateRangeText && (
+                        <Badge variant="outline" className="text-xs font-semibold gap-1 px-3 py-1">
+                          <Calendar className="size-3.5" />
+                          <span>{dateRangeText}</span>
+                        </Badge>
+                      )}
+                      {paxSummary && (
+                        <Badge variant="outline" className="text-xs font-semibold gap-1 px-3 py-1">
+                          <Users className="size-3.5" />
+                          <span>{paxSummary}</span>
+                        </Badge>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -622,17 +716,7 @@ export function ProposalWebShowcase({
                     />
                   )}
                 </div>
-
-                {/* Painel Comercial Lateral (Aparece no Hero se sticky desativado, ou no mobile) */}
-                <div
-                  className={cn(
-                    !compactPreview && (heroMedia.length > 0 || isStackedHero) && !isStickyCardEnabled ? "lg:col-span-5" : "",
-                    isStickyCardEnabled && "lg:hidden",
-                  )}
-                >
-                  {commercialNode}
-                </div>
-              </div>
+              )}
             </div>
           </section>
         );
@@ -1342,6 +1426,8 @@ export function ProposalWebShowcase({
       case "related_packages": {
         if (webConfig.show_related_packages === false) return null;
         const title = webConfig.related_packages_title || block.title || "Você Também Pode Gostar";
+        const hasMultipleOpts = Array.isArray(proposal.options) && proposal.options.length > 1;
+
         return (
           <section key={block.id} className="p-5 sm:p-6 rounded-2xl border border-border bg-card space-y-4">
             <div className="flex items-center justify-between">
@@ -1354,36 +1440,65 @@ export function ProposalWebShowcase({
               Explore outros roteiros e experiências selecionadas com consultoria personalizada.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl border border-border/80 bg-muted/20 space-y-3">
-                <div className="space-y-1">
-                  <Badge variant="outline" className="text-xs font-semibold">Destinos em Alta</Badge>
-                  <h3 className="text-sm font-bold text-foreground">Resorts & Praias do Nordeste</h3>
-                  <p className="text-xs text-muted-foreground">Pacotes completos com aéreo saindo da sua região.</p>
-                </div>
-                {whatsappHref && (
-                  <Button asChild variant="outline" size="sm" className="h-11 min-h-11 w-full rounded-lg font-semibold gap-2">
-                    <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
-                      <MessageCircle className="size-4 text-emerald-600" />
-                      <span>Consultar no WhatsApp</span>
-                    </a>
-                  </Button>
-                )}
-              </div>
-              <div className="p-4 rounded-xl border border-border/80 bg-muted/20 space-y-3">
-                <div className="space-y-1">
-                  <Badge variant="outline" className="text-xs font-semibold">Cruzeiros & Navegação</Badge>
-                  <h3 className="text-sm font-bold text-foreground">Temporada Brasileira & Internacional</h3>
-                  <p className="text-xs text-muted-foreground">Cabines com pensão completa e entretenimento a bordo.</p>
-                </div>
-                {whatsappHref && (
-                  <Button asChild variant="outline" size="sm" className="h-11 min-h-11 w-full rounded-lg font-semibold gap-2">
-                    <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
-                      <MessageCircle className="size-4 text-emerald-600" />
-                      <span>Ver Disponibilidade</span>
-                    </a>
-                  </Button>
-                )}
-              </div>
+              {hasMultipleOpts ? (
+                proposal.options.slice(0, 4).map((opt, oIdx) => {
+                  const optPrice = opt.pricing?.total_price_cents || 0;
+                  const optHotel = opt.hotel_name || opt.hotels?.[0]?.hotel_name || "Hospedagem Selecionada";
+                  return (
+                    <div key={opt.id || oIdx} className="p-4 rounded-xl border border-border/80 bg-muted/20 space-y-3 flex flex-col justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <Badge variant="outline" className="text-xs font-semibold">{opt.badge || `Opção ${oIdx + 1}`}</Badge>
+                          {optPrice > 0 && <span className="text-xs font-bold font-mono text-primary">{formatMoney(optPrice)}</span>}
+                        </div>
+                        <h3 className="text-sm font-bold text-foreground">{opt.name || `Roteiro Alternativo ${oIdx + 1}`}</h3>
+                        <p className="text-xs text-muted-foreground">{optHotel}</p>
+                      </div>
+                      {whatsappHref && (
+                        <Button asChild variant="outline" size="sm" className="h-11 min-h-11 w-full rounded-lg font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring">
+                          <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
+                            <MessageCircle className="size-4 text-emerald-600" />
+                            <span>Consultar no WhatsApp</span>
+                          </a>
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                <>
+                  <div className="p-4 rounded-xl border border-border/80 bg-muted/20 space-y-3 flex flex-col justify-between">
+                    <div className="space-y-1">
+                      <Badge variant="outline" className="text-xs font-semibold">Destinos em Alta</Badge>
+                      <h3 className="text-sm font-bold text-foreground">Resorts & Praias do Nordeste</h3>
+                      <p className="text-xs text-muted-foreground">Pacotes completos com aéreo saindo da sua região.</p>
+                    </div>
+                    {whatsappHref && (
+                      <Button asChild variant="outline" size="sm" className="h-11 min-h-11 w-full rounded-lg font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring">
+                        <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
+                          <MessageCircle className="size-4 text-emerald-600" />
+                          <span>Consultar no WhatsApp</span>
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                  <div className="p-4 rounded-xl border border-border/80 bg-muted/20 space-y-3 flex flex-col justify-between">
+                    <div className="space-y-1">
+                      <Badge variant="outline" className="text-xs font-semibold">Cruzeiros & Navegação</Badge>
+                      <h3 className="text-sm font-bold text-foreground">Temporada Brasileira & Internacional</h3>
+                      <p className="text-xs text-muted-foreground">Cabines com pensão completa e entretenimento a bordo.</p>
+                    </div>
+                    {whatsappHref && (
+                      <Button asChild variant="outline" size="sm" className="h-11 min-h-11 w-full rounded-lg font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring">
+                        <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
+                          <MessageCircle className="size-4 text-emerald-600" />
+                          <span>Ver Disponibilidade</span>
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           </section>
         );
@@ -1450,32 +1565,31 @@ export function ProposalWebShowcase({
 
   return (
     <div className="space-y-6 pb-24 sm:pb-8 relative">
-      {isStickyCardEnabled ? (
-        <>
-          {/* Capa / Hero Full-Width (Conforme padrão canônico ClassifiedDetailDesktop) */}
-          {heroBlock && renderBlock(heroBlock)}
+      {/* Capa / Hero Full-Width (Conforme padrão canônico ClassifiedDetailDesktop) */}
+      {heroBlock && renderBlock(heroBlock)}
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative">
-            {/* Coluna Esquerda: Conteúdo Editorial e Seções do Roteiro */}
-            <div className="lg:col-span-7 xl:col-span-8 space-y-6 min-w-0">
-              {nonHeroBlocks.map((block) => renderBlock(block))}
-              {supplementarySlot}
-              {ctaBlocks.map((block) => renderBlock(block))}
-            </div>
-
-            {/* Coluna Direita: Card Comercial Fixo / Sticky que Acompanha o Scroll */}
-            <aside className="hidden lg:block lg:col-span-5 xl:col-span-4 lg:sticky lg:top-20 self-start space-y-4">
-              {commercialNode}
-            </aside>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative">
+        {/* Coluna Esquerda: Conteúdo Editorial e Seções do Roteiro */}
+        <div className="lg:col-span-7 xl:col-span-8 space-y-6 min-w-0">
+          {/* No Mobile (< lg), o Card Comercial aparece no topo do roteiro logo após a capa */}
+          <div className="lg:hidden">
+            {commercialNode}
           </div>
-        </>
-      ) : (
-        <div className="space-y-6">
-          {blocksBeforeCta.map((block) => renderBlock(block))}
+          {nonHeroBlocks.map((block) => renderBlock(block))}
           {supplementarySlot}
           {ctaBlocks.map((block) => renderBlock(block))}
         </div>
-      )}
+
+        {/* Coluna Direita: Card Comercial Fixo / Sticky que Acompanha o Scroll no Desktop */}
+        <aside
+          className={cn(
+            "hidden lg:block lg:col-span-5 xl:col-span-4 self-start space-y-4",
+            isStickyCardEnabled && "lg:sticky lg:top-4 sm:lg:top-6",
+          )}
+        >
+          {commercialNode}
+        </aside>
+      </div>
 
       {/* Barra Fixa no Rodapé Mobile (Piso 44px, WCAG 2.2 AA) */}
       {!compactPreview && (
