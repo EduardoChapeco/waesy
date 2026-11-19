@@ -1,6 +1,6 @@
 # ROUTES.md — Inventário de Rotas, Telas, Shells e Nichos (P04)
 
-**Total de Rotas Analisadas:** 477  
+**Total de Rotas Analisadas:** 483  
 **Status do Check C27 (Rotas Órfãs/Mortas):** 🟢 0 (Todas as rotas mapeadas possuem componentes ativos no sistema TanStack Router)
 
 ---
@@ -8,19 +8,19 @@
 ## 1. Distribuição por Shell de Navegação
 | Shell | Quantidade de Rotas | Proporção |
 |---|---|---|
-| **Admin Master Shell** | 40 | 8.4% |
-| **Headless API / MCP** | 35 | 7.3% |
+| **Admin Master Shell** | 40 | 8.3% |
+| **Headless API / MCP** | 35 | 7.2% |
 | **Mobile Native Shell** | 11 | 2.3% |
-| **Storefront Shell (Responsive B2C)** | 189 | 39.6% |
-| **Workspace Shell (Desktop/Mobile Split)** | 202 | 42.3% |
+| **Storefront Shell (Responsive B2C)** | 192 | 39.8% |
+| **Workspace Shell (Desktop/Mobile Split)** | 205 | 42.4% |
 
 ---
 
 ## 2. Distribuição por Nicho de Mercado
 | Nicho | Quantidade de Rotas |
 |---|---|
-| **Núcleo Genérico (Cross-Niche)** | 430 |
-| **Turismo & Viagens** | 37 |
+| **Núcleo Genérico (Cross-Niche)** | 435 |
+| **Turismo & Viagens** | 38 |
 | **Eventos & Festas** | 6 |
 | **Gastronomia & Restaurantes** | 4 |
 
@@ -60,4 +60,4 @@
 | `/admin-master/pre-cadastro` | `src/routes/admin-master.pre-cadastro.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
 | `/admin-master/seguranca/certificados/$id` | `src/routes/admin-master.seguranca.certificados.$id.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
 
-*(Relatório completo disponível em .audit/ROUTES.json com 100% das 477 rotas)*
+*(Relatório completo disponível em .audit/ROUTES.json com 100% das 483 rotas)*

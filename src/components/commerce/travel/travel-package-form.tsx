@@ -2557,6 +2557,39 @@ export function TravelPackageForm({
                   className="text-xs rounded-lg"
                 />
               </div>
+
+              {/* Pagamento Online via Gateway / Link Direto */}
+              <div className="space-y-3 p-4 rounded-lg bg-primary/5 border border-primary/30 sm:col-span-2">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(paymentConditions.allow_online_gateway_payment)}
+                      onChange={(e) => updatePaymentConditions("allow_online_gateway_payment", e.target.checked)}
+                      className="size-4 rounded border-border text-primary cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                    <span className="text-xs font-bold text-foreground">Habilitar Pagamento Online via Gateway</span>
+                  </label>
+                  <span className="text-2xs text-muted-foreground">Checkout seguro / Cartão & PIX</span>
+                </div>
+                {paymentConditions.allow_online_gateway_payment && (
+                  <div className="space-y-2 pt-2 border-t border-primary/20">
+                    <Label className="text-2xs text-muted-foreground font-semibold">
+                      Link / URL do Gateway ou Checkout Externo (Opcional)
+                    </Label>
+                    <Input
+                      type="url"
+                      value={paymentConditions.payment_gateway_url || ""}
+                      onChange={(e) => updatePaymentConditions("payment_gateway_url", e.target.value)}
+                      placeholder="https://seguro.agencia.com.br/checkout/..."
+                      className="h-10 text-xs rounded-lg bg-background"
+                    />
+                    <p className="text-2xs text-muted-foreground">
+                      Se preenchido, direciona o cliente diretamente para a fatura/link de pagamento configurado pela agência.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

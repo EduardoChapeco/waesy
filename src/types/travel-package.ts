@@ -76,6 +76,8 @@ export interface PaymentConditions {
  accepts_credit_card?: boolean;
  accepts_bank_transfer?: boolean;
  accepts_financing?: boolean;
+ allow_online_gateway_payment?: boolean;
+ payment_gateway_url?: string;
  deposit_percent?: number;
  deposit_deadline_days?: number;
  balance_deadline_days?: number;

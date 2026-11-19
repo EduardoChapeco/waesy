@@ -1286,6 +1286,187 @@ export const bookGroupTourReservation = createServerFn({ method: "POST" })
     }
 
     if (tour.store_id) {
+      // 1. Reconciliação / Criação de Lead no CRM (leads_crm)
+      let crmLeadId: string | null = null;
+      try {
+        const clientEmail = (primaryContact.email || "").toLowerCase().trim();
+        const clientPhone = primaryContact.phone ? primaryContact.phone.replace(/\D/g, "") : null;
+
+        let query = supabase
+          .from("leads_crm")
+          .select("id, custom_fields")
+          .eq("store_id", tour.store_id);
+
+        if (clientEmail && clientPhone) {
+          query = query.or(`email.eq.${clientEmail},phone.ilike.%${clientPhone.slice(-8)}%`);
+        } else if (clientEmail) {
+          query = query.eq("email", clientEmail);
+        } else if (clientPhone) {
+          query = query.ilike("phone", `%${clientPhone.slice(-8)}%`);
+        }
+
+        const { data: matchedLead } = await query
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (matchedLead?.id) {
+          crmLeadId = matchedLead.id;
+          const prevCustom = (matchedLead.custom_fields && typeof matchedLead.custom_fields === "object") ? matchedLead.custom_fields : {};
+          await supabase
+            .from("leads_crm")
+            .update({
+              status: "won",
+              custom_fields: {
+                ...prevCustom,
+                group_tour_id: tourId,
+                trip_id: createdTripId,
+                reservation_code: reservationCode,
+                selected_seats: selectedSeats,
+                payment_plan: {
+                  method: paymentMethod,
+                  total_cents: totalCents,
+                  is_synced: true,
+                  synced_at: new Date().toISOString(),
+                },
+              },
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", matchedLead.id);
+        } else {
+          const { data: newLead } = await supabase
+            .from("leads_crm")
+            .insert({
+              store_id: tour.store_id,
+              title: `${primaryContact.name} - Excursão: ${tour.title || tour.destination || "Grupo"}`,
+              name: primaryContact.name,
+              phone: primaryContact.phone || null,
+              email: clientEmail || null,
+              status: "won",
+              value_cents: totalCents,
+              source: "group_tour_reservation",
+              customer_id: identity?.id || null,
+              custom_fields: {
+                group_tour_id: tourId,
+                trip_id: createdTripId,
+                reservation_code: reservationCode,
+                selected_seats: selectedSeats,
+                payment_plan: {
+                  method: paymentMethod,
+                  total_cents: totalCents,
+                  is_synced: true,
+                  synced_at: new Date().toISOString(),
+                },
+              },
+              checklist: [
+                { id: "item-1", text: "Reserva de excursão efetuada", done: true },
+                { id: "item-2", text: "Poltrona(s) selecionada(s)", done: true },
+                { id: "item-3", text: "Passageiros manifestados", done: true },
+                { id: "item-4", text: "Contrato de transporte vinculado", done: true },
+              ],
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .select("id")
+            .maybeSingle();
+
+          if (newLead?.id) crmLeadId = newLead.id;
+        }
+      } catch (crmErr) {
+        console.warn("[bookGroupTourReservation] Erro ao sincronizar CRM:", crmErr);
+      }
+
+      // 2. Emissão/Vínculo do Contrato Canônico em `contracts`
+      if (createdTripId) {
+        try {
+          const contractVerification = `CTR-EXC-${reservationCode}-${Date.now().toString(36).toUpperCase()}`;
+          const contractTitle = `Contrato de Transporte e Excursão - ${tour.title || "Excursão"} (${primaryContact.name})`;
+          const { data: newContract } = await supabase
+            .from("contracts")
+            .insert({
+              store_id: tour.store_id,
+              category: "tourism",
+              lead_id: crmLeadId || null,
+              customer_id: identity?.id || null,
+              title: contractTitle,
+              status: "signing",
+              verification_code: contractVerification,
+              current_version: 1,
+              metadata: {
+                store_id: tour.store_id,
+                group_tour_id: tourId,
+                trip_id: createdTripId,
+                lead_id: crmLeadId || null,
+                reservation_code: reservationCode,
+                client_name: primaryContact.name,
+                client_document: primaryContact.document || null,
+                client_phone: primaryContact.phone || null,
+                client_email: primaryContact.email || null,
+                total_value_cents: totalCents,
+                destination: tour.destination || "",
+                selected_seats: selectedSeats,
+                payment_method: paymentMethod,
+                accepted_at: new Date().toISOString(),
+              },
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .select("id")
+            .maybeSingle();
+
+          if (newContract?.id) {
+            await supabase.from("signature_envelopes").insert({
+              store_id: tour.store_id,
+              contract_id: newContract.id,
+              envelope_status: "sent",
+              signers: [
+                {
+                  name: primaryContact.name,
+                  email: primaryContact.email || null,
+                  document: primaryContact.document || null,
+                  phone: primaryContact.phone || null,
+                  role: "passenger",
+                  status: "pending",
+                },
+              ],
+              metadata: {
+                group_tour_id: tourId,
+                trip_id: createdTripId,
+                reservation_code: reservationCode,
+              },
+              created_at: new Date().toISOString(),
+            });
+          }
+        } catch (contractErr) {
+          console.warn("[bookGroupTourReservation] Erro ao emitir contrato:", contractErr);
+        }
+      }
+
+      // 3. Postagem do lançamento financeiro em `financial_transactions`
+      if (totalCents > 0) {
+        try {
+          await supabase.from("financial_transactions").insert({
+            store_id: tour.store_id,
+            type: "revenue",
+            status: paymentMethod === "pix" ? "confirmed" : "pending",
+            amount_cents: totalCents,
+            description: `Excursão: ${tour.title || "Reserva"} (${primaryContact.name} - ${reservationCode})`,
+            metadata: {
+              source_domain: "TOURISM_EXCURSION",
+              group_tour_id: tourId,
+              trip_id: createdTripId,
+              reservation_code: reservationCode,
+              payment_method: paymentMethod,
+              lead_id: crmLeadId || null,
+            },
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          });
+        } catch (finErr) {
+          console.warn("[bookGroupTourReservation] Erro ao registrar lancamento financeiro:", finErr);
+        }
+      }
+
+      // 4. Notificação Staff
       const { notifyStoreStaff } = await import("@/lib/notifications/store-staff-notify");
       await notifyStoreStaff({
         db: supabase,
@@ -1326,6 +1507,7 @@ export const UpdateGroupTourContentSchema = z.object({
   boardingPoints: z.array(z.any()).optional().nullable(),
   hotels: z.array(z.any()).optional().nullable(),
   transfers: z.array(z.any()).optional().nullable(),
+  cruises: z.array(z.any()).optional().nullable(),
   tours: z.array(z.any()).optional().nullable(),
   itinerary: z.array(z.any()).optional().nullable(),
   media: z.array(z.any()).optional().nullable(),
@@ -1408,6 +1590,9 @@ export const updateGroupTourContent = createServerFn({ method: "POST" })
     }
     if (data.transfers !== undefined && data.transfers !== null) {
       patch.transfers = normalizeTransfersList(data.transfers);
+    }
+    if (data.cruises !== undefined && data.cruises !== null) {
+      patch.cruises = data.cruises;
     }
     if (data.tours !== undefined && data.tours !== null) {
       patch.tours = normalizeToursList(data.tours);

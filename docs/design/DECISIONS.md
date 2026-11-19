@@ -1,5 +1,25 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-533: Selamento Canônico End-to-End de Criadores de Proposta e Cotação, Paridade Level-Up de Cruzeiros Marítimos e Mapas Náuticos, Fidelidade Cartográfica de Rotas no PDF/PNG, Webhook Multi-Domínio e Reconciliação CRM Transacional
+- **Data (ISO):** 2026-11-19
+- **ID da Decisão:** DEC-533
+- **Contexto:**
+  1. A constraint de banco travel_proposal_acceptances_payment_preference_check e a política de parcelas bloqueavam o aceite com gateway_online e parcelamento até 36x, lançando erro SQL 22023.
+  2. O aceite público de proposta avulsa (gerada pela vitrine ou pelo catálogo) não criava Lead correspondente no CRM caso inexistente, impedindo rastreabilidade do vendedor.
+  3. A reserva de excursão rodoviária/grupo (bookGroupTourReservation) não emitia contrato digital em contracts, não lançava recebíveis financeiros em financial_transactions nem reconciliava o lead no CRM.
+  4. O webhook de pagamentos (/api/webhooks/payments) operava restrito ao domínio de pedidos físicos (orders), sem liquidar propostas turísticas, viagens/excursões ou recebíveis de forma unificada.
+  5. O Construtor de Cotações/Propostas no CRM (unified-proposal-workspace.tsx) carecia de suporte nativo a Cruzeiros Marítimos (MSC, Costa) com itinerários e mapas da costa náutica.
+  6. Os mapas SVG de rotas aéreas e marítimas (FlightRouteSvgMap, CruiseRouteSvgMap) perdiam contraste do oceano e da silhueta do Brasil na exportação para PDF e PNG via html2canvas devido a classes CSS variáveis do Tailwind.
+- **Decisão Adotada:**
+  1. Migration SQL 20270615000000: Atualizadas as constraints payment_preference (adicionado gateway_online) e payment_installments (ampliado até 36x) na tabela e na RPC record_public_travel_proposal_acceptance.
+  2. Reconciliação Atômica de Lead CRM no Aceite: Em approveTravelProposal, propostas sem lead_id realizam busca inteligente por e-mail/telefone e inserem o Lead com status won, plano financeiro e vinculação bidirecional.
+  3. Sincronização Atômica de Excursões: Em bookGroupTourReservation, reserva de vaga emite contrato turístico digital vinculado, gera envelope de assinatura, reconcilia lead no CRM com status won e lança contas a receber no financeiro.
+  4. Serviço de Liquidação Multi-Domínio (multi-domain-payment-settlement.service.ts): Webhook centralizado capaz de processar simultaneamente pedidos de e-commerce, propostas turísticas (travel_proposals), viagens (tourism_trips) e faturas/recebíveis (receivables).
+  5. Paridade Level-Up de Cruzeiros (unified-proposal-workspace.tsx & TourismPipeCardDossier.tsx): Inclusão de cruzeiros marítimos com presets MSC e Costa de 1 clique, formulário com cabine, navio e itinerário náutico, e renderização de rota na costa em CruiseRouteSvgMap.
+  6. Fidelidade Cartográfica de Rotas no PDF/PNG: Cores vetoriais nativas mapeadas diretamente da SSOT TOKEN_HEX (mar azul náutico, terra em tom continental claro, halos de aeroporto e portos com precisão geodésica).
+- **Fundamentação Teórica:** AGENTS.md (B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.10, B.22, B.25, B.26, B.28, B.31, B.33); WCAG 2.2 AA.
+- **Consequências:** Zero falhas de mismatch no checkout online com gateway até 36x; rastreamento integral da jornada do cliente no CRM a partir de qualquer aceite público; liquidação server-side universal de pagamentos; fidelidade visual cartográfica impecável em telas, PDFs e imagens PNG.
+
 ## DEC-532: Reconciliação e Sincronização de Contratos Digitais no CRM/Kanban, Extração Mecânica de Imagens JPEG em PDFs no OCR de Cotações B2B, Hidratação Direta no Construtor de Propostas e Validação de Pastas de Inspiração Multi-Nicho
 - **Data (ISO):** 2026-11-19
 - **ID da Decisão:** DEC-532

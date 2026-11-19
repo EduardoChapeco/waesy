@@ -135,7 +135,7 @@ export function TravelProposalCheckoutModal({
           acceptedByEmail: leadEmail.trim() || undefined,
           passengers,
           paymentPreference,
-          paymentInstallments: ["cartao_operadora", "financiamento_bancario"].includes(paymentPreference) ? paymentInstallments : null,
+          paymentInstallments: ["cartao_operadora", "financiamento_bancario", "gateway_online"].includes(paymentPreference) ? paymentInstallments : null,
         },
       });
       if (!result.success || !result.acceptanceId) throw new Error("O aceite não foi confirmado no sistema.");
@@ -408,7 +408,7 @@ export function TravelProposalCheckoutModal({
               )}
             </div>
 
-            {["cartao_operadora", "financiamento_bancario"].includes(paymentPreference || "") && (() => {
+            {["cartao_operadora", "financiamento_bancario", "gateway_online"].includes(paymentPreference || "") && (() => {
               const { maxInstallments: effectiveMaxInstallments } = resolveMaxInstallmentsFromOptions(
                 proposal.pricing?.installments_options,
                 36,

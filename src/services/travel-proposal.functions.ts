@@ -2878,10 +2878,73 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
     }
     const replayed = Boolean(acceptanceResult.replayed);
 
-    // 1. Sincronização atômica do Lead em leads_crm
-    const leadId = proposal.lead_id;
-    if (leadId) {
-      try {
+    // 1. Sincronização atômica do Lead em leads_crm (reconcilia ou cria automaticamente)
+    let leadId = proposal.lead_id;
+    try {
+      if (!leadId && proposal.store_id) {
+        const clientPhone = leadPassenger.phone ? leadPassenger.phone.replace(/\D/g, "") : null;
+        const clientEmail = (data.acceptedByEmail || leadPassenger.email || "").toLowerCase().trim();
+
+        let query = supabase
+          .from("leads_crm")
+          .select("id")
+          .eq("store_id", proposal.store_id);
+
+        if (clientEmail && clientPhone) {
+          query = query.or(`email.eq.${clientEmail},phone.ilike.%${clientPhone.slice(-8)}%`);
+        } else if (clientEmail) {
+          query = query.eq("email", clientEmail);
+        } else if (clientPhone) {
+          query = query.ilike("phone", `%${clientPhone.slice(-8)}%`);
+        }
+
+        const { data: matchedLead } = await query
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (matchedLead?.id) {
+          leadId = matchedLead.id;
+        } else {
+          const leadTitle = `${data.acceptedByName?.trim() || leadPassenger.name} - ${proposal.destination_city || proposal.title || "Pacote Turístico"}`;
+          const { data: newLead } = await supabase
+            .from("leads_crm")
+            .insert({
+              store_id: proposal.store_id,
+              title: leadTitle,
+              name: data.acceptedByName?.trim() || leadPassenger.name,
+              phone: leadPassenger.phone || null,
+              email: clientEmail || null,
+              status: "won",
+              value_cents: proposal.total_cents || proposal.total_value_cents || 0,
+              source: "proposal_web",
+              customer_id: proposal.customer_id || null,
+              custom_fields: {},
+              checklist: [
+                { id: "item-1", text: "Primeiro contato realizado", done: true },
+                { id: "item-2", text: "Proposta enviada", done: true },
+                { id: "item-3", text: "Proposta aceita pelo cliente", done: true },
+                { id: "item-4", text: "Contrato digital emitido", done: true },
+              ],
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .select("id")
+            .maybeSingle();
+
+          if (newLead?.id) {
+            leadId = newLead.id;
+          }
+        }
+
+        if (leadId) {
+          await supabase
+            .from("travel_proposals")
+            .update({ lead_id: leadId, updated_at: new Date().toISOString() })
+            .eq("id", proposal.id);
+        }
+      }
+
+      if (leadId) {
         const { data: leadRow } = await supabase
           .from("leads_crm")
           .select("id, custom_fields, customer_id, checklist")
@@ -2927,9 +2990,9 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
           })
           .eq("id", leadId)
           .eq("store_id", proposal.store_id);
-      } catch (leadSyncErr) {
-        console.warn("[approveTravelProposal] Erro ao sincronizar leads_crm:", leadSyncErr);
       }
+    } catch (leadSyncErr) {
+      console.warn("[approveTravelProposal] Erro ao sincronizar leads_crm:", leadSyncErr);
     }
 
     // 2. Emissão/Vínculo do Contrato Digital Canônico em `contracts`

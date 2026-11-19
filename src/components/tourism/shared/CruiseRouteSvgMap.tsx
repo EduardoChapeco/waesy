@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { Anchor, Navigation, Ship } from "lucide-react";
+import { TOKEN_HEX } from "@/lib/design-tokens";
 import {
   buildSvgProjectionForCruise,
   type CruiseItineraryDayDTO,
@@ -27,6 +28,14 @@ export function CruiseRouteSvgMap({
   className = "",
 }: CruiseRouteSvgMapProps) {
   const isDark = tone === "dark";
+  const oceanFill = isDark ? TOKEN_HEX.neutral950 : TOKEN_HEX.blue50;
+  const landFill = isDark ? TOKEN_HEX.neutral900 : TOKEN_HEX.neutral50;
+  const coastStroke = isDark ? TOKEN_HEX.neutral700 : TOKEN_HEX.neutral300;
+  const routeStroke = isDark ? TOKEN_HEX.blue500 : TOKEN_HEX.blue700;
+  const textFill = isDark ? TOKEN_HEX.neutral50 : TOKEN_HEX.neutral900;
+  const oceanTextFill = isDark ? TOKEN_HEX.neutral400 : TOKEN_HEX.neutral600;
+  const portFill = isDark ? TOKEN_HEX.blue500 : TOKEN_HEX.blue600;
+  const markerStroke = isDark ? TOKEN_HEX.neutral900 : TOKEN_HEX.white;
 
   const svgProj = useMemo(
     () => buildSvgProjectionForCruise(itinerary, 720, 260, 48),
@@ -79,13 +88,14 @@ export function CruiseRouteSvgMap({
           </defs>
 
           {/* Ocean Background */}
-          <rect x="0" y="0" width="720" height="260" className={isDark ? "fill-muted" : "fill-accent"} />
+          <rect x="0" y="0" width="720" height="260" fill={oceanFill} />
 
           {/* Landmass of Brazilian Coast */}
           {svgProj.landmassPath && (
             <path
               d={svgProj.landmassPath}
-              className={isDark ? "fill-card stroke-border" : "fill-muted stroke-border"}
+              fill={landFill}
+              stroke={coastStroke}
               strokeWidth="1.2"
             />
           )}
@@ -98,7 +108,7 @@ export function CruiseRouteSvgMap({
             fontSize="13"
             fontWeight="700"
             letterSpacing="2"
-            className="fill-muted-foreground"
+            fill={textFill}
             opacity="0.85"
             fontFamily="ui-sans-serif, system-ui, sans-serif"
           >
@@ -113,8 +123,8 @@ export function CruiseRouteSvgMap({
             fontSize="12"
             fontStyle="italic"
             letterSpacing="1.5"
-            className="fill-muted-foreground"
-            opacity="0.75"
+            fill={oceanTextFill}
+            opacity="0.8"
             fontFamily="ui-serif, Georgia, serif"
           >
             {svgProj.oceanLabel.text}
@@ -125,8 +135,8 @@ export function CruiseRouteSvgMap({
             <path
               d={svgProj.routePath}
               fill="none"
-              className={isDark ? "stroke-primary" : "stroke-foreground"}
-              strokeWidth="2.2"
+              stroke={routeStroke}
+              strokeWidth="2.4"
               strokeLinecap="round"
               strokeLinejoin="round"
               markerEnd="url(#cruise-arrow)"
@@ -139,7 +149,7 @@ export function CruiseRouteSvgMap({
               key={idx}
               transform={`translate(${arr.x}, ${arr.y}) rotate(${arr.angle})`}
             >
-              <polygon points="-5,-3 4,0 -5,3" className={isDark ? "fill-primary" : "fill-foreground"} />
+              <polygon points="-5,-3 4,0 -5,3" fill={routeStroke} />
             </g>
           ))}
 
@@ -153,16 +163,23 @@ export function CruiseRouteSvgMap({
                   cx={s.x}
                   cy={s.y}
                   r="9"
-                  className="fill-primary"
-                  fillOpacity="0.18"
+                  fill={portFill}
+                  fillOpacity="0.2"
                 />
                 {/* Port marker */}
                 <circle
                   cx={s.x}
                   cy={s.y}
                   r="5.5"
-                  className="fill-foreground stroke-background"
+                  fill={portFill}
+                  stroke={markerStroke}
                   strokeWidth="2"
+                />
+                <circle
+                  cx={s.x}
+                  cy={s.y}
+                  r="2"
+                  fill={markerStroke}
                 />
                 {/* Port City Name */}
                 <text
@@ -172,7 +189,7 @@ export function CruiseRouteSvgMap({
                   fontSize="12"
                   fontWeight="800"
                   letterSpacing="1"
-                  className="fill-foreground"
+                  fill={textFill}
                   fontFamily="ui-sans-serif, system-ui, sans-serif"
                 >
                   {s.city}

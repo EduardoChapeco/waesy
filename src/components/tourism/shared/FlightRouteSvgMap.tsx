@@ -52,7 +52,10 @@ export function FlightRouteSvgMap({
   }
 
   const isDark = tone === "dark";
-  const bgFill = isDark ? TOKEN_HEX.neutral900 : TOKEN_HEX.neutral50;
+  const oceanFill = isDark ? TOKEN_HEX.neutral950 : TOKEN_HEX.blue50;
+  const landFill = isDark ? TOKEN_HEX.neutral900 : TOKEN_HEX.neutral50;
+  const coastStroke = isDark ? TOKEN_HEX.neutral700 : TOKEN_HEX.neutral300;
+  const borderStroke = isDark ? TOKEN_HEX.neutral600 : TOKEN_HEX.neutral400;
   const gridStroke = isDark ? TOKEN_HEX.neutral800 : TOKEN_HEX.neutral200;
   const textFill = isDark ? TOKEN_HEX.neutral50 : TOKEN_HEX.neutral900;
   const mutedFill = isDark ? TOKEN_HEX.neutral400 : TOKEN_HEX.neutral600;
@@ -117,15 +120,16 @@ export function FlightRouteSvgMap({
             aria-label={`Mapa de rota aérea conectando ${model.allIatas.join(" - ")}`}
             className="w-full h-auto block"
           >
-            {/* Fundo de Oceano realista */}
-            <rect x="0" y="0" width="720" height="220" className={isDark ? "fill-muted" : "fill-accent"} />
+            {/* Fundo de Oceano realista com contraste garantido para PDF/PNG */}
+            <rect x="0" y="0" width="720" height="220" fill={oceanFill} />
 
             {/* Silhueta da América do Sul e litoral do Brasil */}
             {svgProj.landmassPath && (
               <path
                 d={svgProj.landmassPath}
-                className={isDark ? "fill-card stroke-border" : "fill-background stroke-border"}
-                strokeWidth="1"
+                fill={landFill}
+                stroke={coastStroke}
+                strokeWidth="1.2"
               />
             )}
 
@@ -134,7 +138,7 @@ export function FlightRouteSvgMap({
               <path
                 d={svgProj.brazilBorderPath}
                 fill="none"
-                className="stroke-muted-foreground"
+                stroke={borderStroke}
                 strokeWidth="1.2"
                 strokeDasharray="4 2"
               />
@@ -149,8 +153,8 @@ export function FlightRouteSvgMap({
                 fontWeight="700"
                 letterSpacing="2.5"
                 textAnchor="middle"
-                className="fill-muted-foreground"
-                opacity="0.65"
+                fill={borderStroke}
+                opacity="0.85"
               >
                 BRASIL
               </text>
@@ -163,8 +167,8 @@ export function FlightRouteSvgMap({
                 fontStyle="italic"
                 letterSpacing="1.5"
                 textAnchor="middle"
-                className="fill-primary"
-                opacity="0.4"
+                fill={isDark ? TOKEN_HEX.blue500 : TOKEN_HEX.blue600}
+                opacity="0.55"
               >
                 Oceano Atlântico
               </text>
@@ -219,12 +223,13 @@ export function FlightRouteSvgMap({
               const labelY = s.y < 52 ? s.y + 19 : s.y - 14;
               return (
                 <g key={s.iata}>
+                  {/* Halo de precisão e radar geodésico */}
                   <circle
                     cx={s.x}
                     cy={s.y}
-                    r={radius + 3}
+                    r={radius + 4}
                     fill={fill}
-                    fillOpacity="0.16"
+                    fillOpacity="0.22"
                   />
                   <circle
                     cx={s.x}
@@ -233,6 +238,13 @@ export function FlightRouteSvgMap({
                     fill={fill}
                     stroke={layoverStroke}
                     strokeWidth="2"
+                  />
+                  {/* Núcleo central de marcação cartográfica */}
+                  <circle
+                    cx={s.x}
+                    cy={s.y}
+                    r="2"
+                    fill={isDark ? TOKEN_HEX.neutral900 : TOKEN_HEX.white}
                   />
                   <text
                     x={s.x}

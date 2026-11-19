@@ -90,11 +90,13 @@ const tourWizardSchema = z
     acceptsPix: z.boolean().default(true),
     pixDiscountPercent: z.number().min(0).max(50).default(5),
     acceptsCard: z.boolean().default(true),
-    maxInstallments: z.number().min(1).max(24).default(12),
-    feeFreeInstallments: z.number().min(1).max(24).default(12),
+    maxInstallments: z.number().min(1).max(36).default(12),
+    feeFreeInstallments: z.number().min(1).max(36).default(12),
     acceptsBoleto: z.boolean().default(false),
-    boletoInstallments: z.number().min(1).max(24).default(10),
+    boletoInstallments: z.number().min(1).max(36).default(10),
     depositPercent: z.number().min(0).max(100).default(0),
+    allowOnlineGatewayPayment: z.boolean().default(false),
+    paymentGatewayUrl: z.string().optional(),
     paymentTermsText: z.string().optional(),
   })
   .refine(
@@ -222,6 +224,8 @@ export function NewGroupTourWizard({
   const watchAcceptsBoleto = watch("acceptsBoleto") ?? false;
   const watchBoletoInstallments = watch("boletoInstallments") || 10;
   const watchDepositPercent = watch("depositPercent") ?? 0;
+  const watchAllowOnlineGatewayPayment = watch("allowOnlineGatewayPayment") ?? false;
+  const watchPaymentGatewayUrl = watch("paymentGatewayUrl") || "";
   const watchPaymentTermsText = watch("paymentTermsText");
 
   const busesQ = useQuery({
@@ -317,6 +321,9 @@ export function NewGroupTourWizard({
     setSubmitting(true);
     try {
       const payParts: string[] = [];
+      if (data.allowOnlineGatewayPayment) {
+        payParts.push("Pagamento online via gateway seguro");
+      }
       if (data.maxInstallments) {
         payParts.push(
           `Até ${data.maxInstallments}x no cartão${(data.feeFreeInstallments || 12) >= data.maxInstallments ? " sem juros" : ""}`,
@@ -1072,6 +1079,35 @@ export function NewGroupTourWizard({
                       </div>
                     )}
                   </div>
+
+                  <div className="space-y-2 pt-2 border-t border-border">
+                    <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={watchAllowOnlineGatewayPayment}
+                        onChange={(e) =>
+                          setValue("allowOnlineGatewayPayment", e.target.checked, { shouldValidate: true })
+                        }
+                        className="rounded size-4 text-primary focus:ring-primary"
+                      />
+                      <span>Habilitar Pagamento Online via Gateway (Cartão / PIX)</span>
+                    </label>
+                    {watchAllowOnlineGatewayPayment && (
+                      <div className="pt-1">
+                        <Field label="Link / URL de Pagamento Direto (Opcional)">
+                          <Input
+                            type="url"
+                            value={watchPaymentGatewayUrl}
+                            onChange={(e) =>
+                              setValue("paymentGatewayUrl", e.target.value, { shouldValidate: true })
+                            }
+                            placeholder="https://seguro.agencia.com.br/checkout/..."
+                            className="h-11 text-xs font-mono"
+                          />
+                        </Field>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1345,6 +1381,35 @@ export function NewGroupTourWizard({
                     {watchItinerary.length === 0 && (
                       <div className="text-center py-6 border border-dashed border-border/50 rounded-card text-xs text-muted-foreground">
                         Nenhum dia adicionado ao itinerário.
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2 pt-2 border-t border-border">
+                    <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={watchAllowOnlineGatewayPayment}
+                        onChange={(e) =>
+                          setValue("allowOnlineGatewayPayment", e.target.checked, { shouldValidate: true })
+                        }
+                        className="rounded size-4 text-primary focus:ring-primary"
+                      />
+                      <span>Habilitar Pagamento Online via Gateway (Cartão / PIX)</span>
+                    </label>
+                    {watchAllowOnlineGatewayPayment && (
+                      <div className="pt-1">
+                        <Field label="Link / URL de Pagamento Direto (Opcional)">
+                          <Input
+                            type="url"
+                            value={watchPaymentGatewayUrl}
+                            onChange={(e) =>
+                              setValue("paymentGatewayUrl", e.target.value, { shouldValidate: true })
+                            }
+                            placeholder="https://seguro.agencia.com.br/checkout/..."
+                            className="h-11 text-xs font-mono"
+                          />
+                        </Field>
                       </div>
                     )}
                   </div>

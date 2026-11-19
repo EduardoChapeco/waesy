@@ -1,6 +1,6 @@
 {
   "C01": {
-    "count": 1315,
+    "count": 1310,
     "evaluated": true,
     "violations": [
       "src/components/ad-engine/preview/canonical-listing-preview-frame.tsx:205",
@@ -31,7 +31,7 @@
     "violations": []
   },
   "C06": {
-    "count": 546,
+    "count": 552,
     "evaluated": true,
     "violations": [
       "src/components/admin/builder/builder-add-panel-3col.tsx:302",
@@ -42,14 +42,14 @@
     ]
   },
   "C07": {
-    "count": 47,
+    "count": 55,
     "evaluated": true,
     "violations": [
       "src/components/admin/product-editor/product-editor-layout.tsx:91",
       "src/components/atendimento/AtendimentoChatWorkspace.tsx:3146",
       "src/components/auth/auth-split-shell.tsx:162",
       "src/components/auth/auth-split-shell.tsx:167",
-      "src/components/branded-app/branded-app-shell.tsx:346"
+      "src/components/branded-app/app-hot-offer-detail-sheet.tsx:120"
     ]
   },
   "C08": {
@@ -115,7 +115,7 @@
     "violations": []
   },
   "C18": {
-    "count": 143,
+    "count": 147,
     "evaluated": true,
     "violations": [
       "src/components/ad-engine/editor/unified-listing-editor.tsx:314",
@@ -152,7 +152,7 @@
     ]
   },
   "C23": {
-    "count": 10911,
+    "count": 11284,
     "evaluated": true,
     "violations": [
       "src/components/ad-engine/editor/listing-full-editor.tsx:135",
@@ -173,9 +173,10 @@
     "violations": []
   },
   "C26": {
-    "count": 4,
+    "count": 5,
     "evaluated": true,
     "violations": [
+      "formatMoney (5x em 5 arquivos)",
       "@deprecated: src/lib/ai/openrouter.ts (2 callers)",
       "@deprecated: src/lib/identity-core.ts (17 callers)",
       "@deprecated: src/services/ai-conversations.functions.ts (9 callers)",
@@ -236,7 +237,7 @@
     "violations": []
   },
   "C37": {
-    "count": 154,
+    "count": 155,
     "evaluated": true,
     "violations": [
       "src/components/ad-engine/editor/unified-listing-editor.tsx:85",
@@ -257,19 +258,19 @@
     "violations": []
   },
   "C40": {
-    "count": 35,
+    "count": 39,
     "evaluated": true,
     "violations": [
       "src/lib/auth-guards.server.ts (2x .from)",
       "src/lib/builder/builder-auth.server.ts (12x .from)",
+      "src/lib/careers/employer-reviews.server.ts (2x .from)",
       "src/lib/conversation-crypto.server.ts (8x .from)",
+      "src/lib/custom-domain-routing.server.ts (3x .from)",
       "src/lib/engines/module-auditor.ts (5x .from)",
       "src/lib/identity.server.ts (8x .from)",
       "src/lib/legal-consent.server.ts (2x .from)",
       "src/lib/logger.ts (1x .from)",
-      "src/lib/marketplace-vault.server.ts (8x .from)",
-      "src/lib/mining/scraper-utils.ts (2x .from)",
-      "src/lib/mining/sitemap-crawler.engine.ts (1x .from)"
+      "src/lib/marketplace-vault.server.ts (8x .from)"
     ]
   },
   "C41": {
@@ -278,9 +279,11 @@
     "violations": []
   },
   "C42": {
-    "count": 0,
+    "count": 1,
     "evaluated": true,
-    "violations": []
+    "violations": [
+      "versao duplicada 20270523000000: 20270523000000_prod_logs_indexes_rpc_perf_and_schema_resilience.sql vs 20270523000000_proposal_media_transfers_and_web_pages.sql"
+    ]
   },
   "C43": {
     "count": 0,

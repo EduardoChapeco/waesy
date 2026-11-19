@@ -748,6 +748,7 @@ export default function WorkspaceTurismoCockpitPage() {
       paxList: Array.isArray(lead.pax_list) ? lead.pax_list : undefined,
       boardingPoint: cf.boarding_point ? String(cf.boarding_point) : undefined,
       departureOption: cf.departure_option || undefined,
+      cruises: lead.cruises || cf.cruises || cf.quote_cruises || undefined,
     };
   };
 

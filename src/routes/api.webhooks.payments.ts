@@ -49,21 +49,27 @@ export const Route = createFileRoute("/api/webhooks/payments")({
       if (!eventId || !providerRef || !Number.isInteger(Math.round(amount * 100))) {
         return Response.json({ error: "Payload de pagamento incompleto" }, { status: 400 });
       }
-      const db = getServerClient();
-      const { data, error } = await db.rpc("process_marketplace_payment_webhook_atomic", {
-        p_provider: provider,
-        p_event_id: eventId,
-        p_provider_ref: providerRef,
-        p_order_id: orderId,
-        p_status: status,
-        p_amount_cents: Math.round(amount * 100),
-        p_payload: body,
+
+      const { processMultiDomainPaymentWebhook } = await import(
+        "@/services/multi-domain-payment-settlement.service"
+      );
+
+      const result = await processMultiDomainPaymentWebhook({
+        provider,
+        eventId,
+        providerRef,
+        referenceId: orderId,
+        status,
+        amountCents: Math.round(amount * 100),
+        payload: body,
       });
-      if (error) {
-        console.error("[payment-webhook] atomic processing failed", error);
-        return Response.json({ error: "Falha ao processar webhook" }, { status: 500 });
+
+      if (result.status === "not_handled") {
+        console.error("[payment-webhook] processing not handled", result);
+        return Response.json({ error: result.message || "Falha ao processar webhook" }, { status: 422 });
       }
-      return Response.json(data, { status: 200 });
+
+      return Response.json(result, { status: 200 });
     },
   }},
 } as never);

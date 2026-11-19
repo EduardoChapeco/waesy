@@ -34,6 +34,8 @@ import {
   Search,
   Globe,
   Compass,
+  Ship,
+  Anchor,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -75,7 +77,10 @@ import {
   type HotelDTO,
   type TourOptionDTO,
   type TransferDTO,
+  type CruiseDTO,
+  type CruiseItineraryDayDTO,
 } from "@/services/travel-proposal.functions";
+import { CruiseRouteSvgMap } from "@/components/tourism/shared/CruiseRouteSvgMap";
 import {
   normalizeHotelsList,
   normalizeToursList,
@@ -156,6 +161,7 @@ export interface UnifiedProposalWorkspaceLead {
   paxList?: any[];
   boardingPoint?: string | null;
   departureOption?: any;
+  cruises?: any[];
 }
 
 export interface UnifiedProposalWorkspaceProps {
@@ -339,8 +345,9 @@ export function UnifiedProposalWorkspace({
     );
   };
 
-  // Transporte Rodoviário, Passeios & Cotação Multi-API PassHub
+  // Transporte Rodoviário, Cruzeiros, Passeios & Cotação Multi-API PassHub
   const [proposalTransfers, setProposalTransfers] = useState<TransferDTO[]>([]);
+  const [proposalCruises, setProposalCruises] = useState<CruiseDTO[]>([]);
   const [proposalTours, setProposalTours] = useState<TourOptionDTO[]>([]);
   const [proposalHotels, setProposalHotels] = useState<HotelDTO[]>([]);
   const [createWebPageToo, setCreateWebPageToo] = useState<boolean>(true);
@@ -471,6 +478,7 @@ export function UnifiedProposalWorkspace({
         const incomingHotels = Array.isArray(cf.quote_hotels) && cf.quote_hotels.length > 0 ? cf.quote_hotels : (Array.isArray(ocr.hotels) ? ocr.hotels : []);
         const incomingFlights = Array.isArray(cf.quote_flights) && cf.quote_flights.length > 0 ? cf.quote_flights : (Array.isArray(ocr.flights) ? ocr.flights : []);
         const incomingTransfers = Array.isArray(cf.quote_transfers) && cf.quote_transfers.length > 0 ? cf.quote_transfers : (Array.isArray(ocr.transfers) ? ocr.transfers : []);
+        const incomingCruises = Array.isArray(cf.quote_cruises) && cf.quote_cruises.length > 0 ? cf.quote_cruises : Array.isArray((lead as any).cruises) ? (lead as any).cruises : [];
         const incomingTours = Array.isArray(cf.quote_tours) && cf.quote_tours.length > 0 ? cf.quote_tours : (Array.isArray(ocr.tours) ? ocr.tours : []);
 
         if (incomingHotels.length > 0) {
@@ -503,6 +511,10 @@ export function UnifiedProposalWorkspace({
 
         if (incomingTransfers.length > 0) {
           setProposalTransfers(normalizeTransfersList(incomingTransfers) as TransferDTO[]);
+        }
+
+        if (incomingCruises.length > 0) {
+          setProposalCruises(incomingCruises as CruiseDTO[]);
         }
 
         if (incomingTours.length > 0) {
@@ -2233,6 +2245,10 @@ export function UnifiedProposalWorkspace({
             proposalTransfers.length > 0
               ? normalizeTransfersList(proposalTransfers)
               : ((matchedPkgTemplate?.transfers as any) || []),
+          cruises:
+            proposalCruises.length > 0
+              ? proposalCruises
+              : ((matchedPkgTemplate as any)?.cruises || []),
           tours:
             proposalTours.length > 0
               ? normalizeToursList(proposalTours)
@@ -4444,6 +4460,224 @@ export function UnifiedProposalWorkspace({
                   </div>
                 )}
 
+                {/* Cruzeiros Marítimos & Itinerário Náutico */}
+                <div className="space-y-3 pt-4 border-t border-border/40">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wide text-foreground flex items-center gap-2">
+                        <Ship className="size-4 text-primary" />
+                        <span>Cruzeiros Marítimos ({proposalCruises.length})</span>
+                      </h4>
+                      <p className="text-2xs text-muted-foreground">
+                        Navios, cabines e itinerários com mapa da costa marítima (MSC, Costa)
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setProposalCruises((prev) => [
+                          ...prev,
+                          {
+                            id: `cruise_${Date.now()}`,
+                            ship_name: "MSC Grandiosa",
+                            company: "MSC Cruzeiros",
+                            cabin_category: "Cabine com Varanda",
+                            board_basis: "Pensão Completa",
+                            departure_port: "Santos (São Paulo), Brasil",
+                            arrival_port: "Santos (São Paulo), Brasil",
+                            duration_nights: 3,
+                            departure_date: departureDate || "",
+                            return_date: returnDate || "",
+                            itinerary: [
+                              { day: 1, port: "Santos (São Paulo), Brasil", arrival_time: "-", departure_time: "18:00", notes: "Embarque no Concais e saída ao pôr do sol", activity_type: "boarding" },
+                              { day: 2, port: "Em navegação", is_sea_day: true, arrival_time: "-", departure_time: "-", notes: "Dia livre curtindo o navio e piscinas", activity_type: "sea" },
+                              { day: 3, port: "Búzios, Brasil", arrival_time: "07:00", departure_time: "16:00", notes: "Escala em Búzios", activity_type: "dock" },
+                              { day: 4, port: "Santos (São Paulo), Brasil", arrival_time: "08:00", departure_time: "-", notes: "Desembarque matutino", activity_type: "disembark" },
+                            ],
+                          },
+                        ])
+                      }
+                      className="h-11 min-h-11 px-3 text-xs font-bold gap-2 focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <Plus className="size-3.5" />
+                      <span>Adicionar Cruzeiro</span>
+                    </Button>
+                  </div>
+
+                  {/* Presets de 1 Clique */}
+                  <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
+                    <span className="text-2xs font-bold text-primary uppercase tracking-wider block">
+                      Roteiros Rápidos Pré-configurados (1 Clique)
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setProposalCruises((prev) => [
+                            ...prev,
+                            {
+                              id: `cruise_${Date.now()}`,
+                              ship_name: "MSC Grandiosa",
+                              company: "MSC Cruzeiros",
+                              cabin_category: "Cabine com Varanda Vista Mar",
+                              departure_port: "Santos (São Paulo), Brasil",
+                              arrival_port: "Santos (São Paulo), Brasil",
+                              duration_nights: 3,
+                              board_basis: "Pensão Completa",
+                              notes: "Taxas portuárias e gorjetas inclusas. Experiência Fantastica.",
+                              itinerary: [
+                                { day: 1, port: "Santos (São Paulo), Brasil", arrival_time: "-", departure_time: "18:00", notes: "Embarque no Concais e saída ao pôr do sol", activity_type: "boarding" },
+                                { day: 2, port: "Em navegação", is_sea_day: true, arrival_time: "-", departure_time: "-", notes: "Dia livre curtindo o navio", activity_type: "sea" },
+                                { day: 3, port: "Búzios, Brasil", arrival_time: "07:00", departure_time: "16:00", notes: "Escala em Búzios", activity_type: "dock" },
+                                { day: 4, port: "Santos (São Paulo), Brasil", arrival_time: "08:00", departure_time: "-", notes: "Desembarque matutino", activity_type: "disembark" },
+                              ],
+                            },
+                          ])
+                        }
+                        className="h-11 min-h-11 text-2xs justify-start rounded-lg text-left font-medium hover:bg-primary/10"
+                      >
+                        <Anchor className="size-3.5 text-primary mr-2 shrink-0" />
+                        <span className="truncate">MSC 4D/3N: Santos &gt; Búzios &gt; Santos</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setProposalCruises((prev) => [
+                            ...prev,
+                            {
+                              id: `cruise_${Date.now()}`,
+                              ship_name: "Costa Diadema",
+                              company: "Costa Cruzeiros",
+                              cabin_category: "Cabine Externa com Janela",
+                              departure_port: "Santos (São Paulo), Brasil",
+                              arrival_port: "Santos (São Paulo), Brasil",
+                              duration_nights: 4,
+                              board_basis: "Pensão Completa",
+                              notes: "Estilo italiano autêntico no mar com gastronomia temática.",
+                              itinerary: [
+                                { day: 1, port: "Santos (São Paulo), Brasil", arrival_time: "-", departure_time: "17:00", notes: "Embarque e partida de Santos", activity_type: "boarding" },
+                                { day: 2, port: "Ilhabela, Brasil", arrival_time: "08:00", departure_time: "17:00", notes: "Escala em Ilhabela", activity_type: "dock" },
+                                { day: 3, port: "Rio de Janeiro, Brasil", arrival_time: "07:00", departure_time: "18:00", notes: "Parada no Pier Mauá", activity_type: "dock" },
+                                { day: 4, port: "Em navegação", is_sea_day: true, arrival_time: "-", departure_time: "-", notes: "Navegação em alto mar", activity_type: "sea" },
+                                { day: 5, port: "Santos (São Paulo), Brasil", arrival_time: "08:00", departure_time: "-", notes: "Desembarque matutino", activity_type: "disembark" },
+                              ],
+                            },
+                          ])
+                        }
+                        className="h-11 min-h-11 text-2xs justify-start rounded-lg text-left font-medium hover:bg-primary/10"
+                      >
+                        <Anchor className="size-3.5 text-primary mr-2 shrink-0" />
+                        <span className="truncate">Costa 5D/4N: Santos &gt; Ilhabela &gt; Rio &gt; Santos</span>
+                      </Button>
+                    </div>
+                  </div>
+
+                  {proposalCruises.length > 0 && (
+                    <div className="space-y-3">
+                      {proposalCruises.map((cr, idx) => (
+                        <div key={cr.id || idx} className="p-3 rounded-lg border border-border/60 bg-card space-y-3 text-xs">
+                          <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-2">
+                            <span className="font-bold text-foreground flex items-center gap-2">
+                              <Ship className="size-3.5 text-primary" />
+                              <span>{cr.ship_name || `Cruzeiro #${idx + 1}`} ({cr.company || "Armadora"})</span>
+                            </span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setProposalCruises((prev) => prev.filter((_, i) => i !== idx))}
+                              aria-label="Remover cruzeiro"
+                              className="h-11 min-h-11 w-11 p-0 text-destructive hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring"
+                            >
+                              <Trash2 className="size-4" />
+                            </Button>
+                          </div>
+
+                          {/* Miniatura do Mapa Vetorial Náutico na Costa Brasileira */}
+                          {Array.isArray(cr.itinerary) && cr.itinerary.length > 0 && (
+                            <div className="rounded-lg overflow-hidden border border-border/40">
+                              <CruiseRouteSvgMap
+                                itinerary={cr.itinerary}
+                                shipName={cr.ship_name}
+                                showDisclaimer={false}
+                              />
+                            </div>
+                          )}
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <Input
+                              value={cr.ship_name || ""}
+                              onChange={(e) =>
+                                setProposalCruises((prev) =>
+                                  prev.map((c, i) => (i === idx ? { ...c, ship_name: e.target.value } : c)),
+                                )
+                              }
+                              placeholder="Nome do Navio (ex: MSC Grandiosa)"
+                              className="h-11 min-h-11 text-xs"
+                            />
+                            <Input
+                              value={cr.company || ""}
+                              onChange={(e) =>
+                                setProposalCruises((prev) =>
+                                  prev.map((c, i) => (i === idx ? { ...c, company: e.target.value } : c)),
+                                )
+                              }
+                              placeholder="Armadora (ex: MSC Cruzeiros)"
+                              className="h-11 min-h-11 text-xs"
+                            />
+                            <Input
+                              value={cr.cabin_category || ""}
+                              onChange={(e) =>
+                                setProposalCruises((prev) =>
+                                  prev.map((c, i) => (i === idx ? { ...c, cabin_category: e.target.value } : c)),
+                                )
+                              }
+                              placeholder="Categoria da Cabine (ex: Varanda)"
+                              className="h-11 min-h-11 text-xs"
+                            />
+                            <Input
+                              value={cr.board_basis || ""}
+                              onChange={(e) =>
+                                setProposalCruises((prev) =>
+                                  prev.map((c, i) => (i === idx ? { ...c, board_basis: e.target.value } : c)),
+                                )
+                              }
+                              placeholder="Regime (ex: Pensão Completa)"
+                              className="h-11 min-h-11 text-xs"
+                            />
+                            <Input
+                              value={cr.departure_port || ""}
+                              onChange={(e) =>
+                                setProposalCruises((prev) =>
+                                  prev.map((c, i) => (i === idx ? { ...c, departure_port: e.target.value } : c)),
+                                )
+                              }
+                              placeholder="Porto de Saída (ex: Santos)"
+                              className="h-11 min-h-11 text-xs"
+                            />
+                            <Input
+                              value={cr.arrival_port || ""}
+                              onChange={(e) =>
+                                setProposalCruises((prev) =>
+                                  prev.map((c, i) => (i === idx ? { ...c, arrival_port: e.target.value } : c)),
+                                )
+                              }
+                              placeholder="Porto de Chegada (ex: Santos)"
+                              className="h-11 min-h-11 text-xs"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 {/* Passeios e Experiências */}
                 <div className="space-y-3 pt-4 border-t border-border/40">
                   <div className="flex items-center justify-between gap-2">
@@ -5325,6 +5559,21 @@ export function UnifiedProposalWorkspace({
                       {Number(t.price_cents || 0) > 0 && (
                         <span className="font-mono text-muted-foreground shrink-0">{formatMoney(Number(t.price_cents))}</span>
                       )}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
+              {/* Card Cruzeiros */}
+              {proposalCruises.length > 0 ? (
+                <div className="p-3 rounded-lg bg-card border border-border space-y-1 text-xs">
+                  <div className="flex items-center justify-between text-2xs font-bold text-primary">
+                    <span className="flex items-center gap-2"><Ship className="size-3" /> Cruzeiros ({proposalCruises.length})</span>
+                  </div>
+                  {proposalCruises.map((cr, idx) => (
+                    <div key={cr.id || idx} className="flex items-center justify-between gap-2 text-2xs">
+                      <span className="font-semibold text-foreground truncate">{cr.ship_name} ({cr.company})</span>
+                      <span className="text-muted-foreground shrink-0">{cr.duration_nights || 3}N</span>
                     </div>
                   ))}
                 </div>
