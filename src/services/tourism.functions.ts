@@ -1301,46 +1301,63 @@ export const createAgencyTravelQuote = createServerFn({ method: "POST" })
    await supabase.from("travel_quotes").update({ lead_id: leadId }).eq("id", inserted.id);
  }
 
- let matchedLeadsCount = 0;
- if (storeId && data.destination_city && Number(data.quote_amount_cents || 0) > 0) {
-   try {
-     const { internalEvaluateSupplyAgainstAllLeads } = await import("./opportunity-radar.functions");
-     const { normalizeRoomsFromLeadOrLegacy } = await import("@/lib/travel/opportunity-matching-engine");
-     const normRooms = normalizeRoomsFromLeadOrLegacy({
-       rooms: roomOccupancies,
-       adultsCount: data.adults_count,
-       childrenCount: data.children_count,
-       childrenAges: data.children_ages || [],
-     });
-     const radarRes = await internalEvaluateSupplyAgainstAllLeads({
-       storeId,
-       sourceQuoteId: inserted.id,
-       offer: {
-         id: inserted.id,
-         sourceType: "agency_quote",
-         title: `Cotação ${data.destination_city}`,
-         originCity: data.origin_city,
-         originIata: data.origin_iata || null,
-         destinationCity: data.destination_city,
-         destinationIata: data.destination_iata || null,
-         departureDate: data.departure_date || null,
-         returnDate: data.return_date || null,
-         quotedAdultsCount: normRooms.adultsCount,
-         quotedChildrenCount: normRooms.childrenCount,
-         quotedChildrenAges: normRooms.childrenAges,
-         rooms: normRooms.rooms,
-         totalPriceCents: Number(data.quote_amount_cents || 0),
-         productType: data.trip_type || "package",
-         targetLeadId: leadId,
-       },
-     });
-     matchedLeadsCount = radarRes.matchedCount;
-   } catch {
-     // Silencioso
-   }
- }
+  if (storeId) {
+    try {
+      const { notifyStoreStaff } = await import("@/lib/notifications/store-staff-notify");
+      await notifyStoreStaff({
+        db: supabase,
+        storeId,
+        type: "new_lead",
+        title: "Nova Cotação / Reserva Recebida",
+        message: `${data.contact_name} solicitou "${data.destination_city}" (${data.adults_count} adulto(s)${data.children_count > 0 ? ` + ${data.children_count} criança(s)` : ""}) — ${protocolNumber}.`,
+        linkUrl: "/workspace/turismo",
+        authorName: data.contact_name,
+      });
+    } catch {
+      // Silencioso
+    }
+  }
 
- return { id: inserted.id, leadId, quoteSessionId, protocol: protocolNumber, matchedLeadsCount };
+  let matchedLeadsCount = 0;
+  if (storeId && data.destination_city && Number(data.quote_amount_cents || 0) > 0) {
+    try {
+      const { internalEvaluateSupplyAgainstAllLeads } = await import("./opportunity-radar.functions");
+      const { normalizeRoomsFromLeadOrLegacy } = await import("@/lib/travel/opportunity-matching-engine");
+      const normRooms = normalizeRoomsFromLeadOrLegacy({
+        rooms: roomOccupancies,
+        adultsCount: data.adults_count,
+        childrenCount: data.children_count,
+        childrenAges: data.children_ages || [],
+      });
+      const radarRes = await internalEvaluateSupplyAgainstAllLeads({
+        storeId,
+        sourceQuoteId: inserted.id,
+        offer: {
+          id: inserted.id,
+          sourceType: "agency_quote",
+          title: `Cotação ${data.destination_city}`,
+          originCity: data.origin_city,
+          originIata: data.origin_iata || null,
+          destinationCity: data.destination_city,
+          destinationIata: data.destination_iata || null,
+          departureDate: data.departure_date || null,
+          returnDate: data.return_date || null,
+          quotedAdultsCount: normRooms.adultsCount,
+          quotedChildrenCount: normRooms.childrenCount,
+          quotedChildrenAges: normRooms.childrenAges,
+          rooms: normRooms.rooms,
+          totalPriceCents: Number(data.quote_amount_cents || 0),
+          productType: data.trip_type || "package",
+          targetLeadId: leadId,
+        },
+      });
+      matchedLeadsCount = radarRes.matchedCount;
+    } catch {
+      // Silencioso
+    }
+  }
+
+  return { id: inserted.id, leadId, quoteSessionId, protocol: protocolNumber, matchedLeadsCount };
  });
 
 export const updateAgencyTravelQuoteSchema = z.object({

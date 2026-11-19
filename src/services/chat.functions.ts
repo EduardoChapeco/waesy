@@ -398,13 +398,14 @@ export const listChatThreads = createServerFn({ method: "GET" })
   }
 
   if (!usedRpc) {
-    // Fallback em fatias pequenas (20 threads/fatia) para impedir que 1 thread ruidosa esgote o limite das demais
+    // Fallback em fatias pequenas (20 threads/fatia) com exclusão de notas internas
     for (let i = 0; i < threadIds.length; i += 20) {
       const batchIds = threadIds.slice(i, i + 20);
       const { data: recentMessages } = await db
         .from("chat_messages")
         .select("id, thread_id, message, message_type, created_at, is_staff_reply, payload")
         .in("thread_id", batchIds)
+        .not("message_type", "in", '("internal_note","system_event")')
         .order("created_at", { ascending: false })
         .limit(200);
 
@@ -414,6 +415,7 @@ export const listChatThreads = createServerFn({ method: "GET" })
         messagesByThreadMap.set(msg.thread_id, arr);
       }
     }
+  }
   }
  }
 
@@ -2847,15 +2849,17 @@ export const convertChatThreadToCrmLead = createServerFn({ method: "POST" })
     }).catch(() => {});
   } catch {}
 
- // Vincula a oportunidade recém-criada como oportunidade ativa da conversa atual (coluna lead_id + metadata 1:N)
- await db
-   .from("chat_threads")
-   .update({
-     lead_id: lead.id,
-     ...(resolvedCustomerId && !thread.customer_id ? { customer_id: resolvedCustomerId } : {}),
+  // Vincula a oportunidade recém-criada como oportunidade ativa da conversa atual (relação 1:N)
+  // Nota: chat_threads.customer_id referencia public.profiles(id), nunca customers_crm(id);
+  // o vínculo CRM canônico é persistido em metadata.crm_customer_id evitando violação FK 409.
+  await db
+    .from("chat_threads")
+    .update({
+      lead_id: lead.id,
      metadata: {
        ...(((thread as any).metadata || {}) as Record<string, any>),
        active_lead_id: lead.id,
+       ...(resolvedCustomerId ? { crm_customer_id: resolvedCustomerId } : {}),
      },
      updated_at: new Date().toISOString(),
    })

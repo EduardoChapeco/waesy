@@ -102,7 +102,7 @@ export const listKycVerificationsForAdmin = createServerFn({ method: "GET" })
  const supabase = getServerClient();
  let query = supabase
  .from("kyc_verifications")
- .select("*, profile:profiles(full_name, email, phone, cpf)")
+ .select("*, profile:profiles(full_name, phone, cpf)")
  .order("created_at", { ascending: false });
 
  if (data?.status && data.status !== "all") {

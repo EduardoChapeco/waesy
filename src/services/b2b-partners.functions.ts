@@ -48,7 +48,7 @@ export const listStoreAccountants = createServerFn({ method: "GET" })
     const supabase = getServerClient();
     const { data: accountants, error } = await supabase
       .from("store_accountant_access")
-      .select("*, accountant_profile:profiles(full_name, email, phone)")
+      .select("*, accountant_profile:profiles(full_name, phone)")
       .eq("store_id", targetStoreId)
       .neq("status", "revoked")
       .order("created_at", { ascending: false });
@@ -69,19 +69,27 @@ export const inviteAccountantToStore = createServerFn({ method: "POST" })
     const targetStoreId = data.store_id || identity.store_id;
     const supabase = getServerClient();
 
-    // Checa se o contador já tem perfil na plataforma pelo e-mail
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("email", data.accountant_email.toLowerCase().trim())
-      .maybeSingle();
+    // Checa se o contador já tem conta na plataforma pelo e-mail (profiles não possui coluna email)
+    const normalizedEmail = data.accountant_email.toLowerCase().trim();
+    let matchedProfileId: string | null = null;
+    try {
+      const { data: authUser } = await (supabase as any)
+        .schema("auth")
+        .from("users")
+        .select("id")
+        .ilike("email", normalizedEmail)
+        .maybeSingle();
+      if (authUser?.id) matchedProfileId = authUser.id;
+    } catch {
+      matchedProfileId = null;
+    }
 
     const { data: access, error } = await supabase
       .from("store_accountant_access")
       .insert({
         store_id: targetStoreId,
-        accountant_profile_id: profile?.id || null,
-        accountant_email: data.accountant_email.toLowerCase().trim(),
+        accountant_profile_id: matchedProfileId,
+        accountant_email: normalizedEmail,
         accountant_crc: data.accountant_crc || null,
         permissions: data.permissions,
         status: "active",

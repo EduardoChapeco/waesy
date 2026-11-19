@@ -543,8 +543,48 @@ export default function CompanyCorporateTravelPage() {
     );
   }
 
-  // Estado 2: Sem conta corporativa vinculada (Empty state informativo)
+  // Estado 2: Sem conta corporativa vinculada (Empty state informativo ou redirecionamento de agência)
   if (!account) {
+    const isTourismAgency = [
+      "turismo",
+      "tourism",
+      "agencia_turismo",
+      "travel_agency",
+    ].includes(
+      String(
+        (currentStore as any)?.primary_niche_id ||
+          (currentStore as any)?.niche ||
+          "",
+      ).toLowerCase(),
+    );
+
+    if (isTourismAgency) {
+      return (
+        <div className="flex flex-col min-h-dvh bg-background text-foreground">
+          <WorkspaceCanonicalToolbar title="Viagens Corporativas" />
+          <div className="p-4 sm:p-6 max-w-2xl w-full mx-auto my-auto text-center space-y-4">
+            <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto text-primary">
+              <Building2 className="size-8" />
+            </div>
+            <h2 className="text-xl font-bold text-foreground">
+              Painel da Agência Corporativa
+            </h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Esta loja opera como Agência de Turismo. Acesse o módulo B2B para gerenciar contas empresariais vinculadas, faturamento e conciliação.
+            </p>
+            <div className="pt-2 flex justify-center">
+              <Link
+                to="/workspace/turismo/corporativo"
+                className="inline-flex h-11 min-h-11 items-center justify-center rounded-lg bg-primary px-6 font-semibold text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                Abrir Viagens Corporativas (Agência)
+              </Link>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="flex flex-col min-h-dvh bg-background text-foreground">
         <WorkspaceCanonicalToolbar title="Hub de Viagens Corporativas" />

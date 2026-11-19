@@ -885,17 +885,21 @@ export const adminTriggerPasswordReset = createServerFn({ method: "POST" })
  * Ausência de raiz retorna null para que o chamador use defaults ou inicialização explícita.
  */
 export async function resolvePlatformRootStore(db: any) {
-  // 1. Tenta buscar por is_platform_root=true ou slugs canônicos
-  const { data: store } = await db
-    .from("stores")
-    .select("id, name, address, city, state, settings, is_platform_root, slug")
-    .or("is_platform_root.eq.true,slug.eq.waesy,slug.eq.waesy-matriz,slug.eq.matriz")
-    .limit(1)
-    .maybeSingle();
+  return getOrSetMicroCache(
+    "platform_root_store",
+    async () => {
+      // 1. Tenta buscar por is_platform_root=true ou slugs canônicos
+      const { data: store } = await db
+        .from("stores")
+        .select("id, name, address, city, state, settings, is_platform_root, slug")
+        .or("is_platform_root.eq.true,slug.eq.waesy,slug.eq.waesy-matriz,slug.eq.matriz")
+        .limit(1)
+        .maybeSingle();
 
-  if (store) return store;
-
-  return null;
+      return store || null;
+    },
+    60_000,
+  );
 }
 
 /**
@@ -1195,6 +1199,7 @@ export const updatePlatformBrandSettings = createServerFn({ method: "POST" })
       .eq("id", store.id);
 
     invalidateMicroCache("public_brand_settings");
+    invalidateMicroCache("platform_root_store");
 
     return { success: true, settings: updatedSettings };
   });
@@ -1582,6 +1587,8 @@ export const updateLogisticsPresentationSettings = createServerFn({ method: "POS
  if (error) {
  throw new Error("Erro ao salvar apresentação de logística: " + error.message);
  }
+
+ invalidateMicroCache("platform_root_store");
 
  return { success: true };
  });

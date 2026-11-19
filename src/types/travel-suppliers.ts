@@ -19,6 +19,14 @@ export interface TravelSupplierDTO {
   kind: SupplierKind;
   document?: string | null;
   commission_rate: number;
+  max_card_installments?: number | null;
+  max_boleto_installments?: number | null;
+  card_interest_free?: boolean | null;
+  boleto_requires_downpayment?: boolean | null;
+  boleto_downpayment_pct?: number | null;
+  pix_discount_pct?: number | null;
+  allowed_payment_methods?: string[] | null;
+  payment_terms_template?: string | null;
   notes?: string | null;
   email?: string | null;
   phone?: string | null;

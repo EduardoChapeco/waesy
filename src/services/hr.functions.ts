@@ -830,7 +830,7 @@ export const getEmployeeFinancialStatement = createServerFn({ method: "GET" })
     // Busca perfil do colaborador
     const { data: member, error: memberErr } = await supabase
       .from("workspace_members")
-      .select("profile_id, role, profiles(id, full_name, email, avatar_url)")
+      .select("profile_id, role, profiles(id, full_name, avatar_url)")
       .eq("store_id", identity.store_id)
       .eq("profile_id", employeeId)
       .single();
@@ -1126,7 +1126,7 @@ export const listStoreEmployees = createServerFn({ method: "GET" }).handler(
     // 2. Sincronização resiliente: carregar workspace_members e mesclar quem ainda não tiver ficha
     const { data: members } = await supabase
       .from("workspace_members")
-      .select("profile_id, role, profiles(full_name, email)")
+      .select("profile_id, role, profiles(full_name)")
       .eq("store_id", identity.store_id);
 
     if (members && members.length > 0) {

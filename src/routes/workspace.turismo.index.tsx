@@ -1150,6 +1150,36 @@ export default function WorkspaceTurismoCockpitPage() {
           : "space-y-3 pb-16 lg:pb-2"
       )}
     >
+      {/* ── ALERTA DE PROPOSTAS ACEITAS AGUARDANDO CONVERSÃO ── */}
+      {(() => {
+        const acceptedProposals = proposals.filter(
+          (p: any) => !p.is_hidden && (p.status === "approved" || p.acceptance_status === "accepted"),
+        );
+        if (acceptedProposals.length === 0) return null;
+        return (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs">
+            <div className="flex items-center gap-2 font-medium text-foreground">
+              <span className="inline-flex size-2 rounded-full bg-emerald-500" />
+              <span>
+                <strong>{acceptedProposals.length}</strong>{" "}
+                {acceptedProposals.length === 1
+                  ? "proposta aceita pelo cliente aguardando revisão ou conversão em viagem."
+                  : "propostas aceitas pelos clientes aguardando revisão ou conversão em viagem."}
+              </span>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setActiveViewTab("propostas")}
+              className="h-11 min-h-11 text-xs font-semibold rounded-lg border-emerald-500/40 hover:bg-emerald-500/10"
+            >
+              Ver Propostas Aceitas
+            </Button>
+          </div>
+        );
+      })()}
+
       {/* ── BARRA OPERACIONAL CANÔNICA (SILENCIOSA, ULTRAMINIMALISTA E ALTA DENSIDADE) ── */}
       <WorkspaceCanonicalToolbar
         tabs={[

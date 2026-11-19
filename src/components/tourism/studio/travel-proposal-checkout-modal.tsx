@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, CheckCircle2, CreditCard, ExternalLink, Info, Loader2, MessageCircle, ShieldAlert, ShieldCheck, Users, Wallet } from "lucide-react";
 import { approveTravelProposal, type TravelProposalDTO } from "@/services/travel-proposal.functions";
 import { cn } from "@/lib/utils";
+import { resolveMaxInstallmentsFromOptions } from "@/lib/tourism/payment-policy";
 
 type Step = "passengers" | "preference" | "review" | "processing" | "success";
 type PaymentPreference = "pix" | "cartao_operadora" | "financiamento_bancario" | "faturado_agencia" | "gateway_online";
@@ -407,12 +408,33 @@ export function TravelProposalCheckoutModal({
               )}
             </div>
 
-            {["cartao_operadora", "financiamento_bancario"].includes(paymentPreference || "") && (
-              <div className="max-w-xs space-y-2">
-                <Label htmlFor="payment-installments">Parcelas desejadas</Label>
-                <Input id="payment-installments" type="number" min={1} max={12} step={1} value={paymentInstallments} onChange={(event) => setPaymentInstallments(Math.min(12, Math.max(1, Number(event.target.value) || 1)))} className="h-11" />
-              </div>
-            )}
+            {["cartao_operadora", "financiamento_bancario"].includes(paymentPreference || "") && (() => {
+              const { maxInstallments: effectiveMaxInstallments } = resolveMaxInstallmentsFromOptions(
+                proposal.pricing?.installments_options,
+                36,
+              );
+              return (
+                <div className="max-w-xs space-y-2">
+                  <Label htmlFor="payment-installments">
+                    Parcelas desejadas (até {effectiveMaxInstallments}x)
+                  </Label>
+                  <Input
+                    id="payment-installments"
+                    type="number"
+                    min={1}
+                    max={effectiveMaxInstallments}
+                    step={1}
+                    value={paymentInstallments}
+                    onChange={(event) =>
+                      setPaymentInstallments(
+                        Math.min(effectiveMaxInstallments, Math.max(1, Number(event.target.value) || 1)),
+                      )
+                    }
+                    className="h-11"
+                  />
+                </div>
+              );
+            })()}
 
             <div className="flex flex-col-reverse sm:flex-row sm:justify-between gap-3 border-t border-border/40 pt-4">
               <Button type="button" variant="outline" onClick={() => setStep("passengers")} className="h-11 min-h-11 gap-2 focus-visible:ring-2 focus-visible:ring-ring">

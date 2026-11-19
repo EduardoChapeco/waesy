@@ -237,7 +237,7 @@ export const listCorporateMembers = createServerFn({ method: "GET" })
     const supabase = getServerClient();
     const { data: rows, error } = await supabase
       .from("corporate_travel_members")
-      .select("*, profiles(id, full_name, email, phone)")
+      .select("*, profiles(id, full_name, phone)")
       .eq("account_id", data.accountId)
       .order("created_at", { ascending: true });
 

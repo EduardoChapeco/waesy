@@ -149,6 +149,8 @@ export function NotificationBell({ className }: NotificationBellProps) {
                 <div className="mt-1 shrink-0 p-2 rounded-md bg-muted text-foreground">
                   {item.type === "order" ? (
                     <ShoppingBag className="h-4 w-4 text-primary" />
+                  ) : item.type === "new_lead" ? (
+                    <AlertCircle className="h-4 w-4 text-success" />
                   ) : item.type === "interaction" ? (
                     <MessageSquare className="h-4 w-4 text-primary" />
                   ) : (
@@ -158,9 +160,22 @@ export function NotificationBell({ className }: NotificationBellProps) {
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-1">
-                    <p className="text-xs font-semibold text-foreground truncate">
-                      {item.title}
-                    </p>
+                    {item.linkUrl ? (
+                      <Link
+                        to={item.linkUrl as any}
+                        onClick={() => {
+                          if (!item.isRead) markReadMutation.mutate(item.id);
+                          setOpen(false);
+                        }}
+                        className="text-xs font-semibold text-foreground hover:text-primary truncate focus-visible:outline-none focus-visible:underline"
+                      >
+                        {item.title}
+                      </Link>
+                    ) : (
+                      <p className="text-xs font-semibold text-foreground truncate">
+                        {item.title}
+                      </p>
+                    )}
                     {Boolean(item.isRead) === false && (
                       <button type="button" onClick={() => markReadMutation.mutate(item.id)} className="min-h-11 min-w-11 flex items-center justify-center rounded-sm text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none" title="Marcar como lida">
                         <Check className="h-4 w-4" />

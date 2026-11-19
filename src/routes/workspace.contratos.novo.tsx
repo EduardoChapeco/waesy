@@ -35,10 +35,13 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CONTRACT_SIGNER_ROLE_GROUPS } from "@/lib/contracts/signer-roles";
 import {
   createContract,
   extractContractDataFromOcr,
@@ -1201,13 +1204,22 @@ function NovoContratoPage() {
                         value={signer.role}
                         onValueChange={(v: any) => updateSigner(index, "role", v)}
                       >
-                        <SelectTrigger className="h-8 text-xs rounded-md focus-visible:ring-2 focus-visible:ring-ring">
+                        <SelectTrigger className="h-11 min-h-11 sm:h-8 sm:min-h-0 text-xs rounded-md focus-visible:ring-2 focus-visible:ring-ring">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="rounded-lg text-xs">
-                          <SelectItem value="party">Assinar</SelectItem>
-                          <SelectItem value="witness">Testemunhar</SelectItem>
-                          <SelectItem value="guarantor">Fiador</SelectItem>
+                        <SelectContent className="rounded-lg text-xs max-h-72">
+                          {CONTRACT_SIGNER_ROLE_GROUPS.map((grp) => (
+                            <SelectGroup key={grp.group}>
+                              <SelectLabel className="text-2xs font-semibold text-muted-foreground">
+                                {grp.group}
+                              </SelectLabel>
+                              {grp.options.map((opt) => (
+                                <SelectItem key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          ))}
                         </SelectContent>
                       </Select>
                     </FormRow>

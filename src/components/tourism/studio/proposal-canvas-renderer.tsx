@@ -7,6 +7,7 @@ import {
   extractGatewayLogisticsFromNotes,
   sanitizeLegacyProposalSummaryNotes,
 } from "@/lib/tourism/pricing";
+import { resolveMaxInstallmentsFromOptions } from "@/lib/tourism/payment-policy";
 import {
   buildVisibleProposalCustomFieldEntries,
   formatProposalPaymentTermsForDisplay,
@@ -364,8 +365,12 @@ function normalizeProposalForCanvas(proposal: TravelProposalDTO): Record<string,
     total: totalReais,
     discount: discountCents > 0 ? discountCents / 100 : Number(raw.discount || 0),
     pix_discount_percent: pixDiscountPercent,
-    installments_card: bestCard?.installments_count || Number(raw.installments_card || 10),
-    installments_boleto: bestBoleto?.installments_count || Number(raw.installments_boleto || 1),
+    installments_card:
+      bestCard?.installments_count ||
+      Number(raw.installments_card || resolveMaxInstallmentsFromOptions(installmentOpts, 10).maxCardInstallments),
+    installments_boleto:
+      bestBoleto?.installments_count ||
+      Number(raw.installments_boleto || resolveMaxInstallmentsFromOptions(installmentOpts, 1).maxBoletoInstallments),
     raw_special_notes: rawCombinedNotes,
     notes: cleanHeroNotes,
     terms: cleanTerms,

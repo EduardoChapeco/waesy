@@ -348,8 +348,7 @@ const GROUP_TURISMO_COMMERCIAL: NavGroup = {
     { path: "/workspace/turismo/cotacoes", label: "Cotações", icon: Plane },
     { path: "/workspace/turismo/oportunidades", label: "Oportunidades", icon: Target },
     { path: "/workspace/turismo/aereos", label: "Malha Aérea", icon: Plane },
-    { path: "/workspace/turismo/corporativo", label: "Empresas", icon: Building2 },
-    { path: "/workspace/empresa/viagens", label: "Viagens Corporativas", icon: Plane },
+    { path: "/workspace/turismo/corporativo", label: "Viagens Corporativas", icon: Building2 },
   ],
 };
 
@@ -810,6 +809,7 @@ const GROUP_B2B_PROCUREMENT: NavGroup = {
   items: [
     { path: "/workspace/b2b", label: "Compras B2B", icon: Briefcase },
     { path: "/workspace/licitacoes", label: "Licitações", icon: Scale },
+    { path: "/workspace/empresa/viagens", label: "Viagens da Empresa", icon: Building2 },
   ],
 };
 

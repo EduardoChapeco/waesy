@@ -724,6 +724,7 @@ function TravelSalesFinancialCompositionPage() {
           </Button>
         </div>
       </div>
+      </div>
 
       {/* ── Painel de Indicadores Contábeis Separados (Sem Confundir Venda com Receita) ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

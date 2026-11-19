@@ -17,6 +17,7 @@ import { EmptyState, ErrorState } from "@/components/state/states";
 import { listCustomers, archiveCustomer } from "@/services/crm.functions";
 import { listTeamMembers } from "@/services/admin-team.functions";
 import { getStoreSettings } from "@/services/store.functions";
+import { checkStoreWhatsAppStatus } from "@/services/whatsapp-messaging.functions";
 import { formatMoney } from "@/lib/money";
 import { NewClientWizard } from "@/components/crm/NewClientWizard";
 import { UniversalCrmSpreadsheetImporterModal } from "@/components/crm/UniversalCrmSpreadsheetImporterModal";
@@ -28,18 +29,20 @@ export const Route = createFileRoute("/workspace/clientes/")({
  loader: async () => {
    try {
  let loadError: string | null = null;
- const [customers, teamRes, store] = await Promise.all([
+ const [customers, teamRes, store, whatsAppStatus] = await Promise.all([
  listCustomers().catch((err: any) => {
    loadError = err?.message || "Falha ao carregar carteira de clientes.";
    return [];
  }),
  listTeamMembers().catch(() => []),
  getStoreSettings().catch(() => null),
+ checkStoreWhatsAppStatus().catch(() => ({ isConfigured: false })),
  ]);
  return {
  customers: customers || [],
  team: teamRes || [],
  store: store || null,
+ whatsAppStatus: whatsAppStatus || { isConfigured: false },
  loadError,
  };
    } catch (err: any) {
@@ -56,6 +59,7 @@ function CarteiraClientesPage() {
   const customers = loaderData?.customers || [];
   const team = loaderData?.team || [];
   const store = loaderData?.store || null;
+  const whatsAppStatus = loaderData?.whatsAppStatus || { isConfigured: false };
   const loadError: string | null = loaderData?.loadError || null;
   const router = useRouter();
   const { t, nicheId } = useNicheTranslation(store);
@@ -134,10 +138,24 @@ function CarteiraClientesPage() {
 
  const openWhatsApp = (phone?: string | null, name?: string) => {
  if (!phone) {
+ if (whatsAppStatus?.isConfigured && name) {
+   router.navigate({
+     to: "/workspace/atendimento/chat" as any,
+     search: { search: name } as any,
+   });
+   return;
+ }
  toast.error("Contato não possui telefone/WhatsApp cadastrado.");
  return;
  }
  const cleanPhone = phone.replace(/\D/g, "");
+ if (whatsAppStatus?.isConfigured) {
+   router.navigate({
+     to: "/workspace/atendimento/chat" as any,
+     search: { search: cleanPhone || name || "" } as any,
+   });
+   return;
+ }
  const formatted = cleanPhone.startsWith("55") ? cleanPhone : `55${cleanPhone}`;
  const message = encodeURIComponent(`Olá ${name || ""}! Entramos em contato da equipe.`);
  window.open(`https://wa.me/${formatted}?text=${message}`, "_blank");
@@ -487,7 +505,7 @@ function CarteiraClientesPage() {
  <Link
  to="/workspace/clientes/$id"
  params={{ id: c.id }}
- className="px-3 py-2 rounded-lg text-xs font-semibold bg-muted/60 text-foreground hover:bg-muted transition-colors hover:no-underline"
+ className="inline-flex h-11 min-h-11 items-center whitespace-nowrap px-3 rounded-lg text-xs font-semibold bg-muted/60 text-foreground hover:bg-muted transition-colors hover:no-underline"
  >
  Ficha do Cliente
  </Link>
@@ -506,7 +524,7 @@ function CarteiraClientesPage() {
  ...(c.phone
  ? [
  {
- label: "Conversar no WhatsApp",
+ label: whatsAppStatus?.isConfigured ? "Conversar no App" : "Conversar no WhatsApp",
  icon: MessageCircle,
  onClick: () => openWhatsApp(c.phone, c.fullName),
  },

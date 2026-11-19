@@ -93,7 +93,7 @@ export const recordWhatsAppLead = createServerFn({ method: "POST" })
     const sanitizedPhone = input.phone_target.replace(/\D/g, "");
     const { normalizePhoneE164, recordAttributionTouchpoint } = await import("@/services/omnichannel-attribution.server");
     const { data: userProfile } = userId
-      ? await supabase.from("profiles").select("phone, email").eq("id", userId).maybeSingle()
+      ? await supabase.from("profiles").select("phone").eq("id", userId).maybeSingle()
       : { data: null as any };
     const leadPhoneE164 = normalizePhoneE164(userProfile?.phone);
 
@@ -177,7 +177,7 @@ export const recordWhatsAppLead = createServerFn({ method: "POST" })
         visitorId: input.visitor_id || null,
         profileId: userId,
         phone: leadPhoneE164,
-        email: userProfile?.email || null,
+        email: (identity as any)?.email || null,
         leadCode: resultRow.lead_code,
         ctwaClid: input.ctwa_clid || null,
         fbclid: input.fbclid || null,
@@ -285,7 +285,7 @@ export const getProtectedWhatsAppContact = createServerFn({ method: "POST" })
     const { normalizePhoneE164, recordAttributionTouchpoint, dispatchServerSidePixelConversion } = await import("@/services/omnichannel-attribution.server");
     const { data: userProfile } = await supabase
       .from("profiles")
-      .select("full_name, phone, email")
+      .select("full_name, phone")
       .eq("id", userId)
       .maybeSingle();
     const leadPhoneE164 = normalizePhoneE164(userProfile?.phone);
@@ -356,7 +356,7 @@ export const getProtectedWhatsAppContact = createServerFn({ method: "POST" })
         visitorId: input.visitor_id || null,
         profileId: userId,
         phone: leadPhoneE164,
-        email: userProfile?.email || null,
+        email: (identity as any)?.email || null,
         leadCode,
         ctwaClid: input.ctwa_clid || null,
         fbclid: input.fbclid || null,
@@ -390,7 +390,7 @@ export const getProtectedWhatsAppContact = createServerFn({ method: "POST" })
           eventId: `contact_${leadCode}`,
           eventSource: "whatsapp_click",
           phone: leadPhoneE164,
-          email: userProfile?.email || null,
+          email: (identity as any)?.email || null,
           fullName: userProfile?.full_name || null,
           fbp: input.fbp || null,
           fbc: input.fbc || null,

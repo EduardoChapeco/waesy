@@ -1285,6 +1285,19 @@ export const bookGroupTourReservation = createServerFn({ method: "POST" })
       }
     }
 
+    if (tour.store_id) {
+      const { notifyStoreStaff } = await import("@/lib/notifications/store-staff-notify");
+      await notifyStoreStaff({
+        db: supabase,
+        storeId: tour.store_id,
+        type: "order",
+        title: "Nova Reserva Confirmada",
+        message: `${primaryContact?.name || "Passageiro"} reservou ${totalPax} vaga(s) em "${tour.title}" (${reservationCode}).`,
+        linkUrl: "/workspace/turismo/grupos",
+        authorName: primaryContact?.name || null,
+      });
+    }
+
     return {
       success: true,
       reservationCode,

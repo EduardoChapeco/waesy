@@ -307,6 +307,16 @@ export const sendNicheContextualNotification = createServerFn({ method: "POST" }
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity().catch(() => null);
+    if (!identity) {
+      throw new Error("Autenticação obrigatória para enviar notificação.");
+    }
+    const actorId = identity.id || identity.customer_id;
+    const isSelf = Boolean(actorId && actorId === data.userId);
+    const isStaff = Boolean(identity.store_id && (!data.storeId || identity.store_id === data.storeId));
+    const isAdmin = Boolean((identity as any).isPlatformAdmin || ["platform_admin", "master", "superadmin"].includes(identity.role));
+    if (!isSelf && !isStaff && !isAdmin) {
+      throw new Error("Permissão negada para notificar este destinatário.");
+    }
 
     const template = formatNicheNotification(data.nicheId || "retail", data.eventType, data.meta);
 

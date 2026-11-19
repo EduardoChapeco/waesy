@@ -453,7 +453,10 @@ export function resolveContractNicheProfile(storeOrNiche?: unknown): ContractNic
       return {
         nicheId,
         isTourism: true,
-        defaultCategory: blueprint.contractCategory || "tourism_package",
+        defaultCategory:
+          !blueprint.contractCategory || blueprint.contractCategory === "tourism"
+            ? "tourism_package"
+            : blueprint.contractCategory,
         defaultTemplateId: blueprint.defaultTemplateId,
         allowedSemanticGroups: ["geral", "financeiro", "turismo", "juridico", "rh"],
         preferredTemplateCategories: ["tourism", "tourism_package", "service_agreement", "employment"],

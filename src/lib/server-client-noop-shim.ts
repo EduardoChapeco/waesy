@@ -99,6 +99,8 @@ export const StudioTemplatePicker = NoopComponent;
 export const StudioFormatPicker = NoopComponent;
 export const VoucherStudio = NoopComponent;
 export const PassHubLiveQuoterPanel = NoopComponent;
+export const AtendimentoChatWorkspace = NoopComponent;
+export const Customer360Sidebar = NoopComponent;
 export const CANVAS_DIMENSIONS: Record<string, { width: string; minHeight: string; label: string; iconEmoji: string }> = {
   "a4-portrait": { width: "794px", minHeight: "1123px", label: "A4 Retrato (PDF)", iconEmoji: "A4" },
   "a4-landscape": { width: "1123px", minHeight: "794px", label: "A4 Paisagem (Lâmina)", iconEmoji: "A4L" },

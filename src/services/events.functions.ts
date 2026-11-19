@@ -1049,7 +1049,7 @@ async function _listEventTickets(eventId: string) {
        checkin_at,
        created_at,
        ticket_lots(id, name, price_cents),
-       profiles(id, full_name, tax_id, phone, email)
+       profiles(id, full_name, tax_id, phone)
      `)
      .eq("event_id", eventId)
      .order("created_at", { ascending: false });

@@ -32,6 +32,14 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId, initial
  const [state, setState] = useState('');
  const [country, setCountry] = useState('Brasil');
  const [commissionRate, setCommissionRate] = useState('10');
+ const [maxCardInstallments, setMaxCardInstallments] = useState('12');
+ const [maxBoletoInstallments, setMaxBoletoInstallments] = useState('12');
+ const [cardInterestFree, setCardInterestFree] = useState(true);
+ const [boletoRequiresDownpayment, setBoletoRequiresDownpayment] = useState(false);
+ const [boletoDownpaymentPct, setBoletoDownpaymentPct] = useState('0');
+ const [pixDiscountPct, setPixDiscountPct] = useState('0');
+ const [allowedMethods, setAllowedMethods] = useState<string[]>(['pix', 'credit_card', 'boleto']);
+ const [paymentTermsTemplate, setPaymentTermsTemplate] = useState('');
  const [notes, setNotes] = useState('');
  const [email, setEmail] = useState('');
  const [phone, setPhone] = useState('');
@@ -48,6 +56,18 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId, initial
      setState(initialSupplier.state || '');
      setCountry(initialSupplier.country || 'Brasil');
      setCommissionRate(String(initialSupplier.commission_rate ?? 10));
+     setMaxCardInstallments(String(initialSupplier.max_card_installments ?? 12));
+     setMaxBoletoInstallments(String(initialSupplier.max_boleto_installments ?? 12));
+     setCardInterestFree(initialSupplier.card_interest_free ?? true);
+     setBoletoRequiresDownpayment(Boolean(initialSupplier.boleto_requires_downpayment));
+     setBoletoDownpaymentPct(String(initialSupplier.boleto_downpayment_pct ?? 0));
+     setPixDiscountPct(String(initialSupplier.pix_discount_pct ?? 0));
+     setAllowedMethods(
+       Array.isArray(initialSupplier.allowed_payment_methods) && initialSupplier.allowed_payment_methods.length > 0
+         ? initialSupplier.allowed_payment_methods
+         : ['pix', 'credit_card', 'boleto']
+     );
+     setPaymentTermsTemplate(initialSupplier.payment_terms_template || '');
      setNotes(initialSupplier.notes || '');
      setEmail(initialSupplier.email || '');
      setPhone(initialSupplier.phone || '');
@@ -60,6 +80,14 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId, initial
      setState('');
      setCountry('Brasil');
      setCommissionRate('10');
+     setMaxCardInstallments('12');
+     setMaxBoletoInstallments('12');
+     setCardInterestFree(true);
+     setBoletoRequiresDownpayment(false);
+     setBoletoDownpaymentPct('0');
+     setPixDiscountPct('0');
+     setAllowedMethods(['pix', 'credit_card', 'boleto']);
+     setPaymentTermsTemplate('');
      setNotes('');
      setEmail('');
      setPhone('');
@@ -84,12 +112,21 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId, initial
 
  setSubmitting(true);
  try {
+ const clampInst = (val: string) => Math.min(36, Math.max(1, Math.floor(Number(val) || 12)));
  const payload = {
    name: name.trim(),
    legal_name: legalName.trim() || null,
    kind,
    document: document.trim() || null,
    commission_rate: parseFloat(commissionRate) || 0,
+   max_card_installments: clampInst(maxCardInstallments),
+   max_boleto_installments: clampInst(maxBoletoInstallments),
+   card_interest_free: cardInterestFree,
+   boleto_requires_downpayment: boletoRequiresDownpayment,
+   boleto_downpayment_pct: Math.min(100, Math.max(0, parseFloat(boletoDownpaymentPct) || 0)),
+   pix_discount_pct: Math.min(100, Math.max(0, parseFloat(pixDiscountPct) || 0)),
+   allowed_payment_methods: allowedMethods.length > 0 ? allowedMethods : ['pix', 'credit_card', 'boleto'],
+   payment_terms_template: paymentTermsTemplate.trim() || null,
    notes: notes.trim() || null,
    email: email.trim() || null,
    phone: phone.trim() || null,
@@ -232,23 +269,135 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId, initial
 
  {step === 2 && (
  <div className="space-y-4">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-1">
  <label className="text-xs font-bold text-foreground flex items-center gap-1">
  <Percent className="size-3 text-primary" />
- <span>Comissão Padrão do Fornecedor (%)</span>
+ <span>Comissão Padrão (%)</span>
  </label>
  <Input
  type="number"
  value={commissionRate}
  onChange={(e) => setCommissionRate(e.target.value)}
  placeholder="Ex: 10, 12, 15"
- className="h-10 text-xs rounded-lg font-mono"
+ className="h-11 text-xs rounded-lg font-mono"
  min="0"
  max="100"
  />
- <p className="text-2xs text-muted-foreground">
- Percentual repassado para a agência nas vendas deste operador.
- </p>
+ </div>
+
+ <div className="space-y-1">
+ <label className="text-xs font-bold text-foreground">Desconto Pix (%)</label>
+ <Input
+ type="number"
+ value={pixDiscountPct}
+ onChange={(e) => setPixDiscountPct(e.target.value)}
+ placeholder="Ex: 5"
+ className="h-11 text-xs rounded-lg font-mono"
+ min="0"
+ max="100"
+ />
+ </div>
+ </div>
+
+ <div className="p-3 rounded-lg border border-border bg-muted/20 space-y-3">
+ <div className="text-xs font-bold text-foreground">Política de Parcelamento (Sincronizada com Cotações &amp; Propostas)</div>
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+ <div className="space-y-1">
+ <label className="text-xs font-semibold text-muted-foreground">Máx. Parcelas Cartão (até 36x)</label>
+ <Input
+ type="number"
+ value={maxCardInstallments}
+ onChange={(e) => setMaxCardInstallments(e.target.value)}
+ className="h-11 text-xs rounded-lg font-mono"
+ min="1"
+ max="36"
+ />
+ </div>
+ <div className="space-y-1">
+ <label className="text-xs font-semibold text-muted-foreground">Máx. Parcelas Boleto (até 36x)</label>
+ <Input
+ type="number"
+ value={maxBoletoInstallments}
+ onChange={(e) => setMaxBoletoInstallments(e.target.value)}
+ className="h-11 text-xs rounded-lg font-mono"
+ min="1"
+ max="36"
+ />
+ </div>
+ </div>
+
+ <div className="flex flex-wrap gap-2">
+ {[
+   { id: 'pix', label: 'Pix' },
+   { id: 'credit_card', label: 'Cartão' },
+   { id: 'boleto', label: 'Boleto' },
+   { id: 'financiamento_bancario', label: 'Financiamento' },
+ ].map((m) => {
+   const active = allowedMethods.includes(m.id);
+   return (
+     <Button
+       key={m.id}
+       type="button"
+       variant={active ? 'default' : 'outline'}
+       onClick={() =>
+         setAllowedMethods((prev) =>
+           prev.includes(m.id) ? (prev.length > 1 ? prev.filter((x) => x !== m.id) : prev) : [...prev, m.id]
+         )
+       }
+       className="h-11 px-3 text-xs rounded-lg"
+     >
+       {m.label}
+     </Button>
+   );
+ })}
+ </div>
+
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+ <label className="flex items-center gap-2 text-xs font-medium text-foreground cursor-pointer min-h-11">
+ <input
+ type="checkbox"
+ checked={cardInterestFree}
+ onChange={(e) => setCardInterestFree(e.target.checked)}
+ className="size-4 rounded border-border accent-primary"
+ />
+ <span>Cartão sem juros</span>
+ </label>
+
+ <label className="flex items-center gap-2 text-xs font-medium text-foreground cursor-pointer min-h-11">
+ <input
+ type="checkbox"
+ checked={boletoRequiresDownpayment}
+ onChange={(e) => setBoletoRequiresDownpayment(e.target.checked)}
+ className="size-4 rounded border-border accent-primary"
+ />
+ <span>Boleto exige entrada</span>
+ </label>
+ </div>
+
+ {boletoRequiresDownpayment && (
+ <div className="space-y-1">
+ <label className="text-xs font-semibold text-muted-foreground">Entrada mínima no Boleto (%)</label>
+ <Input
+ type="number"
+ value={boletoDownpaymentPct}
+ onChange={(e) => setBoletoDownpaymentPct(e.target.value)}
+ className="h-11 text-xs rounded-lg font-mono"
+ min="0"
+ max="100"
+ />
+ </div>
+ )}
+ </div>
+
+ <div className="space-y-1">
+ <label className="text-xs font-bold text-foreground">Texto Padrão de Condições de Pagamento</label>
+ <Input
+ value={paymentTermsTemplate}
+ onChange={(e) => setPaymentTermsTemplate(e.target.value)}
+ placeholder="Ex: Em até 16x sem juros no cartão ou 5% OFF no Pix"
+ className="h-11 text-xs rounded-lg"
+ />
  </div>
 
  <div className="space-y-1">
@@ -256,8 +405,8 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId, initial
  <Textarea
  value={notes}
  onChange={(e) => setNotes(e.target.value)}
- placeholder="Ex: Faturamento quinzenal com vencimento todo dia 15 e 30. Pagamento via boleto com desconto de 1%..."
- rows={4}
+ placeholder="Ex: Faturamento quinzenal com vencimento todo dia 15 e 30..."
+ rows={3}
  className="text-xs rounded-lg bg-muted/10 p-3"
  />
  </div>

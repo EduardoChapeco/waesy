@@ -16,7 +16,7 @@ const pool = new pg.Pool({
   connectionString: `postgres://postgres.${projectRef}:${encodeURIComponent(dbPassword)}@aws-0-sa-east-1.pooler.supabase.com:6543/postgres`,
   ssl: { rejectUnauthorized: false },
   max: 2,
-  connectionTimeoutMillis: 15000,
+  connectionTimeoutMillis: 3000,
 });
 
 let isPoolConnected = false;

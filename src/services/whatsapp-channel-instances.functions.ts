@@ -60,6 +60,22 @@ export type WhatsAppChannelInstanceDTO = {
 
 const PublicFields = "id, store_id, display_name, provider, connection_mode, instance_key, status, is_active, is_default, sync_mode, phone_number_id, business_account_id, display_phone_number, external_instance_id, webhook_url, public_config, capabilities, health_status, last_health_check_at, last_error_code, last_error_message, created_at, updated_at";
 
+const ALLOWED_WHATSAPP_SYNC_MODES = new Set(["new_only", "manual_full", "recent_window"]);
+
+function normalizeWhatsAppSyncMode(value: unknown): "new_only" | "manual_full" | "recent_window" {
+  const raw = String(value || "").trim().toLowerCase();
+  if (ALLOWED_WHATSAPP_SYNC_MODES.has(raw)) {
+    return raw as "new_only" | "manual_full" | "recent_window";
+  }
+  if (raw === "full" || raw === "full_history" || raw === "all" || raw === "retroactive") {
+    return "manual_full";
+  }
+  if (raw === "recent" || raw === "window") {
+    return "recent_window";
+  }
+  return "new_only";
+}
+
 async function requireMaster() {
   const identity = await getServerIdentity();
   if (identity.role !== "platform_admin") throw new Error("Acesso restrito ao Admin Master.");
@@ -917,7 +933,9 @@ export async function _connectWhatsAppQrCodeInstance(data: z.infer<typeof Connec
     status: mappedDbStatus,
     is_active: mappedDbStatus !== "error",
     is_default: shouldBeDefault,
-    sync_mode: autoImportHistory ? "manual_full" : ((existing as any)?.sync_mode || "new_only"),
+    sync_mode: autoImportHistory
+      ? "manual_full"
+      : normalizeWhatsAppSyncMode((existing as any)?.sync_mode),
     display_phone_number: detectedPhone,
     public_config: updatedPublicConfig,
     secret_payload_encrypted: secretEncrypted,
@@ -2172,6 +2190,26 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
         (instance.public_config as any)?.auto_import_history ||
         (instance as any).sync_mode === "manual_full",
     );
+
+    let syncJobRow: { id: string } | null = null;
+    try {
+      const { data: sj } = await db
+        .from("whatsapp_history_sync_jobs")
+        .insert({
+          store_id: storeId,
+          instance_id: instance.id,
+          requested_by: identity.id,
+          sync_mode: data?.forceImport
+            ? "manual_full"
+            : normalizeWhatsAppSyncMode((instance as any).sync_mode),
+          status: "running",
+        })
+        .select("id")
+        .single();
+      syncJobRow = sj;
+    } catch {
+      syncJobRow = null;
+    }
 
     const result = await runEvolutionDeltaSyncForInstance({
       db,

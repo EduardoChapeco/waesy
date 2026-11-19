@@ -46,6 +46,7 @@ interface SmartTravelBookingModalProps {
   basePriceCents: number;
   allowSharedRooms?: boolean;
   singleSupplementCents?: number;
+  maxInstallments?: number;
   seats?: BusSeatDTO[];
   onSuccess?: (result: any) => void;
 }
@@ -59,6 +60,7 @@ export function SmartTravelBookingModal({
   basePriceCents,
   allowSharedRooms = true,
   singleSupplementCents = 0,
+  maxInstallments = 12,
   seats = [],
   onSuccess,
 }: SmartTravelBookingModalProps) {
@@ -415,6 +417,13 @@ export function SmartTravelBookingModal({
                       </p>
                     </div>
                   )}
+
+                  {(adultsCount !== 2 || childrenCount > 0) && (
+                    <div className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-xs text-foreground" role="note">
+                      <span className="font-semibold">Base Tarifária Dupla (2 adultos):</span>{" "}
+                      alterações na quantidade de adultos ou inclusão de crianças passam por cotação e atualização de valor pela agência para seu aceite.
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -732,7 +741,9 @@ export function SmartTravelBookingModal({
                     >
                       <CreditCard className="size-5 mx-auto text-primary" />
                       <span className="text-xs font-bold block">Cartão de Crédito</span>
-                      <span className="text-2xs text-muted-foreground block">Até 12x</span>
+                      <span className="text-2xs text-muted-foreground block">
+                        Até {Math.min(36, Math.max(1, Number(maxInstallments) || 12))}x
+                      </span>
                     </div>
 
                     <div

@@ -14,6 +14,7 @@ import {
   calculateQuoteTotals,
   sanitizeLegacyProposalSummaryNotes,
 } from "@/lib/tourism/pricing";
+import { resolveMaxInstallmentsFromOptions } from "@/lib/tourism/payment-policy";
 import { normalizeProposalNicheId } from "@/lib/tourism/proposal-theme-palettes";
 import {
   buildVisibleProposalCustomFieldEntries,
@@ -413,18 +414,9 @@ export function proposalToEditorialClassified(proposal: TravelProposalDTO) {
   const installmentOptions = Array.isArray(proposal.pricing?.installments_options)
     ? proposal.pricing.installments_options
     : [];
-  const maxInstallmentOption = installmentOptions.reduce<{
-    installments_count: number;
-    has_interest?: boolean;
-  } | null>((best, curr) => {
-    if (!best || (curr.installments_count || 0) > best.installments_count) {
-      return curr;
-    }
-    return best;
-  }, null);
-
-  const maxInstallments = Math.max(1, maxInstallmentOption?.installments_count || 1);
-  const cardInterestFree = maxInstallmentOption ? !maxInstallmentOption.has_interest : true;
+  const resolvedInstallments = resolveMaxInstallmentsFromOptions(installmentOptions, 1);
+  const maxInstallments = resolvedInstallments.maxInstallments;
+  const cardInterestFree = resolvedInstallments.cardInterestFree;
 
   const adultsCount = Math.max(1, Number(proposal.adults_count) || 1);
   const childrenCount = Math.max(0, Number(proposal.children_count) || 0);

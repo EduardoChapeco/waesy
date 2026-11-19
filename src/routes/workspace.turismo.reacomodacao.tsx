@@ -167,30 +167,26 @@ export default function ReaccommodationPage() {
 
   return (
     <div className="w-full px-0 sm:px-4 space-y-6 pb-20 animate-in fade-in duration-200">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-4">
+        <div className="flex items-center gap-3">
+          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
             <ShieldAlert className="size-5 text-warning-strong" />
-            Casos ANAC 400 e Reacomodação Aérea
+            Reacomodação Aérea
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Registro e assistência ao passageiro em contingências de voo conforme Resolução ANAC 400/2016.{' '}
-            <Link
-              to="/workspace/turismo/incidentes"
-              className="text-primary underline-offset-2 hover:underline inline-flex items-center gap-1"
-            >
-              Ver Incidentes Turísticos <ExternalLink className="size-3" />
-            </Link>
-          </p>
+          <Link
+            to="/workspace/turismo/incidentes"
+            className="text-xs font-medium text-primary underline-offset-2 hover:underline inline-flex items-center gap-1 min-h-11"
+          >
+            Incidentes <ExternalLink className="size-3" />
+          </Link>
         </div>
 
         <Button
           onClick={() => setIsSheetOpen(true)}
-          className="h-11 px-5 gap-2 text-sm font-medium rounded-lg cursor-pointer"
+          className="h-11 min-h-11 px-5 gap-2 text-xs sm:text-sm font-semibold rounded-lg cursor-pointer"
         >
           <Plus className="size-4" />
-          Registrar Novo Caso
+          Registrar Caso
         </Button>
       </div>
 

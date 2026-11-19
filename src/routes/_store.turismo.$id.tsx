@@ -201,6 +201,7 @@ function TourismDetailPage() {
           basePriceCents={unitPriceCents}
           allowSharedRooms={true}
           singleSupplementCents={Math.round(unitPriceCents * 0.35)}
+          maxInstallments={Number((experience as any)?.max_installments || (experience as any)?.attributes?.max_installments) || 12}
           onSuccess={(_res) => {
             setIsBookingOpen(false);
             toast.success("Reserva realizada com sucesso!");

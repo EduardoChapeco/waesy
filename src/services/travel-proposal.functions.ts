@@ -1808,13 +1808,24 @@ export const createTravelProposal = createServerFn({ method: "POST" })
       });
 
       try {
+        let quoteProfileCustomerId: string | null = null;
+        if (resolvedCustomerId) {
+          const { data: matchedProfile } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("id", resolvedCustomerId)
+            .maybeSingle();
+          if (matchedProfile?.id) {
+            quoteProfileCustomerId = matchedProfile.id;
+          }
+        }
         const { data: quoteInserted } = await supabase
           .from("quotes")
           .insert({
             id: insertedId ? insertedId : undefined,
             store_id: effectiveStoreId,
             quote_number: quoteNumber,
-            customer_id: resolvedCustomerId,
+            customer_id: quoteProfileCustomerId,
             guest_name: resolvedClientName,
             guest_phone: resolvedClientWhatsapp,
             guest_email: resolvedClientEmail,
@@ -2782,7 +2793,7 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
         isLead: z.boolean().optional(),
       })).min(1).max(40),
       paymentPreference: z.enum(["pix", "cartao_operadora", "gateway_online", "financiamento_bancario", "faturado_agencia"]),
-      paymentInstallments: z.number().int().min(1).max(12).nullable().optional(),
+      paymentInstallments: z.number().int().min(1).max(36).nullable().optional(),
     }),
   )
   .handler(async ({ data }): Promise<{
@@ -2794,7 +2805,7 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
     const supabase = getServerClient();
     const { data: proposal, error: lookupError } = await supabase
       .from("travel_proposals")
-      .select("id, store_id, public_token, snapshot_hash, options, visibility_mode, is_hidden, access_pin_hash, special_notes, lead_id, customer_id, title, total_cents, total_value_cents, currency, pricing, destination_city")
+      .select("id, store_id, public_token, snapshot_hash, options, visibility_mode, is_hidden, access_pin_hash, special_notes, lead_id, customer_id, title, client_name, total_cents, total_value_cents, currency, pricing, destination_city")
       .eq("public_token", data.token)
       .maybeSingle();
 
@@ -3040,6 +3051,23 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
       });
     } catch {
       // não bloqueia
+    }
+
+    if (!replayed && proposal.store_id) {
+      try {
+        const { notifyStoreStaff } = await import("@/lib/notifications/store-staff-notify");
+        await notifyStoreStaff({
+          db: supabase,
+          storeId: proposal.store_id,
+          type: "new_lead",
+          title: "Proposta Aceita pelo Cliente",
+          message: `${leadPassenger?.name || "Cliente"} aceitou "${proposal.title || proposal.destination_city || "Proposta"}" (${data.paymentPreference}${data.paymentInstallments ? ` em ${data.paymentInstallments}x` : ""}).`,
+          linkUrl: "/workspace/turismo/propostas",
+          authorName: leadPassenger?.name || proposal.client_name || null,
+        });
+      } catch {
+        // não bloqueia
+      }
     }
 
     // Enfileira notificação automática de contrato e portal no WhatsApp do passageiro líder

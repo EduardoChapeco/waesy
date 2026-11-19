@@ -18,6 +18,14 @@ import type {
 } from "@/services/travel-proposal.functions";
 import { generateProposalItineraryAI } from "@/services/travel-proposal.functions";
 import { listHotelsBank } from "@/services/travel-catalog.functions";
+import { listTravelSuppliers } from "@/services/travel-suppliers.functions";
+import {
+  buildInstallmentOptionsFromPolicy,
+  buildPaymentTermsSummaryFromPolicy,
+  normalizeSupplierPaymentPolicy,
+  resolveMaxInstallmentsFromOptions,
+} from "@/lib/tourism/payment-policy";
+import { StudioSupplierInstallmentsCard } from "@/components/tourism/studio/StudioSupplierInstallmentsCard";
 import { CustomerSearchCombobox } from "@/components/crm/CustomerSearchCombobox";
 import { listGroupTours } from "@/services/group-tours.functions";
 import { CANONICAL_DESTINATIONS } from "@/lib/tourism/destinations-catalog";
@@ -224,9 +232,34 @@ export function StudioSidebarEditor({
    proposal.id,
    proposal.pricing?.base_price_cents,
    proposal.pricing?.boarding_tax_cents,
-   proposal.pricing?.discount_cents,
-   proposal.pricing?.total_price_cents,
- ]);
+    proposal.pricing?.discount_cents,
+    proposal.pricing?.total_price_cents,
+  ]);
+
+  const { data: studioSuppliers = [] } = useQuery({
+    queryKey: ["travel-suppliers-active-studio"],
+    queryFn: () => listTravelSuppliers({ data: {} }),
+  });
+
+  const resolvedInstallments = resolveMaxInstallmentsFromOptions(
+    proposal.pricing?.installments_options,
+    12,
+  );
+
+  const applyPaymentPolicyToProposal = (
+    policyInput: ReturnType<typeof normalizeSupplierPaymentPolicy>,
+  ) => {
+    const total = proposal.pricing?.total_price_cents || 0;
+    const options = buildInstallmentOptionsFromPolicy(total, policyInput);
+    const terms = buildPaymentTermsSummaryFromPolicy(total, policyInput, formatMoney);
+    onChange({
+      pricing: {
+        ...proposal.pricing,
+        installments_options: options,
+        payment_terms: terms,
+      },
+    });
+  };
 
   const studioCustomFields = sanitizeProposalCustomFields(
     {
@@ -4059,69 +4092,12 @@ export function StudioSidebarEditor({
  </div>
  </div>
 
- <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-3">
- <span className="text-xs font-bold text-foreground block">Atalhos de Parcelamento Comercial</span>
- <div className="grid grid-cols-2 gap-2">
- <Button
- type="button"
- size="sm"
- variant="outline"
- onClick={() => {
- const total = proposal.pricing?.total_price_cents || 0;
- onChange({
- pricing: {
- ...proposal.pricing,
- installments_options: [
- { installments_count: 1, installment_value_cents: total, method: "pix", has_interest: false },
- { installments_count: 10, installment_value_cents: Math.round(total / 10), method: "credit_card", has_interest: false },
- { installments_count: 12, installment_value_cents: Math.round(total / 12), method: "credit_card", has_interest: false },
- ],
- },
- });
- }}
- className="h-8 text-2xs rounded-lg font-semibold min-h-11 sm:min-h-0"
- >
- 10x e 12x Sem Juros
- </Button>
-
- <Button
- type="button"
- size="sm"
- variant="outline"
- onClick={() => {
- const total = proposal.pricing?.total_price_cents || 0;
- onChange({
- pricing: {
- ...proposal.pricing,
- installments_options: [
- { installments_count: 1, installment_value_cents: total, method: "pix", has_interest: false },
- { installments_count: 12, installment_value_cents: Math.round(total / 12), method: "boleto", has_interest: false },
- ],
- },
- });
- }}
- className="h-8 text-2xs rounded-lg font-semibold min-h-11 sm:min-h-0"
- >
- Boleto 12x Sem Entrada
- </Button>
- </div>
-
- {/* Visualização das parcelas configuradas */}
- {proposal.pricing?.installments_options && proposal.pricing.installments_options.length > 0 && (
- <div className="space-y-1 pt-1 border-t border-border/40 text-2xs">
- {proposal.pricing.installments_options.map((opt, i) => (
- <div key={i} className="flex justify-between items-center text-muted-foreground">
- <span>
- {opt.installments_count}x {opt.method === "pix" ? "à vista no Pix" : "no Cartão"}
- </span>
- <span className="font-mono font-bold text-foreground">
- {formatMoney(opt.installment_value_cents)}
- </span>
- </div>
- ))}
- </div>
- )}
- </div>
+ <StudioSupplierInstallmentsCard
+   suppliers={studioSuppliers}
+   resolvedInstallments={resolvedInstallments}
+   installmentsOptions={proposal.pricing?.installments_options}
+   onApplyPolicy={applyPaymentPolicyToProposal}
+ />
 
  {/* ── OPÇÕES DE EXIBIÇÃO DO PREÇO NA LÂMINA ── */}
  <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-3">

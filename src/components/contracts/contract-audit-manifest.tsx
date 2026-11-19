@@ -2,6 +2,7 @@ import React from "react";
 import { ShieldCheck, Lock, Hash, Clock, CheckCircle2, ExternalLink, QrCode, FileCheck2, Camera, Globe } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/datetime";
+import { getSignerRoleLabel } from "@/lib/contracts/signer-roles";
 
 export interface ManifestSignerInfo {
   name: string;
@@ -162,8 +163,8 @@ export function ContractAuditManifest({
                     >
                       {isSigned ? "Assinado" : signer.status === "viewed" ? "Visualizado" : "Pendente"}
                     </Badge>
-                    <span className="text-2xs text-muted-foreground capitalize">
-                      ({signer.role === "witness" ? "Testemunha" : "Parte"})
+                    <span className="text-2xs text-muted-foreground">
+                      ({getSignerRoleLabel(signer.role)})
                     </span>
                   </div>
 

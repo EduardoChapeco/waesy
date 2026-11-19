@@ -20,7 +20,7 @@ const COOKIE_YEAR = 60 * 60 * 24 * 365;
 
 function resolveClientContextDomainAttr(): string {
   if (typeof window === "undefined") return "";
-  const host = (window.location?.hostname || "").toLowerCase();
+  const host = (window?.location?.hostname || "").toLowerCase();
   if (host === "waesy.com.br" || host.endsWith(".waesy.com.br")) {
     return "; domain=.waesy.com.br";
   }
@@ -38,7 +38,7 @@ export function setClientContextCookies(payload: ContextPayload): void {
 
   const { context, storeId, creatorHandle } = payload;
   const domainAttr = resolveClientContextDomainAttr();
-  const secAttr = window.location?.protocol === "https:" ? "; Secure" : "";
+  const secAttr = window?.location?.protocol === "https:" ? "; Secure" : "";
 
   // 1. Contexto principal
   window.document.cookie = `waesy_active_context=${context}; path=/; max-age=${COOKIE_YEAR}; SameSite=Lax${domainAttr}${secAttr}`;
