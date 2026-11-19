@@ -1,5 +1,20 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-536: Diagnóstico Forense de Disco EBS Cheio no Supabase Produção (pg_wal/xlogtemp ENOSPC), Resiliência de Login contra Falsos Negativos HTTP 503/522 e Automação de Higienização de Telemetria
+- **Data (ISO):** 2026-11-19
+- **ID da Decisão:** DEC-536
+- **Contexto:**
+  1. O usuário reportou falha ao realizar login em produção (`waesy.com.br` / `usewaesy.pages.dev`).
+  2. A auditoria forense dos logs ClickHouse (`source = 'postgres_logs'` e `source = 'edge_logs'`) e das métricas Prometheus (`/v1/projects/jfuebqmltksyznovhlwa/analytics/endpoints/metrics`) comprovou que o volume EBS `/data` (`/dev/nvme1n1`, 2 GB) atingiu 99,4% de ocupação (`2.064.441.344` bytes usados de `2.077.073.408` bytes), restando `12.632.064` bytes (12,04 MB) disponíveis para o usuário `postgres` (`node_filesystem_avail_bytes`), enquanto 121,6 MB permanecem retidos na reserva de 5% do `ext4` para `root`.
+  3. Durante a inicialização do PostgreSQL 17.6, após concluir o replay do WAL (`redo done at 5C/3F000CA0`), o processo tenta alocar um novo segmento WAL de 16 MB (`pg_wal/xlogtemp.<pid>`) e aborta com `could not write to file "pg_wal/xlogtemp": No space left on device`, resultando em `HTTP 522` / `HTTP 503 (PGRST002)` no PostgREST e GoTrue (`/auth/v1`).
+  4. A função `signInWithPassword` (`src/services/auth.functions.ts`) capturava erros HTTP 503/522 do GoTrue e os reportava como `"Identificador ou senha incorretos."`, além de contabilizá-los indevidamente no rate-limiter de tentativas de senha.
+- **Decisão Adotada:**
+  1. **Diagnóstico Transparente no Fluxo de Login (`src/services/auth.functions.ts`):** Detecção explícita de falhas upstream (`status >= 500`, `PGRST002`, `AuthRetryableFetchError`, `502/503/522/544`) sem penalizar o rate-limiter do usuário e exibindo alerta preciso sobre indisponibilidade de disco do cluster Supabase.
+  2. **Otimização da Configuração do Postgres e Script de Deploy (`scripts/deploy-supabase-production-complete.mjs`):** Redução de `wal_keep_size` para `1MB` via Management API, desbloqueio de `readonly/temporary-disable`, deploy de Edge Functions via `--use-api`, verificação prévia de espaço livre em `/data` e rotina automática de expurgo de tabelas transientes (`cron.job_run_details`, `net._http_response`, `system_error_logs`).
+  3. **Sincronização Integral com Cloudflare Pages (`usewaesy`):** Todas as 10 secrets de produção e o bundle SSR (`dist/_worker.js/index.js`) publicados no projeto `usewaesy` (`waesy.com.br` / `usewaesy.pages.dev`).
+- **Fundamentação Teórica:** AGENTS.md (B.1, B.5, B.6, B.7, B.9, B.10, B.31).
+- **Consequências:** Zero falsos alertas de "senha incorreta" durante indisponibilidade de banco; diagnóstico exato da saturação do volume `/data` (déficit de 3,96 MB para o segmento WAL de 16 MB) documentado com procedimento imediato de liberação no painel Supabase.
+
 ## DEC-535: Paridade de Vitrine com Classificados Desktop, Desvinculação do Card Comercial da Capa Hero, Sticky Sidebar Contínuo ao Longo do Roteiro e Recomendações Dinâmicas de Pacotes
 - **Data (ISO):** 2026-11-19
 - **ID da Decisão:** DEC-535

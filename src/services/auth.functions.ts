@@ -287,7 +287,20 @@ export const signInWithPassword = createServerFn({ method: "POST" })
  profileQuery = profileQuery.or(`username.eq.${cleanUser},phone.eq.${cleanUser}`);
  }
 
- const { data: matchedProfile } = await profileQuery.limit(1).maybeSingle();
+ const { data: matchedProfile, error: profileLookupError } = await profileQuery.limit(1).maybeSingle();
+ if (
+   profileLookupError &&
+   (profileLookupError.code === "PGRST002" ||
+     /502|503|504|522|544|schema cache|upstream connect error|fetch failed/i.test(
+       profileLookupError.message || "",
+     ))
+ ) {
+   return {
+     status: "error" as const,
+     message:
+       "O banco de dados (Supabase) está temporariamente indisponível (HTTP 503/522 — verifique a utilização de disco do projeto no painel do Supabase).",
+   };
+ }
  if (matchedProfile?.id) {
  matchedProfileId = matchedProfile.id;
  const { data: authUser } = await adminDb.auth.admin.getUserById(matchedProfile.id);
@@ -303,7 +316,22 @@ export const signInWithPassword = createServerFn({ method: "POST" })
  });
 
  if (error) {
- // Record the failed attempt for rate limiting
+ const isInfraUpstreamError =
+   (typeof error.status === "number" && error.status >= 500) ||
+   error.name === "AuthRetryableFetchError" ||
+   /502|503|504|522|544|upstream connect error|connection refused|schema cache|fetch failed|timed out/i.test(
+     error.message || "",
+   );
+
+ if (isInfraUpstreamError) {
+   return {
+     status: "error" as const,
+     message:
+       "O serviço de autenticação do banco de dados (Supabase) está temporariamente indisponível (HTTP 503/522 — verifique a utilização de disco do projeto no painel do Supabase).",
+   };
+ }
+
+ // Record the failed attempt for rate limiting (only for genuine credential failures)
  recordFailedAttempt(ip, "auth_login");
 
  // Grava auditoria forense de falha de login em background
