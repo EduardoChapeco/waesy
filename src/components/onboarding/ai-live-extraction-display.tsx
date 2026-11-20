@@ -158,10 +158,10 @@ export function AiLiveExtractionDisplay({
               {errorMessage ? "Erro" : `${effectiveProgress}%`}
             </span>
           </div>
-          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+          <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
             <div
               className={cn(
-                "h-full transition-all duration-300 rounded-full",
+                "h-full transition-opacity duration-300 motion-reduce:transition-none rounded-full",
                 errorMessage ? "bg-destructive" : "bg-primary"
               )}
               style={{ width: `${errorMessage ? 100 : effectiveProgress}%` }}
@@ -172,7 +172,7 @@ export function AiLiveExtractionDisplay({
         {/* ── Erro Real (sem mascarar) ── */}
         {errorMessage && (
           <div role="alert" className="rounded-lg bg-destructive/10 border border-destructive/30 p-3 flex items-start gap-2 text-xs text-destructive">
-            <AlertCircle className="size-4 shrink-0 mt-0.5" />
+            <AlertCircle className="size-4 shrink-0 mt-1" />
             <div className="space-y-1 min-w-0">
               <p className="font-semibold">Não foi possível concluir a extração</p>
               <p className="text-2xs break-words">{errorMessage}</p>
@@ -248,7 +248,7 @@ export function AiLiveExtractionDisplay({
                           loading="lazy"
                         />
                       </div>
-                      <div className="p-2.5 flex items-center justify-between gap-2 text-2xs">
+                      <div className="p-3 flex items-center justify-between gap-2 text-2xs">
                         <span className="font-semibold text-foreground truncate">{shot.label}</span>
                         <ExternalLink className="size-3 text-muted-foreground group-hover:text-primary shrink-0" />
                       </div>
@@ -261,7 +261,7 @@ export function AiLiveExtractionDisplay({
                     key={slot.key}
                     className="rounded-xl border border-dashed border-border/80 bg-muted/20 overflow-hidden"
                   >
-                    <div className="aspect-video w-full flex flex-col items-center justify-center gap-1.5 text-muted-foreground p-3">
+                    <div className="aspect-video w-full flex flex-col items-center justify-center gap-2 text-muted-foreground p-3">
                       {isProcessing ? (
                         <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary" />
                       ) : (
@@ -271,7 +271,7 @@ export function AiLiveExtractionDisplay({
                         {isProcessing ? "Capturando..." : "Sem print"}
                       </span>
                     </div>
-                    <div className="p-2.5 border-t border-border/40 text-2xs font-medium text-muted-foreground truncate">
+                    <div className="p-3 border-t border-border/40 text-2xs font-medium text-muted-foreground truncate">
                       {slot.title}
                     </div>
                   </div>
@@ -295,7 +295,7 @@ export function AiLiveExtractionDisplay({
             {showLogs ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
           </button>
           {showLogs && (
-            <div className="bg-neutral-950 text-neutral-200 p-3.5 font-mono text-xs space-y-1.5 max-h-40 overflow-y-auto">
+            <div className="bg-neutral-950 text-neutral-200 p-4 font-mono text-xs space-y-2 max-h-40 overflow-y-auto">
               {effectiveLogs.length === 0 && isProcessing && (
                 <div className="flex items-center gap-2 text-neutral-400 text-2xs">
                   <Loader2 className="size-3 animate-spin motion-reduce:animate-none shrink-0" />
@@ -362,7 +362,7 @@ export function AiLiveExtractionDisplay({
                 )}
               </div>
 
-              <div className="min-w-0 flex-1 space-y-1.5">
+              <div className="min-w-0 flex-1 space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <h4 className="text-sm font-bold text-foreground truncate">{result.company_name}</h4>
                   {result.category && (
@@ -377,14 +377,18 @@ export function AiLiveExtractionDisplay({
                 {paletteColors.length > 0 && (
                   <div className="flex items-center gap-2 pt-1">
                     <Palette className="size-3.5 text-muted-foreground shrink-0" />
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       {paletteColors.map((color, idx) => (
-                        <span
+                        <svg
                           key={`${color}-${idx}`}
-                          title={color}
-                          className="size-4 rounded-full border border-border/80 inline-block"
-                          style={{ backgroundColor: color }}
-                        />
+                          viewBox="0 0 16 16"
+                          className="size-4 rounded-full border border-border/80 shrink-0"
+                          role="img"
+                          aria-label={color}
+                        >
+                          <title>{color}</title>
+                          <circle cx="8" cy="8" r="8" fill={color} />
+                        </svg>
                       ))}
                     </div>
                   </div>
@@ -395,7 +399,7 @@ export function AiLiveExtractionDisplay({
             {/* Card 2: Contatos & Presença Digital */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               {(result.contact?.whatsapp || result.contact?.phone) && (
-                <div className="bg-card p-3 rounded-xl border border-border/60 flex items-center gap-2.5">
+                <div className="bg-card p-3 rounded-xl border border-border/60 flex items-center gap-3">
                   <Phone className="size-4 text-primary shrink-0" />
                   <div className="min-w-0">
                     <span className="text-2xs text-muted-foreground uppercase font-bold block">Telefone / WhatsApp</span>
@@ -406,7 +410,7 @@ export function AiLiveExtractionDisplay({
                 </div>
               )}
               {result.contact?.email && (
-                <div className="bg-card p-3 rounded-xl border border-border/60 flex items-center gap-2.5">
+                <div className="bg-card p-3 rounded-xl border border-border/60 flex items-center gap-3">
                   <Mail className="size-4 text-primary shrink-0" />
                   <div className="min-w-0">
                     <span className="text-2xs text-muted-foreground uppercase font-bold block">E-mail</span>
@@ -415,7 +419,7 @@ export function AiLiveExtractionDisplay({
                 </div>
               )}
               {result.instagram_url && (
-                <div className="bg-card p-3 rounded-xl border border-border/60 flex items-center gap-2.5">
+                <div className="bg-card p-3 rounded-xl border border-border/60 flex items-center gap-3">
                   <Instagram className="size-4 text-primary shrink-0" />
                   <div className="min-w-0">
                     <span className="text-2xs text-muted-foreground uppercase font-bold block">Instagram</span>
@@ -426,7 +430,7 @@ export function AiLiveExtractionDisplay({
                 </div>
               )}
               {(result.contact?.city || result.contact?.address) && (
-                <div className="bg-card p-3 rounded-xl border border-border/60 flex items-center gap-2.5">
+                <div className="bg-card p-3 rounded-xl border border-border/60 flex items-center gap-3">
                   <MapPin className="size-4 text-primary shrink-0" />
                   <div className="min-w-0">
                     <span className="text-2xs text-muted-foreground uppercase font-bold block">Localização</span>
@@ -442,7 +446,7 @@ export function AiLiveExtractionDisplay({
 
             {/* Card 3: Bio & Tom de Voz */}
             {result.bio && (
-              <div className="bg-card p-3.5 rounded-xl border border-border/60 space-y-2 text-xs">
+              <div className="bg-card p-4 rounded-xl border border-border/60 space-y-2 text-xs">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-2xs text-muted-foreground uppercase font-bold">Apresentação Extraída</span>
                   {result.brand_dna?.archetype && (
@@ -460,7 +464,7 @@ export function AiLiveExtractionDisplay({
 
             {/* Card 4: Produtos / Serviços Detectados */}
             {Array.isArray(result.suggested_products) && result.suggested_products.length > 0 && (
-              <div className="bg-card p-3.5 rounded-xl border border-border/60 space-y-2 text-xs">
+              <div className="bg-card p-4 rounded-xl border border-border/60 space-y-2 text-xs">
                 <div className="flex items-center gap-2">
                   <Package className="size-3.5 text-primary" />
                   <span className="text-2xs text-muted-foreground uppercase font-bold">
@@ -469,7 +473,7 @@ export function AiLiveExtractionDisplay({
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {result.suggested_products.slice(0, 4).map((prod, i) => (
-                    <div key={`${prod.name}-${i}`} className="p-2.5 rounded-lg bg-muted/40 border border-border/40 flex items-center justify-between gap-2">
+                    <div key={`${prod.name}-${i}`} className="p-3 rounded-lg bg-muted/40 border border-border/40 flex items-center justify-between gap-2">
                       <span className="font-medium text-foreground truncate">{prod.name}</span>
                       <span className="font-mono text-2xs font-bold text-primary shrink-0">
                         {(prod.price_cents / 100).toLocaleString("pt-BR", {

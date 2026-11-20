@@ -17,10 +17,8 @@ for (const line of fs.readFileSync('.env.secrets', 'utf8').split('\n')) {
   }
 }
 
-// Second Supabase project credentials
-// API keys need to be fetched from the Supabase dashboard — using service_role JWT
-// For the offload DB, we'll use the anon key since writes are via server functions only
-const OFFLOAD_URL = 'https://wlxapubsesiwtxzbuygt.supabase.co';
+// Second Supabase project credentials (Offload node: vnmqummmgvgyazglnoav)
+const OFFLOAD_URL = secrets.SUPABASE_OFFLOAD_URL || 'https://vnmqummmgvgyazglnoav.supabase.co';
 
 // The service_role and anon keys need to be set from the Supabase dashboard
 // For now, we set the topology mode and URL — the keys will need manual entry if not in .env.secrets

@@ -14,8 +14,8 @@ Este documento registra a topologia oficial dos projetos Supabase, todas as vari
 
 ### Alternância de Topologia (Dual -> Single / Self-Hosted)
 O roteamento é governado exclusivamente em runtime server-side por [src/lib/supabase-federation.ts](../../src/lib/supabase-federation.ts) e [src/lib/supabase.ts](../../src/lib/supabase.ts):
-- **`SUPABASE_TOPOLOGY_MODE=dual`** + **`SUPABASE_ROUTE_MINING=offload`**: modo padrão em produção; direciona operações pesadas de ingestão para o nó `OFFLOAD`.
-- **`SUPABASE_TOPOLOGY_MODE=single`** (ou **`SUPABASE_ROUTE_MINING=primary`**): consolida todo o tráfego em um único projeto Supabase (cloud ou instância Supabase Open-Source self-hosted), bastando apontar `SUPABASE_URL`, `VITE_SUPABASE_URL`, `SUPABASE_ANON_KEY`, `VITE_SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY`.
+- **`SUPABASE_TOPOLOGY_MODE=auto`** (ou **`dual`**) + **`SUPABASE_ROUTE_MINING=0`**: modo padrão seguro em produção; direciona as 24 tabelas append-only de `OFFLOAD_TABLES_LIST` e 4 RPCs de telemetria para o nó `OFFLOAD` (`vnmqummmgvgyazglnoav`), mantendo as tabelas de mineração com joins no `PRIMARY` (`0` embeds cruzando nós).
+- **`SUPABASE_TOPOLOGY_MODE=single`**: consolida todo o tráfego em um único projeto Supabase (cloud ou instância Supabase Open-Source self-hosted), bastando apontar `SUPABASE_URL`, `VITE_SUPABASE_URL`, `SUPABASE_ANON_KEY`, `VITE_SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY`.
 
 ---
 
@@ -63,3 +63,11 @@ Todos os segredos abaixo estão encriptados no ambiente `production` do projeto 
    ```
 
 Para atualizar segredos no Cloudflare Pages a partir do `.env.secrets`, utilize [scripts/ops/push-cloudflare-secrets.mjs](../../scripts/ops/push-cloudflare-secrets.mjs) e [scripts/ops/set-cloudflare-offload-secrets.mjs](../../scripts/ops/set-cloudflare-offload-secrets.mjs).
+
+---
+
+## 4. Validação, Typecheck e Deploy End-to-End
+
+- **Diagnóstico de `npm run typecheck`:** O projeto possui `6.780` arquivos TypeScript resolvidos e `src/routeTree.gen.ts` com `10.465` linhas (480+ rotas TanStack Router), tornando o `tsc --noEmit` global lento em máquinas locais. Caso `tsc` trave por cache incremental, limpe `tsconfig.tsbuildinfo` / `.tsbuildinfo-check` ou valide via `npm run build` + `npx vitest run` + gates estáticos (`check:schema`, `check:bff`, `check:types-ssot`, `check:cycles`, `lint:design`).
+- **Supabase Primary (`wlxapubsesiwtxzbuygt`):** Todas as `667` migrações SQL (até `20270623000000`) e a Edge Function `infotravel-connector` devem estar sincronizadas via Management API / `npx supabase functions deploy --project-ref wlxapubsesiwtxzbuygt --use-api --yes`.
+- **Cloudflare Pages (`usewaesy`):** Executar `node scripts/ops/push-cloudflare-secrets.mjs` para garantir os `17` segredos de federação em produção e publicar `dist/` com `npx wrangler pages deploy dist --project-name usewaesy --branch main --no-bundle --commit-dirty=true`.

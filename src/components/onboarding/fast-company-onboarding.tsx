@@ -508,11 +508,13 @@ export function FastCompanyOnboarding({
       }
 
       if (res.mainCnae?.code || res.mainCnae?.description) {
+        const cnaeCode = String(res.mainCnae.code || "");
+        const cnaeDesc = String(res.mainCnae.description || "");
         setDetectedCnae({
-          code: res.mainCnae.code || "",
-          description: res.mainCnae.description || "",
+          code: cnaeCode,
+          description: cnaeDesc,
         });
-        const mappedCat = resolveCategoryFromCnae(res.mainCnae.code, res.mainCnae.description);
+        const mappedCat = resolveCategoryFromCnae(cnaeCode, cnaeDesc);
         if (mappedCat) {
           setCategory(mappedCat);
         }
@@ -1366,7 +1368,7 @@ export function FastCompanyOnboarding({
           <div className="p-4 sm:p-5 bg-card border-b border-border/40">
             <div className="flex items-center justify-between gap-4">
               {/* Logo Squircle 1:1 */}
-              <div className="size-16 sm:size-20 rounded-xl border-2 border-border/60 bg-background p-1.5 overflow-hidden flex items-center justify-center shrink-0">
+              <div className="size-16 sm:size-20 rounded-xl border-2 border-border/60 bg-background p-2 overflow-hidden flex items-center justify-center shrink-0">
                 {logoUrl ? (
                   <img src={logoUrl} alt={name || "Logo"} className="max-w-full max-h-full object-contain select-none" />
                 ) : (

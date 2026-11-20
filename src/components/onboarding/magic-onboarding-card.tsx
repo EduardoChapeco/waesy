@@ -171,7 +171,7 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
               </div>
               <div className="h-1 bg-border/60 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-primary transition-all duration-300 rounded-full"
+                  className="h-full bg-primary transition-opacity duration-300 motion-reduce:transition-none rounded-full"
                   style={{ width: `${Math.max(5, progressPercent)}%` }}
                 />
               </div>
