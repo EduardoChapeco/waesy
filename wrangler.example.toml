@@ -5,10 +5,15 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 VITE_SITE_URL = "https://usewaesy.pages.dev"
-VITE_SUPABASE_URL = "https://jfuebqmltksyznovhlwa.supabase.co"
-SUPABASE_URL = "https://jfuebqmltksyznovhlwa.supabase.co"
-VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpmdWVicW1sdGtzeXpub3ZobHdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYzOTQxOTcsImV4cCI6MjEwMTk3MDE5N30.14RG8TsXNmyauTp1L-VA2UJNC6jrU9tYj8Vk4RXH0Hc"
-SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpmdWVicW1sdGtzeXpub3ZobHdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYzOTQxOTcsImV4cCI6MjEwMTk3MDE5N30.14RG8TsXNmyauTp1L-VA2UJNC6jrU9tYj8Vk4RXH0Hc"
-SUPABASE_SERVICE_ROLE_KEY = "<configure with wrangler secret put; never commit>"
-VITE_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_8zwC-hJ2AwyMpXH00aaPdA_ZCFnR6gF"
-SUPABASE_PROJECT_REF = "jfuebqmltksyznovhlwa"
+VITE_SUPABASE_URL = "https://wlxapubsesiwtxzbuygt.supabase.co"
+SUPABASE_URL = "https://wlxapubsesiwtxzbuygt.supabase.co"
+VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndseGFwdWJzZXNpd3R4emJ1eWd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUxMzE3NTIsImV4cCI6MjExMDcwNzc1Mn0.AUR8POSFFWuc7NCv_g7JX9nOMBWb8qBAqxTIXSi8VSI"
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndseGFwdWJzZXNpd3R4emJ1eWd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUxMzE3NTIsImV4cCI6MjExMDcwNzc1Mn0.AUR8POSFFWuc7NCv_g7JX9nOMBWb8qBAqxTIXSi8VSI"
+SUPABASE_PROJECT_REF = "wlxapubsesiwtxzbuygt"
+SUPABASE_TOPOLOGY_MODE = "dual"
+SUPABASE_ROUTE_MINING = "offload"
+SUPABASE_OFFLOAD_URL = "https://vnmqummmgvgyazglnoav.supabase.co"
+# Segredos obrigatorios via `wrangler pages secret put` (nunca commitar):
+# SUPABASE_SERVICE_ROLE_KEY, SUPABASE_OFFLOAD_SERVICE_ROLE_KEY, SUPABASE_DB_PASSWORD,
+# SUPABASE_DB_URL, DATABASE_URL, SUPABASE_ACCESS_TOKEN, JWT_SECRET, VAULT_MASTER_KEY,
+# EVOLUTION_API_URL, EVOLUTION_API_KEY, VITE_SUPABASE_PUBLISHABLE_KEY

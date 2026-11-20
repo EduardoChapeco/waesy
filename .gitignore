@@ -46,3 +46,7 @@ scratch/
 .chrome-session/
 tools/infotravel-miner/.chrome-session/
 tools/infotravel-miner/output/
+tsconfig.tsbuildinfo
+.tsbuildinfo-check
+.audit/worker-metafile.json
+scripts/ops/*.bat
