@@ -162,6 +162,7 @@ import { Route as WorkspaceViabilidadeRouteImport } from './routes/workspace.via
 import { Route as StoreAeroportoIataRouteImport } from './routes/_store.aeroporto.$iata'
 import { Route as StoreAgendarIndexRouteImport } from './routes/_store.agendar.index'
 import { Route as StoreAgendarIdRouteImport } from './routes/_store.agendar.$id'
+import { Route as StoreAvaliarTokenRouteImport } from './routes/_store.avaliar.$token'
 import { Route as StoreBioSlugRouteImport } from './routes/_store.bio.$slug'
 import { Route as StoreCSlugRouteImport } from './routes/_store.c.$slug'
 import { Route as StoreCategoriaSlugRouteImport } from './routes/_store.categoria.$slug'
@@ -258,6 +259,7 @@ import { Route as ApiAuthConfirmRouteImport } from './routes/api.auth.confirm'
 import { Route as ApiCronAiJobsRouteImport } from './routes/api.cron.ai-jobs'
 import { Route as ApiCronAiScheduledTasksRouteImport } from './routes/api.cron.ai-scheduled-tasks'
 import { Route as ApiCronAiTasksRouteImport } from './routes/api.cron.ai-tasks'
+import { Route as ApiCronMetaAdsSyncRouteImport } from './routes/api.cron.meta-ads-sync'
 import { Route as ApiCronMiningWorkerRouteImport } from './routes/api.cron.mining-worker'
 import { Route as ApiCronWhatsappSyncRouteImport } from './routes/api.cron.whatsapp-sync'
 import { Route as ApiFeedMetaDotcsvRouteImport } from './routes/api.feed.meta[.]csv'
@@ -1259,6 +1261,11 @@ const StoreAgendarIdRoute = StoreAgendarIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => StoreAgendarRoute,
 } as any)
+const StoreAvaliarTokenRoute = StoreAvaliarTokenRouteImport.update({
+  id: '/avaliar/$token',
+  path: '/avaliar/$token',
+  getParentRoute: () => StoreRoute,
+} as any)
 const StoreBioSlugRoute = StoreBioSlugRouteImport.update({
   id: '/bio/$slug',
   path: '/bio/$slug',
@@ -1745,6 +1752,11 @@ const ApiCronAiScheduledTasksRoute = ApiCronAiScheduledTasksRouteImport.update({
 const ApiCronAiTasksRoute = ApiCronAiTasksRouteImport.update({
   id: '/api/cron/ai-tasks',
   path: '/api/cron/ai-tasks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronMetaAdsSyncRoute = ApiCronMetaAdsSyncRouteImport.update({
+  id: '/api/cron/meta-ads-sync',
+  path: '/api/cron/meta-ads-sync',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCronMiningWorkerRoute = ApiCronMiningWorkerRouteImport.update({
@@ -3199,6 +3211,7 @@ export interface FileRoutesByFullPath {
   '/workspace/': typeof WorkspaceIndexRoute
   '/aeroporto/$iata': typeof StoreAeroportoIataRoute
   '/agendar/$id': typeof StoreAgendarIdRoute
+  '/avaliar/$token': typeof StoreAvaliarTokenRoute
   '/bio/$slug': typeof StoreBioSlugRoute
   '/c/$slug': typeof StoreCSlugRoute
   '/categoria/$slug': typeof StoreCategoriaSlugRoute
@@ -3282,6 +3295,7 @@ export interface FileRoutesByFullPath {
   '/api/cron/ai-jobs': typeof ApiCronAiJobsRoute
   '/api/cron/ai-scheduled-tasks': typeof ApiCronAiScheduledTasksRoute
   '/api/cron/ai-tasks': typeof ApiCronAiTasksRoute
+  '/api/cron/meta-ads-sync': typeof ApiCronMetaAdsSyncRoute
   '/api/cron/mining-worker': typeof ApiCronMiningWorkerRoute
   '/api/cron/whatsapp-sync': typeof ApiCronWhatsappSyncRoute
   '/api/feed/meta.csv': typeof ApiFeedMetaDotcsvRoute
@@ -3673,6 +3687,7 @@ export interface FileRoutesByTo {
   '/workspace': typeof WorkspaceIndexRoute
   '/aeroporto/$iata': typeof StoreAeroportoIataRoute
   '/agendar/$id': typeof StoreAgendarIdRoute
+  '/avaliar/$token': typeof StoreAvaliarTokenRoute
   '/bio/$slug': typeof StoreBioSlugRoute
   '/c/$slug': typeof StoreCSlugRoute
   '/categoria/$slug': typeof StoreCategoriaSlugRoute
@@ -3756,6 +3771,7 @@ export interface FileRoutesByTo {
   '/api/cron/ai-jobs': typeof ApiCronAiJobsRoute
   '/api/cron/ai-scheduled-tasks': typeof ApiCronAiScheduledTasksRoute
   '/api/cron/ai-tasks': typeof ApiCronAiTasksRoute
+  '/api/cron/meta-ads-sync': typeof ApiCronMetaAdsSyncRoute
   '/api/cron/mining-worker': typeof ApiCronMiningWorkerRoute
   '/api/cron/whatsapp-sync': typeof ApiCronWhatsappSyncRoute
   '/api/feed/meta.csv': typeof ApiFeedMetaDotcsvRoute
@@ -4156,6 +4172,7 @@ export interface FileRoutesById {
   '/workspace/': typeof WorkspaceIndexRoute
   '/_store/aeroporto/$iata': typeof StoreAeroportoIataRoute
   '/_store/agendar/$id': typeof StoreAgendarIdRoute
+  '/_store/avaliar/$token': typeof StoreAvaliarTokenRoute
   '/_store/bio/$slug': typeof StoreBioSlugRoute
   '/_store/c/$slug': typeof StoreCSlugRoute
   '/_store/categoria/$slug': typeof StoreCategoriaSlugRoute
@@ -4239,6 +4256,7 @@ export interface FileRoutesById {
   '/api/cron/ai-jobs': typeof ApiCronAiJobsRoute
   '/api/cron/ai-scheduled-tasks': typeof ApiCronAiScheduledTasksRoute
   '/api/cron/ai-tasks': typeof ApiCronAiTasksRoute
+  '/api/cron/meta-ads-sync': typeof ApiCronMetaAdsSyncRoute
   '/api/cron/mining-worker': typeof ApiCronMiningWorkerRoute
   '/api/cron/whatsapp-sync': typeof ApiCronWhatsappSyncRoute
   '/api/feed/meta.csv': typeof ApiFeedMetaDotcsvRoute
@@ -4640,6 +4658,7 @@ export interface FileRouteTypes {
     | '/workspace/'
     | '/aeroporto/$iata'
     | '/agendar/$id'
+    | '/avaliar/$token'
     | '/bio/$slug'
     | '/c/$slug'
     | '/categoria/$slug'
@@ -4723,6 +4742,7 @@ export interface FileRouteTypes {
     | '/api/cron/ai-jobs'
     | '/api/cron/ai-scheduled-tasks'
     | '/api/cron/ai-tasks'
+    | '/api/cron/meta-ads-sync'
     | '/api/cron/mining-worker'
     | '/api/cron/whatsapp-sync'
     | '/api/feed/meta.csv'
@@ -5114,6 +5134,7 @@ export interface FileRouteTypes {
     | '/workspace'
     | '/aeroporto/$iata'
     | '/agendar/$id'
+    | '/avaliar/$token'
     | '/bio/$slug'
     | '/c/$slug'
     | '/categoria/$slug'
@@ -5197,6 +5218,7 @@ export interface FileRouteTypes {
     | '/api/cron/ai-jobs'
     | '/api/cron/ai-scheduled-tasks'
     | '/api/cron/ai-tasks'
+    | '/api/cron/meta-ads-sync'
     | '/api/cron/mining-worker'
     | '/api/cron/whatsapp-sync'
     | '/api/feed/meta.csv'
@@ -5596,6 +5618,7 @@ export interface FileRouteTypes {
     | '/workspace/'
     | '/_store/aeroporto/$iata'
     | '/_store/agendar/$id'
+    | '/_store/avaliar/$token'
     | '/_store/bio/$slug'
     | '/_store/c/$slug'
     | '/_store/categoria/$slug'
@@ -5679,6 +5702,7 @@ export interface FileRouteTypes {
     | '/api/cron/ai-jobs'
     | '/api/cron/ai-scheduled-tasks'
     | '/api/cron/ai-tasks'
+    | '/api/cron/meta-ads-sync'
     | '/api/cron/mining-worker'
     | '/api/cron/whatsapp-sync'
     | '/api/feed/meta.csv'
@@ -5963,6 +5987,7 @@ export interface RootRouteChildren {
   ApiCronAiJobsRoute: typeof ApiCronAiJobsRoute
   ApiCronAiScheduledTasksRoute: typeof ApiCronAiScheduledTasksRoute
   ApiCronAiTasksRoute: typeof ApiCronAiTasksRoute
+  ApiCronMetaAdsSyncRoute: typeof ApiCronMetaAdsSyncRoute
   ApiCronMiningWorkerRoute: typeof ApiCronMiningWorkerRoute
   ApiCronWhatsappSyncRoute: typeof ApiCronWhatsappSyncRoute
   ApiFeedMetaDotcsvRoute: typeof ApiFeedMetaDotcsvRoute
@@ -7073,6 +7098,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoreAgendarIdRouteImport
       parentRoute: typeof StoreAgendarRoute
     }
+    '/_store/avaliar/$token': {
+      id: '/_store/avaliar/$token'
+      path: '/avaliar/$token'
+      fullPath: '/avaliar/$token'
+      preLoaderRoute: typeof StoreAvaliarTokenRouteImport
+      parentRoute: typeof StoreRoute
+    }
     '/_store/bio/$slug': {
       id: '/_store/bio/$slug'
       path: '/bio/$slug'
@@ -7743,6 +7775,13 @@ declare module '@tanstack/react-router' {
       path: '/api/cron/ai-tasks'
       fullPath: '/api/cron/ai-tasks'
       preLoaderRoute: typeof ApiCronAiTasksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/meta-ads-sync': {
+      id: '/api/cron/meta-ads-sync'
+      path: '/api/cron/meta-ads-sync'
+      fullPath: '/api/cron/meta-ads-sync'
+      preLoaderRoute: typeof ApiCronMetaAdsSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/cron/mining-worker': {
@@ -9634,6 +9673,7 @@ interface StoreRouteChildren {
   StoreTurismoRoute: typeof StoreTurismoRouteWithChildren
   StoreIndexRoute: typeof StoreIndexRoute
   StoreAeroportoIataRoute: typeof StoreAeroportoIataRoute
+  StoreAvaliarTokenRoute: typeof StoreAvaliarTokenRoute
   StoreBioSlugRoute: typeof StoreBioSlugRoute
   StoreCSlugRoute: typeof StoreCSlugRoute
   StoreCategoriaSlugRoute: typeof StoreCategoriaSlugRoute
@@ -9747,6 +9787,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreTurismoRoute: StoreTurismoRouteWithChildren,
   StoreIndexRoute: StoreIndexRoute,
   StoreAeroportoIataRoute: StoreAeroportoIataRoute,
+  StoreAvaliarTokenRoute: StoreAvaliarTokenRoute,
   StoreBioSlugRoute: StoreBioSlugRoute,
   StoreCSlugRoute: StoreCSlugRoute,
   StoreCategoriaSlugRoute: StoreCategoriaSlugRoute,
@@ -10437,6 +10478,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCronAiJobsRoute: ApiCronAiJobsRoute,
   ApiCronAiScheduledTasksRoute: ApiCronAiScheduledTasksRoute,
   ApiCronAiTasksRoute: ApiCronAiTasksRoute,
+  ApiCronMetaAdsSyncRoute: ApiCronMetaAdsSyncRoute,
   ApiCronMiningWorkerRoute: ApiCronMiningWorkerRoute,
   ApiCronWhatsappSyncRoute: ApiCronWhatsappSyncRoute,
   ApiFeedMetaDotcsvRoute: ApiFeedMetaDotcsvRoute,

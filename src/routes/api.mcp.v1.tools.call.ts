@@ -40,8 +40,8 @@ export const Route = createFileRoute("/api/mcp/v1/tools/call")({
               method: "notifications/serverInfo",
               params: {
                 name: "Waesy MCP Server",
-                version: "2.2.0",
-                protocolVersion: "2024-11-05",
+                version: "2.3.0",
+                protocolVersion: "2025-03-26",
               },
             })}`,
             ``,
@@ -63,8 +63,9 @@ export const Route = createFileRoute("/api/mcp/v1/tools/call")({
             {
               jsonrpc: "2.0",
               name: "Waesy MCP Server",
-              version: "2.2.0",
-              protocolVersion: "2024-11-05",
+              version: "2.3.0",
+              protocolVersion: "2025-03-26",
+              supportedProtocolVersions: ["2025-03-26", "2024-11-05"],
               transport: "streamable-http",
               endpoint: "/api/mcp/v1/tools/call",
               manifest: "/api/webmcp.json",
@@ -96,7 +97,7 @@ export const Route = createFileRoute("/api/mcp/v1/tools/call")({
             const method = String(body.method || "");
 
             if (method === "initialize") {
-              const requestedVersion = body.params?.protocolVersion || "2024-11-05";
+              const requestedVersion = body.params?.protocolVersion || "2025-03-26";
               return new Response(
                 JSON.stringify(
                   {
@@ -215,7 +216,7 @@ export const Route = createFileRoute("/api/mcp/v1/tools/call")({
                 );
               }
               try {
-                const resource = await readMcpResource(uri, storeId);
+                const resource = await readMcpResource(uri, storeId, inboundAuthToken);
                 return new Response(
                   JSON.stringify(
                     {

@@ -54,8 +54,8 @@ describe("Isolamento de Sistemas Verticais, Landings Editáveis & Conexão Auth 
     expect(turisGroupIds).not.toContain("automotive-workshop");
 
     const gastroStore = {
-      id: "st-tableway",
-      brand_origin: "tableway",
+      id: "st-wider",
+      brand_origin: "wider",
       primary_niche_id: "gastronomy",
       vertical_sku: "waesy_gastro_delivery",
       subscription_tier: "professional",
@@ -86,16 +86,17 @@ describe("Isolamento de Sistemas Verticais, Landings Editáveis & Conexão Auth 
       "pro",
       "explorer",
       "turis",
-      "tableway",
+      "wider",
       "wowbook",
-      "passhub",
-      "lexcloud",
+      "eventio",
+      "juris",
       "talentlink",
       "signflow",
       "omnipage",
       "autocenter",
       "imobiliaria",
-      "varejo",
+      "store",
+      "mercado",
       "talk",
       "studio",
       "copilot",
@@ -111,8 +112,19 @@ describe("Isolamento de Sistemas Verticais, Landings Editáveis & Conexão Auth 
       expect(resolveSubsystemBySlug(slug)?.id).toBe(slug);
     }
 
+    // Aliases legados devem resolver para os slugs canônicos
+    expect(resolveSubsystemBySlug("tableway")?.id).toBe("wider");
+    expect(resolveSubsystemBySlug("passhub")?.id).toBe("eventio");
+    expect(resolveSubsystemBySlug("lexcloud")?.id).toBe("juris");
+    expect(resolveSubsystemBySlug("varejo")?.id).toBe("store");
+
     expect(resolveSubsystemFromHost("turis.waesy.com.br")?.id).toBe("turis");
-    expect(resolveSubsystemFromHost("lexcloud.waesy.com.br")?.id).toBe("lexcloud");
+    expect(resolveSubsystemFromHost("wider.waesy.com.br")?.id).toBe("wider");
+    expect(resolveSubsystemFromHost("eventio.waesy.com.br")?.id).toBe("eventio");
+    expect(resolveSubsystemFromHost("juris.waesy.com.br")?.id).toBe("juris");
+    expect(resolveSubsystemFromHost("store.waesy.com.br")?.id).toBe("store");
+    expect(resolveSubsystemFromHost("mercado.waesy.com.br")?.id).toBe("mercado");
+    expect(resolveSubsystemFromHost("lexcloud.waesy.com.br")?.id).toBe("juris");
     expect(resolveSubsystemFromHost("oficinas.waesy.com.br")?.id).toBe("autocenter");
     expect(isEditorialMarketingRoute("/sistemas", "marketplace_local", "")).toBe(true);
     expect(isEditorialMarketingRoute("/sistemas/turis", "marketplace_local", "")).toBe(true);

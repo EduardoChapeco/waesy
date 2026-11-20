@@ -736,6 +736,24 @@ export async function getBatchActiveKeysForProviders(
 }
 
 /**
+ * Verifica rapidamente (em 1 consulta em lote) se existe ao menos um provedor de IA ativo
+ * (BYOK, api_key_pools ou variável de ambiente) antes de iniciar jobs ou pipelines de IA.
+ */
+export async function hasActiveAiProvider(options?: {
+  ownerId?: string;
+  storeId?: string;
+}): Promise<{ available: boolean; providers: ApiProvider[] }> {
+  const aiProviders: ApiProvider[] = ["groq", "gemini", "openrouter", "openai", "anthropic"];
+  const batch = await getBatchActiveKeysForProviders(
+    aiProviders,
+    options?.ownerId,
+    options?.storeId,
+  );
+  const availableProviders = aiProviders.filter((p) => (batch[p]?.length ?? 0) > 0);
+  return { available: availableProviders.length > 0, providers: availableProviders };
+}
+
+/**
  * Atualiza estatísticas de uso da chave de API (FinOps & Quotas).
  */
 export async function recordKeyUsage(keyId: string): Promise<void> {

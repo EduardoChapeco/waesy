@@ -459,7 +459,7 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  // Futuro ideal: delegar essa agregação para uma RPC (Stored Procedure) no banco.
  let storesQuery = supabase
  .from("stores")
- .select("id, name, slug, description, settings, city, is_verified, waesy_marketplace_enabled, publish_to_marketplace")
+ .select("id, name, slug, description, settings, city, verified_badge_url, approval_status, waesy_marketplace_enabled, publish_to_marketplace")
  .order("created_at", { ascending: false })
  .limit(storeId ? 1 : 100);
 
@@ -691,9 +691,9 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  } else if (sec.type === "tourism_car_rental_rail" || sec.data_source === "car_rentals") {
  let carQuery = supabase
    .from("classifieds")
-   .select("id, title, price_cents, attributes, category_slug, city, store_id, media_urls, stores(id, name, slug, waesy_marketplace_enabled, publish_to_marketplace)")
-   .eq("status", "published")
-   .or("category_slug.ilike.%car%,category_slug.ilike.%aluguel%,category_slug.ilike.%veic%")
+   .select("id, title, price_cents, attributes, category, niche_category, city, store_id, images, feed_media, stores(id, name, slug, waesy_marketplace_enabled, publish_to_marketplace)")
+   .in("status", ["published", "active"])
+   .or("category.ilike.%car%,category.ilike.%aluguel%,category.ilike.%veic%,niche_category.ilike.%car%,niche_category.ilike.%veic%")
    .order("created_at", { ascending: false })
    .limit(sec.item_limit || 10);
  if (cleanCity) carQuery = carQuery.ilike("city", `%${cleanCity}%`);
@@ -703,13 +703,13 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  } else if (sec.type === "classifieds_spotlight") {
  let clsQuery = supabase
    .from("classifieds")
-   .select("id, title, price_cents, attributes, category_slug, city, store_id, media_urls, stores(id, name, slug, waesy_marketplace_enabled, publish_to_marketplace)")
-   .eq("status", "published")
+   .select("id, title, price_cents, attributes, category, niche_category, city, store_id, images, feed_media, stores(id, name, slug, waesy_marketplace_enabled, publish_to_marketplace)")
+   .in("status", ["published", "active"])
    .order("created_at", { ascending: false })
    .limit(sec.item_limit || 10);
  if (cleanCity) clsQuery = clsQuery.ilike("city", `%${cleanCity}%`);
  if (storeId) clsQuery = clsQuery.eq("store_id", storeId);
- if (sec.taxonomy_slug) clsQuery = clsQuery.ilike("category_slug", `%${sec.taxonomy_slug}%`);
+ if (sec.taxonomy_slug) clsQuery = clsQuery.ilike("category", `%${sec.taxonomy_slug}%`);
  const { data: clsRows } = await clsQuery;
  sectionItems = (clsRows || []).filter((c: any) => !c.stores || isStorePublicOnMarketplace(c.stores));
  } else if (sec.type === "single_store_spotlight") {

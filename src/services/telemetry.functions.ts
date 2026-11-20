@@ -74,14 +74,25 @@ export const trackBuilderEvent = createServerFn({ method: "POST" })
  try {
  const supabase = getAnonServerClient(); // Using anon to not fail if not authenticated (telemetry)
  
+ // EARS-RES-02: Capping estrito de metadata para proteger WAL/disco
+ let cappedMetadata: Record<string, unknown> = {};
+ if (data.metadata) {
+   try {
+     const raw = JSON.stringify(data.metadata);
+     cappedMetadata = raw.length > 1024 ? { _truncated: true, _length: raw.length } : data.metadata;
+   } catch {
+     cappedMetadata = {};
+   }
+ }
+
  // We don't block the UI thread if this fails, but we want to log it
  const { error } = await supabase.from("builder_analytics_events").insert({
- event_type: data.event_type,
- node_id: data.node_id,
- block_type: data.block_type,
- document_id: data.document_id || null,
+ event_type: String(data.event_type).slice(0, 64),
+ node_id: String(data.node_id).slice(0, 128),
+ block_type: String(data.block_type).slice(0, 64),
+ document_id: data.document_id ? String(data.document_id).slice(0, 128) : null,
  session_id: "anonymous", // Assuming simple generic session tracking for now
- metadata: data.metadata || {},
+ metadata: cappedMetadata,
  });
 
  if (error) {
@@ -200,9 +211,29 @@ export const logSystemError = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     try {
+      const cappedMessage = String(data.message || "").slice(0, 1024);
+      // EARS-RES-02: Barreira anti-cascata quando o banco está offline ou sem espaço de WAL
+      if (
+        /connect ECONNREFUSED|schema cache|No space left on device|503|522|PGRST002|AuthRetryableFetchError/i.test(
+          cappedMessage,
+        )
+      ) {
+        return { success: false, skipped: true };
+      }
+
       const supabase = getServerClient();
       const identity = await getServerIdentity().catch(() => null);
-      const payload = (data.error_payload || {}) as Record<string, any>;
+      const rawPayload = (data.error_payload || {}) as Record<string, any>;
+      let payload: Record<string, any> = {};
+      try {
+        const serialized = JSON.stringify(rawPayload);
+        payload =
+          serialized.length > 2048
+            ? { _truncated: true, _original_length: serialized.length, preview: serialized.slice(0, 1024) }
+            : rawPayload;
+      } catch {
+        payload = { _error: "payload_serialization_failed" };
+      }
 
       // Registra no canal canônico de telemetria de erros (`system_error_logs`)
       try {
@@ -217,10 +248,10 @@ export const logSystemError = createServerFn({ method: "POST" })
         recordCanonicalError({
           route: data.route || data.subsystem,
           operation: data.subsystem,
-          errorMessage: data.message,
+          errorMessage: cappedMessage,
           severity: mappedSeverity,
           userId: identity?.id || undefined,
-          pageUrl: typeof payload.page_url === "string" ? payload.page_url : undefined,
+          pageUrl: typeof payload.page_url === "string" ? payload.page_url.slice(0, 500) : undefined,
           schemaName: typeof payload.schema_name === "string" ? payload.schema_name : undefined,
           tableName: typeof payload.table_name === "string" ? payload.table_name : undefined,
           columnName: typeof payload.column_name === "string" ? payload.column_name : undefined,
@@ -235,9 +266,9 @@ export const logSystemError = createServerFn({ method: "POST" })
         .from("system_audit_logs")
         .insert({
           severity: data.severity,
-          subsystem: data.subsystem,
-          route: data.route || null,
-          message: data.message,
+          subsystem: String(data.subsystem).slice(0, 128),
+          route: data.route ? String(data.route).slice(0, 256) : null,
+          message: cappedMessage,
           error_payload: payload,
           user_id: identity?.id || null,
         })

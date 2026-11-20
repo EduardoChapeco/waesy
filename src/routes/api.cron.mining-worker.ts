@@ -25,6 +25,7 @@ export const cronBodySchema = z.object({
   ]),
   triggeredAt: z.string().optional(),
   source: z.string().optional(),
+  manualTrigger: z.boolean().optional(),
 });
 
 export async function handleCronWorker(request: Request): Promise<Response> {
@@ -52,7 +53,27 @@ export async function handleCronWorker(request: Request): Promise<Response> {
       );
     }
 
-    const { jobType, triggeredAt, source } = parsed.data;
+    const { jobType, triggeredAt, source, manualTrigger } = parsed.data;
+
+    // EARS-RES-01: Zero consumo ocioso — bloqueia disparos autônomos de pg_cron sem gatilho manual explícito
+    const isManual =
+      manualTrigger === true ||
+      source === "manual" ||
+      request.headers.get("x-waesy-manual-trigger") === "true" ||
+      (typeof process !== "undefined" && process.env?.ENABLE_AUTONOMOUS_MINING_CRON === "true");
+
+    if (!isManual) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          skipped: true,
+          reason: "autonomous_mining_disabled_ears_res_01",
+          jobType,
+          timestamp: new Date().toISOString(),
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    }
 
     console.info(`[cron-mining-worker] Dispatching job="${jobType}" triggered_at="${triggeredAt}" source="${source}"`);
 

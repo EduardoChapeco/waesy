@@ -76,12 +76,12 @@ const PRESETS: Record<string, NichePresetSeed> = {
       { question: "Posso usar meu próprio domínio no Turis?", answer: "Sim. Planos profissionais suportam subdomínio dedicado e domínio customizado via DNS." },
     ],
   },
-  tableway: {
+  wider: {
     badge: "Vertical Gastronomia & KDS",
     heroTitle: "Cardápio Digital, Cozinha KDS e Delivery",
     heroSubtitle: "Feito exclusivamente para restaurantes, pizzarias, bares e dark kitchens com mesas, comandas e despacho a R$ 0,99.",
     nicheId: "gastronomy",
-    brandId: "tableway",
+    brandId: "wider",
     sku: "waesy_gastro_delivery",
     modules: [
       { id: "menu", title: "Cardápio Digital QR & Adicionais", category: "Vendas", description: "Cardápio leve com fotos, combinações de sabores, bordas e adicionais.", highlights: ["QR na mesa", "Sem comissão abusiva", "Horários automáticos"], iconName: "UtensilsCrossed" },
@@ -99,7 +99,7 @@ const PRESETS: Record<string, NichePresetSeed> = {
       { label: "Cozinha", value: "KDS Real-time", detail: "Controle de preparo e estoque" },
     ],
     faqs: [
-      { question: "O TableWay controla mesas e cozinha ao mesmo tempo?", answer: "Sim. Pedidos de QR Code, garçom ou delivery chegam à mesma fila KDS com status em tempo real." },
+      { question: "O Wider controla mesas e cozinha ao mesmo tempo?", answer: "Sim. Pedidos de QR Code, garçom ou delivery chegam à mesma fila KDS com status em tempo real." },
     ],
   },
   wowbook: {
@@ -128,12 +128,12 @@ const PRESETS: Record<string, NichePresetSeed> = {
       { question: "Funciona para barbearia por assinatura e clínica?", answer: "Sim. Você seleciona o foco exato (salão, barbearia ou clínica) e o Workspace adapta toda a terminologia." },
     ],
   },
-  lexcloud: {
+  juris: {
     badge: "Vertical Escritórios Jurídicos",
     heroTitle: "Gestão Jurídica, Prazos e Assinaturas",
     heroSubtitle: "Ambiente dedicado para advocacia e compliance: casos, prazos fatais, cofre GED e contratos de honorários.",
     nicheId: "law_firm",
-    brandId: "lexcloud",
+    brandId: "juris",
     sku: "waesy_legal_office",
     modules: [
       { id: "cases", title: "Processos, Prazos & Diligências", category: "Jurídico", description: "Controle prazos processuais, audiências e responsáveis por cada pasta.", highlights: ["Alertas de prazo", "Agenda forense", "Timeline por caso"], iconName: "Scale" },
@@ -151,12 +151,12 @@ const PRESETS: Record<string, NichePresetSeed> = {
     ],
     faqs: [{ question: "Meus dados ficam isolados de outros clientes?", answer: "Sim. Toda pasta, contato e contrato opera sob isolamento multi-tenant com RLS estrito." }],
   },
-  passhub: {
+  eventio: {
     badge: "Vertical Eventos & Ingressos",
     heroTitle: "Bilheteria Digital e Check-in QR",
     heroSubtitle: "Para produtoras, feiras e casas de eventos: lotes progressivos, promoters afiliados e validação na portaria.",
     nicheId: "events",
-    brandId: "passhub",
+    brandId: "eventio",
     sku: "waesy_bundle_pro",
     modules: [
       { id: "tickets", title: "Lotes, Setores & Passaportes", category: "Bilheteria", description: "Configure virada automática de lotes, camarotes e ingressos gratuitos ou pagos.", highlights: ["Virada por limite", "Pix instantâneo", "Sem filas"], iconName: "Ticket" },
@@ -289,16 +289,16 @@ const PRESETS: Record<string, NichePresetSeed> = {
     ],
     faqs: [{ question: "Posso ocultar imóveis privados da vitrine pública?", answer: "Sim. Você controla quais imóveis aparecem apenas para sua carteira e quais vão ao portal." }],
   },
-  varejo: {
-    badge: "Vertical Varejo & Mercados",
-    heroTitle: "PDV Ágil, Estoque em Grade e Entregas",
-    heroSubtitle: "Controle variações de cor, tamanho e lote, opere frente de caixa ágil e receba pedidos locais.",
+  store: {
+    badge: "Vertical Lojas & Varejo",
+    heroTitle: "PDV Ágil, Estoque em Grade e Vitrine Online",
+    heroSubtitle: "Controle variações de cor, tamanho e código EAN, opere frente de caixa ágil e receba pedidos locais.",
     nicheId: "retail",
     brandId: "waesy_studio",
     sku: "waesy_retail_commerce",
     modules: [
-      { id: "stock", title: "Catálogo com Grades & Validade", category: "Estoque", description: "Gerencie combinações de tamanho, cor, código de barras e alertas de reposição.", highlights: ["Múltiplas grades", "Custo e margem", "Inventário rápido"], iconName: "Package" },
-      { id: "pdv", title: "Caixa PDV & Separação Local", category: "Vendas", description: "Frente de caixa com código de barras, turnos de operadores e despacho local.", highlights: ["Turnos & sangria", "Separação de pedidos", "Entrega Waesy Go"], iconName: "ShoppingBag" },
+      { id: "stock", title: "Catálogo com Grades & EAN", category: "Estoque", description: "Gerencie combinações de tamanho, cor, código de barras e alertas de reposição.", highlights: ["Múltiplas grades", "Custo e margem", "Inventário rápido"], iconName: "Package" },
+      { id: "pdv", title: "Caixa PDV & Vitrine da Loja", category: "Vendas", description: "Frente de caixa com código de barras, turnos de operadores e despacho local.", highlights: ["Turnos & sangria", "Vitrine integrada", "Entrega Waesy Go"], iconName: "ShoppingBag" },
     ],
     steps: [
       { title: "1. Importe seu Catálogo", description: "Organize categorias, preços, variações e estoque inicial." },
@@ -306,11 +306,34 @@ const PRESETS: Record<string, NichePresetSeed> = {
       { title: "3. Controle Margem e Caixa", description: "Feche turnos com visão clara de pagamentos e lucro." },
     ],
     metrics: [
-      { label: "Estoque", value: "Grades + Lote", detail: "Atualização em tempo real" },
+      { label: "Estoque", value: "Grades + EAN", detail: "Atualização em tempo real" },
       { label: "PDV", value: "Multi-Turno", detail: "Abertura e fechamento seguro" },
       { label: "Canal", value: "Loja + Online", detail: "Mesmo estoque unificado" },
     ],
-    faqs: [{ question: "O varejo suporta produtos pesados por quilo ou variações de tamanho?", answer: "Sim. Produtos suportam unidades por peso, variações combinadas e código EAN." }],
+    faqs: [{ question: "O Waesy Store suporta variações de tamanho e cor com código EAN?", answer: "Sim. Produtos suportam grades combinadas, SKU próprio e código de barras." }],
+  },
+  mercado: {
+    badge: "Vertical Supermercados & Mercearias",
+    heroTitle: "PDV de Caixa Rápido, Balança, Lotes e Delivery",
+    heroSubtitle: "Operação completa para mercados, hortifrutis, açougues e mercearias com itens pesáveis, validade de lotes e entregas Waesy Go.",
+    nicheId: "retail",
+    brandId: "waesy_studio",
+    sku: "waesy_retail_commerce",
+    modules: [
+      { id: "weighable", title: "Produtos Pesáveis & Balança PDV", category: "Frente de Caixa", description: "Venda por quilo/grama com código de balança, ajuste de separação e leitura EAN instantânea.", highlights: ["Itens por quilo", "Ajuste de balança", "Caixa rápido"], iconName: "ShoppingBag" },
+      { id: "batches", title: "Controle de Lotes, Validade & Encartes", category: "Estoque", description: "Monitore vencimento de perecíveis, giro de gôndola e publique ofertas do dia.", highlights: ["Alerta de validade", "Encartes digitais", "Entrega Waesy Go"], iconName: "Package" },
+    ],
+    steps: [
+      { title: "1. Cadastre Secos e Perecíveis", description: "Configure produtos por unidade ou peso (kg/g) e validade de lotes." },
+      { title: "2. Opere Caixa e Separação", description: "Passe compras no PDV ou separe pedidos online com ajuste real de peso." },
+      { title: "3. Despache no Bairro", description: "Entregue compras de mercado com frota própria ou Waesy Go." },
+    ],
+    metrics: [
+      { label: "Pesáveis", value: "Kg + Balança", detail: "Ajuste exato na separação" },
+      { label: "Perecíveis", value: "Lote & Validade", detail: "Prevenção de perdas" },
+      { label: "Delivery", value: "R$ 0,99", detail: "Taxa fixa Waesy Go" },
+    ],
+    faqs: [{ question: "O Waesy Mercado suporta produtos vendidos por quilo com variação de peso na separação?", answer: "Sim. Você pode operar por faixas de 100g ou ajuste exato de balança antes da entrega." }],
   },
 };
 

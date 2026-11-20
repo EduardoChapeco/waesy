@@ -213,10 +213,11 @@ export const createDeliveryDispatch = createServerFn({ method: "POST" })
     }
     assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
 
-    // Gerar token opaco e PIN de 4 dígitos
-    const randomSuffix = Math.random().toString(36).substring(2, 10);
-    const token = `disp_${Date.now().toString(36)}_${randomSuffix}`;
-    const confirmationPin = Math.floor(1000 + Math.random() * 9000).toString();
+    // Gerar token opaco e PIN de 4 dígitos via Web Crypto
+    const pinBuffer = new Uint32Array(1);
+    crypto.getRandomValues(pinBuffer);
+    const token = `disp_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`;
+    const confirmationPin = (1000 + (pinBuffer[0] % 9000)).toString();
 
     const dispatchRecord = {
       store_id: targetStoreId,

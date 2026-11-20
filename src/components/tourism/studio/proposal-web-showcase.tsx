@@ -1440,7 +1440,7 @@ export function ProposalWebShowcase({
               Explore outros roteiros e experiências selecionadas com consultoria personalizada.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {hasMultipleOpts ? (
+              {hasMultipleOpts && proposal.options ? (
                 proposal.options.slice(0, 4).map((opt, oIdx) => {
                   const optPrice = opt.pricing?.total_price_cents || 0;
                   const optHotel = opt.hotel_name || opt.hotels?.[0]?.hotel_name || "Hospedagem Selecionada";

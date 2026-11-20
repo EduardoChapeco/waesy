@@ -24,7 +24,6 @@ import {
   type ArtifactArchetype,
 } from "./ai-builder-composition.functions";
 import { buildSpreadsheetPayload } from "./builder-copilot-bridge";
-import { linkRecipeIngredientsToInventory } from "./mining/specialized-extractors";
 import type { AIActivityStep, ChatArtifactType, SubagentRole } from "@/types/chat";
 import type { CopilotFsmPhase } from "@/types/copilot-fsm";
 
@@ -1209,10 +1208,11 @@ export async function executeAutonomousCopilotTask(
       catalogProducts = (prods || []).map((p: any) => ({ id: p.id, name: p.title }));
     }
 
-    const matches =
-      ingredientLines.length && catalogProducts.length
-        ? linkRecipeIngredientsToInventory(ingredientLines, catalogProducts)
-        : [];
+    let matches: Array<any> = [];
+    if (ingredientLines.length && catalogProducts.length) {
+      const { linkRecipeIngredientsToInventory } = await import("./mining/specialized-extractors");
+      matches = linkRecipeIngredientsToInventory(ingredientLines, catalogProducts);
+    }
 
     steps[steps.length - 1].status = "completed";
     steps[steps.length - 1].completedAt = new Date().toISOString();

@@ -1086,6 +1086,8 @@ export const saveCorporateContract = createServerFn({ method: "POST" })
     })
   )
   .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, undefined, data.agencyId);
     const supabase = getServerClient();
     const payload = {
       company_id: data.companyId,
@@ -1107,6 +1109,7 @@ export const saveCorporateContract = createServerFn({ method: "POST" })
         .from("corporate_contracts")
         .update(payload)
         .eq("id", data.id)
+        .eq("agency_id", identity.store_id)
         .select()
         .single();
       if (error) throw new Error("Erro ao atualizar contrato: " + error.message);
@@ -1154,6 +1157,8 @@ export const saveCorporateCreditLine = createServerFn({ method: "POST" })
     })
   )
   .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, undefined, data.agencyId);
     const supabase = getServerClient();
     const payload = {
       company_id: data.companyId,
@@ -1173,6 +1178,7 @@ export const saveCorporateCreditLine = createServerFn({ method: "POST" })
         .from("corporate_credit_lines")
         .update(payload)
         .eq("id", data.id)
+        .eq("agency_id", identity.store_id)
         .select()
         .single();
       if (error) throw new Error("Erro ao atualizar linha de crédito: " + error.message);
@@ -1219,6 +1225,8 @@ export const saveCorporateTravelBudget = createServerFn({ method: "POST" })
     })
   )
   .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity);
     const supabase = getServerClient();
     const payload = {
       company_id: data.companyId,
@@ -1237,6 +1245,7 @@ export const saveCorporateTravelBudget = createServerFn({ method: "POST" })
         .from("corporate_travel_budgets")
         .update(payload)
         .eq("id", data.id)
+        .eq("company_id", data.companyId)
         .select()
         .single();
       if (error) throw new Error("Erro ao atualizar orçamento: " + error.message);
@@ -1280,6 +1289,9 @@ export const requestCorporateTravelAdvance = createServerFn({ method: "POST" })
     })
   )
   .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    if (!identity.id) throw new Error("Não autenticado para solicitar adiantamento corporativo.");
+    assertStoreAccess(identity);
     const supabase = getServerClient();
     const { data: inserted, error } = await supabase
       .from("corporate_travel_advances")
@@ -1311,6 +1323,7 @@ export const updateCorporateTravelAdvanceStatus = createServerFn({ method: "POST
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
+    assertStoreAccess(identity);
     const payload: any = {
       status: data.status,
       approved_by: identity.id,
@@ -1364,6 +1377,9 @@ export const saveCorporateTravelExpense = createServerFn({ method: "POST" })
     })
   )
   .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    if (!identity.id) throw new Error("Não autenticado para salvar despesa corporativa.");
+    assertStoreAccess(identity);
     const supabase = getServerClient();
     const payload = {
       company_id: data.companyId,
@@ -1385,6 +1401,7 @@ export const saveCorporateTravelExpense = createServerFn({ method: "POST" })
         .from("corporate_travel_expenses")
         .update(payload)
         .eq("id", data.id)
+        .eq("company_id", data.companyId)
         .select()
         .single();
       if (error) throw new Error("Erro ao atualizar despesa: " + error.message);

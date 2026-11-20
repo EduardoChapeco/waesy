@@ -211,7 +211,8 @@ function CustomerConversationsIndexPage() {
     queryKey: ["customer-chat-threads"],
     queryFn: () => listCustomerChatThreads(),
     initialData: initialThreads,
-    refetchInterval: 12000,
+    refetchInterval: 25000,
+    refetchOnWindowFocus: true,
   });
 
   const { data: contactsData, isLoading: isLoadingContacts } = useQuery({

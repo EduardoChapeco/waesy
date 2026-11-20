@@ -15,14 +15,14 @@ import {
 
 describe("Multi-Brand Vertical Ecosystem & Marketplace Opt-In Engine (SPEC-MULTI-BRAND-VERTICAL-ECOSYSTEM)", () => {
   describe("EARS-01 & Catálogo de 12 Verticais Especializadas", () => {
-    it("deve registrar todas as 12 marcas verticais canônicas com domínios, nichos e nomenclaturas completas", () => {
+    it("deve registrar todas as 12 marcas verticais canônicas com domínios, nichos e nomenclaturas completas e manter aliases legados", () => {
       const expectedIds = [
         "waesy",
         "wowbook",
-        "tableway",
+        "wider",
         "turis",
-        "passhub",
-        "lexcloud",
+        "eventio",
+        "juris",
         "talentlink",
         "omnipage",
         "signflow",
@@ -41,6 +41,11 @@ describe("Multi-Brand Vertical Ecosystem & Marketplace Opt-In Engine (SPEC-MULTI
         expect(config.nomenclature.itemSingular.length).toBeGreaterThan(0);
         expect(config.nomenclature.customerPlural.length).toBeGreaterThan(0);
       }
+
+      // Retrocompatibilidade com identificadores legados
+      expect(getBrandVerticalById("tableway").id).toBe("wider");
+      expect(getBrandVerticalById("passhub").id).toBe("eventio");
+      expect(getBrandVerticalById("lexcloud").id).toBe("juris");
     });
 
     it("deve retornar fallback seguro para waesy quando brandId for nulo ou desconhecido", () => {
@@ -53,18 +58,23 @@ describe("Multi-Brand Vertical Ecosystem & Marketplace Opt-In Engine (SPEC-MULTI
   describe("EARS-04: Resolução Determinística de Marca por Hostname", () => {
     it("deve resolver domínios dedicados e subdomínios de cada vertical especializada", () => {
       expect(resolveBrandContextFromHost("wowbook.com.br").id).toBe("wowbook");
-      expect(resolveBrandContextFromHost("barbearia.wowbook.com.br").id).toBe("wowbook");
-      expect(resolveBrandContextFromHost("tableway.com.br:3000").id).toBe("tableway");
-      expect(resolveBrandContextFromHost("pizzaria.tableway.com.br").id).toBe("tableway");
-      expect(resolveBrandContextFromHost("turis.com.br").id).toBe("turis");
-      expect(resolveBrandContextFromHost("passhub.com.br").id).toBe("passhub");
-      expect(resolveBrandContextFromHost("lexcloud.com.br").id).toBe("lexcloud");
+      expect(resolveBrandContextFromHost("wowbook.waesy.com.br").id).toBe("wowbook");
+      expect(resolveBrandContextFromHost("wider.waesy.com.br").id).toBe("wider");
+      expect(resolveBrandContextFromHost("tableway.com.br:3000").id).toBe("wider");
+      expect(resolveBrandContextFromHost("pizzaria.tableway.com.br").id).toBe("wider");
+      expect(resolveBrandContextFromHost("turis.waesy.com.br").id).toBe("turis");
+      expect(resolveBrandContextFromHost("eventio.waesy.com.br").id).toBe("eventio");
+      expect(resolveBrandContextFromHost("passhub.com.br").id).toBe("eventio");
+      expect(resolveBrandContextFromHost("juris.waesy.com.br").id).toBe("juris");
+      expect(resolveBrandContextFromHost("lexcloud.com.br").id).toBe("juris");
       expect(resolveBrandContextFromHost("talentlink.com.br").id).toBe("talentlink");
       expect(resolveBrandContextFromHost("omnipage.com.br").id).toBe("omnipage");
-      expect(resolveBrandContextFromHost("signflow.com.br").id).toBe("signflow");
+      expect(resolveBrandContextFromHost("signflow.waesy.com.br").id).toBe("signflow");
+      expect(resolveBrandContextFromHost("noticias.waesy.com.br").id).toBe("waesy_news");
       expect(resolveBrandContextFromHost("news.waesy.com.br").id).toBe("waesy_news");
       expect(resolveBrandContextFromHost("copilot.waesy.com.br").id).toBe("waesy_copilot");
       expect(resolveBrandContextFromHost("studio.waesy.com.br").id).toBe("waesy_studio");
+      expect(resolveBrandContextFromHost("pro.waesy.com.br").id).toBe("waesy_studio");
       expect(resolveBrandContextFromHost("painel.waesy.com.br").id).toBe("waesy_studio");
       expect(resolveBrandContextFromHost("waesy.com.br").id).toBe("waesy");
       expect(resolveBrandContextFromHost("").id).toBe("waesy");

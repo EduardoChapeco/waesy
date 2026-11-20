@@ -62,11 +62,12 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
       (typeof window !== "undefined" &&
         (window.location.search.includes("app=") || window.location.search.includes("store="))));
 
-  // Check if current page is full-screen standalone auth page, landing form, or mobile customer portal
+  // Check if current page is full-screen standalone auth page, landing form, business onboarding, or mobile customer portal
   const isStandalonePage =
     location.pathname.startsWith("/entrar") ||
     location.pathname.startsWith("/cadastro") ||
     location.pathname.startsWith("/cadastroantecipado") ||
+    location.pathname.startsWith("/criar-negocio") ||
     location.pathname.startsWith("/recuperar-senha") ||
     location.pathname.startsWith("/redefinir-senha") ||
     location.pathname.startsWith("/f/") ||

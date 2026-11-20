@@ -32,6 +32,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Label } from "@/components/ui/label";
 import { MediaGalleryField } from "@/components/ui/media-gallery-field";
 import { Switch } from "@/components/ui/switch";
@@ -1079,19 +1080,19 @@ export function ProposalWebPageBuilder({
               <ImagePlus className="size-4 text-primary" />
               <span>Banner Promocional de Rodapé (Opcional)</span>
             </Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <Input
-                type="url"
+            <div className="space-y-2">
+              <ImageUpload
                 value={config.promo_banner_url || ""}
-                onChange={(e) => commitConfig({ ...config, promo_banner_url: e.target.value })}
-                placeholder="URL da imagem do banner"
-                className="h-11 text-xs"
+                onChange={(url) => commitConfig({ ...config, promo_banner_url: url })}
+                onRemove={() => commitConfig({ ...config, promo_banner_url: "" })}
+                bucket="tourism-media"
+                aspectPreset="banner"
               />
               <Input
                 type="url"
                 value={config.promo_banner_link || ""}
                 onChange={(e) => commitConfig({ ...config, promo_banner_link: e.target.value })}
-                placeholder="Link de destino do banner"
+                placeholder="Link de destino do banner (https://...)"
                 className="h-11 text-xs"
               />
             </div>

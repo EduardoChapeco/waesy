@@ -7,6 +7,8 @@
 -- ============================================================================
 
 -- 1. Regras Oficiais da Rede de Entregadores Parceiros MotoLink
+ALTER TABLE public.courier_surge_pricing_rules ALTER COLUMN courier_id DROP NOT NULL;
+
 INSERT INTO public.courier_surge_pricing_rules (
   id,
   min_fee_cents,

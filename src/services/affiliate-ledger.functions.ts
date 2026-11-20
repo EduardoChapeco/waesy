@@ -35,6 +35,10 @@ export const trackOrderCommissionInput = z.object({
 export const trackOrderCommissionOnCheckout = createServerFn({ method: "POST" })
   .validator(trackOrderCommissionInput)
   .handler(async ({ data: input }) => {
+    const identity = await getServerIdentity();
+    if (!identity.id && !identity.customer_id && !identity.store_id) {
+      throw new Error("Unauthorized: Identidade requerida para rastrear comissão.");
+    }
     const supabase = getServerClient();
     const cleanHandle = input.referralHandle.toLowerCase().trim();
 
@@ -155,6 +159,10 @@ export const syncCommissionOnOrderStatusChange = createServerFn({ method: "POST"
     })
   )
   .handler(async ({ data: input }) => {
+    const identity = await getServerIdentity();
+    if (!identity.id && !identity.store_id) {
+      throw new Error("Unauthorized: Identidade requerida para sincronizar comissão.");
+    }
     const supabase = getServerClient();
 
     // 1. Busca comissões associadas a este pedido

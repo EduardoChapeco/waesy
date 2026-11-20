@@ -142,7 +142,7 @@ export function StorePersonasMatrix() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {topSearches.map((item, idx) => (
+            {topSearches.map((item: any, idx: number) => (
               <div
                 key={idx}
                 className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium ${
@@ -204,7 +204,7 @@ export function StorePersonasMatrix() {
           <>
             {/* ── Mobile View: WhatsApp List Edge-to-Edge (<640px) ── */}
             <div className="block sm:hidden border-y border-border/40 divide-y divide-border/40 -mx-4 bg-card">
-              {personas.map((p) => {
+              {personas.map((p: any) => {
                 const intentInfo = getIntentInfo(p.intent_classification);
                 const topNiche = Array.isArray(p.top_niches) && p.top_niches[0] ? p.top_niches[0].split(":")[0] : "geral";
                 const recentQuery = Array.isArray(p.recent_queries) && p.recent_queries[0] ? p.recent_queries[0] : null;
@@ -252,7 +252,7 @@ export function StorePersonasMatrix() {
 
             {/* ── Desktop View: Bento Grid (>=640px) ── */}
             <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {personas.map((p) => {
+              {personas.map((p: any) => {
                 const intentInfo = getIntentInfo(p.intent_classification);
                 const topNiches = Array.isArray(p.top_niches) ? p.top_niches : [];
                 const recentQueries = Array.isArray(p.recent_queries) ? p.recent_queries : [];

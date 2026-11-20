@@ -47,3 +47,19 @@
 - Ativos imutáveis com hash: `Cache-Control: public, max-age=31536000, immutable`.
 - Ativos dinâmicos: `Cache-Control: public, max-age=86400, stale-while-revalidate=604800`.
 - HTML e SSR: `Cache-Control: no-cache, must-revalidate`.
+
+---
+
+## 4. Orçamento de Infraestrutura Edge & Banco de Dados (EARS-RES-01 a EARS-RES-03)
+
+### Cloudflare Pages Worker (`dist/_worker.js/index.js`)
+- **Teto Máximo Descomprimido:** $\le 24,5\text{ MB}$ (limite rígido de plataforma: $25\text{ MB}$).
+- **Teto Máximo Comprimido (Gzip):** $\le 9,5\text{ MB}$ (meta operacional enxuta: $< 6\text{ MB}$).
+- **Isolamento SSR:** Editores autenticados, modais, drawers, estúdios drag-and-drop e painéis exclusivos de cliente DEVEM constar em `SSR_CLIENT_ONLY_COMPONENTS` no `vite.config.ts` (com exportação correspondente em `src/lib/server-client-noop-shim.ts`), preservando 100% do SSR SEO das vitrines públicas (`_store.*`, `/proposta/$token`, `/app/$slug`).
+- **Verificação Automática:** Validado mecanicamente em `node scripts/preflight-release.mjs`.
+
+### Supabase PostgreSQL (`/data` & `pg_wal`)
+- **Zero Consumo Ocioso (`EARS-RES-01`):** Proibido executar `pg_cron` autônomo de mineração, scrapers contínuos ou polling agressivo (`< 10s`) sem ação explícita de usuário autenticado.
+- **Governança TTL Anti-Bloat (`EARS-RES-02`):** Retenção máxima de 3 dias e teto de 5.000 linhas em tabelas transientes (`cron.job_run_details`, `net._http_response`, `system_error_logs`, `scraper_audit_log`, `telemetry_logs`, `ai_telemetry_logs`) via `public.purge_transient_bloat()`.
+- **Capping de Payload e Trava Anti-Cascata:** Payloads de erro limitados a `2 KB` (`error_message <= 1024`, `stack_trace <= 2048`) tanto na aplicação (`src/lib/logger.ts`, `src/services/telemetry.functions.ts`) quanto via trigger SQL (`trg_cap_system_error_log_row`). Erros de indisponibilidade de banco (`ECONNREFUSED`, `503`, `522`, `PGRST002`, `No space left on device`) nunca disparam novas escritas recursivas no banco.
+- **Piso Seguro de Disco:** Manter sempre $\ge 32\text{ MB}$ livres em `/data` (mínimo absoluto de `16 MB` para alocação de segmento `pg_wal/xlogtemp`), auditado via `node scripts/preflight-release.mjs --check-db`.

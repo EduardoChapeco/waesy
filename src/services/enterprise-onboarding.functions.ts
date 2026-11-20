@@ -20,6 +20,7 @@ import {
   validateBirthDate,
 } from "@/lib/document-validator";
 import { resolveCanonicalCookieDomain } from "@/lib/auth-cookie-sanitizer";
+import { resolveSubsystemBySlug, resolveSubsystemFromHost } from "@/lib/vertical-subsystems";
 
 export const registerEnterpriseOnboardingSchema = z.object({
   // Dados do Titular / Responsável Legal
@@ -45,6 +46,9 @@ export const registerEnterpriseOnboardingSchema = z.object({
   corporateName: z.string().max(140).optional().or(z.literal("")),
   cnpj: z.string().optional().or(z.literal("")),
   niche: z.string().min(2, "Selecione o segmento de atuação do seu negócio"),
+  vertical: z.string().max(60).optional().or(z.literal("")),
+  brandOrigin: z.string().max(60).optional().or(z.literal("")),
+  verticalSku: z.string().max(60).optional().or(z.literal("")),
   city: z.string().min(2, "Cidade é obrigatória"),
   state: z.string().min(2, "Estado (UF) é obrigatório").max(2),
   address: z.string().max(200).optional().or(z.literal("")),
@@ -210,12 +214,37 @@ export const registerEnterpriseOnboardingFn = createServerFn({ method: "POST" })
       throw new Error("Não foi possível registrar a organização: " + (orgError?.message || ""));
     }
 
-    // 6. Montar Settings e Criar Loja
+    // 6. Montar Settings e Criar Loja com isolamento estrito de plano/vertical
+    const resolvedSub =
+      resolveSubsystemBySlug(data.vertical) || resolveSubsystemBySlug(data.niche);
+    const resolvedBrandOrigin =
+      data.brandOrigin?.trim() ||
+      resolvedSub?.brandVerticalId ||
+      resolvedSub?.id ||
+      (data.niche === "talk" ? "talk" : data.niche === "copilot" ? "waesy_copilot" : "waesy");
+    const resolvedVerticalSku =
+      data.verticalSku?.trim() ||
+      resolvedSub?.defaultVerticalSku ||
+      (data.niche === "pro" ? "waesy_bundle_pro" : undefined);
+    const resolvedPrimaryNiche =
+      resolvedSub?.primaryNicheId || data.niche;
+    const isAllInOnePro =
+      resolvedVerticalSku === "waesy_bundle_pro" ||
+      resolvedBrandOrigin === "waesy_studio" ||
+      resolvedBrandOrigin === "pro" ||
+      data.vertical === "pro" ||
+      data.niche === "pro";
+    const resolvedTier = isAllInOnePro ? "pro" : "starter";
+
     const settings = {
       type: data.niche,
-      segment: data.niche,
+      segment: resolvedPrimaryNiche,
       category: data.niche,
       niche: data.niche,
+      primary_niche_id: resolvedPrimaryNiche,
+      brand_origin: resolvedBrandOrigin,
+      vertical_sku: resolvedVerticalSku,
+      subscription_tier: resolvedTier,
       trade_name: data.tradeName.trim(),
       corporate_name: data.corporateName?.trim() || data.tradeName.trim(),
       created_by: userId,
@@ -232,6 +261,7 @@ export const registerEnterpriseOnboardingFn = createServerFn({ method: "POST" })
       address: data.address?.trim() || null,
       phone: cleanPhone || null,
       email: data.email.trim(),
+      brand_origin: resolvedBrandOrigin,
       settings,
       context_profile_id: userId,
       is_active: true,

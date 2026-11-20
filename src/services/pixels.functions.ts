@@ -92,7 +92,8 @@ function normalizeBrazilPhone(value: string): string | null {
     ? digits.slice(2)
     : digits;
   if (national.length !== 10 && national.length !== 11) return null;
-  return `+55${national}`;
+  // Meta Conversions API specification: digits-only E.164 with country code and WITHOUT '+'
+  return `55${national}`;
 }
 
 function hashSha256(value: string): string {
@@ -1041,14 +1042,28 @@ export const dispatchClosedLoopLeadQualification = createServerFn({ method: "POS
     const isWon =
       effectivePurpose === "won" ||
       ["won", "converted"].includes(stageResolution.canonicalBucket);
-    const isQualified =
-      effectivePurpose === "review" ||
-      effectivePurpose === "in_progress" ||
-      ["contacted", "qualified", "proposal", "negotiation"].includes(stageResolution.canonicalBucket);
+    const isSql =
+      !isWon &&
+      (effectivePurpose === "review" ||
+        ["qualified", "proposal", "negotiation"].includes(stageResolution.canonicalBucket));
+    const isMql =
+      !isWon &&
+      !isSql &&
+      (effectivePurpose === "in_progress" ||
+        ["contacted", "qualifying"].includes(stageResolution.canonicalBucket));
 
     const hasPurchaseValue = (data.conversionValue || 0) > 0;
-    const metaEventName = isWon && hasPurchaseValue ? "Purchase" : (isWon || isQualified ? "QualifiedLead" : "Lead");
-    const gaEventName = isWon && hasPurchaseValue ? "purchase" : "generate_lead";
+    const qualificationTier = isWon ? "won" : isSql ? "sql" : isMql ? "mql" : "raw";
+    const metaEventName = isWon && hasPurchaseValue
+      ? "Purchase"
+      : isWon || isSql
+        ? "QualifiedLead"
+        : "Lead";
+    const gaEventName = isWon && hasPurchaseValue
+      ? "purchase"
+      : isSql
+        ? "qualify_lead"
+        : "generate_lead";
     const eventId = data.eventId || `lead_${data.leadId}_${stageResolution.matchedStageKey}`;
 
     const results: { meta?: any; google?: any } = {};
@@ -1079,7 +1094,9 @@ export const dispatchClosedLoopLeadQualification = createServerFn({ method: "POS
           customData: {
             crm_stage: stageResolution.matchedStageKey,
             crm_purpose: effectivePurpose,
+            qualification_tier: qualificationTier,
             lead_id: data.leadId,
+            ...(data.ctwaClid ? { ctwa_clid: data.ctwaClid } : {}),
             ...(data.campaignId ? { campaign_id: data.campaignId } : {}),
             ...(data.adId ? { ad_id: data.adId } : {}),
             ...(data.formId ? { form_id: data.formId } : {}),
@@ -1100,7 +1117,7 @@ export const dispatchClosedLoopLeadQualification = createServerFn({ method: "POS
         eventName: gaEventName,
         conversionValue: data.conversionValue || 0,
         currency: "BRL",
-        clientId: data.fbp || undefined,
+        clientId: data.deviceId || data.leadId || undefined,
         deviceId: data.deviceId || undefined,
         gclid: data.gclid || undefined,
         gbraid: data.gbraid || undefined,

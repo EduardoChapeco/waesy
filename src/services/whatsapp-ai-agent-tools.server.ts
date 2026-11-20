@@ -233,8 +233,19 @@ export async function toolGetOrderStatus(input: OrderStatusInput): Promise<Order
  */
 export async function toolHandoffToHuman(input: HandoffInput): Promise<{ success: boolean; message: string }> {
   const db = getServerClient();
+  const nowIso = new Date().toISOString();
 
-  // 1. Atualiza departamento da thread
+  // 1. Preserva metadata existente e pausa imediatamente a IA (handoff_mode = human_queue)
+  const { data: existingThread } = await db
+    .from("chat_threads")
+    .select("metadata")
+    .eq("id", input.threadId)
+    .eq("store_id", input.storeId)
+    .maybeSingle();
+  const prevMeta = (existingThread?.metadata && typeof existingThread.metadata === "object"
+    ? existingThread.metadata
+    : {}) as Record<string, unknown>;
+
   await db
     .from("chat_threads")
     .update({
@@ -242,7 +253,14 @@ export async function toolHandoffToHuman(input: HandoffInput): Promise<{ success
       priority: input.priority || "normal",
       status: "open",
       internal_notes: `[Transbordo IA]: ${input.summaryReason}`,
-      updated_at: new Date().toISOString(),
+      metadata: {
+        ...prevMeta,
+        handoff_mode: "human_queue",
+        ai_auto_reply_enabled: false,
+        ai_halted_reason: `tool_handoff:${input.targetDepartment}`,
+        ai_halted_at: nowIso,
+      },
+      updated_at: nowIso,
     })
     .eq("id", input.threadId)
     .eq("store_id", input.storeId);
@@ -437,5 +455,230 @@ export function toolGetTourismAviationPolicies(): AviationPolicyResult {
         importantNotice: "Passaportes para viagens internacionais devem possuir validade mínima de 6 meses a contar da data prevista de retorno.",
       },
     ],
+  };
+}
+
+// ============================================================================
+// 7. COTAÇÃO AO VIVO GDS + PROPOSAL STUDIO WEB + BLINDAGEM ANTI-PROMPT-INJECTION
+// ============================================================================
+
+export interface LiveGdsQuoteInput {
+  storeId: string;
+  phone: string;
+  destination: string;
+  origin?: string;
+  departureDate?: string;
+  returnDate?: string;
+  adults?: number;
+  category?: "packages" | "hotels" | "flights" | "cruises" | "transfers";
+}
+
+export interface LiveGdsQuoteResult {
+  options: Array<{
+    id: string;
+    title: string;
+    subtitle: string;
+    destination: string;
+    priceDisplay: string;
+    priceCents: number;
+    badge: string;
+    includes: string[];
+    source: string;
+    offerSnapshotId?: string;
+  }>;
+  totalFound: number;
+  providerNotice: string;
+}
+
+// 5-Layer Anti-Prompt-Injection: Quota de busca por telefone (máx 6 por hora)
+const phoneHourlySearches = new Map<string, number[]>();
+
+export function checkPhoneSearchQuota(phone: string, maxPerHour = 6): boolean {
+  const now = Date.now();
+  const oneHourAgo = now - 3600_000;
+  const timestamps = (phoneHourlySearches.get(phone) || []).filter((t) => t > oneHourAgo);
+  if (timestamps.length >= maxPerHour) {
+    phoneHourlySearches.set(phone, timestamps);
+    return false;
+  }
+  timestamps.push(now);
+  phoneHourlySearches.set(phone, timestamps);
+  return true;
+}
+
+/**
+ * Camada 1 & 4: Firewall Anti-Prompt-Injection & DLP de Saída
+ */
+const INJECTION_PATTERNS = [
+  /ignore\s+(all\s+)?(previous|prior|above)\s+instructions/i,
+  /system\s+prompt/i,
+  /you\s+are\s+now\s+in\s+developer\s+mode/i,
+  /mode\s+dan\b/i,
+  /jailbreak/i,
+  /bypass\s+security/i,
+  /reveal\s+(the\s+)?(secret|key|token|vault)/i,
+  /drop\s+table/i,
+  /delete\s+from\s+profiles/i,
+  /role\s*=\s*['"]?admin/i,
+  /\bnet_cents\b/i,
+  /\bvlNeto\b/i,
+];
+
+export function applyPromptInjectionFirewall(
+  input: string,
+): { isSafe: boolean; flaggedPattern?: string } {
+  const text = String(input || "");
+  for (const pattern of INJECTION_PATTERNS) {
+    if (pattern.test(text)) {
+      return { isSafe: false, flaggedPattern: pattern.source };
+    }
+  }
+  return { isSafe: true };
+}
+
+export function applyOutputDlpFirewall(text: string): string {
+  let sanitized = String(text || "");
+  // Redige tokens ou segredos acidentalmente ecoados
+  sanitized = sanitized.replace(/(sk_live_[a-zA-Z0-9_-]+)/g, "[REDACTED_API_KEY]");
+  sanitized = sanitized.replace(/(sbp_[a-zA-Z0-9_-]+)/g, "[REDACTED_TOKEN]");
+  sanitized = sanitized.replace(/(Bearer\s+[a-zA-Z0-9._-]+)/gi, "[REDACTED_BEARER]");
+  // Redige valores netos ou palavras de debug interno
+  sanitized = sanitized.replace(/(net_amount_cents:\s*\d+)/gi, "");
+  sanitized = sanitized.replace(/(vlNeto:\s*\d+)/gi, "");
+  return sanitized;
+}
+
+/**
+ * 7. Tool: Busca de Cotação GDS em Tempo Real (InfoTravel & Wooba) para WhatsApp
+ */
+export async function toolSearchLiveGdsTravelQuote(
+  input: LiveGdsQuoteInput,
+): Promise<LiveGdsQuoteResult> {
+  const db = getServerClient();
+  const cleanPhone = String(input.phone || "").replace(/\D/g, "");
+
+  // 1. Quota de segurança contra DoS / scraping por WhatsApp
+  if (!checkPhoneSearchQuota(cleanPhone, 6)) {
+    return {
+      options: [],
+      totalFound: 0,
+      providerNotice:
+        "Limite de consultas simultâneas atingido para este contato. Nosso consultor humano dará continuidade ao seu atendimento em breve.",
+    };
+  }
+
+  // 2. Busca via motor BFF consolidado com saneamento estrito
+  const { publicTourismAutoServiceSearchFn } = await import("@/services/infotravel");
+  const cleanDest = String(input.destination || "").replace(/[,().*%'"\\;]/g, " ").trim();
+  const cleanOrigin = String(input.origin || "").replace(/[,().*%'"\\;]/g, " ").trim();
+
+  try {
+    const searchRes = await publicTourismAutoServiceSearchFn({
+      data: {
+        storeId: input.storeId,
+        destination: cleanDest,
+        origin: cleanOrigin || undefined,
+        departureDate: input.departureDate || undefined,
+        returnDate: input.returnDate || undefined,
+        service: input.category === "transfers" ? "activities" : (input.category || "packages"),
+        guests: `${input.adults || 2} Adultos`,
+        rooms: [{ adults: input.adults || 2, childrenAges: [] }],
+      },
+    });
+
+    const items = (searchRes.results || []).slice(0, 3).map((r) => ({
+      id: r.id,
+      title: r.title,
+      subtitle: r.subtitle || r.destination,
+      destination: r.destination || cleanDest,
+      priceDisplay: formatMoney(r.priceCents),
+      priceCents: r.priceCents,
+      badge: r.badge || "Tarifa GDS",
+      includes: r.includes || [],
+      source: r.source,
+    }));
+
+    return {
+      options: items,
+      totalFound: searchRes.results?.length || 0,
+      providerNotice: searchRes.infotravelLiveActive
+        ? "Tarifas revalidadas em tempo real com as operadoras InfoTravel."
+        : searchRes.woobaLiveActive
+        ? "Tarifas confirmadas via malha aérea GDS Wooba."
+        : "Valores promocionais sob catálogo da agência.",
+    };
+  } catch {
+    return {
+      options: [],
+      totalFound: 0,
+      providerNotice: "Não foi possível consultar os conectores GDS no momento. Especialista acionado.",
+    };
+  }
+}
+
+export interface ProposalDraftInput {
+  storeId: string;
+  customerName: string;
+  customerPhone: string;
+  destination: string;
+  totalPriceCents: number;
+  packageTitle?: string;
+  notes?: string;
+}
+
+/**
+ * 8. Tool: Criação Automática de Proposta no Proposal Studio (/proposta/:token)
+ */
+export async function toolCreateProposalDraftWeb(
+  input: ProposalDraftInput,
+): Promise<{ success: boolean; proposalUrl: string; publicToken: string }> {
+  const db = getServerClient();
+  const publicToken = `prop_${globalThis.crypto.randomUUID().replace(/-/g, "")}`;
+  const title = input.packageTitle || `Proposta de Viagem — ${input.destination}`;
+
+  // Cria proposta formal no banco
+  const { data: proposal, error } = await db
+    .from("travel_proposals")
+    .insert({
+      store_id: input.storeId,
+      public_token: publicToken,
+      title,
+      client_name: input.customerName,
+      client_whatsapp: input.customerPhone,
+      destination_city: input.destination,
+      status: "sent",
+      pricing: {
+        total_cents: input.totalPriceCents,
+        currency: "BRL",
+      },
+      notes: input.notes || "Proposta gerada automaticamente pelo Atendimento Especialista com tarifas em tempo real.",
+      expires_at: new Date(Date.now() + 48 * 3600_000).toISOString(),
+    })
+    .select("id")
+    .single();
+
+  if (error || !proposal) {
+    throw new Error("Não foi possível gerar a página web da proposta.");
+  }
+
+  // Registra espelho em proposal_web_pages
+  await db.from("proposal_web_pages").insert({
+    store_id: input.storeId,
+    proposal_id: proposal.id,
+    token: publicToken,
+    published_snapshot: {
+      title,
+      client_name: input.customerName,
+      destination: input.destination,
+      price_cents: input.totalPriceCents,
+      notes: input.notes,
+    },
+  }).then(() => null, () => null);
+
+  const proposalUrl = `https://waesy.com.br/proposta/${publicToken}`;
+  return {
+    success: true,
+    proposalUrl,
+    publicToken,
   };
 }

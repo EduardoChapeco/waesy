@@ -198,32 +198,27 @@ export const getSignedUploadUrl = createServerFn({ method: "POST" })
 
       enforceRateLimit(userId, "media_upload");
 
-      const privateOrStaffBuckets = new Set([
-        "payment-proofs",
-        "rma-proofs",
-        "legal-documents",
-        "receipts",
-        "order-receipts",
-        "identity-vault",
-        "cms-media",
-        "banners",
+      const adminOnlyBuckets = new Set([
         "home-banners",
         "home-categories",
-        "store-assets",
-        "brand-assets",
-        "destination-media",
-        "recipes",
       ]);
       const isStaffUser = role !== "customer" && Boolean(store_id);
-      if (privateOrStaffBuckets.has(bucket) && !isStaffUser && role !== "platform_admin") {
-        throw new Error("Bucket restrito à equipe da loja.");
+      if (adminOnlyBuckets.has(bucket) && role !== "platform_admin" && !isStaffUser) {
+        throw new Error("Bucket restrito à administração da plataforma.");
       }
 
       const folder = isStaffUser && store_id ? store_id : userId;
       const uniqueName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${ext}`;
 
-      // Tenta criar a URL assinada
+      // Tenta criar a URL assinada; se o bucket ainda não existir no Storage, provisiona e tenta novamente
       let result = await supabase.storage.from(bucket).createSignedUploadUrl(uniqueName);
+
+      if (result.error && /not found|bucket/i.test(result.error.message || "")) {
+        await supabase.storage
+          .createBucket(bucket, { public: !PRIVATE_SIGNED_BUCKETS.has(bucket) })
+          .catch(() => null);
+        result = await supabase.storage.from(bucket).createSignedUploadUrl(uniqueName);
+      }
 
       if (result.error || !result.data) {
         throw new Error(`Erro ao gerar URL de upload: ${result.error?.message}`);
@@ -319,22 +314,36 @@ export const uploadStoreMedia = createServerFn({ method: "POST" })
       validateMimeType(fileType);
       assertAllowedBffBucket(bucket);
 
-      const { requireStaff } = await import("@/lib/server-access");
-      const identity = await requireStaff();
+      const { getServerIdentity } = await import("@/lib/server-access");
+      const identity = await getServerIdentity();
+      if (!identity?.id) {
+        throw new Error("Sessão não autenticada. Faça login para enviar arquivos.");
+      }
       enforceRateLimit(identity.id, "media_upload");
 
       const supabase = getServerClient();
       const ext = fileName.split(".").pop() || "png";
-      const folder = identity.store_id;
+      const folder = identity.store_id || identity.id;
       const uniqueName = `stores/${folder}/${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${ext}`;
 
       // Extrai os bytes a partir da string base64
       const buffer = decodeInlineUpload(base64Data);
 
-      const { error: uploadError } = await supabase.storage.from(bucket).upload(uniqueName, buffer, {
+      let { error: uploadError } = await supabase.storage.from(bucket).upload(uniqueName, buffer, {
         contentType: fileType,
         upsert: true,
       });
+
+      if (uploadError && /not found|bucket/i.test(uploadError.message || "")) {
+        await supabase.storage
+          .createBucket(bucket, { public: !PRIVATE_SIGNED_BUCKETS.has(bucket) })
+          .catch(() => null);
+        const retry = await supabase.storage.from(bucket).upload(uniqueName, buffer, {
+          contentType: fileType,
+          upsert: true,
+        });
+        uploadError = retry.error;
+      }
 
       if (uploadError) {
         throw new Error(`Erro ao fazer upload da mídia: ${uploadError.message}`);

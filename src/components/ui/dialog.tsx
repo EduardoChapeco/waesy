@@ -59,7 +59,7 @@ const DialogContent = React.forwardRef<
         ref={ref}
         className={cn(
           isScreen
-            ? "fixed inset-0 z-50 flex flex-col w-screen h-dvh max-w-none rounded-none border-none bg-background p-0 overflow-hidden duration-150"
+            ? "fixed inset-0 z-50 flex flex-col w-screen h-dvh max-w-none rounded-none border-none bg-background pt-safe pb-safe p-0 overflow-hidden duration-150"
             : isForceCompact
             ? "fixed inset-0 z-50 flex flex-col w-full h-full max-w-none rounded-none border-none bg-background pt-6 pt-safe pb-6 pb-safe px-4 sm:px-6 overflow-y-auto no-scrollbar duration-150 overscroll-contain"
             : "fixed inset-auto left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 flex flex-col w-full max-h-overlay-max rounded-2xl bg-background p-6 overflow-y-auto no-scrollbar duration-150 overscroll-contain",

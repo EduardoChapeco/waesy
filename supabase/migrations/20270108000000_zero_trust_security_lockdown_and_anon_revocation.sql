@@ -12,26 +12,38 @@
 -- ------------------------------------------------------------------------------
 -- FASE 1: HARDENING DE SEARCH_PATH NAS FUNÇÕES MUTÁVEIS
 -- ------------------------------------------------------------------------------
-ALTER FUNCTION public.calculate_auth_risk_score(boolean, smallint, text, boolean, integer) SET search_path = public, pg_temp;
-ALTER FUNCTION public.dispatch_mining_cron(text) SET search_path = public, pg_temp;
-ALTER FUNCTION public.enforce_ledger_immutability() SET search_path = public, pg_temp;
-ALTER FUNCTION public.enforce_single_published_page() SET search_path = public, pg_temp;
-ALTER FUNCTION public.fn_sync_billing_invoice_total() SET search_path = public, pg_temp;
-ALTER FUNCTION public.fn_sync_classified_sponsored_flags() SET search_path = public, pg_temp;
-ALTER FUNCTION public.generate_quote_number(uuid) SET search_path = public, pg_temp;
-ALTER FUNCTION public.generate_token_transaction_seal(uuid, uuid, integer, integer, text, timestamp with time zone, text) SET search_path = public, pg_temp;
-ALTER FUNCTION public.handle_oauth_integrations_updated_at() SET search_path = public, pg_temp;
-ALTER FUNCTION public.set_courier_updated_at() SET search_path = public, pg_temp;
-ALTER FUNCTION public.set_quote_updated_at() SET search_path = public, pg_temp;
-ALTER FUNCTION public.set_tourism_incident_updated_at() SET search_path = public, pg_temp;
-ALTER FUNCTION public.set_updated_at() SET search_path = public, pg_temp;
-ALTER FUNCTION public.sync_tenant_agency_identity() SET search_path = public, pg_temp;
-ALTER FUNCTION public.tf_generate_variant_display_name() SET search_path = public, pg_temp;
-ALTER FUNCTION public.update_cbp_modtime() SET search_path = public, pg_temp;
-ALTER FUNCTION public.update_classified_subscriptions_modtime() SET search_path = public, pg_temp;
-ALTER FUNCTION public.update_phase4_updated_at_column() SET search_path = public, pg_temp;
-ALTER FUNCTION public.update_store_workflows_updated_at() SET search_path = public, pg_temp;
-ALTER FUNCTION public.update_updated_at_column() SET search_path = public, pg_temp;
+DO $$
+DECLARE
+  v_sig TEXT;
+  v_sigs TEXT[] := ARRAY[
+    'public.calculate_auth_risk_score(boolean, smallint, text, boolean, integer)',
+    'public.dispatch_mining_cron(text)',
+    'public.enforce_ledger_immutability()',
+    'public.enforce_single_published_page()',
+    'public.fn_sync_billing_invoice_total()',
+    'public.fn_sync_classified_sponsored_flags()',
+    'public.generate_quote_number(uuid)',
+    'public.generate_token_transaction_seal(uuid, uuid, integer, integer, text, timestamp with time zone, text)',
+    'public.handle_oauth_integrations_updated_at()',
+    'public.set_courier_updated_at()',
+    'public.set_quote_updated_at()',
+    'public.set_tourism_incident_updated_at()',
+    'public.set_updated_at()',
+    'public.sync_tenant_agency_identity()',
+    'public.tf_generate_variant_display_name()',
+    'public.update_cbp_modtime()',
+    'public.update_classified_subscriptions_modtime()',
+    'public.update_phase4_updated_at_column()',
+    'public.update_store_workflows_updated_at()',
+    'public.update_updated_at_column()'
+  ];
+BEGIN
+  FOREACH v_sig IN ARRAY v_sigs LOOP
+    IF to_regprocedure(v_sig) IS NOT NULL THEN
+      EXECUTE format('ALTER FUNCTION %s SET search_path = public, pg_temp', v_sig);
+    END IF;
+  END LOOP;
+END $$;
 
 -- ------------------------------------------------------------------------------
 -- FASE 2: REVOGAÇÃO DE PRIVILÉGIOS EM RPCs CRÍTICAS E SENSÍVEIS
@@ -322,7 +334,8 @@ END $$;
 -- 3.6 _applied_migrations (Tabela interna do sistema - Acesso restrito a Master/Admin)
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = '_applied_migrations' AND policyname = '_applied_migrations_admin_only') THEN
+  IF to_regclass('public._applied_migrations') IS NOT NULL
+     AND NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = '_applied_migrations' AND policyname = '_applied_migrations_admin_only') THEN
     CREATE POLICY _applied_migrations_admin_only ON public._applied_migrations
       FOR ALL TO authenticated
       USING (

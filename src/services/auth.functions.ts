@@ -324,10 +324,10 @@ export const signInWithPassword = createServerFn({ method: "POST" })
    );
 
  if (isInfraUpstreamError) {
+   console.error("[auth] Upstream auth service unavailable:", error.status, error.message);
    return {
      status: "error" as const,
-     message:
-       "O serviço de autenticação do banco de dados (Supabase) está temporariamente indisponível (HTTP 503/522 — verifique a utilização de disco do projeto no painel do Supabase).",
+     message: "Serviço de autenticação temporariamente indisponível. Tente novamente em instantes.",
    };
  }
 

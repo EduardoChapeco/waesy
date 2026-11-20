@@ -55,18 +55,50 @@ export function logSystemError(params: LogSystemErrorParams) {
 
   console.error(`[System Error - ${derivedRoute}${derivedContract ? ` (${derivedContract})` : ""}]`, errorMessage);
 
+  // EARS-RES-02: Se o erro for de conexão, disco cheio ou schema cache, não tenta gravar no próprio DB que falhou
+  const isDbUnavailableError =
+    /connect ECONNREFUSED|schema cache|No space left on device|503|522|PGRST002|AuthRetryableFetchError/i.test(
+      errorMessage,
+    );
+  if (isDbUnavailableError) {
+    return;
+  }
+
+  // EARS-RES-02: Capping estrito de payload e strings para proteção de disco e WAL
+  let sanitizedPayload: unknown = null;
+  if (params.payload != null) {
+    try {
+      const serialized = JSON.stringify(params.payload);
+      if (serialized.length > 2048) {
+        sanitizedPayload = {
+          _truncated: true,
+          _original_length: serialized.length,
+          preview: serialized.slice(0, 1024),
+        };
+      } else {
+        sanitizedPayload = params.payload;
+      }
+    } catch {
+      sanitizedPayload = { _error: "payload_serialization_failed" };
+    }
+  }
+
+  const cappedMessage = (errorMessage || "").slice(0, 1024);
+  const cappedStackTrace = stackTrace ? stackTrace.slice(0, 2048) : undefined;
+  const cappedPageUrl = derivedPageUrl ? derivedPageUrl.slice(0, 500) : undefined;
+
   try {
     const db = getServerClient();
     db.from("system_error_logs").insert({
       route: derivedRoute,
       contract_name: derivedContract,
-      page_url: derivedPageUrl,
+      page_url: cappedPageUrl,
       schema_name: derivedSchema,
       table_name: derivedTable,
       column_name: derivedColumn,
-      error_message: errorMessage,
-      stack_trace: stackTrace,
-      payload: params.payload,
+      error_message: cappedMessage,
+      stack_trace: cappedStackTrace,
+      payload: sanitizedPayload,
       user_id: derivedUserId,
       severity: params.severity || "error",
     }).then(({ error }) => {

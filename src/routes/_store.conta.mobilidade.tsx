@@ -206,7 +206,8 @@ function CustomerMobilityDashboardPage() {
     queryKey: ["customer-mobility-history"],
     queryFn: () => listCustomerMobilityRequests(),
     initialData: initialRequests,
-    refetchInterval: 8000,
+    refetchInterval: 15000,
+    refetchOnWindowFocus: true,
   });
 
   const { data: courierApp } = useQuery({

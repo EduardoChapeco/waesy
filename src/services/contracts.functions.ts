@@ -658,11 +658,111 @@ async function finalizeContractSignature(
   };
 }
 
+export const requestContractEnvelopeOtp = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      signingToken: z.string().trim().min(16).max(240),
+    }),
+  )
+  .handler(async ({ data: { signingToken } }) => {
+    const supabase = getServerClient();
+    const { data: envelope, error: envErr } = await supabase
+      .from("signature_envelopes")
+      .select("id, status, expires_at, signer_name, signer_email, signer_phone, contract_version:contract_version_id(contract:contract_id(store_id, title))")
+      .eq("signing_token", signingToken)
+      .maybeSingle();
+
+    if (envErr || !envelope) {
+      throw new Error("Envelope de assinatura inválido ou não encontrado.");
+    }
+    if (envelope.status === "signed") {
+      throw new Error("Este documento já foi assinado.");
+    }
+    if (envelope.expires_at && new Date(envelope.expires_at).getTime() <= Date.now()) {
+      throw new Error("O link de assinatura expirou.");
+    }
+
+    const { createHash, randomInt } = await import("node:crypto");
+    const otpCode = String(randomInt(100000, 999999));
+    const otpHash = createHash("sha256").update(`${envelope.id}:${otpCode}`).digest("hex");
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
+    const phoneDigits = String((envelope as any).signer_phone || "").replace(/\D/g, "");
+    const storeId = (envelope.contract_version as any)?.contract?.store_id as string | undefined;
+    const contractTitle = (envelope.contract_version as any)?.contract?.title || "Contrato Digital";
+    let deliveryChannel: "whatsapp" | "email" | "unavailable" = "unavailable";
+    let maskedTarget = envelope.signer_email || "";
+
+    if (phoneDigits.length >= 10 && storeId) {
+      const { data: waInstance } = await supabase
+        .from("whatsapp_channel_instances")
+        .select("id, provider")
+        .eq("store_id", storeId)
+        .eq("is_active", true)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (waInstance?.id) {
+        const { error: outboxErr } = await supabase.from("whatsapp_outbox").upsert(
+          {
+            store_id: storeId,
+            channel_instance_id: waInstance.id,
+            provider: waInstance.provider || "evolution_api",
+            idempotency_key: `signflow-otp:${envelope.id}:${Math.floor(Date.now() / 60000)}`,
+            recipient_phone: phoneDigits,
+            message_type: "text",
+            payload: {
+              text: `Waesy SignFlow — Seu código de verificação para assinar "${contractTitle}" é: *${otpCode}* (válido por 15 minutos). Não compartilhe este código.`,
+              envelope_id: envelope.id,
+            },
+            status: "pending",
+          },
+          { onConflict: "store_id,idempotency_key" },
+        );
+        if (!outboxErr) {
+          deliveryChannel = "whatsapp";
+          maskedTarget = `****${phoneDigits.slice(-4)}`;
+        }
+      }
+    }
+
+    if (deliveryChannel === "unavailable") {
+      return {
+        sent: false,
+        channel: "unavailable" as const,
+        message: "Nenhum canal OTP ativo (WhatsApp da agência) disponível no momento. A assinatura prosseguirá com consentimento eletrônico auditado.",
+      };
+    }
+
+    const { error: updErr } = await supabase
+      .from("signature_envelopes")
+      .update({
+        otp_code_hash: otpHash,
+        otp_expires_at: expiresAt,
+        otp_attempts: 0,
+        otp_sent_to: maskedTarget,
+      })
+      .eq("id", envelope.id);
+
+    if (updErr) {
+      throw new Error("Não foi possível registrar o código de verificação.");
+    }
+
+    return {
+      sent: true,
+      channel: deliveryChannel,
+      target: maskedTarget,
+      expiresAt,
+      message: `Código de 6 dígitos enviado via WhatsApp para ${maskedTarget}.`,
+    };
+  });
+
 export const signContractEnvelope = createServerFn({ method: "POST" })
   .validator(
     z.object({
       signingToken: z.string().trim().min(16).max(240),
       consent: z.boolean(),
+      otpCode: z.string().trim().max(12).optional(),
       signatureImageBase64: z.string().max(2_000_000).optional(),
       ipAddress: z.string().max(80).optional(),
       userAgent: z.string().max(500).optional(),
@@ -698,6 +798,38 @@ export const signContractEnvelope = createServerFn({ method: "POST" })
       throw new Error("Este envelope exige validação biométrica facial antes de assinar.");
     }
 
+    let otpVerified = false;
+    const storedOtpHash = (envelope as any).otp_code_hash as string | null | undefined;
+    const storedOtpExpires = (envelope as any).otp_expires_at as string | null | undefined;
+    const storedOtpAttempts = Number((envelope as any).otp_attempts || 0);
+    if (storedOtpHash) {
+      if (storedOtpAttempts >= 5) {
+        throw new Error("Limite de tentativas do código OTP atingido. Solicite um novo código.");
+      }
+      if (!storedOtpExpires || new Date(storedOtpExpires).getTime() <= Date.now()) {
+        throw new Error("O código OTP expirou. Solicite um novo código de verificação.");
+      }
+      const cleanOtp = String(input.otpCode || "").replace(/\D/g, "");
+      if (cleanOtp.length !== 6) {
+        throw new Error("Informe o código OTP de 6 dígitos enviado para o seu canal de contato.");
+      }
+      const { createHash } = await import("node:crypto");
+      const { timingSafeCompare } = await import("@/lib/crypto-vault.server");
+      const providedHash = createHash("sha256").update(`${envelope.id}:${cleanOtp}`).digest("hex");
+      if (!timingSafeCompare(providedHash, storedOtpHash)) {
+        await supabase
+          .from("signature_envelopes")
+          .update({ otp_attempts: storedOtpAttempts + 1 })
+          .eq("id", envelope.id);
+        throw new Error("Código OTP incorreto. Verifique a mensagem recebida e tente novamente.");
+      }
+      otpVerified = true;
+      await supabase
+        .from("signature_envelopes")
+        .update({ otp_verified_at: new Date().toISOString() })
+        .eq("id", envelope.id);
+    }
+
     const identity = await getIdentity();
 
     if (envelope.status === "signed") {
@@ -727,7 +859,13 @@ export const signContractEnvelope = createServerFn({ method: "POST" })
       };
     }
 
-    const digest = `SIG-${envelope.id}-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
+    const { randomUUID } = await import("node:crypto");
+    const digest = `SIG-${envelope.id}-${Date.now()}-${randomUUID().replace(/-/g, "").slice(0, 10)}`;
+    const honestAuthMethod = otpVerified
+      ? "whatsapp_otp"
+      : input.facialBiometricsHash
+        ? "facial_biometrics"
+        : "electronic_consent";
     const evidencePayload: Json = {
       ip_address: input.ipAddress || "127.0.0.1",
       user_agent: input.userAgent || "Browser",
@@ -737,7 +875,7 @@ export const signContractEnvelope = createServerFn({ method: "POST" })
       geo_longitude: input.geoLongitude ?? null,
       geo_city: input.geoCity || null,
       geo_state: input.geoState || null,
-      auth_method: envelope.auth_level === "advanced" ? "email_otp" : "electronic_consent",
+      auth_method: honestAuthMethod,
       consent_given: true,
       signature_digest: digest,
       facial_biometrics_hash: input.facialBiometricsHash || null,
@@ -745,6 +883,7 @@ export const signContractEnvelope = createServerFn({ method: "POST" })
         signer_email: envelope.signer_email,
         signer_phone: envelope.signer_phone,
         signer_cpf: envelope.signer_cpf,
+        otp_verified: otpVerified,
         document_hash: (envelope.contract_version as any)?.hash_sha256,
         signature_image: input.signatureImageBase64 || null,
         face_image: input.faceImageUrl || null,
@@ -2421,10 +2560,7 @@ export const getOrPrepareCountertopEnvelope = createServerFn({ method: "POST" })
     }
 
     // Caso não exista envelope prévio, emite envelope presencial imediato
-    const signingToken =
-      Math.random().toString(36).substring(2, 15) +
-      Math.random().toString(36).substring(2, 15) +
-      Date.now().toString(36);
+    const signingToken = crypto.randomUUID().replace(/-/g, "");
 
     const { data: newEnv, error: envErr } = await supabase
       .from("signature_envelopes")

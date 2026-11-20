@@ -165,6 +165,9 @@ export interface CanonicalSupplyOffer {
   mealPlan?: string | null;
   hotelStars?: number | null;
   inclusions?: string[];
+  flightStops?: number | null;
+  flightDepartureHour?: number | null;
+  flightLayoverMinutes?: number | null;
   operatorSlug?: string | null;
   targetLeadId?: string | null;
   targetCustomerId?: string | null;
@@ -2281,6 +2284,25 @@ export function evaluateUnifiedOpportunityMatch(
     total: Math.min(100, destGate.score + periodGate.score + partyGate.score + budgetGate.score),
   };
 
+  // Gate 4: Qualidade de Voo (Score de Conforto: horários e escalas)
+  let flightQualityPenalty = 0;
+  const flightComfortWarnings: string[] = [];
+  if (offer.flightDepartureHour != null && offer.flightDepartureHour >= 0 && offer.flightDepartureHour < 5) {
+    flightQualityPenalty += 12;
+    flightComfortWarnings.push("Voo com partida de madrugada (00h-05h, horário sensível).");
+  }
+  if (offer.flightStops != null && offer.flightStops > 1) {
+    const extraStops = offer.flightStops - 1;
+    flightQualityPenalty += Math.min(20, extraStops * 10);
+    flightComfortWarnings.push(`Voo com ${offer.flightStops} conexões/escalas (preferência por até 1 parada).`);
+  }
+  if (offer.flightLayoverMinutes != null && offer.flightLayoverMinutes > 480) {
+    flightQualityPenalty += 8;
+    flightComfortWarnings.push("Conexão com espera longa superior a 8 horas.");
+  }
+
+  scoreBreakdown.total = Math.max(0, scoreBreakdown.total - flightQualityPenalty);
+
   if (scoreBreakdown.total < minScore) {
     return makeRejection(
       "LOW_COMPOSITE_SCORE",
@@ -2299,7 +2321,7 @@ export function evaluateUnifiedOpportunityMatch(
     matchReasons.push(simulation.reasonPt);
   }
 
-  const warnings: string[] = [];
+  const warnings: string[] = [...flightComfortWarnings];
   if (destGate.matchedViaGateway) {
     warnings.push(`Desembarque em aeroporto gateway próximo de ${destGate.matchedLabel} (verificar transfer).`);
   }
@@ -2494,6 +2516,9 @@ export function normalizeLegacyOfferToCanonical(row: Record<string, unknown>): C
     mealPlan: (row.meal_plan as string | null) || null,
     hotelStars: row.hotel_stars ? Number(row.hotel_stars) : null,
     inclusions: Array.isArray(row.inclusions) ? (row.inclusions as string[]) : [],
+    flightStops: row.flight_stops != null ? Number(row.flight_stops) : (row.stops != null ? Number(row.stops) : null),
+    flightDepartureHour: row.departure_hour != null ? Number(row.departure_hour) : (row.departure_time ? parseInt(String(row.departure_time).split(":")[0], 10) : null),
+    flightLayoverMinutes: row.layover_minutes != null ? Number(row.layover_minutes) : null,
     operatorSlug: (row.operator_slug as string | null) || null,
     targetLeadId: ((row.target_lead_id || row.lead_id) as string | null) || null,
     targetCustomerId: (row.customer_id as string | null) || null,

@@ -638,6 +638,8 @@ export const ExecuteDelinquencyAutoDebitSchema = z.object({
 export const executeDelinquencyAutoDebit = createServerFn({ method: "POST" })
   .validator(ExecuteDelinquencyAutoDebitSchema)
   .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, undefined, data.storeId);
     const supabase = getServerClient();
     const now = new Date();
 

@@ -121,6 +121,15 @@ export async function requirePlatformAdmin(): Promise<{ id: string; role: Role; 
   return mod.requirePlatformAdmin();
 }
 
+/** Exige que a loja ativa possua plano ativo na vertical solicitada (ou Waesy Pro All-in-One). Servidor apenas. */
+export async function requireStoreVerticalAccess(
+  targetVertical: string,
+  requestedStoreId?: string | null,
+) {
+  const mod = await import("@/lib/auth-guards.server");
+  return mod.requireStoreVerticalAccess(targetVertical, requestedStoreId);
+}
+
 /** Invalida o cache em memória de identidades (chamado em logout ou troca de tenant). */
 export async function clearIdentityCache(): Promise<void> {
   const mod = await import("@/lib/identity.server");

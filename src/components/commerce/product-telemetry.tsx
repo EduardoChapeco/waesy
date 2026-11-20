@@ -47,12 +47,12 @@ export function ProductTelemetry({
     if (typeof window === "undefined" || !pixelConfig) return;
 
     if (pixelConfig.meta_pixel_id) {
-      const pixelId = pixelConfig.meta_pixel_id;
+      const pixelId = String(pixelConfig.meta_pixel_id).trim();
       const scriptId = `meta-pixel-${pixelId}`;
-      if (!document.getElementById(scriptId)) {
+      if (/^[0-9]{5,25}$/.test(pixelId) && !document.getElementById(scriptId)) {
         const script = document.createElement("script");
         script.id = scriptId;
-        script.text = `
+        script.textContent = `
           !function(f,b,e,v,n,t,s)
           {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
           n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -61,15 +61,20 @@ export function ProductTelemetry({
           t.src=v;s=b.getElementsByTagName(e)[0];
           s.parentNode.insertBefore(t,s)}(window, document,'script',
           'https://connect.facebook.net/en_US/fbevents.js');
-          fbq('init', '${pixelId}');
+          fbq('init', ${JSON.stringify(pixelId)});
           fbq('track', 'PageView');
         `;
         document.head.appendChild(script);
       }
     }
 
-    const gaId = pixelConfig.google_analytics_id;
-    const adsId = pixelConfig.google_ads_id;
+    const validGoogleId = /^(G|AW|GT|DC|UA)-[A-Za-z0-9_-]{4,32}$/;
+    const gaId = pixelConfig.google_analytics_id && validGoogleId.test(String(pixelConfig.google_analytics_id).trim())
+      ? String(pixelConfig.google_analytics_id).trim()
+      : "";
+    const adsId = pixelConfig.google_ads_id && validGoogleId.test(String(pixelConfig.google_ads_id).trim())
+      ? String(pixelConfig.google_ads_id).trim()
+      : "";
     const primaryGoogleId = gaId || adsId;
     if (primaryGoogleId && !document.getElementById("waesy-gtag-js")) {
       const gtagLoader = document.createElement("script");
@@ -80,13 +85,13 @@ export function ProductTelemetry({
 
       const gtagInit = document.createElement("script");
       gtagInit.id = "waesy-gtag-config";
-      gtagInit.text = `
+      gtagInit.textContent = `
         window.dataLayer = window.dataLayer || [];
         function gtag(){window.dataLayer.push(arguments);}
         window.gtag = window.gtag || gtag;
         gtag('js', new Date());
-        ${gaId ? `gtag('config', '${gaId}');` : ""}
-        ${adsId ? `gtag('config', '${adsId}');` : ""}
+        ${gaId ? `gtag('config', ${JSON.stringify(gaId)});` : ""}
+        ${adsId ? `gtag('config', ${JSON.stringify(adsId)});` : ""}
       `;
       document.head.appendChild(gtagInit);
     }

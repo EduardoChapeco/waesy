@@ -34,9 +34,12 @@ async function resolveAuthorizedStoreId(requestedStoreId?: string | null): Promi
 const BrandVerticalEnum = z.enum([
   "waesy",
   "wowbook",
+  "wider",
   "tableway",
   "turis",
+  "eventio",
   "passhub",
+  "juris",
   "lexcloud",
   "talentlink",
   "omnipage",

@@ -5,6 +5,7 @@ import {
 } from "@/lib/chat-client-cache";
 import { sanitizeCustomerEmail } from "@/lib/contact-sanitize";
 import { C360AttributionJourneyCard } from "@/components/chat/c360/C360AttributionJourneyCard";
+import { CopilotSondagemChecklistCard } from "@/components/chat/CopilotSondagemChecklistCard";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { MediaUploader } from "@/components/ui/media-uploader";
 import {
@@ -1882,6 +1883,16 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
           onChangeCampaign={setAttrCampaign}
           onChangeHeadline={setAttrHeadline}
           onSaveAttribution={() => void handleSaveAttribution()}
+        />
+      )}
+
+      {/* 1.3 SONDAGEM CONSULTIVA (4 As / MULTINICHO) & STATUS PROPOSTA */}
+      {threadId && (
+        <CopilotSondagemChecklistCard
+          sondagem={(data?.threadMetadata as any)?.sondagem_checklist || null}
+          adAttributionContext={(data?.threadMetadata as any)?.ai_copilot_suggestion?.adAttributionContext || null}
+          crmProposalStatus={(data?.threadMetadata as any)?.ai_copilot_suggestion?.crmProposalStatus || null}
+          whatsappOptOut={Boolean((data?.threadMetadata as any)?.whatsapp_opt_out)}
         />
       )}
 

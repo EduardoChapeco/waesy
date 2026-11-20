@@ -6,6 +6,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getPublicLeadFormBySlug, LeadFormDTO } from "@/services/lead-forms.functions";
 import { LeadFormRenderer } from "@/components/leads/lead-form-renderer";
+import { StoreAnalyticsInjector } from "@/components/analytics/StoreAnalyticsInjector";
 import { ShieldCheck, Star, Building2, CheckCircle2, ArrowLeft } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
@@ -59,6 +60,7 @@ function LeadLandingPage() {
 
   return (
     <div className="min-h-dvh bg-background flex flex-col items-center py-6 sm:py-12 px-3 sm:px-6">
+      {form.store_id && <StoreAnalyticsInjector storeId={form.store_id} pageContext="storefront" />}
       <div className="w-full max-w-xl mx-auto flex flex-col gap-6">
         {/* Topo Limpo: Identidade da Loja / Anunciante (Sem Menus Distrativos) */}
         <div className="flex items-center justify-between pb-3 border-b border-border/40">

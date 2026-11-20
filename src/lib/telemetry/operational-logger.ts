@@ -40,3 +40,88 @@ export function logOperationalEvent(level: OperationalLevel, event: string, cont
   else if (level === "warn") console.warn(line);
   else console.info(line);
 }
+
+export interface CanonicalStructuredErrorPayload {
+  trace_id: string;
+  severity: "error" | "critical";
+  route: string;
+  module: string;
+  contract: string;
+  db_schema: string;
+  db_table: string;
+  db_column: string | null;
+  error_code: string;
+  reason: string;
+  user_role: string;
+  timestamp: string;
+}
+
+export interface CanonicalErrorInput {
+  trace_id?: string;
+  severity?: "error" | "critical";
+  route?: string;
+  module: string;
+  contract: string;
+  db_schema?: string;
+  db_table?: string;
+  db_column?: string | null;
+  error_code?: string;
+  reason?: string;
+  user_role?: string;
+  error?: unknown;
+}
+
+export function buildCanonicalStructuredError(input: CanonicalErrorInput): CanonicalStructuredErrorPayload {
+  const errObj = input.error && typeof input.error === "object" ? (input.error as Record<string, unknown>) : null;
+  const rawMessage =
+    input.reason ||
+    (input.error instanceof Error
+      ? input.error.message
+      : typeof errObj?.message === "string"
+        ? errObj.message
+        : input.error != null
+          ? String(input.error)
+          : "unknown_error");
+
+  const inferredCode =
+    input.error_code ||
+    (typeof errObj?.code === "string" ? errObj.code : null) ||
+    (rawMessage.match(/\b(PGRST\d+|42703|42P01|23505|23503|42501|HTTP_\d{3})\b/)?.[1] ?? "RUNTIME_ERROR");
+
+  const colMatch =
+    rawMessage.match(/column\s+(?:[a-zA-Z0-9_]+\.)?"?([a-zA-Z0-9_]+)"?\s+does not exist/i) ||
+    rawMessage.match(/Could not find the '([a-zA-Z0-9_]+)' column/i);
+  const inferredColumn = input.db_column !== undefined ? input.db_column : (colMatch?.[1] ?? null);
+
+  const tableMatch =
+    rawMessage.match(/relation\s+"?(?:public\.)?([a-zA-Z0-9_]+)"?\s+does not exist/i) ||
+    rawMessage.match(/in\s+'([a-zA-Z0-9_]+)'\s+in the schema cache/i);
+  const inferredTable = input.db_table || tableMatch?.[1] || "unknown";
+
+  const traceId =
+    input.trace_id ||
+    (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `tr_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`);
+
+  return {
+    trace_id: traceId,
+    severity: input.severity || "error",
+    route: input.route || "server_fn",
+    module: input.module,
+    contract: input.contract,
+    db_schema: input.db_schema || "public",
+    db_table: inferredTable,
+    db_column: inferredColumn,
+    error_code: inferredCode,
+    reason: sanitizeSensitiveText(rawMessage).slice(0, 500),
+    user_role: input.user_role || "anonymous",
+    timestamp: new Date().toISOString(),
+  };
+}
+
+export function logCanonicalStructuredError(input: CanonicalErrorInput): CanonicalStructuredErrorPayload {
+  const payload = buildCanonicalStructuredError(input);
+  console.error(`[waesy:structured-error] ${JSON.stringify(payload)}`);
+  return payload;
+}

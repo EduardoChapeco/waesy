@@ -3496,6 +3496,137 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
       };
     },
   },
+
+  tourism_duplicate_itinerary: {
+    name: "tourism_duplicate_itinerary",
+    module: "tourism",
+    description: "Duplica uma proposta ou roteiro turístico existente na agência, adaptando título, cliente e datas para cotação rápida.",
+    tier: "store_staff",
+    requiredScope: "store:tourism:write",
+    permission: { action: "create", resource: "orders" },
+    idempotent: false,
+    rateLimitBucket: "webmcp_tool_call_staff",
+    inputZodSchema: z.object({
+      storeId: z.string().uuid(),
+      sourceProposalId: z.string().uuid(),
+      newTitle: z.string().trim().min(3).max(160),
+      newClientName: z.string().trim().min(2).max(140).optional(),
+      travelStartDate: z.string().optional(),
+      travelEndDate: z.string().optional(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        storeId: { type: "string", description: "UUID da agência" },
+        sourceProposalId: { type: "string", description: "UUID da proposta de origem a duplicar" },
+        newTitle: { type: "string", description: "Novo título da proposta duplicada" },
+        newClientName: { type: "string", description: "Nome do novo cliente" },
+        travelStartDate: { type: "string", description: "Data de início (YYYY-MM-DD)" },
+        travelEndDate: { type: "string", description: "Data de fim (YYYY-MM-DD)" },
+      },
+      required: ["storeId", "sourceProposalId", "newTitle"],
+    },
+    handler: async (ctx, args) => {
+      const { randomUUID } = await import("node:crypto");
+      const { data: source, error: srcErr } = await ctx.supabase
+        .from("travel_proposals")
+        .select("*")
+        .eq("id", args.sourceProposalId)
+        .eq("store_id", args.storeId)
+        .maybeSingle();
+      if (srcErr || !source) throw new Error("Proposta de origem não encontrada nesta agência.");
+
+      const newToken = `prop-${randomUUID().replace(/-/g, "").slice(0, 16)}`;
+      const { data: cloned, error: cloneErr } = await ctx.supabase
+        .from("travel_proposals")
+        .insert({
+          store_id: args.storeId,
+          title: args.newTitle,
+          client_name: args.newClientName || source.client_name,
+          destination_city: source.destination_city,
+          destination_iata: source.destination_iata,
+          travel_start_date: args.travelStartDate || source.travel_start_date,
+          travel_end_date: args.travelEndDate || source.travel_end_date,
+          adults_count: source.adults_count,
+          children_count: source.children_count,
+          options: source.options,
+          pricing: source.pricing,
+          itinerary: source.itinerary,
+          includes: source.includes,
+          excludes: source.excludes,
+          status: "draft",
+          public_token: newToken,
+        })
+        .select("id, title, public_token")
+        .single();
+
+      if (cloneErr || !cloned) throw new Error(`Falha ao duplicar roteiro: ${cloneErr?.message}`);
+      return {
+        duplicatedProposalId: cloned.id,
+        title: cloned.title,
+        publicToken: cloned.public_token,
+        _summary: `Roteiro duplicado com sucesso: ${cloned.title} (${cloned.id})`,
+      };
+    },
+  },
+
+  workspace_configure_ai_agent: {
+    name: "workspace_configure_ai_agent",
+    module: "workspace",
+    description: "Configura o modo do motor de IA WhatsApp da loja (disabled, assisted, sandbox, autonomous), humanização e skills ativas.",
+    tier: "store_staff",
+    requiredScope: "store:workspace:write",
+    permission: { action: "update", resource: "settings" },
+    idempotent: true,
+    rateLimitBucket: "webmcp_tool_call_staff",
+    inputZodSchema: z.object({
+      storeId: z.string().uuid(),
+      mode: z.enum(["disabled", "assisted", "sandbox", "autonomous"]),
+      enabledAgents: z.array(z.string()).optional(),
+      humanizeChunks: z.boolean().optional().default(true),
+      voiceRepliesEnabled: z.boolean().optional().default(false),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        storeId: { type: "string", description: "UUID da loja" },
+        mode: { type: "string", enum: ["disabled", "assisted", "sandbox", "autonomous"] },
+        enabledAgents: { type: "array", items: { type: "string" } },
+        humanizeChunks: { type: "boolean" },
+        voiceRepliesEnabled: { type: "boolean" },
+      },
+      required: ["storeId", "mode"],
+    },
+    handler: async (ctx, args) => {
+      const { data: store } = await ctx.supabase
+        .from("stores")
+        .select("settings")
+        .eq("id", args.storeId)
+        .maybeSingle();
+      const curSettings = (store?.settings && typeof store.settings === "object" ? store.settings : {}) as Record<string, any>;
+      const prevAi = (curSettings.ai_automation_config || {}) as Record<string, any>;
+      const nextAi = {
+        ...prevAi,
+        mode: args.mode,
+        ...(args.enabledAgents ? { enabled_agents: args.enabledAgents } : {}),
+        humanize_chunks: args.humanizeChunks ?? true,
+        voice_replies_enabled: args.voiceRepliesEnabled ?? false,
+      };
+      const { error } = await ctx.supabase
+        .from("stores")
+        .update({
+          settings: { ...curSettings, ai_automation_config: nextAi },
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", args.storeId);
+      if (error) throw new Error(error.message);
+      return {
+        storeId: args.storeId,
+        aiAutomationConfig: nextAi,
+        _summary: `Motor de IA WhatsApp configurado em modo "${args.mode}".`,
+      };
+    },
+  },
 };
 
 /**

@@ -123,23 +123,60 @@ export function UniversalClassifiedShowcase(props: UniversalClassifiedShowcasePr
   const isTravelEditorial =
     normalizedNiche === "viagem" && resolvedTemplate === "editorial";
 
+  const seedParams = attrs.infotravel_seed_params;
+  const customizeHref = seedParams?.dynamic_customizable
+    ? `/turismo?destination=${encodeURIComponent(String(seedParams.destination || attrs.destination_city || classified.title || ""))}&departureDate=${encodeURIComponent(String(seedParams.checkIn || attrs.departure_date || ""))}&returnDate=${encodeURIComponent(String(seedParams.checkOut || attrs.return_date || ""))}&adults=${encodeURIComponent(String(seedParams.adults || 2))}`
+    : null;
+
+  const dynamicBanner = customizeHref ? (
+    <div className="mx-auto max-w-7xl px-4 pt-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl border border-primary/20 bg-primary/5">
+        <div className="text-xs">
+          <strong className="font-bold text-foreground block">Pacote Dinâmico InfoTravel</strong>
+          <span className="text-muted-foreground">
+            Altere datas de embarque, número de quartos ou ocupação com recálculo em tempo real na operadora.
+          </span>
+        </div>
+        <a
+          href={customizeHref}
+          className="inline-flex items-center justify-center h-11 min-h-11 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-bold shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          Personalizar Datas
+        </a>
+      </div>
+    </div>
+  ) : null;
+
   if (isTravelEditorial) {
     return (
-      <EditorialShowcaseView
-        classified={normalizedClassified}
-        isOwner={props.isOwner}
-        onOpenBookingModal={props.onOpenBookingModal as any}
-        onOpenProposalModal={props.onOpenProposalModal}
-        onEditClassified={props.onEdit}
-        onOpenCompanionCard={props.onOpenCompanion}
-        previewViewport={props.previewViewport === "auto" ? undefined : props.previewViewport}
-      />
+      <>
+        {dynamicBanner}
+        <EditorialShowcaseView
+          classified={normalizedClassified}
+          isOwner={props.isOwner}
+          onOpenBookingModal={props.onOpenBookingModal as any}
+          onOpenProposalModal={props.onOpenProposalModal}
+          onEditClassified={props.onEdit}
+          onOpenCompanionCard={props.onOpenCompanion}
+          previewViewport={props.previewViewport === "auto" ? undefined : props.previewViewport}
+        />
+      </>
     );
   }
 
   if (!effectiveIsDesktop) {
-    return <ClassifiedDetailMobile {...props} classified={normalizedClassified} />;
+    return (
+      <>
+        {dynamicBanner}
+        <ClassifiedDetailMobile {...props} classified={normalizedClassified} />
+      </>
+    );
   }
 
-  return <ClassifiedDetailDesktop {...props} classified={normalizedClassified} />;
+  return (
+    <>
+      {dynamicBanner}
+      <ClassifiedDetailDesktop {...props} classified={normalizedClassified} />
+    </>
+  );
 }

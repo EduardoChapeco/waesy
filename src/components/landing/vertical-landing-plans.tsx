@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { ArrowRight, CheckCircle2, Layers, ShieldCheck } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/state/states";
 import { formatMoney } from "@/lib/money";
 import type { VerticalLandingPageDTO } from "@/lib/vertical-landing-types";
 import { buildVerticalAuthHref } from "./vertical-landing-hero";
@@ -18,30 +17,24 @@ export function VerticalLandingPlans({ landing }: VerticalLandingPlansProps) {
 
   return (
     <div className="space-y-12">
-      {/* Módulos Exclusivos deste Sistema / Nicho */}
-      <section id="modulos" className="space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-border/60 pb-4">
-          <div className="space-y-1">
-            <Badge variant="outline" className="text-2xs font-mono">
-              Módulos Exclusivos
-            </Badge>
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
-              Recursos do Nicho em Foco
-            </h2>
+      {/* Módulos Exclusivos deste Sistema / Nicho (omitido se vazio, zero texto interno) */}
+      {modules.length > 0 && (
+        <section id="modulos" className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-border/60 pb-4">
+            <div className="space-y-1">
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+                Recursos Inclusos
+              </p>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+                Tudo o que você opera neste sistema
+              </h2>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Ferramentas focadas na rotina real da sua equipe.
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Interface focada sem recursos estranhos ao seu segmento.
-          </p>
-        </div>
 
-        {modules.length === 0 ? (
-          <EmptyState
-            icon={Layers}
-            title="Módulos em configuração"
-            description="Configure os módulos exclusivos deste sistema pelo painel Admin Master."
-          />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {modules.map((mod) => (
               <div
                 key={mod.id}
@@ -57,12 +50,10 @@ export function VerticalLandingPlans({ landing }: VerticalLandingPlansProps) {
                       />
                     </div>
                   )}
-                  <div className="flex items-center justify-between gap-2">
-                    <Badge variant="secondary" className="text-2xs font-mono">
-                      {mod.category}
-                    </Badge>
-                  </div>
                   <div className="space-y-1">
+                    <p className="text-2xs font-mono uppercase tracking-wider text-primary">
+                      {mod.category}
+                    </p>
                     <h3 className="text-sm font-bold text-foreground">{mod.title}</h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       {mod.description}
@@ -83,18 +74,18 @@ export function VerticalLandingPlans({ landing }: VerticalLandingPlansProps) {
               </div>
             ))}
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* Planos & Pacotes Específicos do Sistema */}
       <section id="planos" className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border/60 pb-4">
           <div className="space-y-1">
-            <Badge variant="outline" className="text-2xs font-mono">
-              Pacotes do Sistema
-            </Badge>
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+              Planos e Assinatura
+            </p>
             <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
-              Planos Dedicados ao Seu Nicho
+              Escolha o plano ideal para sua operação
             </h2>
           </div>
 
@@ -124,13 +115,7 @@ export function VerticalLandingPlans({ landing }: VerticalLandingPlansProps) {
           </div>
         </div>
 
-        {plans.length === 0 ? (
-          <EmptyState
-            icon={ShieldCheck}
-            title="Planos sob consulta"
-            description="Edite os pacotes desta vertical pelo painel Admin Master."
-          />
-        ) : (
+        {plans.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             {plans.map((plan) => {
               const monthlyDisplay =
@@ -210,6 +195,28 @@ export function VerticalLandingPlans({ landing }: VerticalLandingPlansProps) {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {landing.slug !== "pro" && (
+          <div className="rounded-2xl border border-primary/30 bg-primary/5 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1 max-w-2xl">
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+                Waesy Pro — Todos os Sistemas Liberados
+              </p>
+              <h3 className="text-base font-bold text-foreground">
+                Precisa operar múltiplas áreas além do {landing.display_name}?
+              </h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Com o plano Waesy Pro All-in-One sua empresa desbloqueia Talk CRM, Copilot IA, Turismo, ERP, Caixa, Financeiro e Contratos em uma única assinatura.
+              </p>
+            </div>
+            <Button asChild variant="default" className="h-11 min-h-11 px-5 text-xs font-semibold shrink-0 gap-2">
+              <a href="/painel?vertical=pro&sku=waesy_bundle_pro&aba=cadastro">
+                <span>Conhecer Waesy Pro</span>
+                <ArrowRight className="size-4" />
+              </a>
+            </Button>
           </div>
         )}
       </section>

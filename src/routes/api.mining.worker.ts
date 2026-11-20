@@ -21,8 +21,8 @@ async function handleWorkerExecution(request: Request) {
     const hasTimeRemaining = (): boolean => Date.now() < executionDeadline;
 
     const url = new URL(request.url);
-    const mode = url.searchParams.get("mode") || "all";
-    const limit = parseInt(url.searchParams.get("limit") || "10", 10);
+    const mode = url.searchParams.get("mode") || "status";
+    const limit = Math.min(parseInt(url.searchParams.get("limit") || "5", 10), 10);
 
     const results: Record<string, unknown> = {};
 
@@ -34,6 +34,15 @@ async function handleWorkerExecution(request: Request) {
     const hasFailure = (value: unknown): boolean =>
       Boolean(value && typeof value === "object" && "success" in value && (value as { success?: unknown }).success === false);
 
+    // EARS-RES-01: Por padrão em idle/status, não executa drenos automáticos sem parâmetro explícito
+    if (mode === "status") {
+      return responseForResults({
+        status: "idle",
+        message: "Mining worker em modo on-demand. Especifique ?mode=<job> e autenticação para execução manual.",
+        timestamp: new Date().toISOString(),
+      });
+    }
+
     // Despacho agendado via pg_cron (market-data / rss-fetcher / continuous-crawler / cnpj-enrichment)
     if (mode === "cron" && hasTimeRemaining()) {
       const jobType = url.searchParams.get("jobType") as any;
@@ -44,20 +53,20 @@ async function handleWorkerExecution(request: Request) {
       }
     }
 
-    if ((mode === "rss" || mode === "all") && hasTimeRemaining()) {
-      const rssRes = await enqueueRssItemsBatch({ data: { limit: Math.min(limit, 50) } });
+    if (mode === "rss" && hasTimeRemaining()) {
+      const rssRes = await enqueueRssItemsBatch({ data: { limit: Math.min(limit, 20) } });
       results.rss = rssRes;
     }
 
-    if ((mode === "queue" || mode === "all") && hasTimeRemaining()) {
-      const queueRes = await processCrawlQueueBatch({ data: { limit: Math.min(limit, 10) } });
+    if (mode === "queue" && hasTimeRemaining()) {
+      const queueRes = await processCrawlQueueBatch({ data: { limit: Math.min(limit, 5) } });
       results.queue = queueRes;
     }
 
-    // Colheita de notícias automatizada com deduplicação SHA-256 e curadoria editorial
-    if ((mode === "harvest" || mode === "news" || mode === "all") && hasTimeRemaining()) {
+    // Colheita de notícias automatizada sob demanda explícita com deduplicação SHA-256 e curadoria editorial
+    if ((mode === "harvest" || mode === "news") && hasTimeRemaining()) {
       const harvestRes = await executeAutomatedNewsHarvest({
-        maxItems: Math.min(limit, 10),
+        maxItems: Math.min(limit, 5),
       });
       results.harvest = harvestRes;
     }

@@ -14,8 +14,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
-  executeMagicOnboarding,
+  startMagicOnboardingJob,
+  runMagicOnboardingJob,
+  getOnboardingJobStatus,
   type MagicOnboardingResult,
+  type OnboardingLiveState,
 } from "@/services/magic-onboarding.functions";
 import { ONBOARDING_AI_COST, formatPlatformTokens } from "@/config/platform-billing.config";
 import { toast } from "sonner";
@@ -28,7 +31,8 @@ interface MagicOnboardingCardProps {
 export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardProps) {
   const [url, setUrl] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [currentStageText, setCurrentStageText] = useState("Conectando fontes...");
+  const [currentStageText, setCurrentStageText] = useState("Verificando provedor de IA...");
+  const [progressPercent, setProgressPercent] = useState(0);
   const [completedResult, setCompletedResult] = useState<MagicOnboardingResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -47,12 +51,39 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
     }
 
     setIsProcessing(true);
-    setCurrentStageText("Conectando fontes e iniciando busca em tempo real...");
+    setProgressPercent(0);
+    setCurrentStageText("Verificando provedor de IA...");
     setCompletedResult(null);
 
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
+
     try {
-      const res = await executeMagicOnboarding({
+      const { jobId } = await startMagicOnboardingJob({
+        data: { url: targetUrl, store_id: storeId },
+      });
+
+      setProgressPercent(5);
+      setCurrentStageText("Conectando fontes reais e capturando prints...");
+
+      pollInterval = setInterval(async () => {
+        try {
+          const job = await getOnboardingJobStatus({ data: { jobId } });
+          if (typeof job?.progress_percent === "number") {
+            setProgressPercent(job.progress_percent);
+          }
+          const liveState = (job?.result as any)?.live_state as OnboardingLiveState | undefined;
+          const lastLog = liveState?.logs?.[liveState.logs.length - 1];
+          if (lastLog?.text) {
+            setCurrentStageText(lastLog.text);
+          }
+        } catch {
+          // Ignora falha transitória de polling
+        }
+      }, 1000);
+
+      const res = await runMagicOnboardingJob({
         data: {
+          jobId,
           url: targetUrl,
           store_id: storeId,
         },
@@ -60,6 +91,7 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
 
       if (res.success && res.result) {
         setCompletedResult(res.result);
+        setProgressPercent(100);
         setCurrentStageText("Identidade visual e catálogo prontos.");
         toast.success(res.message);
         if (onSuccess) onSuccess(res.result);
@@ -69,6 +101,7 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
       setErrorMessage(msg);
       toast.error(msg);
     } finally {
+      if (pollInterval) clearInterval(pollInterval);
       setIsProcessing(false);
     }
   };
@@ -126,15 +159,21 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
             </Button>
           </div>
 
-          {/* Estado de Processamento Silencioso */}
+          {/* Estado de Processamento Real */}
           {isProcessing && (
             <div className="p-4 rounded-xl bg-muted/40 border border-border/60 space-y-2">
-              <div className="flex items-center gap-2 text-xs text-foreground font-medium">
-                <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary shrink-0" />
-                <span>{currentStageText}</span>
+              <div className="flex items-center justify-between gap-2 text-xs text-foreground font-medium">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary shrink-0" />
+                  <span className="truncate">{currentStageText}</span>
+                </div>
+                <span className="font-mono text-2xs text-muted-foreground shrink-0">{progressPercent}%</span>
               </div>
               <div className="h-1 bg-border/60 rounded-full overflow-hidden">
-                <div className="h-full bg-primary animate-pulse motion-reduce:animate-none w-3/4 rounded-full" />
+                <div
+                  className="h-full bg-primary transition-all duration-300 rounded-full"
+                  style={{ width: `${Math.max(5, progressPercent)}%` }}
+                />
               </div>
             </div>
           )}

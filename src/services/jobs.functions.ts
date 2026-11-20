@@ -277,15 +277,15 @@ export const listStoreJobApplications = createServerFn({ method: "GET" })
  .validator(z.object({ jobId: z.string().uuid().optional() }).optional())
  .handler(async ({ data }) => {
  const supabase = getServerClient();
- const identity = await getCurrentIdentity();
-
- if (!identity.customer_id) {
- return [];
- }
+ const { getServerIdentity, assertStoreAccess } = await import("@/lib/server-access");
+ const identity = await getServerIdentity();
+ const checkAccess: typeof assertStoreAccess = assertStoreAccess;
+ checkAccess(identity);
 
  let query = supabase
  .from("job_applications")
  .select("*, jobs!inner(id, title, company_name, author_profile_id, store_id)")
+ .eq("jobs.store_id", identity.store_id)
  .order("created_at", { ascending: false });
 
  if (data?.jobId) {
@@ -308,6 +308,9 @@ export const listStoreJobApplications = createServerFn({ method: "GET" })
  candidate_email: row.candidate_email,
  candidate_phone: row.candidate_phone,
  resume_url: row.resume_url,
+ resume_snapshot: row.resume_snapshot || null,
+ matched_skills: Array.isArray(row.matched_skills) ? row.matched_skills : [],
+ match_score_percentage: row.match_score_percentage != null ? Number(row.match_score_percentage) : null,
  cover_letter: row.cover_letter,
  status: row.status,
  rating: row.rating || null,
@@ -347,10 +350,24 @@ export const updateJobApplication = createServerFn({ method: "POST" })
  )
  .handler(async ({ data }) => {
  const supabase = getServerClient();
- const identity = await getCurrentIdentity();
+ const { getServerIdentity, assertStoreAccess } = await import("@/lib/server-access");
+ const identity = await getServerIdentity();
+ const checkAccess: typeof assertStoreAccess = assertStoreAccess;
+ checkAccess(identity);
 
- if (!identity.customer_id) {
- throw new Error("Não autorizado.");
+ const { data: existingApp, error: checkErr } = await supabase
+ .from("job_applications")
+ .select("id, jobs!inner(id, store_id, author_profile_id)")
+ .eq("id", data.applicationId)
+ .maybeSingle();
+
+ if (checkErr || !existingApp) {
+ throw new Error("Candidatura não encontrada.");
+ }
+
+ const jobRow = Array.isArray((existingApp as any).jobs) ? (existingApp as any).jobs[0] : (existingApp as any).jobs;
+ if (jobRow?.store_id && jobRow.store_id !== identity.store_id) {
+ throw new Error("Acesso negado: candidatura pertence a outra empresa.");
  }
 
  const { data: updated, error } = await supabase
@@ -409,6 +426,14 @@ export const hireJobCandidate = createServerFn({ method: "POST" })
     if (appErr || !app) {
       console.error("[jobs:hireJobCandidate] Candidatura não encontrada:", appErr);
       throw new Error("Candidatura não encontrada para processar a admissão.");
+    }
+
+    if (app.status === "hired") {
+      throw new Error("Candidato já foi admitido anteriormente para esta vaga.");
+    }
+
+    if (app.jobs?.store_id && app.jobs.store_id !== identity.store_id) {
+      throw new Error("Acesso negado: esta candidatura pertence a outra loja.");
     }
 
     const targetStoreId = app.jobs?.store_id || identity.store_id;
@@ -731,7 +756,8 @@ export const getEmployerProfileInsights = createServerFn({ method: "GET" })
  .validator(z.object({ companyName: z.string().min(2), storeId: z.string().uuid().optional() }))
  .handler(async ({ data }) => {
  const supabase = getServerClient();
- const cleanCompany = data.companyName.trim();
+ const { sanitizePostgrestFilterValue } = await import("@/lib/security/operator-url-guard");
+ const cleanCompany = sanitizePostgrestFilterValue(data.companyName.trim());
 
  // 1. Consultar avaliações em job_applications
  const { data: jobApps, error: jobErr } = await supabase
@@ -822,8 +848,9 @@ export const getEmployerProfileInsights = createServerFn({ method: "GET" })
  : 0;
 
  const salaryEntries = allReviews.filter((r) => r.last_salary_cents && r.last_salary_cents > 0);
+ // k-anonymity LGPD: exibir média salarial pública somente quando houver >= 3 amostras independentes
  const avgSalaryCents =
- salaryEntries.length > 0
+ salaryEntries.length >= 3
  ? Math.round(
  salaryEntries.reduce((sum, r) => sum + Number(r.last_salary_cents), 0) /
  salaryEntries.length

@@ -376,7 +376,7 @@ function buildCanonicalDemandsFromStoreRows(params: {
 
   for (const dRow of params.demandRows) {
     if (String(dRow.status || "active") !== "active") continue;
-    const crmLeadId = (dRow.crm_lead_id || null) as string | null;
+    const crmLeadId = ((dRow.lead_id || dRow.crm_lead_id) || null) as string | null;
     if (crmLeadId && seenLeadIds.has(String(crmLeadId))) continue;
 
     candidates.push(
@@ -583,7 +583,7 @@ export async function internalEvaluateSupplyAgainstAllLeads(params: {
     supabase
       .from("leads_crm")
       .select(
-        "id, full_name, phone, whatsapp, destination, destination_tags, origin_city, origin_iata, travel_start, travel_end, interest_period, period_tags, target_months, flexibility_days, date_flexibility_mode, room_occupancies, pax_adults, pax_children, pax_ages, children_ages, rooms_count, budget_cents, estimated_value_cents, status, custom_fields, raw_intent_markdown, notes"
+        "id, full_name, phone, destination, destination_tags, departure_city, travel_start, travel_end, interest_period, period_tags, target_months, flexibility_days, date_flexibility_mode, room_occupancies, pax_adults, pax_children, pax_ages, children_ages, budget_cents, estimated_value_cents, status, custom_fields, raw_intent_markdown, notes"
       )
       .eq("store_id", params.storeId)
       .limit(400),
@@ -765,7 +765,7 @@ export async function internalEvaluateDemandAgainstAllSupply(params: {
     const { data: leadRow } = await supabase
       .from("leads_crm")
       .select(
-        "id, full_name, phone, whatsapp, destination, destination_tags, origin_city, origin_iata, travel_start, travel_end, interest_period, period_tags, target_months, flexibility_days, date_flexibility_mode, room_occupancies, pax_adults, pax_children, pax_ages, children_ages, rooms_count, budget_cents, estimated_value_cents, status, custom_fields, raw_intent_markdown, notes"
+        "id, full_name, phone, destination, destination_tags, departure_city, travel_start, travel_end, interest_period, period_tags, target_months, flexibility_days, date_flexibility_mode, room_occupancies, pax_adults, pax_children, pax_ages, children_ages, budget_cents, estimated_value_cents, status, custom_fields, raw_intent_markdown, notes"
       )
       .eq("id", params.leadId)
       .eq("store_id", params.storeId)
@@ -806,7 +806,7 @@ export async function internalEvaluateDemandAgainstAllSupply(params: {
   }
 
   const cutoffIso = new Date(Date.now() - 45 * 86_400_000).toISOString();
-  const [{ data: propRows }, { data: captureRows }, { data: quoteRows }, historicalObservations] = await Promise.all([
+  const [{ data: propRows }, { data: captureRows }, { data: quoteRows }, { data: classifiedRows }, historicalObservations] = await Promise.all([
     supabase
       .from("travel_proposals")
       .select("id, lead_id, customer_id, title, destination_city, destination_iata, travel_start_date, travel_end_date, adults_count, children_count, children_ages, rooms_count, rooms, pricing, airfare_per_adult_cents, transfer_per_adult_cents, status, created_at")
@@ -828,6 +828,14 @@ export async function internalEvaluateDemandAgainstAllSupply(params: {
       .eq("store_id", params.storeId)
       .gt("quote_amount_cents", 0)
       .gte("created_at", cutoffIso)
+      .order("created_at", { ascending: false })
+      .limit(40),
+    supabase
+      .from("classifieds")
+      .select("id, title, city, price_cents, attributes, status, created_at")
+      .eq("store_id", params.storeId)
+      .eq("status", "active")
+      .gt("price_cents", 0)
       .order("created_at", { ascending: false })
       .limit(40),
     loadStoreHistoricalObservations(params.storeId),
@@ -903,6 +911,23 @@ export async function internalEvaluateDemandAgainstAllSupply(params: {
     await processSupply(offer, { quoteId: String(q.id) });
   }
 
+  for (const cl of classifiedRows || []) {
+    const attrs = (cl.attributes && typeof cl.attributes === "object" ? cl.attributes : {}) as Record<string, unknown>;
+    const dest = String(attrs.destination_city || attrs.destination || cl.city || cl.title || "").trim();
+    if (!dest) continue;
+    const offer = normalizeLegacyOfferToCanonical({
+      id: cl.id,
+      source_type: "catalog_classified",
+      title: cl.title,
+      destination_city: dest,
+      departure_date: (attrs.departure_date || attrs.start_date || null) as string | null,
+      return_date: (attrs.return_date || attrs.end_date || null) as string | null,
+      total_cents: Number(cl.price_cents || 0),
+      adults_count: Number(attrs.adults_count || 1),
+    });
+    await processSupply(offer, {});
+  }
+
   if (params.leadId && matchedCount > 0) {
     await supabase
       .from("leads_crm")
@@ -926,7 +951,7 @@ export async function internalGetVerifiedOpportunitiesForLead(params: {
   const { data: leadRow } = await supabase
     .from("leads_crm")
     .select(
-      "id, full_name, phone, whatsapp, destination, destination_tags, origin_city, origin_iata, travel_start, travel_end, interest_period, period_tags, target_months, flexibility_days, date_flexibility_mode, room_occupancies, pax_adults, pax_children, pax_ages, children_ages, rooms_count, budget_cents, estimated_value_cents, status, custom_fields"
+      "id, full_name, phone, destination, destination_tags, departure_city, travel_start, travel_end, interest_period, period_tags, target_months, flexibility_days, date_flexibility_mode, room_occupancies, pax_adults, pax_children, pax_ages, children_ages, budget_cents, estimated_value_cents, status, custom_fields"
     )
     .eq("id", params.leadId)
     .eq("store_id", params.storeId)
@@ -1625,5 +1650,96 @@ export const analyzeIncomingOfferAgainstPipelineFn = createServerFn({ method: "P
       matchedCount: summary.matchedCount,
       persistedCount: summary.persistedCount,
       matchedLeads: summary.matchedLeads,
+    };
+  });
+
+/**
+ * Disparo Consultivo Proativo do Matchmaker via WhatsApp (Cliente X -> Cliente Y)
+ * Respeita rigorosamente `whatsapp_opt_out` e envia resumo consultivo com pergunta de validação.
+ */
+export const dispatchRadarOpportunityViaWhatsAppFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      leadId: z.string().uuid(),
+      destinationCity: z.string().trim().min(2).max(120),
+      offerTitle: z.string().trim().min(2).max(160),
+      priceDisplay: z.string().trim().max(80).optional(),
+      periodDisplay: z.string().trim().max(80).optional(),
+      proposalUrl: z.string().trim().max(500).optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const staff = await requireStaff();
+    const db = getServerClient();
+
+    const { data: lead } = await db
+      .from("leads_crm")
+      .select("id, full_name, phone, whatsapp_opt_out")
+      .eq("id", data.leadId)
+      .eq("store_id", staff.store_id)
+      .maybeSingle();
+
+    if (!lead) throw new Error("Lead não encontrado.");
+    if ((lead as any).whatsapp_opt_out === true) {
+      throw new Error("Este cliente solicitou Opt-Out e não pode receber disparos de oportunidade.");
+    }
+
+    const phoneDigits = String(lead.phone || "").replace(/\D/g, "");
+    if (phoneDigits.length < 10) {
+      throw new Error("Lead não possui telefone WhatsApp válido.");
+    }
+
+    const { data: waInstance } = await db
+      .from("whatsapp_channel_instances")
+      .select("id, provider")
+      .eq("store_id", staff.store_id)
+      .eq("is_active", true)
+      .order("is_default", { ascending: false })
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!waInstance?.id) {
+      throw new Error("Nenhuma instância WhatsApp ativa configurada na loja.");
+    }
+
+    const firstName = String(lead.full_name || "Viajante").trim().split(/\s+/)[0] || "Viajante";
+    const lines = [
+      `Oi ${firstName}, tudo bem? Lembrei de você!`,
+      `Acabamos de montar uma oportunidade para *${data.destinationCity}* (${data.offerTitle})${data.periodDisplay ? ` no período de ${data.periodDisplay}` : ""}${data.priceDisplay ? ` por ${data.priceDisplay}` : ""}.`,
+      data.proposalUrl ? `Dá uma olhada nos detalhes: ${data.proposalUrl}` : null,
+      `Ela faz sentido para o que você estava buscando ou prefere outro período?`,
+    ].filter(Boolean);
+
+    const messageText = lines.join("\n\n");
+    const idempotencyKey = `radar_match:${staff.store_id}:${lead.id}:${data.destinationCity.toLowerCase()}:${new Date().toISOString().slice(0, 10)}`;
+
+    const { error: obErr } = await db.from("whatsapp_outbox").upsert(
+      {
+        store_id: staff.store_id,
+        channel_instance_id: waInstance.id,
+        provider: waInstance.provider || "evolution_api",
+        idempotency_key: idempotencyKey,
+        recipient_phone: phoneDigits,
+        message_type: "text",
+        payload: {
+          text: messageText,
+          origin: "ai_autonomous",
+          agent_slug: "turis_matchmaker_consultivo",
+          simulate_presence: true,
+          lead_id: lead.id,
+        },
+        status: "pending",
+      },
+      { onConflict: "store_id,idempotency_key" },
+    );
+
+    if (obErr) throw new Error(`Falha ao enfileirar oportunidade no WhatsApp: ${obErr.message}`);
+
+    return {
+      success: true,
+      leadId: lead.id,
+      recipientPhone: phoneDigits,
+      messageText,
     };
   });

@@ -43,6 +43,7 @@ import {
 import { uploadClassifiedMedia } from "@/lib/classifieds/upload-classified-media";
 import { convertToCorsSafeDataUri, preloadImage } from "@/lib/canvas/cors-safe-image";
 import { formatMoney } from "@/lib/money";
+import { clampInstallments, MAX_SUPPORTED_INSTALLMENTS } from "@/lib/tourism/payment-policy";
 import {
   getAllSocialTemplates,
   getDefaultTemplateForNiche,
@@ -1526,6 +1527,33 @@ export function TravelPromoFlyerModal({
                           {cnt}x
                         </button>
                       ))}
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">
+                        Parcelas Personalizadas (1x a {MAX_SUPPORTED_INSTALLMENTS}x)
+                      </Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={MAX_SUPPORTED_INSTALLMENTS}
+                        value={maxInstallments}
+                        onChange={(e) => {
+                          const cnt = clampInstallments(e.target.value, 1);
+                          const currentTotal =
+                            priceCents ||
+                            (effectiveInstallmentCents
+                              ? effectiveInstallmentCents * maxInstallments
+                              : 0);
+                          setMaxInstallments(cnt);
+                          if (currentTotal > 0) {
+                            setPriceCents(currentTotal);
+                            setInstallmentOverrideCents(Math.round(currentTotal / cnt));
+                          }
+                        }}
+                        aria-label="Parcelas personalizadas do flyer"
+                        className="h-11 min-h-11 text-xs font-mono"
+                      />
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">

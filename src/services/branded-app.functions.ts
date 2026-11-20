@@ -41,14 +41,11 @@ const STAFF_PORTAL_ROLES = [
 ];
 
 function createCryptoMagicToken(): string {
-  const bytes = new Uint8Array(20);
-  if (typeof globalThis !== "undefined" && globalThis.crypto?.getRandomValues) {
-    globalThis.crypto.getRandomValues(bytes);
-  } else {
-    for (let i = 0; i < bytes.length; i++) {
-      bytes[i] = Math.floor(Math.random() * 256);
-    }
+  if (!globalThis.crypto?.getRandomValues) {
+    throw new Error("Web Crypto API indisponível para gerar magic token seguro.");
   }
+  const bytes = new Uint8Array(20);
+  globalThis.crypto.getRandomValues(bytes);
   const hex = Array.from(bytes)
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
@@ -741,7 +738,7 @@ export const getPublicBrandedAppBySlugFn = createServerFn({ method: "GET" })
         .order("name", { ascending: true }),
       db
         .from("collections")
-        .select("id, name, slug, description, cover_url, product_collections(product_id)")
+        .select("id, name, slug, description, cover_url, visibility_scope, product_collections(product_id)")
         .eq("store_id", storeId)
         .eq("status", "active")
         .order("name", { ascending: true }),
@@ -856,7 +853,7 @@ export const getPublicBrandedAppBySlugFn = createServerFn({ method: "GET" })
       db
         .from("stories")
         .select(
-          "id, store_id, author_profile_id, creator_id, media_url, media_type, caption, link_url, link_label, story_kind, hot_offer_id, source_proposal_id, offer_badge_label, offer_price_cents, flame_style, duration_seconds, is_long_format, expires_at, created_at",
+          "id, store_id, author_profile_id, creator_id, media_url, link_url, link_cta, story_kind, hot_offer_id, source_proposal_id, offer_badge_label, offer_price_cents, flame_style, duration_seconds, is_long_format, expires_at, created_at",
         )
         .eq("store_id", storeId)
         .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
@@ -1043,7 +1040,11 @@ export const getPublicBrandedAppBySlugFn = createServerFn({ method: "GET" })
         ai_sales_agent_enabled: storeRow.ai_sales_agent_enabled !== false,
         payment_instructions: storeRow.payment_instructions || null,
         has_pix_key: Boolean(storeRow.pix_key),
-        settings: {},
+        settings: {
+          require_login_for_prices: Boolean(settings.require_login_for_prices),
+          b2b_wholesale_only: Boolean(settings.b2b_wholesale_only),
+          b2b_partner_syndication_enabled: Boolean(settings.b2b_partner_syndication_enabled),
+        },
       },
       brandKit,
       appConfig,
@@ -1555,7 +1556,7 @@ export const getClientStorePortalSummaryFn = createServerFn({ method: "GET" })
           ? db
               .from("receivables")
               .select(
-                "id, title, total_amount_cents, status, created_at, installments:receivable_installments(id, installment_number, due_date, original_amount_cents, amount_cents, final_amount_cents, status, pix_copy_paste)",
+                "id, title, total_cents, status, created_at, installments:receivable_installments(id, installment_number, due_date, original_amount_cents, amount_cents, final_amount_cents, status, pix_copy_paste)",
               )
               .eq("store_id", storeId)
               .in("debtor_id", candidateCustomerIds)
@@ -2324,7 +2325,7 @@ export const getWorkspaceBrandedAppSetupFn = createServerFn({ method: "GET" })
       db
         .from("stories")
         .select(
-          "id, store_id, author_profile_id, creator_id, media_url, media_type, caption, link_url, link_label, story_kind, hot_offer_id, source_proposal_id, offer_badge_label, offer_price_cents, flame_style, duration_seconds, is_long_format, expires_at, created_at",
+          "id, store_id, author_profile_id, creator_id, media_url, link_url, link_cta, story_kind, hot_offer_id, source_proposal_id, offer_badge_label, offer_price_cents, flame_style, duration_seconds, is_long_format, expires_at, created_at",
         )
         .eq("store_id", storeId)
         .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)

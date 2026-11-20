@@ -11,19 +11,25 @@
 
 import type { NicheId, NicheModuleKey, NicheEntityNomenclature } from "./niches/niche-manifest";
 
-export type BrandVerticalId =
+export type CanonicalBrandVerticalId =
   | "waesy"
   | "wowbook"
-  | "tableway"
+  | "wider"
   | "turis"
-  | "passhub"
-  | "lexcloud"
+  | "eventio"
+  | "juris"
   | "talentlink"
   | "omnipage"
   | "signflow"
   | "waesy_news"
   | "waesy_copilot"
   | "waesy_studio";
+
+export type BrandVerticalId =
+  | CanonicalBrandVerticalId
+  | "tableway"
+  | "passhub"
+  | "lexcloud";
 
 export type SubscriptionTierId = "starter" | "pro" | "enterprise";
 
@@ -155,7 +161,8 @@ export const SUBSCRIPTION_TIERS_REGISTRY: Record<SubscriptionTierId, Subscriptio
   },
 };
 
-export const BRAND_VERTICALS_REGISTRY: Record<BrandVerticalId, BrandVerticalConfig> = {
+export const BRAND_VERTICALS_REGISTRY: Record<CanonicalBrandVerticalId, BrandVerticalConfig> &
+  Partial<Record<BrandVerticalId, BrandVerticalConfig>> = {
   waesy: {
     id: "waesy",
     brandName: "Waesy",
@@ -218,13 +225,22 @@ export const BRAND_VERTICALS_REGISTRY: Record<BrandVerticalId, BrandVerticalConf
     defaultPublishToMarketplace: false,
   },
 
-  tableway: {
-    id: "tableway",
-    brandName: "TableWay",
-    shortName: "TableWay",
+  wider: {
+    id: "wider",
+    brandName: "Wider",
+    shortName: "Wider",
     tagline: "Gestão Gastronômica, Cardápio QR, KDS de Cozinha, Mesas & Delivery",
-    primaryDomain: "tableway.com.br",
-    hostPatterns: ["tableway.com.br", "tableway.", "app.tableway"],
+    primaryDomain: "wider.waesy.com.br",
+    hostPatterns: [
+      "wider.waesy.com.br",
+      "wider.com.br",
+      "wider.",
+      "app.wider",
+      "tableway.waesy.com.br",
+      "tableway.com.br",
+      "tableway.",
+      "app.tableway",
+    ],
     primaryNiche: "gastronomy",
     targetSegments: ["Restaurantes", "Pizzarias", "Hamburguerias", "Bares", "Cafeterias", "Dark Kitchens"],
     defaultModules: ["catalog", "orders", "kds", "tables", "inventory", "couriers", "financial", "crm", "marketing"],
@@ -254,8 +270,8 @@ export const BRAND_VERTICALS_REGISTRY: Record<BrandVerticalId, BrandVerticalConf
     brandName: "Turis",
     shortName: "Turis",
     tagline: "Sistema Operacional para Agências de Viagens, Operadoras & Receptivo",
-    primaryDomain: "turis.com.br",
-    hostPatterns: ["turis.com.br", "turis.", "app.turis"],
+    primaryDomain: "turis.waesy.com.br",
+    hostPatterns: ["turis.waesy.com.br", "turis.com.br", "turis.", "app.turis"],
     primaryNiche: "tourism",
     targetSegments: ["Agências de Viagens", "Operadoras de Turismo", "Turismo Receptivo", "Fretamento", "Excursões"],
     defaultModules: ["quotes", "proposals", "boarding", "fleet", "catalog", "orders", "contracts", "crm", "financial", "affiliates"],
@@ -280,13 +296,22 @@ export const BRAND_VERTICALS_REGISTRY: Record<BrandVerticalId, BrandVerticalConf
     defaultPublishToMarketplace: false,
   },
 
-  passhub: {
-    id: "passhub",
-    brandName: "PassHub",
-    shortName: "PassHub",
+  eventio: {
+    id: "eventio",
+    brandName: "Eventio",
+    shortName: "Eventio",
     tagline: "Plataforma de Eventos, Lotes de Ingressos, Check-in QR & Promoters",
-    primaryDomain: "passhub.com.br",
-    hostPatterns: ["passhub.com.br", "passhub.", "app.passhub"],
+    primaryDomain: "eventio.waesy.com.br",
+    hostPatterns: [
+      "eventio.waesy.com.br",
+      "eventio.com.br",
+      "eventio.",
+      "app.eventio",
+      "passhub.waesy.com.br",
+      "passhub.com.br",
+      "passhub.",
+      "app.passhub",
+    ],
     primaryNiche: "events",
     targetSegments: ["Produtoras de Shows", "Teatros", "Conferências", "Feiras", "Casas Noturnas"],
     defaultModules: ["catalog", "orders", "affiliates", "financial", "crm", "marketing", "contracts"],
@@ -311,13 +336,22 @@ export const BRAND_VERTICALS_REGISTRY: Record<BrandVerticalId, BrandVerticalConf
     defaultPublishToMarketplace: false,
   },
 
-  lexcloud: {
-    id: "lexcloud",
-    brandName: "LexCloud",
-    shortName: "LexCloud",
+  juris: {
+    id: "juris",
+    brandName: "Juris",
+    shortName: "Juris",
     tagline: "Gestão Jurídica, Dossiê GED, Prazos Processuais & Assinatura Biométrica",
-    primaryDomain: "lexcloud.com.br",
-    hostPatterns: ["lexcloud.com.br", "lexcloud.", "app.lexcloud"],
+    primaryDomain: "juris.waesy.com.br",
+    hostPatterns: [
+      "juris.waesy.com.br",
+      "juris.com.br",
+      "juris.",
+      "app.juris",
+      "lexcloud.waesy.com.br",
+      "lexcloud.com.br",
+      "lexcloud.",
+      "app.lexcloud",
+    ],
     primaryNiche: "services",
     targetSegments: ["Escritórios de Advocacia", "Departamentos Jurídicos", "Compliance", "Auditorias"],
     defaultModules: ["contracts", "crm", "tasks", "financial", "proposals", "reservations", "support"],
@@ -440,8 +474,8 @@ export const BRAND_VERTICALS_REGISTRY: Record<BrandVerticalId, BrandVerticalConf
     brandName: "Waesy News 360",
     shortName: "News 360",
     tagline: "CMS Editorial para Portais de Notícias, Colunistas & Ad Server Regional",
-    primaryDomain: "news.waesy.com.br",
-    hostPatterns: ["news.waesy.com.br", "waesynews.com.br", "portal."],
+    primaryDomain: "noticias.waesy.com.br",
+    hostPatterns: ["noticias.waesy.com.br", "news.waesy.com.br", "waesynews.com.br", "portal."],
     primaryNiche: "creator",
     targetSegments: ["Jornais Locais", "Portais de Notícias", "Rádios", "Mídia Independente"],
     defaultModules: ["marketing", "crm", "financial", "affiliates", "tasks"],
@@ -503,7 +537,7 @@ export const BRAND_VERTICALS_REGISTRY: Record<BrandVerticalId, BrandVerticalConf
     shortName: "Studio Business",
     tagline: "ERP Multi-Nicho All-in-One para Operações Híbridas, Redes & Franquias",
     primaryDomain: "studio.waesy.com.br",
-    hostPatterns: ["studio.waesy.com.br", "painel.waesy.com.br", "erp.waesy.com.br"],
+    hostPatterns: ["studio.waesy.com.br", "pro.waesy.com.br", "painel.waesy.com.br", "erp.waesy.com.br"],
     primaryNiche: "generic",
     targetSegments: ["Operações Híbridas", "Redes de Lojas", "Franquias", "Distribuidoras", "Indústrias Locais"],
     defaultModules: [
@@ -549,22 +583,37 @@ export const BRAND_VERTICALS_REGISTRY: Record<BrandVerticalId, BrandVerticalConf
   },
 };
 
-export const BRAND_VERTICAL_LIST: BrandVerticalConfig[] = Object.values(BRAND_VERTICALS_REGISTRY);
+Object.defineProperties(BRAND_VERTICALS_REGISTRY, {
+  tableway: { get: () => BRAND_VERTICALS_REGISTRY.wider, enumerable: false },
+  passhub: { get: () => BRAND_VERTICALS_REGISTRY.eventio, enumerable: false },
+  lexcloud: { get: () => BRAND_VERTICALS_REGISTRY.juris, enumerable: false },
+});
+
+export const LEGACY_BRAND_VERTICAL_ALIASES: Record<string, CanonicalBrandVerticalId> = {
+  tableway: "wider",
+  passhub: "eventio",
+  lexcloud: "juris",
+};
+
+export const BRAND_VERTICAL_LIST: BrandVerticalConfig[] = Object.values(
+  BRAND_VERTICALS_REGISTRY,
+) as BrandVerticalConfig[];
 export const SUBSCRIPTION_TIER_LIST: SubscriptionTierConfig[] = Object.values(SUBSCRIPTION_TIERS_REGISTRY);
 
 /**
- * Resolve a configuração de marca vertical pelo ID canônico.
+ * Resolve a configuração de marca vertical pelo ID canônico ou alias legado.
  * Cai sempre de forma segura para `waesy` se não informado ou inválido.
  */
 export function getBrandVerticalById(brandId?: string | null): BrandVerticalConfig {
   if (!brandId) return BRAND_VERTICALS_REGISTRY.waesy;
-  const normalized = brandId.trim().toLowerCase() as BrandVerticalId;
+  const raw = brandId.trim().toLowerCase();
+  const normalized = (LEGACY_BRAND_VERTICAL_ALIASES[raw] || raw) as CanonicalBrandVerticalId;
   return BRAND_VERTICALS_REGISTRY[normalized] ?? BRAND_VERTICALS_REGISTRY.waesy;
 }
 
 /**
  * Resolve a configuração de marca vertical inspecionando o header `Host` da requisição HTTP.
- * Suporta domínios dedicados (ex: `tableway.com.br`, `wowbook.com.br`) e subdomínios (`studio.waesy.com.br`).
+ * Suporta domínios dedicados (`wider.waesy.com.br`, `eventio.waesy.com.br`, `juris.waesy.com.br`) e aliases legados.
  */
 export function resolveBrandContextFromHost(host?: string | null): BrandVerticalConfig {
   if (!host || typeof host !== "string") {
@@ -577,12 +626,12 @@ export function resolveBrandContextFromHost(host?: string | null): BrandVertical
   }
 
   // Verifica primeiro as verticais especializadas antes do fallback genérico waesy
-  const priorityOrder: BrandVerticalId[] = [
+  const priorityOrder: CanonicalBrandVerticalId[] = [
     "wowbook",
-    "tableway",
+    "wider",
     "turis",
-    "passhub",
-    "lexcloud",
+    "eventio",
+    "juris",
     "talentlink",
     "omnipage",
     "signflow",

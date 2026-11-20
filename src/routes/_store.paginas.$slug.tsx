@@ -4,6 +4,7 @@ import { getNavigationMenus } from "@/services/cms.functions";
 import { getPublicCmsCollectionsForStore } from "@/services/cms-collections.functions";
 import { ExperienceRenderer } from "@/components/commerce/experience-renderer";
 import { OmniPageRenderer } from "@/components/builder/OmniPageRenderer";
+import { StoreAnalyticsInjector } from "@/components/analytics/StoreAnalyticsInjector";
 import { PublicFooter } from "@/components/commerce/public-footer";
 import { Surface } from "@/components/ui/surface";
 import { AlertCircle, Loader2, FileQuestion } from "lucide-react";
@@ -200,8 +201,10 @@ function PublicPage() {
       : "";
 
   if (copilotPublishedHtml) {
+    const resolvedOwnerStoreId = document?.store_id || storeData?.id || null;
     return (
       <main className="w-full min-h-dvh bg-background">
+        {resolvedOwnerStoreId && <StoreAnalyticsInjector storeId={String(resolvedOwnerStoreId)} pageContext="storefront" />}
         <iframe
           title={document?.title || "Página Publicada"}
           srcDoc={copilotPublishedHtml}
@@ -238,12 +241,14 @@ function PublicPage() {
       omniDoc.theme,
       { settings: omniDoc.settings },
     );
+    const resolvedOwnerStoreId = document?.store_id || storeData?.id || null;
     return (
       <main
         data-builder-canvas-isolated={isolationScheme}
         style={omniContainerStyle}
         className="w-full flex flex-col gap-0 min-h-dvh bg-background text-foreground"
       >
+        {resolvedOwnerStoreId && <StoreAnalyticsInjector storeId={String(resolvedOwnerStoreId)} pageContext="storefront" />}
         <OmniPageRenderer
           document={omniDoc}
           products={products}

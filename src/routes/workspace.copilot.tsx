@@ -8,6 +8,7 @@ import {
 import { listUserDurableAiTasks } from "@/services/ai-tasks-durability.functions";
 import { listCopilotHierarchy } from "@/services/copilot-projects.functions";
 import { getUserSession } from "@/services/auth.functions";
+import { checkStoreVerticalAccess } from "@/lib/architecture/vertical-entitlement";
 import { useCopilotSession } from "@/hooks/use-copilot-session";
 import { ManusComputerDrawer } from "@/components/chat/manus-computer-drawer";
 import { ManusTaskTelemetrySheet } from "@/components/chat/manus-task-telemetry-sheet";
@@ -42,6 +43,30 @@ export const Route = createFileRoute("/workspace/copilot")({
       let resolvedThreads = threads || [];
       const effectiveUserId = session?.id || session?.user?.id || null;
       const activeStoreId = session?.store_id || session?.memberships?.[0]?.store_id || null;
+      const activeMembership = (session?.memberships || []).find((m) => m.store_id === activeStoreId) as any;
+      const activeStoreObj = (session as any)?.store || activeMembership?.store || null;
+      const roleStr = String(session?.role || "").toLowerCase();
+      const isPlatformAdmin = Boolean(
+        session?.isMaster ||
+          session?.isPlatformAdmin ||
+          roleStr === "platform_admin" ||
+          roleStr === "master" ||
+          roleStr === "admin_master",
+      );
+      const verticalAccess = checkStoreVerticalAccess(activeStoreObj, {
+        pathname: "/workspace/copilot",
+        isPlatformAdmin,
+      });
+      if (activeStoreId && !verticalAccess.allowed) {
+        return {
+          session: session || null,
+          threads: [],
+          initialTasks: [],
+          initialHierarchy: { folders: [], projects: [] },
+          threadLoadError: false,
+          verticalAccessDenied: verticalAccess,
+        };
+      }
       const initialHierarchy = effectiveUserId
         ? await listCopilotHierarchy({
             data: activeStoreId ? { storeId: activeStoreId } : undefined,
@@ -94,6 +119,7 @@ export const Route = createFileRoute("/workspace/copilot")({
 });
 
 function WorkspaceCopilotPage() {
+  const loaderData = Route.useLoaderData() as any;
   const {
     session,
     activeStoreId,
@@ -101,12 +127,36 @@ function WorkspaceCopilotPage() {
     initialFolders,
     initialProjects,
     initialTasks,
-  } = Route.useLoaderData();
+    verticalAccessDenied,
+  } = loaderData;
   const effectiveUserId = session?.id || session?.user?.id || null;
   const navigate = useNavigate();
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [computerDrawerOpen, setComputerDrawerOpen] = useState(false);
   const [telemetrySheetOpen, setTelemetrySheetOpen] = useState(false);
+
+  if (verticalAccessDenied) {
+    return (
+      <div className="min-h-96 flex items-center justify-center p-6">
+        <div className="max-w-md w-full rounded-2xl border border-border bg-card p-6 sm:p-8 text-center space-y-4">
+          <h2 className="text-lg font-bold text-foreground">
+            Plano não ativo em {verticalAccessDenied.targetLabel}
+          </h2>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {verticalAccessDenied.reason}
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 pt-2">
+            <Button asChild variant="default" className="w-full sm:w-auto h-11 min-h-11 px-5 text-xs font-semibold">
+              <Link to="/workspace/configuracoes/planos">Ativar Waesy Pro</Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full sm:w-auto h-11 min-h-11 px-4 text-xs font-semibold">
+              <Link to="/workspace">Voltar ao Painel</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (typeof navigator !== "undefined" && "geolocation" in navigator) {

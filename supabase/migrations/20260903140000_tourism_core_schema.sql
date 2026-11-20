@@ -77,7 +77,8 @@ ALTER TABLE public.vehicle_layouts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tourism_experiences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.group_tour_costs ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY Workspace members manage store vehicle layouts
+DROP POLICY IF EXISTS "Workspace members manage store vehicle layouts" ON public.vehicle_layouts;
+CREATE POLICY "Workspace members manage store vehicle layouts"
     ON public.vehicle_layouts
     FOR ALL
     TO authenticated
@@ -86,12 +87,14 @@ CREATE POLICY Workspace members manage store vehicle layouts
         OR created_by_profile_id = auth.uid()
     );
 
-CREATE POLICY Public read vehicle layouts for bookings
+DROP POLICY IF EXISTS "Public read vehicle layouts for bookings" ON public.vehicle_layouts;
+CREATE POLICY "Public read vehicle layouts for bookings"
     ON public.vehicle_layouts
     FOR SELECT
     USING (true);
 
-CREATE POLICY Workspace members manage tourism experiences
+DROP POLICY IF EXISTS "Workspace members manage tourism experiences" ON public.tourism_experiences;
+CREATE POLICY "Workspace members manage tourism experiences"
     ON public.tourism_experiences
     FOR ALL
     TO authenticated
@@ -100,12 +103,14 @@ CREATE POLICY Workspace members manage tourism experiences
         OR author_profile_id = auth.uid()
     );
 
-CREATE POLICY Public read active tourism experiences
+DROP POLICY IF EXISTS "Public read active tourism experiences" ON public.tourism_experiences;
+CREATE POLICY "Public read active tourism experiences"
     ON public.tourism_experiences
     FOR SELECT
     USING (status IN ('open', 'published', 'active', 'confirmed'));
 
-CREATE POLICY Workspace members manage group tour costs
+DROP POLICY IF EXISTS "Workspace members manage group tour costs" ON public.group_tour_costs;
+CREATE POLICY "Workspace members manage group tour costs"
     ON public.group_tour_costs
     FOR ALL
     TO authenticated

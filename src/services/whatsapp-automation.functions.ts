@@ -86,17 +86,24 @@ export const launchWhatsAppCampaign = createServerFn({ method: "POST" }).validat
   if (["running", "completed"].includes(campaign.status)) throw new Error("Campanha já está em execução ou concluída.");
   const { data: instance } = await db.from("whatsapp_channel_instances").select("id, provider, is_active").eq("id", campaign.channel_instance_id).eq("store_id", identity.store_id).maybeSingle();
   if (!instance?.is_active) throw new Error("Instância da campanha está inativa.");
-  if (instance.provider !== "meta_cloud_api") throw new Error("A primeira onda de campanhas usa somente Meta Cloud API oficial.");
+  if (!["meta_cloud_api", "evolution_api"].includes(instance.provider)) throw new Error("Provider da instância não suporta campanhas.");
   if (!["template", "text"].includes(campaign.message_type)) throw new Error("Campanhas flow ainda exigem um workflow publicado; não foram enfileiradas.");
   const { data: identities, error: identitiesError } = await db.from("whatsapp_contact_identities").select("id, phone_e164, consent_status").eq("store_id", identity.store_id).eq("channel_instance_id", campaign.channel_instance_id).eq("provider", instance.provider).eq("consent_status", "opted_in").not("phone_e164", "is", null);
   if (identitiesError) throw new Error(`Falha ao materializar audiência: ${identitiesError.message}`);
+  const { data: optOutLeads } = await db.from("leads_crm").select("phone").eq("store_id", identity.store_id).eq("whatsapp_opt_out", true);
+  const optOutSuffixes = new Set((optOutLeads || []).map((r: any) => String(r.phone || "").replace(/\D/g, "").slice(-8)).filter((s) => s.length === 8));
   let queued = 0;
-  for (const contact of identities || []) {
+  for (let idx = 0; idx < (identities || []).length; idx++) {
+    const contact = identities![idx];
+    const phoneDigits = String(contact.phone_e164 || "").replace(/\D/g, "");
+    if (phoneDigits.length >= 8 && optOutSuffixes.has(phoneDigits.slice(-8))) continue;
     const { data: recipient } = await db.from("whatsapp_campaign_recipients").upsert({ campaign_id: campaign.id, store_id: identity.store_id, identity_id: contact.id, status: "eligible" }, { onConflict: "campaign_id,identity_id", ignoreDuplicates: true }).select("id, outbox_id, status").maybeSingle();
     if (!recipient || recipient.outbox_id || ["accepted", "sent", "delivered", "read"].includes(recipient.status)) continue;
     const idempotencyKey = `campaign:${campaign.id}:identity:${contact.id}`;
-    const payload = campaign.message_type === "template" ? { template: { name: campaign.template_name, language: { code: campaign.template_language || "pt_BR" }, components: campaign.template_parameters || [] } } : { text: campaign.description || "" };
-    const { data: outbox } = await db.from("whatsapp_outbox").upsert({ store_id: identity.store_id, channel_instance_id: instance.id, provider: instance.provider, idempotency_key: idempotencyKey, recipient_phone: contact.phone_e164, message_type: campaign.message_type, payload, status: "pending" }, { onConflict: "store_id,idempotency_key", ignoreDuplicates: true }).select("id").maybeSingle();
+    const payload = campaign.message_type === "template" && instance.provider === "meta_cloud_api"
+      ? { template: { name: campaign.template_name, language: { code: campaign.template_language || "pt_BR" }, components: campaign.template_parameters || [] }, campaign_id: campaign.id }
+      : { text: campaign.description || "", campaign_id: campaign.id, simulate_presence: true, typing_delay_ms: 1800 };
+    const { data: outbox } = await db.from("whatsapp_outbox").upsert({ store_id: identity.store_id, channel_instance_id: instance.id, provider: instance.provider, idempotency_key: idempotencyKey, recipient_phone: contact.phone_e164, message_type: instance.provider === "evolution_api" ? "text" : campaign.message_type, payload, status: "pending" }, { onConflict: "store_id,idempotency_key", ignoreDuplicates: true }).select("id").maybeSingle();
     if (outbox?.id) { await db.from("whatsapp_campaign_recipients").update({ outbox_id: outbox.id, status: "queued", updated_at: new Date().toISOString() }).eq("id", recipient.id); queued++; }
   }
   await db.from("whatsapp_campaigns").update({ status: queued ? "running" : "completed", started_at: new Date().toISOString(), completed_at: queued ? null : new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", campaign.id).eq("store_id", identity.store_id);
@@ -107,7 +114,23 @@ export const pauseWhatsAppCampaign = createServerFn({ method: "POST" }).validato
   const identity = await getServerIdentity();
   assertStoreAccess(identity, ["owner", "admin", "manager"]);
   const db = getServerClient();
-  await db.from("whatsapp_campaigns").update({ status: "paused", updated_at: new Date().toISOString() }).eq("id", data.id).eq("store_id", identity.store_id);
-  await db.from("whatsapp_campaign_recipients").update({ status: "cancelled", updated_at: new Date().toISOString() }).eq("campaign_id", data.id).eq("store_id", identity.store_id).in("status", ["eligible", "queued"]);
-  return { success: true };
+  const nowIso = new Date().toISOString();
+  await db.from("whatsapp_campaigns").update({ status: "paused", updated_at: nowIso }).eq("id", data.id).eq("store_id", identity.store_id);
+  const { data: queuedRecipients } = await db
+    .from("whatsapp_campaign_recipients")
+    .select("id, outbox_id")
+    .eq("campaign_id", data.id)
+    .eq("store_id", identity.store_id)
+    .in("status", ["eligible", "queued"]);
+  const outboxIds = (queuedRecipients || []).map((r: any) => r.outbox_id).filter(Boolean);
+  if (outboxIds.length > 0) {
+    await db
+      .from("whatsapp_outbox")
+      .update({ status: "dead_letter", last_error_code: "CAMPAIGN_PAUSED", last_error_message: "Campanha pausada pelo operador", updated_at: nowIso })
+      .eq("store_id", identity.store_id)
+      .in("id", outboxIds)
+      .in("status", ["pending", "failed"]);
+  }
+  await db.from("whatsapp_campaign_recipients").update({ status: "cancelled", updated_at: nowIso }).eq("campaign_id", data.id).eq("store_id", identity.store_id).in("status", ["eligible", "queued"]);
+  return { success: true, cancelledOutboxCount: outboxIds.length };
 });

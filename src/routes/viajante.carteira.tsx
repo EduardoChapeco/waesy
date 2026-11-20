@@ -104,17 +104,12 @@ export default function ViajanteCarteiraPage() {
             <Button
               asChild
               variant="outline"
-
-              className="h-11 min-h-11 px-4 rounded-lg text-xs font-medium border-border/60"
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-medium border-border/60 focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <a
-                href="https://wa.me/5549999999999?text=Ol%C3%A1%2C%20preciso%20de%20atendimento%20sobre%20minha%20reserva."
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <Link to="/conta/viagens">
                 <Phone className="size-3.5 mr-2 text-muted-foreground" />
-                <span>Suporte</span>
-              </a>
+                <span>Atendimento</span>
+              </Link>
             </Button>
           </div>
         </div>

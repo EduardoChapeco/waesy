@@ -103,7 +103,8 @@ function KDSDashboard() {
  const { data: orders } = useQuery({
  queryKey: ["kds-orders"],
  queryFn: () => listOrders(),
- refetchInterval: 3000,
+ refetchInterval: 10000,
+ refetchOnWindowFocus: true,
  });
 
  const { mutate: changeStatus, isPending } = useMutation({

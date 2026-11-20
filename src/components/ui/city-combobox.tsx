@@ -61,6 +61,9 @@ interface CityComboboxProps {
   label?: string;
   helperText?: string;
   required?: boolean;
+  hideNeighborhood?: boolean;
+  hideLabel?: boolean;
+  hideHelperText?: boolean;
 }
 
 // ── Quick-access regional poles (Oeste SC / priority cities) ─────────────────
@@ -165,8 +168,30 @@ function CityPickerPanel({
             );
           })
         ) : (
-          <div className="py-10 text-center text-sm text-muted-foreground">
-            Nenhuma cidade encontrada para &ldquo;{searchQuery}&rdquo;
+          <div className="py-6 px-3 text-center space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Nenhuma cidade catalogada para &ldquo;{searchQuery}&rdquo;
+            </p>
+            {searchQuery.trim().length >= 2 && (
+              <button
+                type="button"
+                onClick={() => {
+                  const customName = searchQuery.trim();
+                  onSelect({
+                    id: customName.toLowerCase().replace(/\s+/g, "-"),
+                    name: customName,
+                    state: "BR",
+                    label: customName,
+                    region: "Brasil",
+                  });
+                  onClose();
+                }}
+                className="inline-flex items-center gap-2 h-11 px-4 rounded-xl bg-primary text-primary-foreground text-xs font-semibold cursor-pointer hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Check className="size-3.5" />
+                <span>Usar &ldquo;{searchQuery.trim()}&rdquo;</span>
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -182,6 +207,9 @@ export function CityCombobox({
   label = "Cidade do Anúncio",
   helperText = "Para sua privacidade, o endereço exato não é exibido publicamente.",
   required = false,
+  hideNeighborhood = false,
+  hideLabel = false,
+  hideHelperText = false,
 }: CityComboboxProps) {
   const { location: masterLoc } = useMasterLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -207,6 +235,29 @@ export function CityCombobox({
     if (value && value.includes(",")) return value.split(",")[0].trim();
     return "";
   });
+
+  // Sync external `value` changes (e.g. CNPJ or CEP auto-fill)
+  useEffect(() => {
+    if (!value) return;
+    const parts = value.split("—").map((p) => p.trim());
+    const lastPart = parts[parts.length - 1] || "";
+    const matched = findCityByLabel(lastPart) || findCityByLabel(value);
+    if (matched) {
+      setSelectedCity(matched);
+    } else if (lastPart) {
+      const [cityPart, statePart] = lastPart.split(/\s*[-–—,]\s*/);
+      setSelectedCity({
+        id: lastPart.toLowerCase().replace(/\s+/g, "-"),
+        name: cityPart?.trim() || lastPart,
+        state: (statePart?.trim() || "").toUpperCase(),
+        label: lastPart,
+        region: "Brasil",
+      });
+    }
+    if (value.includes("—")) {
+      setNeighborhood(value.split("—")[0].trim());
+    }
+  }, [value]);
 
   // Seed onChange once on mount if no value provided
   useEffect(() => {
@@ -287,33 +338,37 @@ export function CityCombobox({
   return (
     <div className={cn("space-y-3", className)}>
       {/* Label row */}
-      <div className="flex items-center justify-between gap-2">
-        <Label className="text-xs text-foreground font-medium flex items-center gap-2">
-          <MapPin className="size-3.5 text-primary" />
-          <span>{label}</span>
-          {required && <span className="text-destructive">*</span>}
-        </Label>
-        {masterLoc.city && masterLoc.city.toLowerCase() !== "global" && (
-          <button
-            type="button"
-            onClick={handleAutoFill}
-            className="flex-shrink-0 text-2xs text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <Crosshair className="size-3" />
-            <span>Usar {masterLoc.city}</span>
-          </button>
-        )}
-      </div>
+      {!hideLabel && (
+        <div className="flex items-center justify-between gap-2">
+          <Label className="text-xs text-foreground font-medium flex items-center gap-2">
+            <MapPin className="size-3.5 text-primary" />
+            <span>{label}</span>
+            {required && <span className="text-destructive">*</span>}
+          </Label>
+          {masterLoc.city && masterLoc.city.toLowerCase() !== "global" && (
+            <button
+              type="button"
+              onClick={handleAutoFill}
+              className="flex-shrink-0 text-2xs text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <Crosshair className="size-3" />
+              <span>Usar {masterLoc.city}</span>
+            </button>
+          )}
+        </div>
+      )}
 
-      {/* Two-column grid: Neighborhood + City */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {/* Grid: Neighborhood (optional) + City */}
+      <div className={cn("grid gap-3", hideNeighborhood ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2")}>
         {/* Neighborhood input */}
-        <Input
-          value={neighborhood}
-          onChange={(e) => handleNeighborhoodChange(e.target.value)}
-          placeholder="Bairro / Região (ex: Centro)"
-          className="h-11 rounded-lg text-sm bg-background border-border/80 font-medium placeholder:text-muted-foreground/60"
-        />
+        {!hideNeighborhood && (
+          <Input
+            value={neighborhood}
+            onChange={(e) => handleNeighborhoodChange(e.target.value)}
+            placeholder="Bairro / Região (ex: Centro)"
+            className="h-11 rounded-lg text-sm bg-background border-border/80 font-medium placeholder:text-muted-foreground/60"
+          />
+        )}
 
         {/* ── Mobile: Vaul Drawer ── */}
         <div className="sm:hidden">
@@ -411,13 +466,33 @@ export function CityCombobox({
                     </button>
                   );
                 })}
+                {searchCanonicalCities(searchQuery, 10).length === 0 && searchQuery.trim().length >= 2 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const customName = searchQuery.trim();
+                      handleSelectCity({
+                        id: customName.toLowerCase().replace(/\s+/g, "-"),
+                        name: customName,
+                        state: "BR",
+                        label: customName,
+                        region: "Brasil",
+                      });
+                      setDesktopOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-primary hover:bg-primary/10 cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Check className="size-3.5 shrink-0" />
+                    <span>Usar &ldquo;{searchQuery.trim()}&rdquo;</span>
+                  </button>
+                )}
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {helperText && (
+      {!hideHelperText && helperText && (
         <p className="text-2xs text-muted-foreground leading-relaxed">{helperText}</p>
       )}
     </div>

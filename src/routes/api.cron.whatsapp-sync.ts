@@ -22,6 +22,24 @@ export async function handleCronWhatsAppSync(request: Request): Promise<Response
     );
   }
 
+  // EARS-RES-01: Bloqueio de consumo ocioso — exige opt-in explícito ou disparo manual autenticado
+  const allowAutonomousCron =
+    (typeof process !== "undefined" && process.env?.ENABLE_AUTONOMOUS_WHATSAPP_CRON === "true") ||
+    request.headers.get("x-waesy-manual-trigger") === "true";
+  let manualTriggerFromBody = false;
+  if (!allowAutonomousCron && request.method === "POST") {
+    const body = (await request.clone().json().catch(() => ({}))) as Record<string, unknown>;
+    manualTriggerFromBody = body?.manualTrigger === true || body?.source === "manual";
+  }
+  if (!allowAutonomousCron && !manualTriggerFromBody) {
+    return Response.json({
+      ok: true,
+      skipped: true,
+      reason: "autonomous_whatsapp_cron_disabled_ears_res_01",
+      checkedAt: new Date().toISOString(),
+    });
+  }
+
   const db = getServerClient();
   const startedAt = new Date().toISOString();
 

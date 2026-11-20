@@ -532,7 +532,7 @@ export async function _inviteTeamMember(
   const effectiveInitialPassword =
     requestedPassword && requestedPassword.length >= 6
       ? requestedPassword
-      : "Waesy" + Math.random().toString(36).slice(-8) + "!";
+      : `Waesy#${crypto.randomUUID().slice(0, 12)}!`;
   let wasCreatedNewAuthUser = false;
 
   if (!targetUserId) {

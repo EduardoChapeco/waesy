@@ -290,6 +290,33 @@ export const listStorePersonasOverview = createServerFn({ method: "GET" })
 
     const filterIntent = data?.intent || "all";
     const limit = data?.limit || 20;
+    const isPlatformAdmin = identity.role === "platform_admin" || identity.role === "master";
+
+    let scopedUserIds: string[] | null = null;
+    if (!isPlatformAdmin) {
+      const [custRes, ordRes] = await Promise.all([
+        supabase
+          .from("customers_crm")
+          .select("profile_id")
+          .eq("store_id", identity.store_id)
+          .not("profile_id", "is", null)
+          .limit(300),
+        supabase
+          .from("orders")
+          .select("buyer_id")
+          .eq("store_id", identity.store_id)
+          .not("buyer_id", "is", null)
+          .limit(300),
+      ]);
+      const idSet = new Set<string>();
+      for (const r of custRes.data || []) {
+        if ((r as any).profile_id) idSet.add(String((r as any).profile_id));
+      }
+      for (const o of ordRes.data || []) {
+        if ((o as any).buyer_id) idSet.add(String((o as any).buyer_id));
+      }
+      scopedUserIds = Array.from(idSet);
+    }
 
     let query = supabase
       .from("ai_persona_profiles")
@@ -300,15 +327,23 @@ export const listStorePersonasOverview = createServerFn({ method: "GET" })
     if (filterIntent !== "all") {
       query = query.eq("intent_classification", filterIntent);
     }
+    if (scopedUserIds !== null) {
+      if (scopedUserIds.length === 0) {
+        return { personas: [], topSearches: [], unmetDemands: [], totalCount: 0 } as any;
+      }
+      query = query.in("user_id", scopedUserIds);
+    }
 
-    const [personasRes, searchesRes] = await Promise.all([
-      query,
-      supabase
-        .from("search_history")
-        .select("query, normalized_query, results_count, niche, created_at")
-        .order("created_at", { ascending: false })
-        .limit(30),
-    ]);
+    let searchQuery = supabase
+      .from("search_history")
+      .select("query, normalized_query, results_count, niche, created_at")
+      .order("created_at", { ascending: false })
+      .limit(30);
+    if (scopedUserIds !== null && scopedUserIds.length > 0) {
+      searchQuery = searchQuery.in("user_id", scopedUserIds);
+    }
+
+    const [personasRes, searchesRes] = await Promise.all([query, searchQuery]);
 
     const rawPersonas = personasRes.data || [];
     const rawSearches = searchesRes.data || [];

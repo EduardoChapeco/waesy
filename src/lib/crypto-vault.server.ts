@@ -15,7 +15,7 @@
  * (tudo hex para máxima compatibilidade com TEXT no Postgres)
  */
 
-import { createCipheriv, createDecipheriv, randomBytes, createHash } from "crypto";
+import { createCipheriv, createDecipheriv, createHmac, randomBytes, createHash, timingSafeEqual } from "crypto";
 import { getEnvVar } from "./env";
 
 // ─── Constantes ──────────────────────────────────────────────────────────────
@@ -197,4 +197,59 @@ export function cleanApiKey(input: string): string {
   // Remove aspas internas ou residuais envolventes
   key = key.replace(/^["']|["']$/g, "").trim();
   return key;
+}
+
+/**
+ * Comparação em tempo constante para segredos e assinaturas.
+ */
+export function timingSafeCompare(a: string, b: string): boolean {
+  if (!a || !b) return false;
+  const bufA = createHash("sha256").update(a).digest();
+  const bufB = createHash("sha256").update(b).digest();
+  return timingSafeEqual(bufA, bufB);
+}
+
+/**
+ * Assina um payload de OAuth `state` com HMAC-SHA256 usando a chave mestra do cofre.
+ */
+export function signOAuthState(payload: Record<string, unknown>): string {
+  const key = getMasterKey();
+  const body = Buffer.from(JSON.stringify({ ...payload, ts: Date.now() }), "utf8").toString("base64url");
+  const sig = createHmac("sha256", key).update(body).digest("base64url");
+  return `${body}.${sig}`;
+}
+
+/**
+ * Verifica assinatura HMAC-SHA256 e TTL (padrão 15 min) de um OAuth `state`.
+ */
+export function verifyOAuthState<T extends Record<string, unknown> = Record<string, unknown>>(
+  state: string,
+  maxAgeMs = 15 * 60 * 1000,
+): T | null {
+  if (!state || !state.includes(".")) return null;
+  const dotIdx = state.lastIndexOf(".");
+  if (dotIdx <= 0) return null;
+  const body = state.slice(0, dotIdx);
+  const sig = state.slice(dotIdx + 1);
+  if (!body || !sig) return null;
+
+  let verified = false;
+  for (const key of getCandidateMasterKeys()) {
+    const expected = createHmac("sha256", key).update(body).digest("base64url");
+    if (timingSafeCompare(sig, expected)) {
+      verified = true;
+      break;
+    }
+  }
+  if (!verified) return null;
+
+  try {
+    const parsed = JSON.parse(Buffer.from(body, "base64url").toString("utf8")) as T & { ts?: number };
+    if (typeof parsed.ts === "number" && Date.now() - parsed.ts > maxAgeMs) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
 }

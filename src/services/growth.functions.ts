@@ -64,7 +64,7 @@ export const upsertCoupon = createServerFn({ method: "POST" })
 
  let result;
  if (input.id) {
- result = await db.from("coupons").update(payload).eq("id", input.id).select().single();
+ result = await db.from("coupons").update(payload).eq("id", input.id).eq("store_id", identity.store_id!).select().single();
  } else {
  result = await db.from("coupons").insert(payload).select().single();
  }

@@ -79,10 +79,11 @@ export default function WorkspaceReviewsPage() {
 
   const handleCopyReviewLink = () => {
     if (typeof window !== "undefined") {
-      const url = `${window.location.origin}/avaliar`;
+      const storeIdFromReviews = (reviews[0] as any)?.store_id || (data as any)?.storeId || "geral";
+      const url = `${window.location.origin}/avaliar/loja-${storeIdFromReviews}`;
       navigator.clipboard.writeText(url);
       setCopiedLink(true);
-      toast.success("Link para envio a clientes copiado!");
+      toast.success("Link do Review Booster copiado!");
       setTimeout(() => setCopiedLink(false), 2000);
     }
   };

@@ -20,6 +20,10 @@ import { createBrowserClient, serializeCookieHeader } from "@supabase/ssr";
 import { z } from "zod";
 import { getEnvVar } from "./env";
 import {
+  createTieredFederatedClient,
+  resolveFederationTopology,
+} from "./supabase-federation";
+import {
   AUTH_COOKIE_CHUNK_NAMES,
   getLegacyCookieDomainsToPurge,
   parseRawCookieStringPreservingDuplicates,
@@ -318,7 +322,57 @@ export function getBrowserClient(): SupabaseClient {
  */
 export const getServerSupabase = getServerClient;
 
+/**
+ * Cliente de um nó de apoio (OFFLOAD = ingestão, ARCHIVE = arquivo). Somente service_role, somente servidor:
+ * sem fallback para anon key e sem variável VITE_ (nunca exposta ao navegador).
+ */
+function createSupportNodeClient(role: "OFFLOAD" | "ARCHIVE"): SupabaseClient | null {
+  const url = getEnvVar(`SUPABASE_${role}_URL`);
+  const key = getEnvVar(`SUPABASE_${role}_SERVICE_ROLE_KEY`);
+  if (!url || !key || !url.startsWith("http") || key.length < 10) return null;
+  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+}
+
+export function getOffloadServerClient(): SupabaseClient | null {
+  const topology = resolveFederationTopology({
+    mode: getEnvVar("SUPABASE_TOPOLOGY_MODE"),
+    offloadUrl: getEnvVar("SUPABASE_OFFLOAD_URL"),
+    offloadKey: getEnvVar("SUPABASE_OFFLOAD_SERVICE_ROLE_KEY"),
+  });
+  return topology === "single" ? null : createSupportNodeClient("OFFLOAD");
+}
+
+/** Envolve o cliente primário com o roteamento por tabela. Em `single` devolve o próprio cliente. */
+function withFederation(primary: SupabaseClient): SupabaseClient {
+  const offloadUrl = getEnvVar("SUPABASE_OFFLOAD_URL");
+  const offloadKey = getEnvVar("SUPABASE_OFFLOAD_SERVICE_ROLE_KEY");
+  const archiveUrl = getEnvVar("SUPABASE_ARCHIVE_URL");
+  const archiveKey = getEnvVar("SUPABASE_ARCHIVE_SERVICE_ROLE_KEY");
+  const topology = resolveFederationTopology({
+    mode: getEnvVar("SUPABASE_TOPOLOGY_MODE"),
+    offloadUrl,
+    offloadKey,
+    archiveUrl,
+    archiveKey,
+  });
+  if (topology === "single") return primary;
+  const hasOffload = Boolean(offloadUrl && offloadKey);
+  const hasArchive = Boolean(archiveUrl && archiveKey);
+  return createTieredFederatedClient(
+    primary,
+    {
+      offload: hasOffload ? () => createSupportNodeClient("OFFLOAD") : null,
+      archive: hasArchive ? () => createSupportNodeClient("ARCHIVE") : null,
+    },
+    { routeMining: getEnvVar("SUPABASE_ROUTE_MINING") === "1" },
+  );
+}
+
 export function getServerClient(): SupabaseClient {
+  return withFederation(createPrimaryServerClient());
+}
+
+function createPrimaryServerClient(): SupabaseClient {
  const env = ServerEnvSchema.safeParse({
  VITE_SUPABASE_URL: getEnvVar("VITE_SUPABASE_URL"),
  VITE_SUPABASE_ANON_KEY: getEnvVar("VITE_SUPABASE_ANON_KEY"),

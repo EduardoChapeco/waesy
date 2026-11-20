@@ -370,7 +370,7 @@ export default function MeuCurriculoPage() {
     setIsSaving(true);
     setSaveStatus("saving");
     try {
-      await saveUserResume({
+      const savedRes = await saveUserResume({
         data: {
           id: activeResume?.id !== "default-resume" ? activeResume?.id : undefined,
           title: resumeTitle.trim() || "Currículo Principal",
@@ -384,6 +384,20 @@ export default function MeuCurriculoPage() {
           data: currentResumeData as Record<string, any>,
         },
       });
+
+      if (
+        savedRes?.resumeId &&
+        savedRes.resumeId !== "default-resume" &&
+        (!activeResume?.id || activeResume.id === "default-resume")
+      ) {
+        setResumesList((prev) =>
+          prev.map((item) =>
+            item.id === "default-resume"
+              ? { ...item, id: savedRes.resumeId, slug: savedRes.slug || item.slug }
+              : item,
+          ),
+        );
+      }
 
       // Sincroniza identidade civil em profiles e avaliações de empregadores (InfoJobs / Glassdoor)
       await updateProfile({

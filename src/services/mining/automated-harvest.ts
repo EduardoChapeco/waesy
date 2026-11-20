@@ -132,15 +132,34 @@ export function hashCanonicalUrl(rawUrl: string): string {
   }
 }
 
+// Trava de concorrência em processo (EARS-RES-01): evita execuções sobrepostas do coletor
+let _activeHarvestLock = false;
+
 /**
- * Executa a colheita automatizada de notícias com deduplicação rigorosa e curadoria de alta qualidade
+ * Executa a colheita automatizada de notícias sob demanda manual com trava de concorrência,
+ * deduplicação rigorosa e teto estrito de lote.
  */
 export async function executeAutomatedNewsHarvest(
   options: AutomatedHarvestOptions = {}
 ): Promise<AutomatedHarvestReport> {
   const startTime = Date.now();
+  if (_activeHarvestLock) {
+    return {
+      success: false,
+      totalDiscovered: 0,
+      totalSkippedDuplicate: 0,
+      totalExtracted: 0,
+      totalCurated: 0,
+      totalPublished: 0,
+      tokensSavedEstimate: 0,
+      articles: [],
+      durationMs: 0,
+      error: "harvest_already_in_progress",
+    };
+  }
+  _activeHarvestLock = true;
   const supabase = getServerClient();
-  const maxItems = options.maxItems || 10;
+  const maxItems = Math.min(options.maxItems || 5, 10);
   const geo = resolveCityAndState(options.city, options.state);
   const targetCity = geo.city || options.city || getDefaultCity();
   const targetState = geo.state || normalizeStateUf(options.state) || getDefaultState();
@@ -375,6 +394,8 @@ export async function executeAutomatedNewsHarvest(
     console.error("[automated-harvest] Erro geral na esteira de mineração:", err);
     report.success = false;
     report.error = err.message || String(err);
+  } finally {
+    _activeHarvestLock = false;
   }
 
   report.durationMs = Date.now() - startTime;

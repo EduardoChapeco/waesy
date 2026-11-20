@@ -23,6 +23,31 @@ export const OnboardingInputSchema = z.object({
 
 export type OnboardingInput = z.infer<typeof OnboardingInputSchema>;
 
+export interface OnboardingEvidenceScreenshot {
+  source: "site" | "instagram" | "google_business";
+  label: string;
+  url: string;
+  screenshotUrl: string;
+  capturedAt: string;
+}
+
+export interface OnboardingLiveLog {
+  id: string;
+  time: string;
+  text: string;
+  squad: "crawl" | "instagram" | "google" | "design" | "copy" | "pr" | "biz" | "judge";
+  status: "info" | "success" | "warning" | "error";
+}
+
+export interface OnboardingLiveState {
+  logs: OnboardingLiveLog[];
+  screenshots: OnboardingEvidenceScreenshot[];
+  active_squad: string;
+  completed_squads: string[];
+  live_viewer_url?: string | null;
+  current_browsing_url?: string | null;
+}
+
 export interface ScrapedEvidence {
   sourceUrl: string;
   domain: string;
@@ -32,6 +57,11 @@ export interface ScrapedEvidence {
   rawTextSample: string;
   screenshotUrl?: string | null;
   screenshotBase64?: string | null;
+  screenshots?: OnboardingEvidenceScreenshot[];
+  instagramUrl?: string | null;
+  logoUrl?: string | null;
+  coverUrl?: string | null;
+  liveViewerUrl?: string | null;
   extractionProvider: "firecrawl" | "steel" | "native_fetch";
   instagramStatus?: {
     isInstagram: boolean;
@@ -126,6 +156,8 @@ export interface FinalConsolidatedBriefing {
   category: string;
   bio: string;
   tagline: string;
+  logo_url?: string | null;
+  cover_url?: string | null;
   brand_kit: {
     primary_color: string;
     secondary_color: string;
@@ -251,119 +283,49 @@ export async function updateJobProgress(
 }
 
 // ============================================================
-// 4. Etapa 1: Visita e Captura Real (Firecrawl + Steel)
+// 4. Etapa 1: Visita e Captura Real (Firecrawl + Steel + Instagram + Google Meu Negócio)
 // ============================================================
 
-export async function captureWebEvidence(
-  targetUrl: string,
-  storeId: string,
-  jobId: string
-): Promise<ScrapedEvidence> {
-  const urlObj = assertSafeUrl(targetUrl);
-  const domain = urlObj.hostname.replace(/^www\./, "");
-  const isInstagram = domain.includes("instagram.com");
+const INSTAGRAM_IGNORED_PATHS = new Set([
+  "p",
+  "reel",
+  "reels",
+  "explore",
+  "accounts",
+  "share",
+  "stories",
+  "tv",
+  "direct",
+  "oauth",
+  "developer",
+  "about",
+  "legal",
+  "privacy",
+]);
 
-  await updateJobProgress(jobId, 15, "processing");
-
-  let scrapedMarkdown = "";
-  let pageTitle = domain;
-  let metaDescription = "";
-  let extractionProvider: "firecrawl" | "steel" | "native_fetch" = "native_fetch";
-  let screenshotUrl: string | null = null;
-  let screenshotBase64: string | null = null;
-  let instagramStatus: ScrapedEvidence["instagramStatus"] = undefined;
-
-  // A. Firecrawl Scrape Oficial
-  const firecrawlKey = await getNextActiveKey("firecrawl").catch(() => null);
-  if (firecrawlKey?.rawKey && !isInstagram) {
-    try {
-      const fcRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${firecrawlKey.rawKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          url: targetUrl,
-          formats: ["markdown", "html"],
-          onlyMainContent: true,
-          waitFor: 1500,
-        }),
-        signal: AbortSignal.timeout(20000),
-      });
-
-      if (fcRes.ok) {
-        const fcData = await fcRes.json();
-        const data = fcData?.data || {};
-        scrapedMarkdown = data.markdown || "";
-        pageTitle = data.metadata?.title || domain;
-        metaDescription = data.metadata?.description || "";
-        extractionProvider = "firecrawl";
-      } else {
-        await markKeyError(firecrawlKey.id, `Firecrawl status HTTP ${fcRes.status}`);
-      }
-    } catch (e: any) {
-      console.warn("[OnboardingPipeline] Firecrawl falhou:", e?.message);
+/**
+ * Extrai a primeira URL de perfil do Instagram encontrada em HTML ou Markdown.
+ */
+export function extractInstagramUrlFromContent(content: string): { url: string; handle: string } | null {
+  if (!content) return null;
+  const regex = /https?:\/\/(?:www\.)?instagram\.com\/([a-zA-Z0-9._]{2,30})\/?/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(content)) !== null) {
+    const handle = match[1].toLowerCase();
+    if (!INSTAGRAM_IGNORED_PATHS.has(handle) && !handle.endsWith(".php")) {
+      return { url: `https://www.instagram.com/${match[1]}/`, handle: match[1] };
     }
   }
+  return null;
+}
 
-  // B. Fallback Nativo com Fetch e Metadados
-  if (!scrapedMarkdown) {
-    try {
-      const fetchRes = await fetch(targetUrl, {
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        },
-        signal: AbortSignal.timeout(12000),
-      });
-
-      if (fetchRes.ok) {
-        const html = await fetchRes.text();
-
-        // Extrai metadados essenciais
-        const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-        if (titleMatch && titleMatch[1]) pageTitle = titleMatch[1].trim();
-
-        const descMatch =
-          html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i) ||
-          html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i);
-        if (descMatch && descMatch[1]) metaDescription = descMatch[1].trim();
-
-        // Limpa HTML para texto útil
-        scrapedMarkdown = html
-          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-          .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
-          .replace(/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, "")
-          .replace(/<[^>]+>/g, " ")
-          .replace(/\s+/g, " ")
-          .trim()
-          .slice(0, 10000);
-
-        extractionProvider = "native_fetch";
-      }
-    } catch (fetchErr: any) {
-      console.warn("[OnboardingPipeline] Fetch nativo falhou:", fetchErr?.message);
-    }
-  }
-
-  // C. Tratamento estrito de Instagram
-  if (isInstagram) {
-    const isLoginWalled = !scrapedMarkdown || scrapedMarkdown.length < 200 || scrapedMarkdown.includes("login");
-    instagramStatus = {
-      isInstagram: true,
-      loginWalled: isLoginWalled,
-      publicBio: metaDescription || undefined,
-      warning: isLoginWalled
-        ? "Instagram bloqueou acesso profundo via login wall. Analisando metadados públicos e bio visível."
-        : undefined,
-    };
-  }
-
-  await updateJobProgress(jobId, 25, "processing");
-
-  // D. Captura de Screenshot Real via Steel.dev
+/**
+ * Captura print real de qualquer URL pública via Steel.dev ou fallback Firecrawl.
+ */
+export async function captureScreenshotWithFallback(
+  targetUrl: string
+): Promise<{ screenshotUrl: string; screenshotBase64: string | null; provider: "steel" | "firecrawl" } | null> {
+  // 1. Tentativa via Steel.dev
   const steelKey = await getNextActiveKey("steel").catch(() => null);
   if (steelKey?.rawKey) {
     try {
@@ -385,27 +347,531 @@ export async function captureWebEvidence(
         const sData = await steelRes.json();
         const rawShotUrl = sData?.url || sData?.screenshotUrl;
         if (rawShotUrl) {
-          screenshotUrl = rawShotUrl;
-          extractionProvider = "steel";
+          let base64: string | null = null;
           try {
             const shotBufferRes = await fetch(rawShotUrl, { signal: AbortSignal.timeout(12000) });
             if (shotBufferRes.ok) {
               const arrayBuffer = await shotBufferRes.arrayBuffer();
-              screenshotBase64 = Buffer.from(arrayBuffer).toString("base64");
+              base64 = Buffer.from(arrayBuffer).toString("base64");
             }
-          } catch (shotBufferErr: any) {
-            console.warn("[OnboardingPipeline] Falha ao descarregar buffer do print Steel:", shotBufferErr?.message);
+          } catch {
+            // Buffer opcional para visão
           }
+          return { screenshotUrl: rawShotUrl, screenshotBase64: base64, provider: "steel" };
         }
       } else {
-        await markKeyError(steelKey.id, `Steel HTTP ${steelRes.status}`);
+        await markKeyError(steelKey.id, `Steel HTTP ${steelRes.status}`, steelRes.status);
       }
     } catch (steelErr: any) {
       console.warn("[OnboardingPipeline] Captura Steel falhou:", steelErr?.message);
     }
   }
 
-  await updateJobProgress(jobId, 35, "processing");
+  // 2. Fallback via Firecrawl (formats: ["screenshot"])
+  const firecrawlKey = await getNextActiveKey("firecrawl").catch(() => null);
+  if (firecrawlKey?.rawKey) {
+    try {
+      const fcRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${firecrawlKey.rawKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: targetUrl,
+          formats: ["screenshot"],
+          waitFor: 2000,
+        }),
+        signal: AbortSignal.timeout(25000),
+      });
+
+      if (fcRes.ok) {
+        const fcData = await fcRes.json();
+        const rawShotUrl = fcData?.data?.screenshot;
+        if (rawShotUrl) {
+          return { screenshotUrl: rawShotUrl, screenshotBase64: null, provider: "firecrawl" };
+        }
+      } else {
+        await markKeyError(firecrawlKey.id, `Firecrawl screenshot HTTP ${fcRes.status}`, fcRes.status);
+      }
+    } catch (fcErr: any) {
+      console.warn("[OnboardingPipeline] Firecrawl screenshot falhou:", fcErr?.message);
+    }
+  }
+
+  return null;
+}
+
+const LOW_RES_ICON_PATTERNS = /favicon|\.ico($|\?)|16x16|32x32|48x48|64x64|pixel|sprite|spacer|blank\.gif|1x1/i;
+
+function resolveUrlSafely(candidate: string, baseUrl: string): string | null {
+  const trimmed = (candidate || "").trim();
+  if (!trimmed || trimmed.startsWith("data:") || trimmed.startsWith("javascript:")) return null;
+  try {
+    const resolved = new URL(trimmed, baseUrl).href;
+    if (!resolved.startsWith("http://") && !resolved.startsWith("https://")) return null;
+    return resolved;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Extrai a melhor URL de logo em alta resolução (nunca favicons pequenos ou .ico).
+ */
+export function extractBestLogoUrl(
+  rawHtml: string,
+  baseUrl: string,
+  instagramOgImage?: string | null
+): string | null {
+  const candidates: string[] = [];
+
+  if (rawHtml) {
+    // 1. JSON-LD schema.org "logo"
+    const jsonLdMatches = rawHtml.matchAll(/"logo"\s*:\s*(?:"([^"]+)"|\{[^}]*"url"\s*:\s*"([^"]+)"[^}]*\})/gi);
+    for (const m of jsonLdMatches) {
+      const val = m[1] || m[2];
+      if (val) candidates.push(val);
+    }
+
+    // 2. <img> com atributo class/id/alt/src contendo "logo" ou "brand" ou dentro de <header>
+    const imgMatches = rawHtml.matchAll(/<img\b([^>]+)>/gi);
+    for (const m of imgMatches) {
+      const attrs = m[1] || "";
+      const srcMatch = attrs.match(/(?:src|data-src)\s*=\s*["']([^"']+)["']/i);
+      if (!srcMatch?.[1]) continue;
+      const src = srcMatch[1];
+      if (/logo|brand|marca|header/i.test(attrs) || /logo|brand|marca/i.test(src)) {
+        candidates.push(src);
+      }
+    }
+
+    // 3. Meta og:logo
+    const ogLogoMatch = rawHtml.match(/<meta[^>]*property=["']og:logo["'][^>]*content=["']([^"']+)["']/i);
+    if (ogLogoMatch?.[1]) candidates.push(ogLogoMatch[1]);
+
+    // 4. Apple touch icon de alta resolução (>= 152px)
+    const appleIcons = rawHtml.matchAll(/<link[^>]*rel=["']apple-touch-icon[^"']*["'][^>]*>/gi);
+    for (const m of appleIcons) {
+      const tag = m[0];
+      const hrefMatch = tag.match(/href=["']([^"']+)["']/i);
+      const sizeMatch = tag.match(/sizes=["'](\d+)x\d+["']/i);
+      const size = sizeMatch ? parseInt(sizeMatch[1], 10) : 180;
+      if (hrefMatch?.[1] && size >= 152) {
+        candidates.push(hrefMatch[1]);
+      }
+    }
+  }
+
+  // 5. Fallback para foto de perfil oficial do Instagram (sempre quadrada e em boa resolução)
+  if (instagramOgImage) {
+    candidates.push(instagramOgImage);
+  }
+
+  for (const raw of candidates) {
+    if (LOW_RES_ICON_PATTERNS.test(raw)) continue;
+    const resolved = resolveUrlSafely(raw, baseUrl);
+    if (resolved && !LOW_RES_ICON_PATTERNS.test(resolved)) {
+      return resolved;
+    }
+  }
+
+  return null;
+}
+
+export function extractCoverImageUrl(rawHtml: string, baseUrl: string): string | null {
+  if (!rawHtml) return null;
+  const ogImg =
+    rawHtml.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)?.[1] ||
+    rawHtml.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i)?.[1];
+  if (!ogImg || LOW_RES_ICON_PATTERNS.test(ogImg)) return null;
+  return resolveUrlSafely(ogImg, baseUrl);
+}
+
+/**
+ * Cria uma sessão Steel.dev para visualização ao vivo (liveViewerUrl estilo Lovable/Copilot).
+ */
+async function startSteelLiveSession(): Promise<{ sessionId: string; liveViewerUrl: string } | null> {
+  const steelKey = await getNextActiveKey("steel").catch(() => null);
+  if (!steelKey?.rawKey) return null;
+  try {
+    const res = await fetch("https://api.steel.dev/v1/sessions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Steel-Api-Key": steelKey.rawKey,
+      },
+      body: JSON.stringify({
+        blockAds: true,
+        dimensions: { width: 1280, height: 800 },
+        sessionTimeout: 120000,
+      }),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json().catch(() => null)) as Record<string, any> | null;
+    if (data?.id && data?.sessionViewerUrl) {
+      return {
+        sessionId: String(data.id),
+        liveViewerUrl: String(data.sessionViewerUrl),
+      };
+    }
+  } catch {
+    // Sessão ao vivo opcional; screenshots individuais continuam funcionando
+  }
+  return null;
+}
+
+export interface CaptureEvidenceOptions {
+  companyNameHint?: string;
+  cityHint?: string;
+  stateHint?: string;
+  instagramHint?: string;
+  onProgress?: (event: {
+    progressPercent?: number;
+    log?: Omit<OnboardingLiveLog, "id" | "time">;
+    activeSquad?: string;
+    completedSquad?: string;
+    screenshot?: OnboardingEvidenceScreenshot;
+    liveViewerUrl?: string | null;
+    currentBrowsingUrl?: string | null;
+  }) => Promise<void>;
+}
+
+export async function captureWebEvidence(
+  targetUrl: string,
+  storeId: string,
+  jobId: string,
+  options?: CaptureEvidenceOptions
+): Promise<ScrapedEvidence> {
+  const urlObj = assertSafeUrl(targetUrl);
+  const domain = urlObj.hostname.replace(/^www\./, "");
+  const isInstagram = domain.includes("instagram.com");
+
+  const emit = async (event: Parameters<NonNullable<CaptureEvidenceOptions["onProgress"]>>[0]) => {
+    if (options?.onProgress) {
+      await options.onProgress(event).catch(() => {});
+    }
+  };
+
+  // Inicia sessão de navegador ao vivo (Steel.dev) quando disponível
+  const liveSession = await startSteelLiveSession();
+  const liveViewerUrl = liveSession?.liveViewerUrl || null;
+
+  await updateJobProgress(jobId, 10, "processing");
+  await emit({
+    progressPercent: 10,
+    activeSquad: "crawl",
+    liveViewerUrl,
+    currentBrowsingUrl: targetUrl,
+    log: {
+      text: liveViewerUrl
+        ? `Navegador ao vivo conectado. Acessando ${domain}...`
+        : `Acessando ${domain} e extraindo conteúdo público...`,
+      squad: "crawl",
+      status: "info",
+    },
+  });
+
+  let scrapedMarkdown = "";
+  let rawHtml = "";
+  let pageTitle = domain;
+  let metaDescription = "";
+  let extractionProvider: "firecrawl" | "steel" | "native_fetch" = "native_fetch";
+  let screenshotUrl: string | null = null;
+  let screenshotBase64: string | null = null;
+  let instagramStatus: ScrapedEvidence["instagramStatus"] = undefined;
+  let discoveredInstagramUrl: string | null = isInstagram ? targetUrl : null;
+  const screenshots: OnboardingEvidenceScreenshot[] = [];
+
+  // A. Firecrawl Scrape Oficial (com screenshot incluso quando disponível)
+  const firecrawlKey = await getNextActiveKey("firecrawl").catch(() => null);
+  if (firecrawlKey?.rawKey && !isInstagram) {
+    try {
+      const fcRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${firecrawlKey.rawKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: targetUrl,
+          formats: ["markdown", "html", "screenshot"],
+          onlyMainContent: true,
+          waitFor: 1500,
+        }),
+        signal: AbortSignal.timeout(20000),
+      });
+
+      if (fcRes.ok) {
+        const fcData = await fcRes.json();
+        const data = fcData?.data || {};
+        scrapedMarkdown = data.markdown || "";
+        rawHtml = data.html || "";
+        pageTitle = data.metadata?.title || domain;
+        metaDescription = data.metadata?.description || "";
+        extractionProvider = "firecrawl";
+        if (data.screenshot) {
+          screenshotUrl = data.screenshot;
+        }
+      } else {
+        await markKeyError(firecrawlKey.id, `Firecrawl status HTTP ${fcRes.status}`, fcRes.status);
+      }
+    } catch (e: any) {
+      console.warn("[OnboardingPipeline] Firecrawl falhou:", e?.message);
+    }
+  }
+
+  // B. Fallback Nativo com Fetch e Metadados
+  if (!scrapedMarkdown) {
+    try {
+      const fetchRes = await fetch(targetUrl, {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        },
+        signal: AbortSignal.timeout(12000),
+      });
+
+      if (fetchRes.ok) {
+        const html = await fetchRes.text();
+        rawHtml = html;
+
+        const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+        if (titleMatch && titleMatch[1]) pageTitle = titleMatch[1].trim();
+
+        const descMatch =
+          html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i) ||
+          html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i);
+        if (descMatch && descMatch[1]) metaDescription = descMatch[1].trim();
+
+        scrapedMarkdown = html
+          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+          .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
+          .replace(/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, "")
+          .replace(/<[^>]+>/g, " ")
+          .replace(/\s+/g, " ")
+          .trim()
+          .slice(0, 10000);
+
+        extractionProvider = "native_fetch";
+      }
+    } catch (fetchErr: any) {
+      console.warn("[OnboardingPipeline] Fetch nativo falhou:", fetchErr?.message);
+    }
+  }
+
+  // C. Captura de Screenshot Real do Site / URL principal
+  if (!screenshotUrl) {
+    const mainShot = await captureScreenshotWithFallback(targetUrl);
+    if (mainShot) {
+      screenshotUrl = mainShot.screenshotUrl;
+      screenshotBase64 = mainShot.screenshotBase64;
+      if (mainShot.provider === "steel") extractionProvider = "steel";
+    }
+  }
+
+  if (screenshotUrl) {
+    const shotEntry: OnboardingEvidenceScreenshot = {
+      source: isInstagram ? "instagram" : "site",
+      label: isInstagram ? "Instagram" : "Site Oficial",
+      url: targetUrl,
+      screenshotUrl,
+      capturedAt: new Date().toISOString(),
+    };
+    screenshots.push(shotEntry);
+    await emit({
+      progressPercent: 22,
+      completedSquad: "crawl",
+      screenshot: shotEntry,
+      log: {
+        text: `Conteúdo e print de ${domain} capturados com sucesso.`,
+        squad: "crawl",
+        status: "success",
+      },
+    });
+  } else {
+    await emit({
+      progressPercent: 22,
+      completedSquad: "crawl",
+      log: {
+        text: `Conteúdo de ${domain} extraído via ${extractionProvider}.`,
+        squad: "crawl",
+        status: "success",
+      },
+    });
+  }
+
+  await updateJobProgress(jobId, 25, "processing");
+
+  // D. Tratamento de Instagram (fornecido diretamente OU descoberto no site)
+  let discoveredIgOgImage: string | null = null;
+  if (isInstagram) {
+    const isLoginWalled = !scrapedMarkdown || scrapedMarkdown.length < 200 || scrapedMarkdown.includes("login");
+    instagramStatus = {
+      isInstagram: true,
+      loginWalled: isLoginWalled,
+      publicBio: metaDescription || undefined,
+      warning: isLoginWalled
+        ? "Instagram bloqueou acesso profundo via login wall. Analisando metadados públicos e bio visível."
+        : undefined,
+    };
+    await emit({
+      progressPercent: 30,
+      activeSquad: "instagram",
+      completedSquad: "instagram",
+      log: {
+        text: isLoginWalled
+          ? "Instagram analisado via metadados públicos e print."
+          : "Perfil do Instagram capturado com sucesso.",
+        squad: "instagram",
+        status: isLoginWalled ? "warning" : "success",
+      },
+    });
+  } else {
+    // Procura link do Instagram no site ou usa hint informado pelo usuário
+    const hintHandle = options?.instagramHint?.replace(/^@/, "").trim();
+    const detectedIg = hintHandle
+      ? { url: `https://www.instagram.com/${hintHandle}/`, handle: hintHandle }
+      : extractInstagramUrlFromContent(`${rawHtml}\n${scrapedMarkdown}`);
+
+    if (detectedIg) {
+      discoveredInstagramUrl = detectedIg.url;
+      await emit({
+        progressPercent: 28,
+        activeSquad: "instagram",
+        log: {
+          text: `Instagram encontrado (@${detectedIg.handle}). Acessando perfil e tirando print...`,
+          squad: "instagram",
+          status: "info",
+        },
+      });
+
+      let igBio = "";
+      try {
+        await emit({
+          progressPercent: 29,
+          currentBrowsingUrl: detectedIg.url,
+        });
+        const igRes = await fetch(detectedIg.url, {
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+          },
+          signal: AbortSignal.timeout(8000),
+        });
+        if (igRes.ok) {
+          const igHtml = await igRes.text();
+          const igDesc = igHtml.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i);
+          if (igDesc?.[1]) igBio = igDesc[1].trim();
+          const igImg = igHtml.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i);
+          if (igImg?.[1]) discoveredIgOgImage = igImg[1].trim();
+        }
+      } catch {
+        // Fallback silencioso para metadados do Instagram
+      }
+
+      const igShot = await captureScreenshotWithFallback(detectedIg.url);
+      let igShotEntry: OnboardingEvidenceScreenshot | undefined;
+      if (igShot) {
+        igShotEntry = {
+          source: "instagram",
+          label: `Instagram (@${detectedIg.handle})`,
+          url: detectedIg.url,
+          screenshotUrl: igShot.screenshotUrl,
+          capturedAt: new Date().toISOString(),
+        };
+        screenshots.push(igShotEntry);
+      }
+
+      instagramStatus = {
+        isInstagram: true,
+        loginWalled: !igBio,
+        publicBio: igBio || undefined,
+      };
+      if (igBio) {
+        scrapedMarkdown = `${scrapedMarkdown}\n\n[Instagram @${detectedIg.handle}]: ${igBio}`.slice(0, 10000);
+      }
+
+      await emit({
+        progressPercent: 34,
+        completedSquad: "instagram",
+        screenshot: igShotEntry,
+        log: {
+          text: igShotEntry
+            ? `Print do Instagram (@${detectedIg.handle}) capturado com sucesso.`
+            : `Perfil @${detectedIg.handle} verificado.`,
+          squad: "instagram",
+          status: "success",
+        },
+      });
+    } else {
+      await emit({
+        progressPercent: 34,
+        completedSquad: "instagram",
+        log: {
+          text: "Nenhum perfil do Instagram encontrado nos links do site.",
+          squad: "instagram",
+          status: "warning",
+        },
+      });
+    }
+  }
+
+  // E. Captura de Screenshot do Google Meu Negócio / Google Maps
+  const searchName = (options?.companyNameHint || pageTitle || domain).trim();
+  const locationParts = [options?.cityHint, options?.stateHint].filter(Boolean).join(", ");
+  const gmbQuery = [searchName, locationParts].filter(Boolean).join(" ");
+  const gmbMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(gmbQuery)}`;
+
+  await emit({
+    progressPercent: 38,
+    activeSquad: "google",
+    currentBrowsingUrl: gmbMapsUrl,
+    log: {
+      text: `Consultando Google Meu Negócio para "${gmbQuery}" e capturando print...`,
+      squad: "google",
+      status: "info",
+    },
+  });
+
+  const gmbShot = await captureScreenshotWithFallback(gmbMapsUrl);
+  let gmbShotEntry: OnboardingEvidenceScreenshot | undefined;
+  if (gmbShot) {
+    gmbShotEntry = {
+      source: "google_business",
+      label: "Google Meu Negócio",
+      url: gmbMapsUrl,
+      screenshotUrl: gmbShot.screenshotUrl,
+      capturedAt: new Date().toISOString(),
+    };
+    screenshots.push(gmbShotEntry);
+  }
+
+  const igProfileImgFallback = isInstagram
+    ? rawHtml.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)?.[1] || null
+    : discoveredIgOgImage;
+  const bestLogoUrl = extractBestLogoUrl(rawHtml, targetUrl, igProfileImgFallback);
+  const bestCoverUrl = extractCoverImageUrl(rawHtml, targetUrl);
+
+  await emit({
+    progressPercent: 42,
+    completedSquad: "google",
+    screenshot: gmbShotEntry,
+    log: {
+      text: [
+        gmbShotEntry ? "Google Meu Negócio consultado e print capturado" : "Consulta pública ao Google Meu Negócio concluída",
+        bestLogoUrl ? "Logo em alta resolução identificada" : null,
+      ]
+        .filter(Boolean)
+        .join(" • ") + ".",
+      squad: "google",
+      status: gmbShotEntry ? "success" : "info",
+    },
+  });
+
+  await updateJobProgress(jobId, 42, "processing");
 
   return {
     sourceUrl: targetUrl,
@@ -416,6 +882,11 @@ export async function captureWebEvidence(
     rawTextSample: scrapedMarkdown.slice(0, 3000),
     screenshotUrl,
     screenshotBase64,
+    screenshots,
+    instagramUrl: discoveredInstagramUrl,
+    logoUrl: bestLogoUrl,
+    coverUrl: bestCoverUrl,
+    liveViewerUrl,
     extractionProvider,
     instagramStatus,
   };
@@ -894,6 +1365,8 @@ Retorne o JSON Consolidado:
     category: parsed.category || "",
     bio: typeof parsed.bio === "string" ? parsed.bio : copy.bio_concise,
     tagline: typeof parsed.tagline === "string" ? parsed.tagline : copy.tagline,
+    logo_url: evidence.logoUrl || null,
+    cover_url: evidence.coverUrl || null,
     brand_kit: {
       primary_color: design.primary_color,
       secondary_color: design.secondary_color,
@@ -940,8 +1413,18 @@ Retorne o JSON Consolidado:
       address: verifiedContactValue("address"),
     },
     evidence_summary: {
-      sources_used: [evidence.sourceUrl],
-      screenshots_captured: evidence.screenshotUrl ? [evidence.screenshotUrl] : [],
+      sources_used: [
+        evidence.sourceUrl,
+        ...(evidence.instagramUrl && evidence.instagramUrl !== evidence.sourceUrl
+          ? [evidence.instagramUrl]
+          : []),
+      ],
+      screenshots_captured:
+        evidence.screenshots && evidence.screenshots.length > 0
+          ? evidence.screenshots.map((s) => s.screenshotUrl)
+          : evidence.screenshotUrl
+          ? [evidence.screenshotUrl]
+          : [],
       unconfirmed_fields: unconfirmedFields,
     },
   };

@@ -22,6 +22,7 @@ export type AttributionPayload = {
   adset_name?: string | null;
   creative_id?: string | null;
   form_id?: string | null;
+  ad_effective_status?: string | null;
   ad_headline?: string | null;
   ad_body?: string | null;
   ad_media_url?: string | null;
@@ -222,18 +223,31 @@ export function extractWhatsAppReferralAndTokens(
   text?: string | null,
 ): AttributionPayload | null {
   const item = payload || {};
-  const msg = (item.message || item.data?.message || {}) as Record<string, any>;
+  const rawMsg = (item.message || item.data?.message || {}) as Record<string, any>;
+  const msg = (rawMsg.ephemeralMessage?.message || rawMsg.viewOnceMessage?.message || rawMsg.viewOnceMessageV2?.message || rawMsg) as Record<string, any>;
   const extAd =
     item.referral ||
     msg.referral ||
+    rawMsg.referral ||
     item.contextInfo?.externalAdReply ||
     msg.extendedTextMessage?.contextInfo?.externalAdReply ||
     msg.imageMessage?.contextInfo?.externalAdReply ||
     msg.videoMessage?.contextInfo?.externalAdReply ||
+    msg.audioMessage?.contextInfo?.externalAdReply ||
     msg.documentMessage?.contextInfo?.externalAdReply ||
     msg.buttonsResponseMessage?.contextInfo?.externalAdReply ||
     item.data?.contextInfo?.externalAdReply ||
-    null;
+    (item.ctwa_clid || item.ad_headline || item.ad_id
+      ? {
+          ctwa_clid: item.ctwa_clid,
+          source_id: item.ad_id || item.source_id,
+          source_type: item.source_type || "ad",
+          source_url: item.source_url,
+          headline: item.ad_headline,
+          body: item.ad_body,
+          image_url: item.ad_media_url,
+        }
+      : null);
 
   const result: AttributionPayload = {};
   let hasSignal = false;
@@ -328,10 +342,15 @@ export function cleanAttributionObject(raw: Record<string, any> | null | undefin
     "medium",
     "campaign",
     "campaign_id",
+    "campaign_name",
     "ad_id",
+    "ad_name",
     "adset_id",
+    "adset_name",
     "creative_id",
     "form_id",
+    "source_pixel_id",
+    "ad_effective_status",
     "ad_headline",
     "ad_body",
     "ad_media_url",
@@ -514,7 +533,10 @@ export async function recordAttributionTouchpoint(
       adset_id: input.adsetId || null,
       campaign_id: input.campaignId || null,
       creative_id: input.creativeId || null,
-      form_id: input.formId || null,
+      form_id: input.formId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input.formId) ? input.formId : null,
+      ...(input.formId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input.formId)
+        ? { external_form_id: input.formId }
+        : {}),
       ad_headline: input.adHeadline || null,
       ad_body: input.adBody || null,
       ad_media_url: input.adMediaUrl || null,

@@ -180,8 +180,70 @@ export const listMcpResources = createServerFn({ method: "GET" }).handler(
   }
 );
 
+export function verifyMcpScopeMatch(grantedScopes: string[] | undefined, requiredScope?: string): boolean {
+  if (!requiredScope) return true;
+  if (!Array.isArray(grantedScopes) || grantedScopes.length === 0) return false;
+  if (grantedScopes.includes("*")) return true;
+  for (const s of grantedScopes) {
+    if (s === requiredScope) return true;
+    if (s.endsWith(":*") && requiredScope.startsWith(s.slice(0, -1))) return true;
+  }
+  return false;
+}
+
+export async function resolveMcpCallerIdentity(authToken?: string, targetStoreId?: string): Promise<any> {
+  try {
+    const cookieIdentity = await getServerIdentity();
+    if (cookieIdentity?.id) return cookieIdentity;
+  } catch {
+    // Sem cookie SSR; tenta autenticar via API Key MCP
+  }
+
+  const rawToken = String(authToken || "").trim();
+  if (!rawToken) return null;
+
+  const { createHash } = await import("node:crypto");
+  const keyHash = createHash("sha256").update(rawToken).digest("hex");
+  const supabase = getServerClient();
+
+  const { data: apiKeyRow } = await supabase
+    .from("store_mcp_api_keys")
+    .select("id, store_id, created_by, scopes, is_platform_admin, is_active, expires_at")
+    .eq("key_hash", keyHash)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (!apiKeyRow) return null;
+  if (apiKeyRow.expires_at && new Date(String(apiKeyRow.expires_at)).getTime() <= Date.now()) {
+    return null;
+  }
+  if (targetStoreId && !apiKeyRow.is_platform_admin && apiKeyRow.store_id !== targetStoreId) {
+    return null;
+  }
+
+  await supabase
+    .from("store_mcp_api_keys")
+    .update({ last_used_at: new Date().toISOString() })
+    .eq("id", apiKeyRow.id)
+    .then(() => null, () => null);
+
+  return {
+    id: apiKeyRow.created_by || apiKeyRow.id,
+    role: apiKeyRow.is_platform_admin ? "platform_admin" : "admin",
+    store_id: apiKeyRow.store_id,
+    storeRole: "admin",
+    isPlatformAdmin: Boolean(apiKeyRow.is_platform_admin),
+    mcpScopes: Array.isArray(apiKeyRow.scopes) ? apiKeyRow.scopes : ["*"],
+    authVia: "mcp_api_key",
+  };
+}
+
 // ─── 3. LER RECURSO DO PROTOCOLO MCP ─────────────────────────────────────────
-export async function readMcpResource(uri: string, storeId?: string): Promise<{ uri: string; mimeType: string; content: any }> {
+export async function readMcpResource(
+  uri: string,
+  storeId?: string,
+  authToken?: string,
+): Promise<{ uri: string; mimeType: string; content: any }> {
   const supabase = getServerClient();
 
   if (uri.startsWith("public://directory/cities")) {
@@ -216,7 +278,7 @@ export async function readMcpResource(uri: string, storeId?: string): Promise<{ 
       throw new Error(`Recurso MCP "${uri}" não encontrado ou requer contexto de storeId.`);
     }
 
-    const identity = await getServerIdentity();
+    const identity = await resolveMcpCallerIdentity(authToken, resolvedStoreId);
     if (!identity?.id) {
       throw new Error(`Acesso negado (401 Unauthorized): Recurso privado "${uri}" exige autenticação verificada.`);
     }
@@ -272,6 +334,33 @@ export async function readMcpResource(uri: string, storeId?: string): Promise<{ 
                 current_cash_cents: openRegister.expected_closing_balance_cents ?? openRegister.initial_balance_cents ?? 0,
               }
             : null,
+        },
+      };
+    }
+
+    if (resourcePath.includes("/tourism-manifest")) {
+      const [tripsRes, proposalsRes] = await Promise.all([
+        supabase
+          .from("tourism_trips")
+          .select("id, title, destination_city, travel_start_date, travel_end_date, status, client_name")
+          .eq("store_id", resolvedStoreId)
+          .order("travel_start_date", { ascending: true })
+          .limit(50),
+        supabase
+          .from("travel_proposals")
+          .select("id, title, destination_city, status, client_name, travel_start_date, travel_end_date")
+          .eq("store_id", resolvedStoreId)
+          .order("created_at", { ascending: false })
+          .limit(50),
+      ]);
+
+      return {
+        uri,
+        mimeType: "application/json",
+        content: {
+          storeId: resolvedStoreId,
+          trips: tripsRes.data || [],
+          proposals: proposalsRes.data || [],
         },
       };
     }
@@ -435,7 +524,7 @@ export async function executeMcpToolCall(data: McpToolCallRequest): Promise<McpT
     }
 
     try {
-      const identity = await getServerIdentity();
+      const identity = await resolveMcpCallerIdentity(data.authToken, targetStoreId);
 
       if (!identity?.id) {
         const durationMs = Date.now() - startTime;
@@ -447,7 +536,7 @@ export async function executeMcpToolCall(data: McpToolCallRequest): Promise<McpT
           content: [
             {
               type: "text",
-              text: `Acesso negado (401 Unauthorized): Chamada não autenticada para a ferramenta restrita "${data.tool}". Faça login ou forneça token de staff.`,
+              text: `Acesso negado (401 Unauthorized): Chamada não autenticada para a ferramenta restrita "${data.tool}". Faça login ou forneça API Key MCP válida.`,
             },
           ],
           executionMetrics: {
@@ -456,6 +545,14 @@ export async function executeMcpToolCall(data: McpToolCallRequest): Promise<McpT
             tenantValidated: false,
           },
         };
+      }
+
+      if (toolEntry.tier === "admin_only" && !identity.isPlatformAdmin && identity.role !== "platform_admin" && identity.role !== "master") {
+        throw new Error("Acesso restrito a Platform Admin (admin_only).");
+      }
+
+      if (identity.authVia === "mcp_api_key" && !verifyMcpScopeMatch(identity.mcpScopes, (toolEntry as any).requiredScope)) {
+        throw new Error(`Chave MCP não possui o escopo exigido "${(toolEntry as any).requiredScope}".`);
       }
 
       // Validação estrita de isolamento de tenant
@@ -591,4 +688,47 @@ export const executeMcpTool = createServerFn({ method: "POST" })
   .validator(McpToolCallRequestSchema)
   .handler(async ({ data }) => {
     return executeMcpToolCall(data);
+  });
+
+export const createStoreMcpApiKeyFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      name: z.string().trim().min(2).max(120),
+      scopes: z.array(z.string().trim().min(1).max(80)).default(["*"]),
+      expiresInDays: z.number().int().min(1).max(365).optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    const { createHash, randomBytes } = await import("node:crypto");
+    const rawKey = `wmcp_${randomBytes(24).toString("hex")}`;
+    const keyPrefix = rawKey.slice(0, 12);
+    const keyHash = createHash("sha256").update(rawKey).digest("hex");
+    const expiresAt = data.expiresInDays
+      ? new Date(Date.now() + data.expiresInDays * 86_400_000).toISOString()
+      : null;
+
+    const supabase = getServerClient();
+    const { data: created, error } = await supabase
+      .from("store_mcp_api_keys")
+      .insert({
+        store_id: identity.store_id,
+        created_by: identity.id,
+        name: data.name,
+        key_prefix: keyPrefix,
+        key_hash: keyHash,
+        scopes: data.scopes,
+        is_platform_admin: Boolean((identity as any).isPlatformAdmin),
+        is_active: true,
+        expires_at: expiresAt,
+      })
+      .select("id, name, key_prefix, scopes, expires_at, created_at")
+      .single();
+
+    if (error || !created) throw new Error(`Falha ao gerar API Key MCP: ${error?.message}`);
+    return {
+      ...created,
+      plainTextKey: rawKey,
+    };
   });

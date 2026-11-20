@@ -281,8 +281,9 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                   if (targetMsgId) {
                     const { data: revMsgs } = await supabase
                       .from("chat_messages")
-                      .select("id, payload")
-                      .eq("external_message_id", targetMsgId);
+                      .select("id, payload, thread:chat_threads!inner(store_id)")
+                      .eq("external_message_id", targetMsgId)
+                      .eq("thread.store_id", targetStoreId);
                     for (const rm of revMsgs || []) {
                       const curPayload = (rm.payload && typeof rm.payload === "object" ? rm.payload : {}) as Record<string, unknown>;
                       await supabase.from("chat_messages").update({
@@ -511,17 +512,29 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                       fileName: mediaRawMeta?.filename || null,
                     }).catch(() => null);
 
+                    let audioTranscriptText: string | null = null;
                     if (messageType === "audio") {
                       const { transcribeAudioMediaServer } = await import("@/services/whatsapp-media-intelligence.server");
-                      await transcribeAudioMediaServer({
+                      const transcription = await transcribeAudioMediaServer({
                         db: supabase,
                         storeId: targetStoreId,
                         threadId,
                         messageId: insertedCloudMsg.id,
                       }).catch(() => null);
+                      if (transcription && typeof (transcription as any).transcript === "string" && (transcription as any).transcript.trim()) {
+                        audioTranscriptText = String((transcription as any).transcript).trim();
+                      }
+                    }
+                    if (audioTranscriptText) {
+                      (message as any).__waesyTranscript = audioTranscriptText;
                     }
                   }
                 }
+
+                const effectiveMessageText =
+                  typeof (message as any).__waesyTranscript === "string" && (message as any).__waesyTranscript.trim()
+                    ? String((message as any).__waesyTranscript).trim()
+                    : messageText;
 
                 await correlateAndPersistInboundWhatsAppAttribution(supabase, {
                   storeId: targetStoreId,
@@ -529,7 +542,7 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                   identityId: channelIdentity.id,
                   phone: normalizedSenderPhone,
                   pushName: rawContactName,
-                  text: messageText,
+                  text: effectiveMessageText,
                   payload: message as Record<string, any>,
                   existingThreadMeta: currentThreadMeta,
                   existingThreadAttribution: currentThreadAttr,
@@ -542,9 +555,9 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                   threadId,
                   identityId: channelIdentity.id,
                   phone: senderPhone,
-                  text: messageText,
+                  text: effectiveMessageText,
                   eventId: inboxMessage?.id || null,
-                  payload: { channel: "whatsapp", phone_number_id: phoneNumberId, message_id: String(message.id), message_type: messageType },
+                  payload: { channel: "whatsapp", phone_number_id: phoneNumberId, message_id: String(message.id), message_type: messageType, transcribed_from_audio: Boolean((message as any).__waesyTranscript) },
                 });
 
                 await supabase

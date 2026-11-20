@@ -5,7 +5,7 @@ declare const process: any;
 
 import { getActiveIntegrationPayload } from "./integrations.functions";
 
-type PaymentMethod = "pix" | "credit_card";
+type PaymentMethod = "pix" | "credit_card" | "boleto";
 
 export type SupportedGatewayProvider = "mercado_pago" | "asaas" | "paypal" | "stripe";
 
@@ -89,14 +89,20 @@ export async function createGatewayPayment(input: CreateGatewayPaymentInput): Pr
 
     if (!customerId) throw new Error("Não foi possível registrar pagador no gateway Asaas.");
 
+    const requestedInstallments = Math.min(36, Math.max(1, Math.round(Number(input.installments || 1))));
+    const billingType = input.method === "pix" ? "PIX" : input.method === "boleto" ? "BOLETO" : "CREDIT_CARD";
     const asaasBody: Record<string, unknown> = {
       customer: customerId,
-      billingType: input.method === "pix" ? "PIX" : "CREDIT_CARD",
+      billingType,
       value: input.amountCents / 100,
-      dueDate: new Date(Date.now() + 86400000).toISOString().split("T")[0],
+      dueDate: new Date(Date.now() + (input.method === "boleto" ? 3 * 86400000 : 86400000)).toISOString().split("T")[0],
       description: `Waesy order ${input.orderId}`,
       externalReference: input.orderId,
     };
+    if (requestedInstallments > 1 && (billingType === "CREDIT_CARD" || billingType === "BOLETO")) {
+      asaasBody.installmentCount = requestedInstallments;
+      asaasBody.installmentValue = Number(((input.amountCents / 100) / requestedInstallments).toFixed(2));
+    }
 
     const paymentRes = await fetch(`${baseUrl}/payments`, {
       method: "POST",
@@ -245,9 +251,11 @@ export async function createGatewayPayment(input: CreateGatewayPaymentInput): Pr
   };
   if (input.method === "pix") {
     body.payment_method_id = "pix";
+  } else if (input.method === "boleto") {
+    body.payment_method_id = "bolbradesco";
   } else {
     body.token = input.cardToken;
-    body.installments = input.installments ?? 1;
+    body.installments = Math.min(36, Math.max(1, input.installments ?? 1));
     body.payment_method_id = "visa";
   }
 

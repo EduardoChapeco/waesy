@@ -42,9 +42,10 @@ export const listStoreAccountants = createServerFn({ method: "GET" })
   .validator(z.object({ store_id: z.string().uuid().optional() }).optional())
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
-    assertStoreAccess(identity);
-
     const targetStoreId = data?.store_id || identity.store_id;
+    if (!targetStoreId) throw new Error("Loja não selecionada.");
+    assertStoreAccess(identity, undefined, targetStoreId);
+
     const supabase = getServerClient();
     const { data: accountants, error } = await supabase
       .from("store_accountant_access")
@@ -64,9 +65,9 @@ export const inviteAccountantToStore = createServerFn({ method: "POST" })
   .validator(inviteAccountantSchema)
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
-    assertStoreAccess(identity);
-
     const targetStoreId = data.store_id || identity.store_id;
+    if (!targetStoreId) throw new Error("Loja não selecionada.");
+    assertStoreAccess(identity, undefined, targetStoreId);
     const supabase = getServerClient();
 
     // Checa se o contador já tem conta na plataforma pelo e-mail (profiles não possui coluna email)

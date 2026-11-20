@@ -399,8 +399,8 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.finalize_order_and_dispatch_motolink_atomic FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.finalize_order_and_dispatch_motolink_atomic TO authenticated, service_role;
+REVOKE ALL ON FUNCTION public.finalize_order_and_dispatch_motolink_atomic(uuid, text, text, text, text, text, jsonb, text, uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.finalize_order_and_dispatch_motolink_atomic(uuid, text, text, text, text, text, jsonb, text, uuid) TO authenticated, service_role;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- FASE 3: EFEITO CASCATA CROSS-MODULE (THE RIPPLE EFFECT ENGINE)

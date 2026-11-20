@@ -141,26 +141,30 @@ async function enrichMatchesWithWhatsAppConversationIntent(params: {
   );
 
   try {
+    const { data: storeThreadRows } = await supabase
+      .from("chat_threads")
+      .select("id, guest_name, guest_phone, primary_phone_e164, lead_id, metadata")
+      .eq("store_id", params.storeId)
+      .order("updated_at", { ascending: false })
+      .limit(200);
+
+    if (!storeThreadRows || storeThreadRows.length === 0) return results;
+
+    const storeThreadIds = storeThreadRows.map((t: any) => String(t.id)).filter(Boolean);
     const { data: msgRows } = await supabase
       .from("chat_messages")
-      .select("id, thread_id, content, message_type, metadata, created_at")
-      .eq("store_id", params.storeId)
-      .ilike("content", `%${destClean}%`)
+      .select("id, thread_id, message, message_type, payload, created_at")
+      .in("thread_id", storeThreadIds)
+      .ilike("message", `%${destClean}%`)
       .order("created_at", { ascending: false })
       .limit(40);
 
     if (!msgRows || msgRows.length === 0) return results;
 
-    const threadIds = Array.from(
-      new Set(msgRows.map((m: any) => String(m.thread_id || "")).filter(Boolean))
+    const matchedThreadIds = new Set(
+      msgRows.map((m: any) => String(m.thread_id || "")).filter(Boolean)
     );
-    if (threadIds.length === 0) return results;
-
-    const { data: threadRows } = await supabase
-      .from("chat_threads")
-      .select("id, customer_name, customer_phone, lead_id, metadata")
-      .eq("store_id", params.storeId)
-      .in("id", threadIds);
+    const threadRows = storeThreadRows.filter((t: any) => matchedThreadIds.has(String(t.id)));
 
     for (const thread of threadRows || []) {
       const tMeta = (thread.metadata || {}) as Record<string, any>;
@@ -168,16 +172,16 @@ async function enrichMatchesWithWhatsAppConversationIntent(params: {
       if (tMeta.is_group === true || tMeta.contact_scope === "internal_team" || tMeta.suppress_lead_capture === true) {
         continue;
       }
-      const phone = String(thread.customer_phone || "").trim();
+      const phone = String((thread as any).primary_phone_e164 || (thread as any).guest_phone || "").trim();
       const phoneDigits = phone.replace(/\D/g, "");
       if (!phoneDigits || phoneDigits.length < 8) continue;
 
       const matchingMsg = msgRows.find((m: any) => String(m.thread_id) === String(thread.id));
       const isAudioTranscript =
         matchingMsg?.message_type === "audio" ||
-        Boolean((matchingMsg?.metadata as any)?.audio_transcription);
+        Boolean((matchingMsg?.payload as any)?.audio_transcription);
 
-      const snippet = String(matchingMsg?.content || "").slice(0, 90);
+      const snippet = String((matchingMsg as any)?.message || "").slice(0, 90);
       const evidenceReason = isAudioTranscript
         ? `Áudio transcrito no WhatsApp citou "${destClean}": "${snippet}"`
         : `Conversa no WhatsApp mencionou "${destClean}": "${snippet}"`;
@@ -203,7 +207,7 @@ async function enrichMatchesWithWhatsAppConversationIntent(params: {
       if (seenPhones.has(phoneDigits)) continue;
       seenPhones.add(phoneDigits);
 
-      const customerName = String(thread.customer_name || "Cliente WhatsApp").trim();
+      const customerName = String((thread as any).guest_name || "Cliente WhatsApp").trim();
       const firstName = customerName.split(/\s+/)[0] || "Olá";
       results.push({
         targetType: "lead_crm",
@@ -298,11 +302,11 @@ export const evaluateProposalHistoricalOfferEligibilityFn = createServerFn({ met
         .maybeSingle(),
       supabase
         .from("whatsapp_groups_directory")
-        .select("id, group_jid, group_name, group_role, participants_count, auto_publish_eligible, is_active")
+        .select("id, group_jid, subject, group_role, member_count, auto_publish_eligible, is_archived")
         .eq("store_id", data.storeId)
-        .eq("is_active", true)
+        .eq("is_archived", false)
         .neq("group_role", "internal_team")
-        .order("participants_count", { ascending: false })
+        .order("member_count", { ascending: false })
         .limit(50),
     ]);
 
@@ -396,9 +400,9 @@ export const evaluateProposalHistoricalOfferEligibilityFn = createServerFn({ met
       promoGroups: (groupRows || []).map((g: any) => ({
         id: String(g.id),
         group_jid: String(g.group_jid),
-        group_name: String(g.group_name || "Grupo WhatsApp"),
+        group_name: String(g.subject || g.group_name || "Grupo WhatsApp"),
         group_role: String(g.group_role || "unclassified"),
-        participants_count: Number(g.participants_count || 0),
+        participants_count: Number(g.member_count ?? g.participants_count ?? 0),
         auto_publish_eligible: Boolean(g.auto_publish_eligible),
       })),
     };
@@ -432,7 +436,7 @@ async function internalDispatchHotOfferToWhatsAppGroups(params: {
 
   const { data: groupRows, error: grpError } = await supabase
     .from("whatsapp_groups_directory")
-    .select("id, store_id, instance_id, default_instance_id, group_jid, group_name, group_role, silence_lead_capture")
+    .select("id, store_id, instance_id, default_instance_id, group_jid, subject, group_role, silence_lead_capture")
     .eq("store_id", params.storeId)
     .in("id", uniqueGroupIds);
 
@@ -504,7 +508,7 @@ async function internalDispatchHotOfferToWhatsAppGroups(params: {
 
   for (const grp of groupRows || []) {
     const groupId = String(grp.id);
-    const groupName = String(grp.group_name || "Grupo WhatsApp");
+    const groupName = String((grp as any).subject || (grp as any).group_name || "Grupo WhatsApp");
     const groupJid = String(grp.group_jid || "").trim();
     const role = String(grp.group_role || "unclassified");
 

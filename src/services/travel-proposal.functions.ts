@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity, requireStaff } from "@/lib/server-access";
+import { getServerIdentity, requireStaff, requireStoreVerticalAccess } from "@/lib/server-access";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 import {
   extractNormalizedCatalogContext,
@@ -1473,6 +1473,7 @@ export const createTravelProposal = createServerFn({ method: "POST" })
       const identity = await requireStaff();
       const effectiveStoreId = identity?.store_id;
       if (!effectiveStoreId) throw new Error("Loja autenticada obrigatória para criar proposta.");
+      await requireStoreVerticalAccess("tourism", effectiveStoreId);
 
       const publicToken = `prop_${globalThis.crypto.randomUUID().replace(/-/g, "")}`;
       const quoteNumber = `PROP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -1855,25 +1856,35 @@ export const createTravelProposal = createServerFn({ method: "POST" })
         try {
           const { data: leadRow } = await supabase
             .from("leads_crm")
-            .select("checklist")
+            .select("checklist, custom_fields")
             .eq("id", input.leadId)
             .eq("store_id", effectiveStoreId)
             .maybeSingle();
 
+          const isSentNow = (input.status || "draft") === "sent";
           let updatedChecklist = leadRow?.checklist || [];
-          if (Array.isArray(updatedChecklist)) {
+          if (Array.isArray(updatedChecklist) && isSentNow) {
             updatedChecklist = updatedChecklist.map((item: any) =>
               item.id === "item-3" || item.text?.toLowerCase().includes("proposta")
                 ? { ...item, done: true }
                 : item,
             );
           }
+          const prevCustom = (leadRow?.custom_fields && typeof leadRow.custom_fields === "object"
+            ? leadRow.custom_fields
+            : {}) as Record<string, unknown>;
 
           await supabase
             .from("leads_crm")
             .update({
-              status: "proposal",
+              ...(isSentNow ? { status: "proposal", pipeline_stage: "proposal", kanban_stage_key: "proposal" } : {}),
               checklist: updatedChecklist,
+              custom_fields: {
+                ...prevCustom,
+                linked_proposal_id: insertedId,
+                proposal_status: isSentNow ? "sent" : "draft",
+                ...(isSentNow ? { proposal_sent_at: new Date().toISOString() } : {}),
+              },
               updated_at: new Date().toISOString(),
               last_contacted_at: new Date().toISOString(),
             })
@@ -2429,6 +2440,35 @@ export const updateTravelProposal = createServerFn({ method: "POST" })
         pricing: propPatch.pricing ?? targetProposal.pricing,
       };
 
+      if (data.patch.status === "sent" && targetProposal.lead_id) {
+        const { data: leadRow } = await supabase
+          .from("leads_crm")
+          .select("custom_fields")
+          .eq("id", targetProposal.lead_id)
+          .eq("store_id", identity.store_id)
+          .maybeSingle();
+        const prevCustom = (leadRow?.custom_fields && typeof leadRow.custom_fields === "object"
+          ? leadRow.custom_fields
+          : {}) as Record<string, unknown>;
+        await supabase
+          .from("leads_crm")
+          .update({
+            status: "proposal",
+            pipeline_stage: "proposal",
+            kanban_stage_key: "proposal",
+            custom_fields: {
+              ...prevCustom,
+              linked_proposal_id: targetProposal.id,
+              proposal_status: "sent",
+              proposal_sent_at: new Date().toISOString(),
+            },
+            last_contacted_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", targetProposal.lead_id)
+          .eq("store_id", identity.store_id);
+      }
+
       if (data.patch.status === "sent" && targetProposal.quote_id) {
         const quotePatch: Record<string, any> = {
           status: "quoted",
@@ -2801,11 +2841,12 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
     acceptanceId: string;
     replayed: boolean;
     message: string;
+    signingUrl?: string | null;
   }> => {
     const supabase = getServerClient();
     const { data: proposal, error: lookupError } = await supabase
       .from("travel_proposals")
-      .select("id, store_id, public_token, snapshot_hash, options, visibility_mode, is_hidden, access_pin_hash, special_notes, lead_id, customer_id, title, client_name, total_cents, total_value_cents, currency, pricing, destination_city")
+      .select("id, store_id, created_by, public_token, snapshot_hash, options, visibility_mode, is_hidden, access_pin_hash, special_notes, lead_id, customer_id, title, client_name, pricing, destination_city")
       .eq("public_token", data.token)
       .maybeSingle();
 
@@ -2878,6 +2919,19 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
     }
     const replayed = Boolean(acceptanceResult.replayed);
 
+    const selectedOpt = data.selectedOptionId
+      ? options.find((opt: any) => opt?.id === data.selectedOptionId)
+      : null;
+    const rawProposalPricing = (proposal.pricing && typeof proposal.pricing === "object" ? proposal.pricing : {}) as Record<string, any>;
+    const rawSelectedPricing = (selectedOpt?.pricing && typeof selectedOpt.pricing === "object" ? selectedOpt.pricing : {}) as Record<string, any>;
+    const resolvedTotalCents = Number(
+      rawSelectedPricing.total_price_cents ??
+      rawSelectedPricing.total_cents ??
+      rawProposalPricing.total_price_cents ??
+      rawProposalPricing.total_cents ??
+      0,
+    ) || 0;
+
     // 1. Sincronização atômica do Lead em leads_crm (reconcilia ou cria automaticamente)
     let leadId = proposal.lead_id;
     try {
@@ -2905,17 +2959,20 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
         if (matchedLead?.id) {
           leadId = matchedLead.id;
         } else {
-          const leadTitle = `${data.acceptedByName?.trim() || leadPassenger.name} - ${proposal.destination_city || proposal.title || "Pacote Turístico"}`;
+          const acceptedName = data.acceptedByName?.trim() || leadPassenger.name;
+          const leadTitle = `${acceptedName} - ${proposal.destination_city || proposal.title || "Pacote Turístico"}`;
           const { data: newLead } = await supabase
             .from("leads_crm")
             .insert({
               store_id: proposal.store_id,
               title: leadTitle,
-              name: data.acceptedByName?.trim() || leadPassenger.name,
+              full_name: acceptedName,
               phone: leadPassenger.phone || null,
               email: clientEmail || null,
               status: "won",
-              value_cents: proposal.total_cents || proposal.total_value_cents || 0,
+              pipeline_stage: "won",
+              kanban_stage_key: "won",
+              estimated_value_cents: resolvedTotalCents,
               source: "proposal_web",
               customer_id: proposal.customer_id || null,
               custom_fields: {},
@@ -2963,7 +3020,7 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
             linked_option_id: data.selectedOptionId || null,
             method: data.paymentPreference,
             installments_count: data.paymentInstallments || 1,
-            total_cents: proposal.total_cents || proposal.total_value_cents || 0,
+            total_cents: resolvedTotalCents,
             is_synced: true,
             synced_at: new Date().toISOString(),
           },
@@ -2984,6 +3041,9 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
           .from("leads_crm")
           .update({
             status: "won",
+            pipeline_stage: "won",
+            kanban_stage_key: "won",
+            ...(resolvedTotalCents > 0 ? { estimated_value_cents: resolvedTotalCents } : {}),
             custom_fields: updatedCustomFields,
             checklist: updatedChecklist,
             updated_at: new Date().toISOString(),
@@ -2995,83 +3055,157 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
       console.warn("[approveTravelProposal] Erro ao sincronizar leads_crm:", leadSyncErr);
     }
 
-    // 2. Emissão/Vínculo do Contrato Digital Canônico em `contracts`
+    // 2. Emissão/Vínculo do Contrato Digital Canônico em `contracts` + `contract_versions` + `signature_envelopes`
+    let signingToken: string | null = null;
     try {
       const { data: existingContract } = await supabase
         .from("contracts")
         .select("id")
         .eq("store_id", proposal.store_id)
-        .or(`metadata->>proposal_id.eq.${proposal.id}${leadId ? `,lead_id.eq.${leadId}` : ""}`)
+        .eq("entity_type", "travel_proposal")
+        .eq("entity_id", proposal.id)
         .maybeSingle();
 
-      if (!existingContract) {
-        const contractTitle = `Contrato de Intermediação Turística - ${data.acceptedByName?.trim() || leadPassenger.name}`;
-        const contractVerification = `CTR-${proposal.id.slice(0, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
-        const totalValCents = Number(proposal.total_cents || proposal.total_value_cents || 0);
-
-        const { data: newContract, error: contractErr } = await supabase
-          .from("contracts")
-          .insert({
-            store_id: proposal.store_id,
-            category: "tourism",
-            lead_id: leadId || null,
-            customer_id: proposal.customer_id || null,
-            title: contractTitle,
-            status: "signing",
-            verification_code: contractVerification,
-            current_version: 1,
-            metadata: {
-              store_id: proposal.store_id,
-              proposal_id: proposal.id,
-              lead_id: leadId || null,
-              customer_id: proposal.customer_id || null,
-              acceptance_id: acceptanceResult.acceptance_id,
-              client_name: data.acceptedByName?.trim() || leadPassenger.name,
-              client_email: data.acceptedByEmail || leadPassenger.email || null,
-              client_document: leadPassenger.document || null,
-              client_phone: leadPassenger.phone || null,
-              destination: proposal.destination_city || "",
-              payment_preference: data.paymentPreference,
-              payment_installments: data.paymentInstallments ?? null,
-              total_value_cents: totalValCents,
-              passenger_count: data.passengers.length,
-              passengers: data.passengers,
-              accepted_at: new Date().toISOString(),
-            },
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
+      if (existingContract?.id) {
+        const { data: existingVer } = await supabase
+          .from("contract_versions")
           .select("id")
+          .eq("contract_id", existingContract.id)
+          .order("version_number", { ascending: false })
+          .limit(1)
           .maybeSingle();
+        if (existingVer?.id) {
+          const { data: existingEnv } = await supabase
+            .from("signature_envelopes")
+            .select("signing_token")
+            .eq("contract_version_id", existingVer.id)
+            .limit(1)
+            .maybeSingle();
+          if (existingEnv?.signing_token) signingToken = String(existingEnv.signing_token);
+        }
+      } else {
+        let creatorId: string | null = (proposal as any).created_by || null;
+        if (!creatorId) {
+          const { data: storeRow } = await supabase
+            .from("stores")
+            .select("organization_id, context_profile_id, claimed_by")
+            .eq("id", proposal.store_id)
+            .maybeSingle();
+          creatorId = (storeRow as any)?.organization_id || (storeRow as any)?.context_profile_id || (storeRow as any)?.claimed_by || null;
+        }
+        if (!creatorId) {
+          const { data: memberRow } = await supabase
+            .from("workspace_members")
+            .select("profile_id")
+            .eq("store_id", proposal.store_id)
+            .limit(1)
+            .maybeSingle();
+          creatorId = memberRow?.profile_id || null;
+        }
 
-        if (!contractErr && newContract?.id) {
-          await supabase.from("signature_envelopes").insert({
-            store_id: proposal.store_id,
-            contract_id: newContract.id,
-            envelope_status: "sent",
-            signers: [
-              {
-                name: data.acceptedByName?.trim() || leadPassenger.name,
-                email: data.acceptedByEmail || leadPassenger.email || null,
-                document: leadPassenger.document || null,
-                phone: leadPassenger.phone || null,
-                role: "party",
-                status: "pending",
+        if (creatorId) {
+          const acceptedName = data.acceptedByName?.trim() || leadPassenger.name;
+          const signerEmail = (data.acceptedByEmail || leadPassenger.email || `${(leadPassenger.phone || "cliente").replace(/\D/g, "") || "viajante"}@sem-email.waesy.local`).toLowerCase().trim();
+          const contractTitle = `Contrato de Intermediação Turística - ${acceptedName}`;
+          const contractVerification = `CTR-${proposal.id.slice(0, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+
+          const { data: newContract, error: contractErr } = await supabase
+            .from("contracts")
+            .insert({
+              store_id: proposal.store_id,
+              creator_id: creatorId,
+              entity_type: "travel_proposal",
+              entity_id: proposal.id,
+              category: "tourism_package",
+              title: contractTitle,
+              status: "signing",
+              verification_code: contractVerification,
+              current_version: 1,
+              metadata: {
+                store_id: proposal.store_id,
+                proposal_id: proposal.id,
+                lead_id: leadId || null,
+                customer_id: proposal.customer_id || null,
+                acceptance_id: acceptanceResult.acceptance_id,
+                client_name: acceptedName,
+                client_email: signerEmail,
+                client_document: leadPassenger.document || null,
+                client_phone: leadPassenger.phone || null,
+                destination: proposal.destination_city || "",
+                payment_preference: data.paymentPreference,
+                payment_installments: data.paymentInstallments ?? null,
+                total_value_cents: resolvedTotalCents,
+                passenger_count: data.passengers.length,
+                passengers: data.passengers,
+                accepted_at: new Date().toISOString(),
               },
-            ],
-            metadata: { proposal_id: proposal.id, lead_id: leadId || null },
-            created_at: new Date().toISOString(),
-          });
+            })
+            .select("id")
+            .maybeSingle();
+
+          if (!contractErr && newContract?.id) {
+            const passengerListMd = data.passengers
+              .map((p, idx) => `${idx + 1}. **${p.name}** — Doc: ${p.document}${p.roomPreference ? ` (${p.roomPreference})` : ""}`)
+              .join("\n");
+            const totalFormatted = (resolvedTotalCents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+            const contentMarkdown = [
+              `# ${contractTitle}`,
+              ``,
+              `**Proposta:** ${proposal.title || proposal.destination_city || proposal.id}`,
+              `**Destino:** ${proposal.destination_city || "Conforme roteiro aprovado"}`,
+              `**Investimento Total:** ${totalFormatted}`,
+              `**Condição de Pagamento:** ${data.paymentPreference}${data.paymentInstallments ? ` (${data.paymentInstallments}x)` : ""}`,
+              ``,
+              `## Manifesto de Viajantes`,
+              passengerListMd,
+              ``,
+              `## Termos de Intermediação Turística (ANAC / Lei Geral do Turismo)`,
+              `O contratante declara ciência integral do roteiro, política de cancelamento, regras tarifárias de companhias aéreas/operadoras e documentação obrigatória para embarque.`,
+            ].join("\n");
+            const { createHash, randomUUID } = await import("node:crypto");
+            const contentHash = createHash("sha256").update(contentMarkdown).digest("hex");
+
+            const { data: newVersion, error: verErr } = await supabase
+              .from("contract_versions")
+              .insert({
+                contract_id: newContract.id,
+                version_number: 1,
+                title: contractTitle,
+                content_markdown: contentMarkdown,
+                hash_sha256: contentHash,
+                is_sealed: true,
+                sealed_at: new Date().toISOString(),
+              })
+              .select("id")
+              .maybeSingle();
+
+            if (!verErr && newVersion?.id) {
+              const generatedToken = randomUUID().replace(/-/g, "");
+              const { data: newEnvelope } = await supabase
+                .from("signature_envelopes")
+                .insert({
+                  contract_version_id: newVersion.id,
+                  signer_name: acceptedName,
+                  signer_email: signerEmail,
+                  signer_role: "party",
+                  auth_level: "advanced",
+                  signing_token: generatedToken,
+                  status: "pending",
+                })
+                .select("signing_token")
+                .maybeSingle();
+              signingToken = newEnvelope?.signing_token ? String(newEnvelope.signing_token) : generatedToken;
+            }
+          }
         }
       }
     } catch (ctrErr) {
       console.warn("[approveTravelProposal] Erro ao emitir contrato digital vinculado:", ctrErr);
     }
 
-    // 3. Postagem do Lançamento Financeiro a Receber em `financial_transactions`
+    // 3. Postagem do Lançamento Financeiro a Receber em `financial_transactions` (schema real)
     try {
-      const totalCents = Number(proposal.total_cents || proposal.total_value_cents || 0);
-      if (totalCents > 0) {
+      if (resolvedTotalCents > 0) {
         const { data: existingTx } = await supabase
           .from("financial_transactions")
           .select("id")
@@ -3082,9 +3216,9 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
         if (!existingTx) {
           await supabase.from("financial_transactions").insert({
             store_id: proposal.store_id,
-            type: "revenue",
+            type: "revenue_sale",
             status: "pending",
-            amount_cents: totalCents,
+            amount_cents: resolvedTotalCents,
             description: `Venda Pacote: ${proposal.title || "Proposta Aceita"} (${data.acceptedByName?.trim() || leadPassenger.name})`,
             category: "tourism_sales",
             payment_method: data.paymentPreference,
@@ -3094,7 +3228,6 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
               acceptance_id: acceptanceResult.acceptance_id,
               installments_count: data.paymentInstallments || 1,
             },
-            created_at: new Date().toISOString(),
           });
         }
       }
@@ -3102,20 +3235,7 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
       console.warn("[approveTravelProposal] Erro ao registrar transação financeira:", txErr);
     }
 
-    // 4. Notificação Interna para a Equipe da Agência
-    try {
-      await supabase.from("notifications").insert({
-        store_id: proposal.store_id,
-        type: "proposal_accepted",
-        title: "Proposta Aprovada pelo Cliente!",
-        content: `${data.acceptedByName?.trim() || leadPassenger.name} aprovou a proposta "${proposal.title || "Pacote Turístico"}". Contrato digital emitido e aguardando assinatura.`,
-        link: leadId ? `/workspace/turismo?leadId=${leadId}` : `/workspace/turismo/propostas/${proposal.id}`,
-        created_at: new Date().toISOString(),
-      });
-    } catch {
-      // não bloqueia
-    }
-
+    // 4. Notificação Interna Canônica para a Equipe da Agência
     if (!replayed && proposal.store_id) {
       try {
         const { notifyStoreStaff } = await import("@/lib/notifications/store-staff-notify");
@@ -3125,7 +3245,7 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
           type: "new_lead",
           title: "Proposta Aceita pelo Cliente",
           message: `${leadPassenger?.name || "Cliente"} aceitou "${proposal.title || proposal.destination_city || "Proposta"}" (${data.paymentPreference}${data.paymentInstallments ? ` em ${data.paymentInstallments}x` : ""}).`,
-          linkUrl: "/workspace/turismo/propostas",
+          linkUrl: leadId ? `/workspace/turismo?leadId=${leadId}` : `/workspace/turismo/propostas`,
           authorName: leadPassenger?.name || proposal.client_name || null,
         });
       } catch {
@@ -3133,22 +3253,43 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
       }
     }
 
-    // Enfileira notificação automática de contrato e portal no WhatsApp do passageiro líder
-    if (leadPassenger?.phone && !replayed) {
+    const signingUrl = signingToken ? `/assinar/${signingToken}` : null;
+
+    // 5. Enfileira confirmação + link de assinatura SignFlow na tabela ativa `whatsapp_outbox`
+    if (leadPassenger?.phone && !replayed && proposal.store_id) {
       const cleanPhone = leadPassenger.phone.replace(/\D/g, "");
       if (cleanPhone.length >= 10) {
         try {
-          await supabase.from("whatsapp_outbox_queue").insert({
-            recipient_phone: cleanPhone,
-            message_type: "proposal_accepted_contract",
-            payload: {
-              text: `Olá, ${leadPassenger.name}! Recebemos a aprovação da sua proposta.\nNossa equipe vinculou seu contrato digital. Você pode assinar eletronicamente e acompanhar sua viagem em tempo real no seu portal oficial:\n https://waesy.com.br/conta/viagens`,
-              proposal_id: proposal.id,
-              acceptance_id: acceptanceResult.acceptance_id,
-            },
-            status: "queued",
-            created_at: new Date().toISOString(),
-          });
+          const { data: waInstance } = await supabase
+            .from("whatsapp_channel_instances")
+            .select("id, provider")
+            .eq("store_id", proposal.store_id)
+            .eq("is_active", true)
+            .order("updated_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (waInstance?.id) {
+            const fullSignLink = signingUrl ? `https://waesy.com.br${signingUrl}` : "https://waesy.com.br/conta/viagens";
+            await supabase.from("whatsapp_outbox").upsert(
+              {
+                store_id: proposal.store_id,
+                channel_instance_id: waInstance.id,
+                provider: waInstance.provider || "evolution_api",
+                idempotency_key: `proposal-accepted:${proposal.id}:${acceptanceResult.acceptance_id}`,
+                recipient_phone: cleanPhone,
+                message_type: "text",
+                payload: {
+                  text: `Olá, ${leadPassenger.name}! Recebemos a aprovação da sua proposta "${proposal.title || proposal.destination_city || "Viagem"}".\nSeu contrato digital já está pronto para assinatura eletrônica:\n${fullSignLink}\n\nAcompanhe sua viagem e vouchers em tempo real:\nhttps://waesy.com.br/conta/viagens`,
+                  proposal_id: proposal.id,
+                  acceptance_id: acceptanceResult.acceptance_id,
+                  signing_url: signingUrl,
+                },
+                status: "pending",
+              },
+              { onConflict: "store_id,idempotency_key" },
+            );
+          }
         } catch (err: any) {
           console.warn("[approveTravelProposal] WhatsApp outbox insert ignored:", err?.message);
         }
@@ -3158,6 +3299,7 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
       success: true,
       acceptanceId: acceptanceResult.acceptance_id,
       replayed,
+      signingUrl,
       message: replayed
         ? "Seu aceite já está registrado. Não há reserva confirmada nem pagamento; a agência revisará os dados e entrará em contato."
         : "Aceite registrado. Ainda não há reserva confirmada nem pagamento; a agência revisará os dados e entrará em contato.",

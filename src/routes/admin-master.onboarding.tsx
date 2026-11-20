@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -265,15 +266,15 @@ function AdminOnboardingManager() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-3">
                 <div className="space-y-1">
-                  <Label htmlFor="step-media-url" className="text-xs font-semibold">URL da Mídia (opcional)</Label>
-                  <Input
-                    id="step-media-url"
+                  <Label className="text-xs font-semibold">Mídia do Passo (Upload Nativo)</Label>
+                  <ImageUpload
                     value={mediaUrl}
-                    onChange={(e) => setMediaUrl(e.target.value)}
-                    placeholder="https://..."
-                    className="rounded-lg h-11"
+                    onChange={(url) => setMediaUrl(url)}
+                    onRemove={() => setMediaUrl("")}
+                    bucket="cms-media"
+                    aspectPreset="widescreen"
                   />
                 </div>
 

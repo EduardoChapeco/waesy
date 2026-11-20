@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity, assertStoreAccess, STAFF_ROLES, MANAGER_ROLES } from "@/lib/server-access";
+import { getServerIdentity, assertStoreAccess, requireStoreVerticalAccess, STAFF_ROLES, MANAGER_ROLES } from "@/lib/server-access";
 import { encryptSecret, decryptSecret } from "@/lib/crypto-vault.server";
 import { getEnvVar } from "@/lib/env";
 import {
@@ -187,7 +187,10 @@ async function saveInstance(input: z.infer<typeof SaveSchema>, mode: "workspace"
   if (!identity.id) throw new Error("Identidade autenticada obrigatória para alterar instâncias.");
   const storeId = input.storeId || identity.store_id;
   if (!storeId) throw new Error("Loja obrigatória para a instância.");
-  if (mode === "workspace") assertStoreAccess(identity, ["owner", "admin", "manager"]);
+  if (mode === "workspace") {
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    await requireStoreVerticalAccess("talk", storeId);
+  }
   if (input.connectionMode === "official" && input.provider !== "meta_cloud_api") throw new Error("Integração oficial deve usar Meta Cloud API.");
   if (input.connectionMode === "unofficial" && input.provider === "meta_cloud_api") throw new Error("Meta Cloud API não pode ser marcada como não oficial.");
 
@@ -257,7 +260,10 @@ async function toggleInstance(input: z.infer<typeof ToggleSchema>, mode: "worksp
   const actorId = identity.id;
   const storeId = input.storeId || identity.store_id;
   if (!storeId) throw new Error("Loja autenticada obrigatória para alterar instâncias.");
-  if (mode === "workspace") assertStoreAccess(identity, ["owner", "admin", "manager"]);
+  if (mode === "workspace") {
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    await requireStoreVerticalAccess("talk", storeId);
+  }
   const db = getServerClient();
   const updatePayload: Record<string, unknown> = {
     is_active: input.active,

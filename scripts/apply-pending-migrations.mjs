@@ -1,11 +1,12 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
 import postgres from "postgres";
 
-const connectionString =
-  process.env.DATABASE_URL ||
-  "postgresql://postgres.jfuebqmltksyznovhlwa:EEaR6399!%40%232026@aws-0-sa-east-1.pooler.supabase.com:6543/postgres";
+const connectionString = process.env.DATABASE_URL || process.env.SUPABASE_DB_URL;
+if (!connectionString) {
+  throw new Error("DATABASE_URL or SUPABASE_DB_URL is required");
+}
 
 console.log("Connecting to Supabase Postgres...");
 const sql = postgres(connectionString, {

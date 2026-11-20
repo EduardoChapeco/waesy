@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
+import { getServerIdentity } from "@/lib/server-access";
 import { getIdentity } from "./identity.functions";
 
 // ---------------------------------------------------------------------------
@@ -156,6 +157,24 @@ export const ListStoreDealReviewsSchema = z.object({
 export const listStoreDealReviews = createServerFn({ method: "GET" })
   .validator(ListStoreDealReviewsSchema)
   .handler(async ({ data }) => {
+    const emptyStats = {
+      average_rating: 0,
+      total_reviews: 0,
+      count_5_stars: 0,
+      count_4_stars: 0,
+      count_3_stars: 0,
+      count_low_stars: 0,
+      verified_percentage: 0,
+    };
+    let effectiveStoreId = data?.storeId || null;
+    if (!effectiveStoreId && !data?.sellerId) {
+      const identity = await getServerIdentity().catch(() => null);
+      effectiveStoreId = identity?.store_id || null;
+    }
+    if (!effectiveStoreId && !data?.sellerId) {
+      return { reviews: [], stats: emptyStats, storeId: null };
+    }
+
     const supabase = getServerClient();
 
     let query = supabase
@@ -169,8 +188,8 @@ export const listStoreDealReviews = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false })
       .limit(data?.limit || 20);
 
-    if (data?.storeId) {
-      query = query.eq("store_id", data.storeId);
+    if (effectiveStoreId) {
+      query = query.eq("store_id", effectiveStoreId);
     } else if (data?.sellerId) {
       query = query.eq("seller_id", data.sellerId);
     }
@@ -180,15 +199,7 @@ export const listStoreDealReviews = createServerFn({ method: "GET" })
       console.warn("[deal-reviews] Erro ao listar avaliações:", error);
       return {
         reviews: [],
-        stats: {
-          average_rating: 5.0,
-          total_reviews: 0,
-          count_5_stars: 0,
-          count_4_stars: 0,
-          count_3_stars: 0,
-          count_low_stars: 0,
-          verified_percentage: 100,
-        },
+        stats: emptyStats,
       };
     }
 

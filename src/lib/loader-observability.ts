@@ -6,29 +6,44 @@
  * enquanto fornece valores de fallback seguros para a UI não quebrar com FOUC.
  */
 
+import {
+  buildCanonicalStructuredError,
+  type CanonicalStructuredErrorPayload,
+} from "@/lib/telemetry/operational-logger";
+
 export function logLoaderError<T>(
  context: {
  route: string;
  action: string;
+ module?: string;
  tableOrEntity?: string;
+ dbColumn?: string | null;
+ userRole?: string;
+ severity?: "error" | "critical";
  params?: unknown;
  },
  fallbackValue: T
 ): (error: unknown) => T {
  return (error: unknown) => {
- const errorDetails = {
- timestamp: new Date().toISOString(),
+ const derivedModule =
+ context.module ||
+ context.route.replace(/^\/+/, "").split("/").slice(0, 2).join("-") ||
+ "core";
+ const structuredPayload: CanonicalStructuredErrorPayload = buildCanonicalStructuredError({
+ severity: context.severity || "error",
  route: context.route,
- action: context.action,
- tableOrEntity: context.tableOrEntity || "desconhecida",
- params: context.params,
- message: error instanceof Error ? error.message : String(error),
- stack: error instanceof Error ? error.stack : undefined,
- };
+ module: derivedModule,
+ contract: context.action,
+ db_schema: "public",
+ db_table: context.tableOrEntity || "unknown",
+ db_column: context.dbColumn,
+ user_role: context.userRole || "visitor",
+ error,
+ });
 
  console.error(
  `[ALERTA] [Observability] Falha na consulta [${context.route} -> ${context.action}]:`,
- JSON.stringify(errorDetails, null, 2)
+ JSON.stringify(structuredPayload)
  );
 
  return fallbackValue;

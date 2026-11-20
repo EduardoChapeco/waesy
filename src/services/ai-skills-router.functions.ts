@@ -218,7 +218,10 @@ export const listSkillsCatalog = createServerFn({ method: "GET" })
       query = query.eq("niche", filter.niche);
     }
     if (filter?.search && filter.search.trim().length > 0) {
-      query = query.or(`name.ilike.%${filter.search}%,description.ilike.%${filter.search}%,trigger_explicit.ilike.%${filter.search}%`);
+      const safeSearch = filter.search.trim().replace(/[,().*%\\]/g, "").slice(0, 80);
+      if (safeSearch) {
+        query = query.or(`name.ilike.%${safeSearch}%,description.ilike.%${safeSearch}%,trigger_explicit.ilike.%${safeSearch}%`);
+      }
     }
 
     const { data: skills, error } = await query.order("name", { ascending: true });
@@ -269,6 +272,7 @@ export const toggleSkillActivation = createServerFn({ method: "POST" })
   .handler(async ({ data: input }) => {
     const identity = await getServerIdentity();
     if (!identity?.store_id) throw new Error("Workspace não selecionado");
+    assertStoreAccess(identity);
     const supabase = getServerClient();
 
     const { error } = await supabase
@@ -415,7 +419,13 @@ export const executeSkill = createServerFn({ method: "POST" })
   )
   .handler(async ({ data: input }) => {
     const supabase = getServerClient();
-    const identity = await getServerIdentity().catch(() => null);
+    const identity = await getServerIdentity();
+    if (!identity?.id) {
+      throw new Error("Autenticação obrigatória para executar skills de IA.");
+    }
+    if (identity.store_id) {
+      assertStoreAccess(identity);
+    }
 
     const definition = CANONICAL_SKILLS_DEFINITIONS[input.skillSlug];
     if (definition === null || definition === undefined) {

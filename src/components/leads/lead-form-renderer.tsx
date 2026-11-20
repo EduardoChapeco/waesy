@@ -462,6 +462,37 @@ export function LeadFormRenderer({
                       </option>
                     ))}
                   </select>
+                ) : field.field_type === "radio" ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                    {(field.options || []).map((opt, idx) => {
+                      const val = typeof opt === "string" ? opt : opt.value;
+                      const lbl = typeof opt === "string" ? opt : opt.label;
+                      const selected = answers[field.field_key] === val;
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => handleFieldChange(field.field_key, val)}
+                          className={`min-h-11 px-3 py-2 rounded-lg border text-left text-xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                            selected ? "border-primary bg-primary/10 text-foreground" : "border-input bg-background text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          {lbl}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : field.field_type === "checkbox" ? (
+                  <label className="flex items-center gap-2 min-h-11 px-3 rounded-lg border border-input bg-background cursor-pointer">
+                    <input
+                      id={`field-${field.field_key}`}
+                      type="checkbox"
+                      checked={answers[field.field_key] === "true" || answers[field.field_key] === "Sim"}
+                      onChange={(e) => handleFieldChange(field.field_key, e.target.checked ? "Sim" : "Não")}
+                      className="size-4 rounded border-input"
+                    />
+                    <span className="text-xs text-foreground">{field.placeholder || field.label}</span>
+                  </label>
                 ) : field.field_type === "currency" ? (
                   <Input
                     id={`field-${field.field_key}`}

@@ -4,6 +4,7 @@ import { ArrowRight, Compass, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { WaesyHubLauncher } from "@/components/shell/waesy-hub-launcher";
+import { resolveSubsystemFromHost } from "@/lib/vertical-subsystems";
 
 export interface PublicLandingHeaderProps {
   brandName?: string;
@@ -31,6 +32,28 @@ export function PublicLandingHeader({
   const [mobileOpen, setMobileOpen] = useState(false);
   const isAuthenticated = Boolean(session?.user || session?.id);
   const hasStore = Boolean(session?.memberships?.length || session?.store_id);
+  const hostSubsystem =
+    typeof window !== "undefined" ? resolveSubsystemFromHost(window.location.host) : null;
+  const isDedicatedPortal = Boolean(
+    hostSubsystem &&
+      (hostSubsystem.category === "vertical_workspace" || hostSubsystem.category === "saas_brand"),
+  );
+  const authHref = isAuthenticated
+    ? hasStore
+      ? "/workspace"
+      : isDedicatedPortal
+        ? `/onboarding/empresa?vertical=${hostSubsystem!.id}`
+        : "/conta"
+    : isDedicatedPortal
+      ? `/painel?vertical=${hostSubsystem!.id}`
+      : "/entrar";
+  const authLabel = isAuthenticated
+    ? hasStore
+      ? "Workspace"
+      : isDedicatedPortal
+        ? "Criar Empresa"
+        : "Minha Conta"
+    : "Entrar";
 
   return (
     <header className="sticky top-0 z-30 w-full bg-background/95 backdrop-blur-md border-b border-border/60 pt-safe">
@@ -72,8 +95,8 @@ export function PublicLandingHeader({
 
           <div className="hidden sm:flex items-center gap-2">
             <Button asChild variant="outline" className="h-11 min-h-11 px-4 text-xs font-semibold gap-2">
-              <Link to={isAuthenticated ? (hasStore ? "/workspace" : "/conta") : "/entrar"}>
-                <span>{isAuthenticated ? (hasStore ? "Workspace" : "Minha Conta") : "Entrar"}</span>
+              <Link to={authHref as any}>
+                <span>{authLabel}</span>
                 <ArrowRight className="size-3.5" />
               </Link>
             </Button>
@@ -113,10 +136,10 @@ export function PublicLandingHeader({
                 <div className="pt-4 border-t border-border/60">
                   <Button asChild variant="outline" className="w-full h-11 min-h-11 text-xs font-semibold">
                     <Link
-                      to={isAuthenticated ? (hasStore ? "/workspace" : "/conta") : "/entrar"}
+                      to={authHref as any}
                       onClick={() => setMobileOpen(false)}
                     >
-                      {isAuthenticated ? (hasStore ? "Ir ao Workspace" : "Minha Conta") : "Entrar na Conta"}
+                      {authLabel}
                     </Link>
                   </Button>
                 </div>

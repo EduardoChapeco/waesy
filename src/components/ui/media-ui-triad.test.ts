@@ -102,13 +102,10 @@ describe("Milestone M1 Challenger — Media UI Triad & Unsplash Purge Verificati
         .filter((v: any) => v.severity === "P0" || v.severity === "P1");
       expect(imageUploadViolations).toEqual([]);
 
-      const studioPickerContent = fs.readFileSync(
-        path.resolve(process.cwd(), "src/components/tourism/studio/StudioUnsplashPicker.tsx"),
-        "utf8"
-      );
-      const studioPickerViolations = lintSource(studioPickerContent, "src/components/tourism/studio/StudioUnsplashPicker.tsx")
-        .filter((v: any) => v.severity === "P0" || v.severity === "P1");
-      expect(studioPickerViolations).toEqual([]);
+      // StudioUnsplashPicker.tsx foi expurgado na Operação Saneamento Total (0 importadores em runtime)
+      expect(
+        fs.existsSync(path.resolve(process.cwd(), "src/components/tourism/studio/StudioUnsplashPicker.tsx"))
+      ).toBe(false);
     });
   });
 });

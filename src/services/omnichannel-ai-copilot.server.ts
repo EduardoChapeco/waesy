@@ -173,7 +173,7 @@ export async function buildMultiNicheCopilotContextAndReply(params: {
   const [{ data: store }, { data: thread }, { data: rawMessages }] = await Promise.all([
     db
       .from("stores")
-      .select("id, name, niche, ai_knowledge_base, settings")
+      .select("id, name, primary_niche_id, ai_knowledge_base, settings")
       .eq("id", storeId)
       .maybeSingle(),
     db
@@ -472,7 +472,7 @@ export async function extractLeadDossierFromThreadServer(params: {
   }
 
   const [{ data: store }, messagesRes] = await Promise.all([
-    db.from("stores").select("id, name, niche, settings").eq("id", storeId).maybeSingle(),
+    db.from("stores").select("id, name, primary_niche_id, settings").eq("id", storeId).maybeSingle(),
     resolvedThread?.id
       ? db
           .from("chat_messages")
@@ -483,7 +483,7 @@ export async function extractLeadDossierFromThreadServer(params: {
       : Promise.resolve({ data: [] }),
   ]);
 
-  const rawNiche = String(store?.niche || store?.settings?.niche || "turismo");
+  const rawNiche = String(store?.primary_niche_id || (store as any)?.niche || store?.settings?.niche || "turismo");
   const nicheId = resolveUnifiedNicheId(rawNiche);
   const nicheSpec = getUnifiedNicheSpec(nicheId);
   const messages = [...(messagesRes.data || [])].reverse();

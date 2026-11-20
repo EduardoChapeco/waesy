@@ -20,7 +20,8 @@ import { getPresetForSegment, type WeeklySchedule } from "@/lib/business-hours";
 import { setTenantContext } from "@/services/identity.functions";
 import { provisionBusiness } from "@/services/onboarding.functions";
 import { lookupCnpj } from "@/services/public-apis.functions";
-import { formatCnpj, formatCpf, formatCep, cleanDocument, validateCnpjMod11 } from "@/lib/document-validator";
+import { formatCnpj, formatCpf, formatCep, formatPhone, cleanDocument, validateCnpjMod11 } from "@/lib/document-validator";
+import { formatBrazilianCityName } from "@/lib/constants/cities";
 import { uploadStoreMedia } from "@/services/storage.functions";
 import { getUserSession, syncSessionToCookies } from "@/services/auth.functions";
 import { getBrowserClient } from "@/lib/supabase";
@@ -179,6 +180,7 @@ function CriarNegocioPage() {
  // Etapa 2: Dados Básicos, Endereço no Mapa & Modelo de Atendimento
  const [name, setName] = useState("");
  const [docNumber, setDocNumber] = useState("");
+ const [isSearchingCnpj, setIsSearchingCnpj] = useState(false);
  const [phone, setPhone] = useState("");
  const [email, setEmail] = useState("");
  const [locationData, setLocationData] = useState<BusinessLocationData>({
@@ -249,6 +251,46 @@ function CriarNegocioPage() {
  return matchesCategory && matchesSearch;
  });
  }, [activeCategoryFilter, searchQuery]);
+
+ const handleAdvancedLookupCnpj = async () => {
+ const clean = cleanDocument(docNumber);
+ if (clean.length !== 14) {
+ toast.error("Informe um CNPJ de 14 dígitos para consultar.");
+ return;
+ }
+ setIsSearchingCnpj(true);
+ try {
+ const res = await lookupCnpj({ data: { cnpj: clean } });
+ if (res.tradeName || res.corporateName) {
+ setName(res.tradeName || res.corporateName);
+ }
+ if (res.phone) setPhone(formatPhone(res.phone));
+ if (res.email) setEmail(res.email);
+ const resolvedCity = res.address?.city ? formatBrazilianCityName(res.address.city) : locationData.city;
+ const resolvedState = res.address?.state ? res.address.state.toUpperCase() : locationData.state;
+ const resolvedNeighborhood = res.address?.neighborhood
+ ? formatBrazilianCityName(res.address.neighborhood)
+ : locationData.neighborhood;
+ setLocationData((prev) => ({
+ ...prev,
+ zipCode: res.address?.cep ? formatCep(res.address.cep) : prev.zipCode,
+ street: res.address?.street || prev.street,
+ number: res.address?.number || prev.number,
+ complement: res.address?.complement || prev.complement,
+ neighborhood: resolvedNeighborhood,
+ city: resolvedCity,
+ state: resolvedState,
+ latitude: res.address?.latitude ? Number(res.address.latitude) : prev.latitude,
+ longitude: res.address?.longitude ? Number(res.address.longitude) : prev.longitude,
+ coverageCities: resolvedCity ? [resolvedCity] : prev.coverageCities,
+ }));
+ toast.success("Dados da Receita Federal importados para a empresa!");
+ } catch (err: any) {
+ toast.error(err?.message || "Erro ao consultar CNPJ.");
+ } finally {
+ setIsSearchingCnpj(false);
+ }
+ };
 
  const handleSelectNicheAndProceed = (nicheId: string) => {
  setSelectedSegmentId(nicheId);
@@ -402,41 +444,51 @@ function CriarNegocioPage() {
  ];
 
  return (
-  <div className="w-full max-w-6xl mx-auto px-0 sm:px-6 py-2 pb-32 pb-safe space-y-6 animate-in fade-in duration-200">
-  {/* ── Top Bar de Retorno / Atalho ao Workspace ou Início + Seletor de Modo ── */}
-  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+  <div className="min-h-dvh w-full bg-background text-foreground">
+  <header className="sticky top-0 z-30 w-full border-b border-border/60 bg-background/95 backdrop-blur-sm">
+  <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+  <div className="flex items-center gap-3 min-w-0">
   <NativeBackButton fallbackHref={session?.memberships && session.memberships.length > 0 ? "/workspace" : "/"} />
+  {pendingVertical?.vertical && (
+  <Badge variant="outline" className="hidden sm:inline-flex text-xs font-semibold capitalize rounded-xl border-primary/30 text-primary bg-primary/5">
+  Sistema {pendingVertical.vertical}
+  </Badge>
+  )}
+  </div>
 
   {/* SELETOR DE MODO APPLE HIG (Expresso vs Avançado) */}
-  <div className="flex items-center p-1 bg-muted rounded-lg border border-border self-start sm:self-auto">
+  <div className="flex items-center p-1 bg-muted rounded-xl border border-border shrink-0">
   <button
   type="button"
   onClick={() => setMode("expresso")}
   className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-  "px-4 py-2 rounded-lg text-xs font-bold transition-colors duration-200 flex items-center gap-2",
+  "px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-colors duration-200 flex items-center gap-2 min-h-11 cursor-pointer",
   mode === "expresso"
-  ? "bg-card text-foreground border border-border"
+  ? "bg-card text-foreground border border-border shadow-2xs"
   : "text-muted-foreground hover:text-foreground"
   )}
   >
   <Zap className="size-3.5 text-warning-strong" />
-  <span>Modo Expresso (1 min)</span>
+  <span>Expresso</span>
   </button>
   <button
   type="button"
   onClick={() => setMode("avancado")}
   className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-  "px-4 py-2 rounded-lg text-xs font-bold transition-colors duration-200 flex items-center gap-2",
+  "px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-colors duration-200 flex items-center gap-2 min-h-11 cursor-pointer",
   mode === "avancado"
-  ? "bg-card text-foreground border border-border"
+  ? "bg-card text-foreground border border-border shadow-2xs"
   : "text-muted-foreground hover:text-foreground"
   )}
   >
   <Sliders className="size-3.5 text-primary" />
-  <span>Modo Completo (6 Etapas)</span>
+  <span>Completo</span>
   </button>
   </div>
   </div>
+  </header>
+
+  <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-32 pb-safe space-y-6 animate-in fade-in duration-200">
 
   {mode === "expresso" ? (
   <FastCompanyOnboarding
@@ -690,12 +742,28 @@ function CriarNegocioPage() {
  <Label className="text-xs font-medium text-muted-foreground">
  CNPJ ou CPF (Opcional)
  </Label>
+ <div className="flex items-center gap-2">
  <Input
  value={docNumber}
- onChange={(e) => setDocNumber(e.target.value)}
+ onChange={(e) => {
+ const raw = cleanDocument(e.target.value);
+ setDocNumber(raw.length > 11 ? formatCnpj(e.target.value) : formatCpf(e.target.value));
+ }}
  placeholder="00.000.000/0001-00"
  className="h-11 rounded-lg text-xs bg-background font-mono"
+ maxLength={18}
  />
+ <Button
+ type="button"
+ variant="outline"
+ onClick={handleAdvancedLookupCnpj}
+ disabled={isSearchingCnpj || cleanDocument(docNumber).length !== 14}
+ className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold shrink-0 gap-2 cursor-pointer"
+ >
+ {isSearchingCnpj ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <Search className="size-4" />}
+ <span>Buscar</span>
+ </Button>
+ </div>
  </div>
 
  <div className="space-y-2">
@@ -704,7 +772,7 @@ function CriarNegocioPage() {
  </Label>
  <Input
  value={phone}
- onChange={(e) => setPhone(e.target.value)}
+ onChange={(e) => setPhone(formatPhone(e.target.value))}
  placeholder="(49) 99999-9999"
  className="h-11 rounded-lg text-xs bg-background font-mono"
  />
@@ -777,7 +845,7 @@ function CriarNegocioPage() {
  {/* Logotipo Oficial */}
  <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Logotipo da Loja</Label>
- <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 p-4 rounded-lg bg-muted/20 border border-border/60">
+ <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-lg bg-muted/20 border border-border/60">
  <div className="size-24 sm:size-28 shrink-0">
  <ImageUpload
  value={logoUrl}
@@ -786,9 +854,10 @@ function CriarNegocioPage() {
  toast.success("Logotipo atualizado!");
  }}
  onRemove={() => setLogoUrl("")}
- bucket="cms-media"
+ bucket="avatars"
  variant="avatar"
  aspectPreset="square"
+ appLogoMode
  className="size-full"
  />
  </div>
@@ -799,6 +868,24 @@ function CriarNegocioPage() {
  </p>
  </div>
  </div>
+ </div>
+
+ {/* Banner / Capa da Vitrine */}
+ <div className="space-y-2">
+ <Label className="text-xs font-bold text-foreground">Capa / Banner da Loja (Opcional)</Label>
+ <ImageUpload
+ value={bannerUrl}
+ onChange={(url) => {
+ setBannerUrl(url);
+ toast.success("Capa atualizada!");
+ }}
+ onRemove={() => setBannerUrl("")}
+ bucket="covers"
+ variant="banner"
+ aspectPreset="banner"
+ label="Adicionar Capa da Vitrine"
+ helperText="Proporção 21:9 (Hero da Vitrine / App)"
+ />
  </div>
  </div>
 
@@ -1381,6 +1468,7 @@ function CriarNegocioPage() {
  )}
  </>
  )}
+ </div>
  </div>
  );
 }

@@ -68,10 +68,28 @@ export function conditionMatches(condition: any, input: Record<string, any>) {
 export function isOutsideSupportSchedule(
   schedules: Array<{ day: string; hours: string; active: boolean }> | undefined,
   now: Date = new Date(),
+  timeZone = "America/Sao_Paulo",
 ): boolean {
   if (!Array.isArray(schedules) || schedules.length === 0) return false;
-  const dayIndex = now.getDay();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  let dayIndex = now.getDay();
+  let currentMinutes = now.getHours() * 60 + now.getMinutes();
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      weekday: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).formatToParts(now);
+    const weekdayStr = parts.find((p) => p.type === "weekday")?.value || "";
+    const hourVal = Number(parts.find((p) => p.type === "hour")?.value || 0);
+    const minVal = Number(parts.find((p) => p.type === "minute")?.value || 0);
+    const weekdayMap: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+    if (weekdayStr in weekdayMap) dayIndex = weekdayMap[weekdayStr];
+    currentMinutes = (hourVal === 24 ? 0 : hourVal) * 60 + minVal;
+  } catch {
+    // fallback para relógio local caso Intl timezone falhe
+  }
 
   const matchSchedule = schedules.find((item) => {
     const d = String(item.day || "").toLowerCase();
@@ -322,7 +340,7 @@ export async function dispatchWhatsAppInboundFlows(input: { storeId: string; ins
   return results;
 }
 
-export type ControlledAiMode = "disabled" | "assisted" | "sandbox";
+export type ControlledAiMode = "disabled" | "assisted" | "sandbox" | "autonomous";
 
 export interface ControlledAiDecisionLog {
   decisionId: string;
@@ -338,11 +356,15 @@ export interface ControlledAiDecisionLog {
     | "halted_from_me"
     | "halted_loop_guard"
     | "halted_cooldown"
+    | "opt_out_archived"
     | "handoff_to_human_queue"
     | "copilot_suggestion_saved"
-    | "sandbox_outbox_queued";
+    | "sandbox_outbox_queued"
+    | "autonomous_outbox_queued";
   reason: string;
   suggestedReply?: string;
+  skillSlug?: string;
+  toolsExecuted?: string[];
   crmContextSummary?: {
     opportunitiesCount: number;
     activeStage: string | null;
@@ -416,28 +438,117 @@ export async function evaluateControlledAiInboundRuntime(input: {
     sandbox_allowed_phones?: string[];
     max_consecutive_turns?: number;
     cooldown_seconds?: number;
+    humanize_chunks?: boolean;
+    voice_replies_enabled?: boolean;
   };
 
   const mode: ControlledAiMode = aiConfig.mode || "disabled";
   const { intent, agentSlug } = detectInboundIntent(input.text);
+  const phoneDigits = String(input.phone || "").replace(/\D/g, "");
+
+  // 2.1 Cancela follow-ups agendados pendentes assim que o cliente responder (anti-vácuo inteligente)
+  await db
+    .from("whatsapp_scheduled_messages")
+    .update({ status: "cancelled", updated_at: nowIso })
+    .eq("store_id", input.storeId)
+    .eq("thread_id", input.threadId)
+    .eq("status", "scheduled")
+    .then(() => null, () => null);
+
+  // 2.2 Detecção Automática de Opt-Out (respeito rigoroso ao cliente)
+  const { detectWhatsAppOptOut, splitReplyIntoHumanChunks, computeHumanTypingDelayMs } = await import("@/lib/ai/niche-agent-engine");
+  const optOutCheck = detectWhatsAppOptOut(input.text);
 
   // 3. Carrega thread e verifica especialista configurado, handoff humano, cooldown e limite de turnos
   const { data: thread } = await db
     .from("chat_threads")
-    .select("id, customer_id, guest_name, metadata")
+    .select("id, customer_id, guest_name, metadata, attribution")
     .eq("id", input.threadId)
     .eq("store_id", input.storeId)
     .maybeSingle();
 
   const meta = (thread?.metadata && typeof thread.metadata === "object" ? thread.metadata : {}) as Record<string, any>;
+
+  if (optOutCheck.isOptOut) {
+    const nextOptOutMeta = {
+      ...meta,
+      whatsapp_opt_out: true,
+      whatsapp_opt_out_at: nowIso,
+      whatsapp_opt_out_reason: optOutCheck.matchedPhrase,
+      handoff_mode: "human_queue",
+      ai_auto_reply_enabled: false,
+      ai_halted_reason: "customer_opt_out",
+      ai_halted_at: nowIso,
+    };
+    await db
+      .from("chat_threads")
+      .update({ metadata: nextOptOutMeta, updated_at: nowIso })
+      .eq("id", input.threadId)
+      .eq("store_id", input.storeId);
+
+    if (phoneDigits.length >= 8) {
+      const suffix8 = phoneDigits.slice(-8);
+      await Promise.all([
+        db
+          .from("leads_crm")
+          .update({
+            whatsapp_opt_out: true,
+            whatsapp_opt_out_at: nowIso,
+            whatsapp_opt_out_reason: optOutCheck.matchedPhrase,
+            status: "lost",
+            updated_at: nowIso,
+          })
+          .eq("store_id", input.storeId)
+          .ilike("phone", `%${suffix8}%`),
+        db
+          .from("customers_crm")
+          .update({ whatsapp_opt_out: true, whatsapp_opt_out_at: nowIso, updated_at: nowIso })
+          .eq("store_id", input.storeId)
+          .ilike("phone", `%${suffix8}%`),
+      ]);
+    }
+
+    if (mode !== "disabled" && input.instanceId) {
+      await db.from("whatsapp_outbox").upsert(
+        {
+          store_id: input.storeId,
+          thread_id: input.threadId,
+          channel_instance_id: input.instanceId,
+          provider: input.provider,
+          idempotency_key: `opt_out_ack:${input.storeId}:${input.threadId}:${nowIso.slice(0, 10)}`,
+          recipient_phone: input.phone,
+          message_type: "text",
+          payload: {
+            text: "Entendido! Agradeço o retorno — já retirei seu contato da nossa lista de propostas para não te incomodar. Se precisar no futuro, estaremos sempre por aqui.",
+            origin: "opt_out_confirmation",
+          },
+          status: "pending",
+        },
+        { onConflict: "store_id,idempotency_key", ignoreDuplicates: true },
+      );
+    }
+
+    return {
+      decisionId,
+      timestamp: nowIso,
+      storeId: input.storeId,
+      threadId: input.threadId,
+      mode,
+      intent,
+      agentSlug: "opt_out_guard",
+      actionTaken: "opt_out_archived",
+      reason: `Opt-out detectado ("${optOutCheck.matchedPhrase}"); lead arquivado e disparos bloqueados.`,
+    };
+  }
+
   const configuredSpecialistMap: Record<string, string> = {
-    tourism_concierge: "tourism_concierge",
-    commercial_closer: "sales_closer",
+    tourism_concierge: "turis_triagem_objecao",
+    commercial_closer: "turis_sondagem_4as",
     financial_billing: "financial_assistant",
-    sac_triage: "sac_support",
+    sac_triage: "turis_pos_venda_anti_ansiedade",
   };
   const threadAgentOverride =
-    typeof meta.ai_agent_id === "string" ? configuredSpecialistMap[meta.ai_agent_id] || null : null;
+    typeof meta.ai_agent_id === "string" ? configuredSpecialistMap[meta.ai_agent_id] || meta.ai_agent_id : null;
   const effectiveAgentSlug =
     intent === "human_handoff" ? agentSlug : threadAgentOverride || agentSlug;
 
@@ -474,7 +585,7 @@ export async function evaluateControlledAiInboundRuntime(input: {
     };
   }
 
-  if (meta.handoff_mode === "human_active" || meta.handoff_mode === "human_queue" || meta.ai_auto_reply_enabled === false) {
+  if (meta.handoff_mode === "human_active" || meta.handoff_mode === "human_queue" || meta.ai_auto_reply_enabled === false || meta.whatsapp_opt_out === true) {
     return {
       decisionId,
       timestamp: nowIso,
@@ -515,7 +626,7 @@ export async function evaluateControlledAiInboundRuntime(input: {
     };
   }
 
-  const maxTurns = typeof aiConfig.max_consecutive_turns === "number" ? aiConfig.max_consecutive_turns : 5;
+  const maxTurns = typeof aiConfig.max_consecutive_turns === "number" ? aiConfig.max_consecutive_turns : 6;
   const currentTurns = Number(meta.ai_consecutive_turns || 0);
   if (currentTurns >= maxTurns) {
     return {
@@ -531,7 +642,7 @@ export async function evaluateControlledAiInboundRuntime(input: {
     };
   }
 
-  const cooldownSeconds = typeof aiConfig.cooldown_seconds === "number" ? aiConfig.cooldown_seconds : 15;
+  const cooldownSeconds = typeof aiConfig.cooldown_seconds === "number" ? aiConfig.cooldown_seconds : 10;
   if (meta.ai_last_reply_at) {
     const elapsedMs = Date.now() - new Date(meta.ai_last_reply_at).getTime();
     if (Number.isFinite(elapsedMs) && elapsedMs >= 0 && elapsedMs < cooldownSeconds * 1000) {
@@ -549,8 +660,7 @@ export async function evaluateControlledAiInboundRuntime(input: {
     }
   }
 
-  // 4. Acesso contextual multi-nicho e geração SDR unificada
-  const phoneDigits = String(input.phone || "").replace(/\D/g, "");
+  // 4. Acesso contextual multi-nicho + Orquestrador Unificado (Core + Presets Turis + Tools + Sondagem 4 As)
   let opportunitiesCount = 0;
   let activeStage: string | null = null;
   let quotesCount = 0;
@@ -566,16 +676,47 @@ export async function evaluateControlledAiInboundRuntime(input: {
     quotesCount = (quotesRes.data || []).length;
   }
 
-  const { buildMultiNicheCopilotContextAndReply } = await import("@/services/omnichannel-ai-copilot.server");
-  const copilotInsight = await buildMultiNicheCopilotContextAndReply({
+  const { orchestrateWhatsAppAiReply } = await import("@/services/whatsapp-ai-orchestrator.server");
+  const orchestrated = await orchestrateWhatsAppAiReply({
     db,
     storeId: input.storeId,
     threadId: input.threadId,
+    phone: input.phone,
+    customerName: thread?.guest_name || null,
     latestMessageText: input.text,
-    persistToThread: false,
+    effectiveAgentSlug,
+    intent,
+    threadMeta: meta,
+    threadAttribution: (thread as any)?.attribution || null,
   });
 
-  const suggestedReply = copilotInsight.suggestedReply;
+  // 4.1 Re-checagem Atômica Pós-LLM (previne sobrescrever Human Takeover ocorrido durante o await da IA)
+  const { data: freshThread } = await db
+    .from("chat_threads")
+    .select("metadata")
+    .eq("id", input.threadId)
+    .eq("store_id", input.storeId)
+    .maybeSingle();
+  const freshMeta = (freshThread?.metadata && typeof freshThread.metadata === "object" ? freshThread.metadata : meta) as Record<string, any>;
+  if (
+    !orchestrated.handoffTriggered &&
+    (freshMeta.handoff_mode === "human_active" || freshMeta.handoff_mode === "human_queue" || freshMeta.ai_auto_reply_enabled === false)
+  ) {
+    return {
+      decisionId,
+      timestamp: nowIso,
+      storeId: input.storeId,
+      threadId: input.threadId,
+      mode,
+      intent,
+      agentSlug: effectiveAgentSlug,
+      actionTaken: "halted_human_active",
+      reason: "Atendente humano assumiu a conversa durante a geração da IA; resposta descartada atomicamente.",
+    };
+  }
+
+  const copilotInsight = orchestrated.copilotInsight;
+  const suggestedReply = orchestrated.replyText;
   const crmContextSummary = {
     opportunitiesCount,
     activeStage,
@@ -584,23 +725,8 @@ export async function evaluateControlledAiInboundRuntime(input: {
     sdrScore: copilotInsight.sdrScore,
     nicheId: copilotInsight.nicheId,
     recommendedNextStep: copilotInsight.recommendedNextStep,
-  };
-
-  const decisionLog: ControlledAiDecisionLog = {
-    decisionId,
-    timestamp: nowIso,
-    storeId: input.storeId,
-    threadId: input.threadId,
-    mode,
-    intent,
-    agentSlug: effectiveAgentSlug,
-    actionTaken: mode === "sandbox" ? "sandbox_outbox_queued" : "copilot_suggestion_saved",
-    reason:
-      mode === "sandbox"
-        ? "Resposta gerada em modo Sandbox controlado e enfileirada com idempotência."
-        : "Sugestão multi-nicho SDR gerada em modo Copilot Assistido para revisão do atendente.",
-    suggestedReply,
-    crmContextSummary,
+    crmProposalStatus: orchestrated.crmProposalStatus,
+    sondagemPct: orchestrated.sondagem.completionPct,
   };
 
   const sandboxAllowed =
@@ -609,42 +735,77 @@ export async function evaluateControlledAiInboundRuntime(input: {
       aiConfig.sandbox_allowed_phones.length === 0 ||
       aiConfig.sandbox_allowed_phones.some((p) => phoneDigits.endsWith(String(p).replace(/\D/g, "").slice(-8))));
 
-  if (mode === "sandbox" && sandboxAllowed) {
-    const idempotencyKey = `ai_sandbox:${input.storeId}:${input.threadId}:${input.eventId || decisionId}`;
-    await db.from("whatsapp_outbox").upsert(
-      {
-        store_id: input.storeId,
-        thread_id: input.threadId,
-        channel_instance_id: input.instanceId,
-        provider: input.provider,
-        idempotency_key: idempotencyKey,
-        recipient_phone: input.phone,
-        message_type: "text",
-        payload: {
-          text: suggestedReply,
-          origin: "ai_sandbox",
-          agent_slug: effectiveAgentSlug,
-          intent,
+  const shouldAutoSend = mode === "autonomous" || (mode === "sandbox" && sandboxAllowed);
+
+  const decisionLog: ControlledAiDecisionLog = {
+    decisionId,
+    timestamp: nowIso,
+    storeId: input.storeId,
+    threadId: input.threadId,
+    mode,
+    intent,
+    agentSlug: orchestrated.skillUsed.slug,
+    skillSlug: orchestrated.skillUsed.slug,
+    toolsExecuted: orchestrated.toolsExecuted,
+    actionTaken: shouldAutoSend
+      ? mode === "autonomous"
+        ? "autonomous_outbox_queued"
+        : "sandbox_outbox_queued"
+      : "copilot_suggestion_saved",
+    reason: shouldAutoSend
+      ? `Resposta gerada via skill "${orchestrated.skillUsed.name}" e enfileirada com humanização.`
+      : `Sugestão SDR gerada via skill "${orchestrated.skillUsed.name}" em modo Copilot Assistido.`,
+    suggestedReply,
+    crmContextSummary,
+  };
+
+  if (shouldAutoSend && input.instanceId) {
+    const chunks = aiConfig.humanize_chunks !== false ? splitReplyIntoHumanChunks(suggestedReply) : [suggestedReply];
+    const originTag = mode === "autonomous" ? "ai_autonomous" : "ai_sandbox";
+    for (let idx = 0; idx < chunks.length; idx++) {
+      const chunkText = chunks[idx];
+      const idempotencyKey = `${originTag}:${input.storeId}:${input.threadId}:${input.eventId || decisionId}:c${idx}`;
+      await db.from("whatsapp_outbox").upsert(
+        {
+          store_id: input.storeId,
+          thread_id: input.threadId,
+          channel_instance_id: input.instanceId,
+          provider: input.provider,
+          idempotency_key: idempotencyKey,
+          recipient_phone: input.phone,
+          message_type: "text",
+          payload: {
+            text: chunkText,
+            origin: originTag,
+            agent_slug: orchestrated.skillUsed.slug,
+            intent,
+            simulate_presence: true,
+            typing_delay_ms: computeHumanTypingDelayMs(chunkText),
+            chunk_index: idx,
+            chunk_total: chunks.length,
+          },
+          status: "pending",
         },
-        status: "pending",
-      },
-      { onConflict: "store_id,idempotency_key", ignoreDuplicates: true },
-    );
+        { onConflict: "store_id,idempotency_key", ignoreDuplicates: true },
+      );
+    }
   } else {
     decisionLog.actionTaken = "copilot_suggestion_saved";
   }
 
-  const prevLogs = Array.isArray(meta.ai_decision_logs) ? meta.ai_decision_logs.slice(-9) : [];
+  const prevLogs = Array.isArray(freshMeta.ai_decision_logs) ? freshMeta.ai_decision_logs.slice(-9) : [];
   await db
     .from("chat_threads")
     .update({
       metadata: {
-        ...meta,
+        ...freshMeta,
         ai_consecutive_turns: currentTurns + 1,
         ai_last_reply_at: nowIso,
+        sondagem_checklist: orchestrated.sondagem,
         ai_copilot_suggestion: {
           decisionId,
-          agentSlug,
+          agentSlug: orchestrated.skillUsed.slug,
+          skillName: orchestrated.skillUsed.name,
           intent,
           suggestedReply,
           buyerIntent: copilotInsight.buyerIntent,
@@ -654,6 +815,9 @@ export async function evaluateControlledAiInboundRuntime(input: {
           nicheId: copilotInsight.nicheId,
           catalogMatchTitle: copilotInsight.catalogMatchTitle,
           aiProviderUsed: copilotInsight.aiProviderUsed,
+          toolsExecuted: orchestrated.toolsExecuted,
+          crmProposalStatus: orchestrated.crmProposalStatus,
+          adAttributionContext: orchestrated.adAttributionContext,
           createdAt: nowIso,
           crmContextSummary,
         },
@@ -733,12 +897,73 @@ export async function evaluateLifecycleWorkflowTrigger(input: LifecycleTriggerPa
   }
 
   const flow = flows[0];
+
+  // 4. Resolve cliente, verifica opt-out e enfileira disparo real na `whatsapp_outbox`
+  const { data: customer } = await db
+    .from("customers_crm")
+    .select("id, full_name, name, phone, whatsapp_opt_out")
+    .eq("id", input.customerId)
+    .eq("store_id", input.storeId)
+    .maybeSingle();
+
+  if ((customer as any)?.whatsapp_opt_out === true) {
+    return { triggered: false, reason: "suppressed_due_to_opt_out" };
+  }
+
+  const customerPhone = String(customer?.phone || input.metadata?.phone || "").replace(/\D/g, "");
+  const customerName = String(customer?.full_name || customer?.name || input.metadata?.customer_name || "Cliente").trim();
+  let outboxEnqueued = false;
+
+  if (customerPhone.length >= 10) {
+    const { data: waInst } = await db
+      .from("whatsapp_channel_instances")
+      .select("id, provider")
+      .eq("store_id", input.storeId)
+      .eq("is_active", true)
+      .order("is_default", { ascending: false })
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (waInst?.id) {
+      const flowNodes = Array.isArray((flow as any).nodes) ? ((flow as any).nodes as Array<Record<string, any>>) : [];
+      const msgNode = flowNodes.find((n) => typeof n?.data?.message === "string" || typeof n?.config?.text === "string");
+      const rawMsg =
+        String(msgNode?.data?.message || msgNode?.config?.text || input.metadata?.message_template || "").trim() ||
+        `Olá ${customerName}! Passando para acompanhar sua experiência com a gente. Como podemos te ajudar hoje?`;
+      const renderedText = rawMsg
+        .replace(/\{\{\s*(nome|nome_cliente)\s*\}\}/gi, customerName)
+        .replace(/\{\{\s*destino\s*\}\}/gi, String(input.metadata?.destination || "sua viagem"))
+        .replace(/\{\{\s*link_avaliacao\s*\}\}/gi, String(input.metadata?.review_url || ""));
+
+      const { error: obErr } = await db.from("whatsapp_outbox").upsert(
+        {
+          store_id: input.storeId,
+          channel_instance_id: waInst.id,
+          provider: waInst.provider || "evolution_api",
+          idempotency_key: `lifecycle:${cycleKey}`,
+          recipient_phone: customerPhone,
+          message_type: "text",
+          payload: {
+            text: renderedText,
+            origin: "lifecycle_automation",
+            trigger_type: input.triggerType,
+            reference_entity_id: input.referenceEntityId,
+          },
+          status: "pending",
+        },
+        { onConflict: "store_id,idempotency_key", ignoreDuplicates: true },
+      );
+      if (!obErr) outboxEnqueued = true;
+    }
+  }
+
   const { data: run, error: runError } = await db
     .from("whatsapp_flow_runs")
     .insert({
       workflow_id: flow.id,
       store_id: input.storeId,
-      status: "completed",
+      status: outboxEnqueued ? "completed" : "skipped",
       input_payload: {
         triggerType: input.triggerType,
         customerId: input.customerId,
@@ -746,7 +971,10 @@ export async function evaluateLifecycleWorkflowTrigger(input: LifecycleTriggerPa
         cycle_key: cycleKey,
         metadata: input.metadata || {},
       },
-      output_payload: { dispatched_at: new Date().toISOString() },
+      output_payload: {
+        dispatched_at: new Date().toISOString(),
+        outbox_enqueued: outboxEnqueued,
+      },
     })
     .select("id")
     .single();
@@ -755,5 +983,5 @@ export async function evaluateLifecycleWorkflowTrigger(input: LifecycleTriggerPa
     return { triggered: false, reason: runError?.message || "run_creation_failed" };
   }
 
-  return { triggered: true, flowRunId: run.id };
+  return { triggered: outboxEnqueued, flowRunId: run.id, reason: outboxEnqueued ? undefined : "no_phone_or_active_instance" };
 }

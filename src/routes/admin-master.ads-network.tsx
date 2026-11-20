@@ -91,28 +91,32 @@ function AdminAdsNetworkPage() {
     queryKey: ["admin-ads-metrics"],
     queryFn: () => getAdNetworkTreasuryMetrics(),
     initialData: initialMetrics,
-    refetchInterval: 15_000,
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
   });
 
   const { data: campaigns = [] } = useQuery({
     queryKey: ["admin-ads-campaigns", statusFilter],
     queryFn: () => listAllNetworkCampaignsAdmin({ data: { status: statusFilter, limit: 50 } }),
     initialData: initialCampaigns,
-    refetchInterval: 15_000,
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
   });
 
   const { data: globalConfig } = useQuery({
     queryKey: ["admin-global-ad-config"],
     queryFn: () => getGlobalAdNetworkConfig(),
     initialData: initialConfig,
-    refetchInterval: 30_000,
+    refetchInterval: 120_000,
+    refetchOnWindowFocus: true,
   });
 
   const { data: ledgerEntries = [] } = useQuery({
     queryKey: ["admin-ad-ledger", selectedCampaignForLedger],
     queryFn: () => listAdLedgerEntries({ data: { campaignId: selectedCampaignForLedger || undefined, limit: 100 } }),
     enabled: activeViewTab === "ledger" || !!selectedCampaignForLedger,
-    refetchInterval: 15_000,
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
   });
 
   const toggleCampaignMutation = useMutation({

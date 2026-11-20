@@ -1,12 +1,22 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getServerClient } from "@/lib/supabase";
-import { encryptSecret, decryptSecret } from "@/lib/crypto-vault.server";
+import { encryptSecret, decryptSecret, verifyOAuthState } from "@/lib/crypto-vault.server";
 
 import type {} from "@tanstack/react-start";
+
+function sanitizeReturnToPath(raw: unknown): string {
+  if (typeof raw !== "string") return "/workspace/marketing/anuncios";
+  const trimmed = raw.trim();
+  if (!trimmed.startsWith("/") || trimmed.startsWith("//") || trimmed.includes("\\") || trimmed.includes("://")) {
+    return "/workspace/marketing/anuncios";
+  }
+  return trimmed;
+}
 
 /**
  * Rota Oficial de Callback OAuth 2.0 One-Click para Meta Ads (Facebook/Instagram) e Google Ads
  * - Suporta troca automática por Long-Lived Token (Meta 60 dias) e Offline Refresh Token (Google Ads).
+ * - Valida state assinado via HMAC-SHA256 (anti-CSRF / anti-account-takeover) e sanitiza redirecionamento.
  * - Executa descoberta imediata de Contas de Anúncio (`me/adaccounts` e `customers:listAccessibleCustomers`)
  *   e Pixels (`adspixels`), persistindo os tokens criptografados com AES-256-GCM em `store_ad_accounts`.
  */
@@ -23,28 +33,25 @@ export const Route = createFileRoute("/api/auth/ads/callback")({
         let storeId: string | null = null;
         let platform: "meta_ads" | "google_ads" = "meta_ads";
         let returnTo = "/workspace/marketing/anuncios";
+        let stateVerified = false;
 
         if (stateRaw) {
-          try {
-            const decoded = JSON.parse(Buffer.from(stateRaw, "base64url").toString("utf8"));
-            if (decoded.storeId) storeId = String(decoded.storeId);
+          const decoded = verifyOAuthState<{ storeId?: string; userId?: string; platform?: string; returnTo?: string }>(stateRaw);
+          if (decoded?.storeId) {
+            storeId = String(decoded.storeId);
             if (decoded.platform === "google_ads" || decoded.platform === "meta_ads") {
               platform = decoded.platform;
             }
-            if (typeof decoded.returnTo === "string" && decoded.returnTo.startsWith("/")) {
-              returnTo = decoded.returnTo;
-            }
-          } catch {
-            if (stateRaw.includes(":")) {
-              const [sId, plat] = stateRaw.split(":");
-              storeId = sId || null;
-              if (plat === "google_ads" || plat === "meta_ads") platform = plat;
-            }
+            returnTo = sanitizeReturnToPath(decoded.returnTo);
+            stateVerified = true;
           }
         }
 
         const buildRedirect = (params: Record<string, string>) => {
-          const target = new URL(returnTo, url.origin);
+          const target = new URL(sanitizeReturnToPath(returnTo), url.origin);
+          if (target.origin !== url.origin) {
+            return Response.redirect(new URL("/workspace/marketing/anuncios", url.origin).toString(), 302);
+          }
           for (const [k, v] of Object.entries(params)) {
             target.searchParams.set(k, v);
           }
@@ -58,9 +65,9 @@ export const Route = createFileRoute("/api/auth/ads/callback")({
           });
         }
 
-        if (!code || !storeId) {
+        if (!stateVerified || !code || !storeId) {
           return buildRedirect({
-            ads_oauth_error: "Código de autorização OAuth ou identificação da loja ausente.",
+            ads_oauth_error: "Estado OAuth inválido, expirado ou código de autorização ausente.",
             platform,
           });
         }
@@ -73,6 +80,7 @@ export const Route = createFileRoute("/api/auth/ads/callback")({
           const { data: masterStore } = await supabase
             .from("stores")
             .select("settings")
+            .eq("is_platform_root", true)
             .limit(1)
             .maybeSingle();
 
@@ -84,13 +92,13 @@ export const Route = createFileRoute("/api/auth/ads/callback")({
               process.env.VITE_META_APP_ID ||
               globalAdNet.meta_app_id ||
               "";
-            const metaClientSecret =
-              process.env.META_APP_SECRET ||
-              globalAdNet.meta_app_secret
-                ? (globalAdNet.meta_app_secret?.includes(":")
-                    ? decryptSecret(globalAdNet.meta_app_secret)
-                    : globalAdNet.meta_app_secret || process.env.META_APP_SECRET || "")
-                : "";
+            const envMetaSecret = process.env.META_APP_SECRET?.trim() || "";
+            const dbMetaSecret = globalAdNet.meta_app_secret
+              ? (String(globalAdNet.meta_app_secret).includes(":")
+                  ? decryptSecret(String(globalAdNet.meta_app_secret))
+                  : String(globalAdNet.meta_app_secret))
+              : "";
+            const metaClientSecret = envMetaSecret || dbMetaSecret;
 
             if (!metaClientId || !metaClientSecret) {
               return buildRedirect({

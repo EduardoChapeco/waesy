@@ -1545,7 +1545,10 @@ export const getCompanyEmployerStats = createServerFn({ method: "GET" })
  .validator(z.object({ companyName: z.string().optional(), storeId: z.string().optional() }))
  .handler(async ({ data: { companyName, storeId } }) => {
  const db = getServerClient();
- let query = db.from("employer_reviews").select("company_rating, salary_cents, would_recommend, exit_reason, pros, created_at");
+ let query = db
+ .from("employer_reviews")
+ .select("company_rating, salary_cents, would_recommend, exit_reason, pros, created_at")
+ .eq("status", "published");
  if (storeId) {
  query = query.eq("store_id", storeId);
  } else if (companyName) {
@@ -1567,14 +1570,25 @@ export const getCompanyEmployerStats = createServerFn({ method: "GET" })
  const recommends = rows.filter((r) => r.would_recommend === true).length;
  const recommendRate = Math.round((recommends / total) * 100);
  const salaries = rows.filter((r) => r.salary_cents && r.salary_cents > 0).map((r) => Number(r.salary_cents));
- const avgSalaryCents = salaries.length > 0 ? Math.round(salaries.reduce((a, b) => a + b, 0) / salaries.length) : null;
+ // k-anonymity LGPD: média salarial pública exibida apenas com k >= 3 amostras independentes
+ const avgSalaryCents = salaries.length >= 3 ? Math.round(salaries.reduce((a, b) => a + b, 0) / salaries.length) : null;
 
  return {
  reviewsCount: total,
  avgRating: avgRating ? Number(avgRating.toFixed(1)) : null,
  recommendRate,
  avgSalaryCents,
- recentReviews: rows.filter((r) => r.pros).slice(0, 5).map((r) => ({ ...r, review_text: r.pros })),
+ salarySamplesCount: salaries.length,
+ recentReviews: rows
+ .filter((r) => r.pros)
+ .slice(0, 5)
+ .map((r) => ({
+ company_rating: r.company_rating,
+ would_recommend: r.would_recommend,
+ exit_reason: r.exit_reason,
+ review_text: r.pros,
+ created_at: r.created_at,
+ })),
  };
  });
 

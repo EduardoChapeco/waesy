@@ -58,7 +58,8 @@ function GarcomTerminalPage() {
  const { data: tables = [], isLoading, isError, refetch } = useQuery({
  queryKey: ["garcom-tables"],
  queryFn: () => listRestaurantTables(),
- refetchInterval: 5000,
+ refetchInterval: 15000,
+ refetchOnWindowFocus: true,
  });
 
  const occupyTableMutation = useMutation({

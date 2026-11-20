@@ -145,21 +145,35 @@ export const getMatchDeckBatchFn = createServerFn({ method: "POST" })
       .eq("visitor_session_id", visitorSessionId)
       .maybeSingle();
 
-    // 4. Busca cartas ativas para o template (ou gerais da loja)
-    let cardQuery = supabase
-      .from("match_cards")
-      .select("*")
-      .eq("store_id", storeId)
-      .eq("active", true)
-      .order("display_order", { ascending: true })
-      .limit(limit);
-
-    if (template?.id) {
-      cardQuery = cardQuery.eq("deck_template_id", template.id);
+    // 4. Busca cartas ativas ainda não avaliadas na sessão via RPC match_next_cards_batch (com fallback para query filtrada por template)
+    let cards: any[] | null = null;
+    if (!template?.id) {
+      const { data: rpcCards, error: rpcErr } = await supabase.rpc("match_next_cards_batch", {
+        p_store_id: storeId,
+        p_visitor_session_id: visitorSessionId,
+        p_limit: limit,
+      });
+      if (!rpcErr && Array.isArray(rpcCards)) {
+        cards = rpcCards;
+      }
     }
+    if (!cards) {
+      let cardQuery = supabase
+        .from("match_cards")
+        .select("*")
+        .eq("store_id", storeId)
+        .eq("active", true)
+        .order("display_order", { ascending: true })
+        .limit(limit);
 
-    const { data: cards, error: cardsErr } = await cardQuery;
-    throwIfQueryFailed(cardsErr, "Falha ao carregar cartas do OmniMatch.");
+      if (template?.id) {
+        cardQuery = cardQuery.eq("deck_template_id", template.id);
+      }
+
+      const { data: queriedCards, error: cardsErr } = await cardQuery;
+      throwIfQueryFailed(cardsErr, "Falha ao carregar cartas do OmniMatch.");
+      cards = queriedCards || [];
+    }
 
     const formattedCards: MatchCardDTO[] = (cards || []).map((c: any) => ({
       id: c.id,
@@ -348,12 +362,15 @@ export const stitchMatchBrainToCustomerOrLeadFn = createServerFn({ method: "POST
 
     const interestSummary = topAxes ? `Preferências identificadas no Match: ${topAxes}` : "Engajamento via Match Time";
 
-    // 3. Busca se lead já existe na loja pelo telefone para evitar duplicação
+    // 3. Busca se lead já existe na tabela canônica leads_crm pelo telefone para evitar duplicação
+    const suffix8 = cleanPhone.slice(-8);
     const { data: existingLead } = await supabase
-      .from("crm_leads")
-      .select("id, notes")
+      .from("leads_crm")
+      .select("id, notes, custom_fields")
       .eq("store_id", storeId)
-      .eq("phone", cleanPhone)
+      .ilike("phone", `%${suffix8}%`)
+      .order("updated_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     let leadId: string;
@@ -363,25 +380,41 @@ export const stitchMatchBrainToCustomerOrLeadFn = createServerFn({ method: "POST
       const updatedNotes = existingLead.notes
         ? `${existingLead.notes}\n[OmniMatch] ${interestSummary}`
         : `[OmniMatch] ${interestSummary}`;
+      const prevCustom = (existingLead.custom_fields && typeof existingLead.custom_fields === "object"
+        ? existingLead.custom_fields
+        : {}) as Record<string, unknown>;
 
       await supabase
-        .from("crm_leads")
+        .from("leads_crm")
         .update({
           notes: updatedNotes,
+          custom_fields: {
+            ...prevCustom,
+            omnimatch_axes: axisScores,
+            omnimatch_requested_offer_id: requestedOfferId || null,
+          },
           updated_at: new Date().toISOString(),
         })
-        .eq("id", leadId);
+        .eq("id", leadId)
+        .eq("store_id", storeId);
     } else {
       const { data: newLead, error: leadErr } = await supabase
-        .from("crm_leads")
+        .from("leads_crm")
         .insert({
           store_id: storeId,
+          title: `${fullName.trim()} — OmniMatch`,
           full_name: fullName.trim(),
           phone: cleanPhone,
           email: email?.trim() || null,
-          status: "novo",
+          status: "new",
+          pipeline_stage: "inbox",
+          kanban_stage_key: "inbox",
           source: "match_time",
           notes: `[OmniMatch] ${interestSummary}`,
+          custom_fields: {
+            omnimatch_axes: axisScores,
+            omnimatch_requested_offer_id: requestedOfferId || null,
+          },
         })
         .select("id")
         .single();
@@ -390,6 +423,11 @@ export const stitchMatchBrainToCustomerOrLeadFn = createServerFn({ method: "POST
       if (!newLead) throw new Error("Falha ao criar lead a partir do OmniMatch.");
       leadId = newLead.id;
     }
+
+    await supabase.rpc("deduplicate_and_link_lead_to_customer", {
+      p_lead_id: leadId,
+      p_store_id: storeId,
+    }).then(() => null, () => null);
 
     // 4. Atualiza vínculo no cérebro
     if (brain) {

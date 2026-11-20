@@ -3,8 +3,10 @@ import type { ProposalCanvasFormat } from "@/services/travel-proposal.functions"
 import { getDocumentThemeContainerProps } from "@/lib/builder/block-data-resolver";
 import { TOKEN_HEX } from "@/lib/design-tokens";
 
+export type CanvasFormat = ProposalCanvasFormat | "vertical-scroll";
+
 export const CANVAS_DIMENSIONS: Record<
- ProposalCanvasFormat,
+ CanvasFormat,
  { width: string; minHeight: string; label: string; iconEmoji: string }
 > = {
  "a4-portrait": { width: "794px", minHeight: "1123px", label: "A4 Retrato (PDF)", iconEmoji: "A4" },
@@ -12,13 +14,15 @@ export const CANVAS_DIMENSIONS: Record<
  "story-916": { width: "1080px", minHeight: "1920px", label: "Story 9:16 (WhatsApp/Insta)", iconEmoji: "9:16" },
  "presentation-169": { width: "1920px", minHeight: "1080px", label: "Apresentação 16:9 (Slide)", iconEmoji: "16:9" },
  "letter-portrait": { width: "816px", minHeight: "1056px", label: "Carta (US Letter)", iconEmoji: "US" },
+ "vertical-scroll": { width: "1080px", minHeight: "3000px", label: "Scroll Vertical", iconEmoji: "WEB" },
 };
 
 interface StudioFrameProps {
-  format: ProposalCanvasFormat;
+  format: CanvasFormat;
   children: React.ReactNode;
   canvasId?: string;
   zoomScale?: number | null; // se fornecido, usa zoom manual (ex: 0.8, 1.0)
+  zoomMode?: "auto" | "fit" | number;
   canvasBgColor?: string;
   onAutoFitScaleCalculated?: (scale: number) => void;
 }
@@ -28,6 +32,7 @@ export function StudioFrame({
   children,
   canvasId = "proposal-canvas",
   zoomScale,
+  zoomMode,
   canvasBgColor,
   onAutoFitScaleCalculated,
 }: StudioFrameProps) {
@@ -73,7 +78,12 @@ export function StudioFrame({
     return () => observer.disconnect();
   }, [format, dims.minHeight]);
 
-  const effectiveScale = typeof zoomScale === "number" && zoomScale > 0 ? zoomScale : autoScale;
+  const effectiveScale =
+    typeof zoomScale === "number" && zoomScale > 0
+      ? zoomScale
+      : typeof zoomMode === "number" && zoomMode > 0
+        ? zoomMode
+        : autoScale;
 
   const wrapperStyle: React.CSSProperties = {
     width: `calc(${dims.width} * ${effectiveScale})`,

@@ -21,7 +21,7 @@ interface StoreAnalyticsInjectorProps {
   /** Objeto store.settings vindo do banco (JSONB) */
   storeSettings?: Record<string, any> | null;
   /** Contexto: qual evento PageView disparar */
-  pageContext?: "home" | "product" | "classified" | "checkout" | "purchase";
+  pageContext?: "home" | "product" | "classified" | "checkout" | "purchase" | "storefront" | string;
   /** Dados de produto para evento ViewContent/Purchase */
   productData?: {
     id?: string;
@@ -160,13 +160,15 @@ export function StoreAnalyticsInjector({
       document.head.appendChild(baseScript);
     }
 
-    for (const pxId of metaPixelIds) {
+    for (const rawPxId of metaPixelIds) {
+      const pxId = String(rawPxId || "").trim();
+      if (!/^[0-9]{5,25}$/.test(pxId)) continue;
       if (document.getElementById(`meta-pixel-${pxId}`)) continue;
       const script = document.createElement("script");
       script.id = `meta-pixel-${pxId}`;
-      script.innerHTML = `
-        fbq('init', '${pxId}');
-        fbq('trackSingle', '${pxId}', 'PageView');
+      script.textContent = `
+        fbq('init', ${JSON.stringify(pxId)});
+        fbq('trackSingle', ${JSON.stringify(pxId)}, 'PageView');
       `;
       document.head.appendChild(script);
     }
@@ -174,12 +176,15 @@ export function StoreAnalyticsInjector({
 
   // ── Google Ads & Google Analytics 4 (gtag.js multi-id unificado) ──────────
   useEffect(() => {
-    const allGoogleTags = Array.from(new Set([...ga4Ids, ...googleAdsIds]));
+    const validGoogleId = /^(G|AW|GT|DC|UA)-[A-Za-z0-9_-]{4,32}$/;
+    const allGoogleTags = Array.from(new Set([...ga4Ids, ...googleAdsIds]))
+      .map((id) => String(id || "").trim())
+      .filter((id) => validGoogleId.test(id));
     const primaryTag = allGoogleTags[0];
     if (!primaryTag) return;
 
-    if (googleAdsId && googleAdsLabel) {
-      window.__WAESY_GOOGLE_ADS_SEND_TO__ = `${googleAdsId}/${googleAdsLabel}`;
+    if (googleAdsId && googleAdsLabel && validGoogleId.test(googleAdsId.trim())) {
+      window.__WAESY_GOOGLE_ADS_SEND_TO__ = `${googleAdsId.trim()}/${String(googleAdsLabel).trim()}`;
     }
 
     if (!document.getElementById("waesy-gtag-js")) {
@@ -200,12 +205,12 @@ export function StoreAnalyticsInjector({
       }
       const configScript = document.createElement("script");
       configScript.id = configScriptId;
-      configScript.innerHTML = `
+      configScript.textContent = `
         window.dataLayer = window.dataLayer || [];
         function gtag(){window.dataLayer.push(arguments);}
         window.gtag = window.gtag || gtag;
         gtag('js', new Date());
-        ${allGoogleTags.map((id) => `gtag('config', '${id}');`).join("\n        ")}
+        ${allGoogleTags.map((id) => `gtag('config', ${JSON.stringify(id)});`).join("\n        ")}
       `;
       document.head.appendChild(configScript);
     }
@@ -243,14 +248,16 @@ export function StoreAnalyticsInjector({
   // ── TikTok Pixel (Multi-Pixel) ────────────────────────────────────────────
   useEffect(() => {
     if (tiktokPixelIds.length === 0) return;
-    for (const tkId of tiktokPixelIds) {
+    for (const rawTkId of tiktokPixelIds) {
+      const tkId = String(rawTkId || "").trim();
+      if (!/^[A-Za-z0-9_-]{6,40}$/.test(tkId)) continue;
       if (document.getElementById(`tiktok-pixel-${tkId}`)) continue;
       const script = document.createElement("script");
       script.id = `tiktok-pixel-${tkId}`;
-      script.innerHTML = `
+      script.textContent = `
         !function (w, d, t) {
           w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var o=document.createElement("script");o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)};
-          ttq.load('${tkId}');
+          ttq.load(${JSON.stringify(tkId)});
           ttq.page();
         }(window, document, 'ttq');
       `;
@@ -260,20 +267,27 @@ export function StoreAnalyticsInjector({
 
   // ── Google Tag Manager ────────────────────────────────────────────────────
   useEffect(() => {
-    if (!gtmId) return;
-    if (document.getElementById(`gtm-script-${gtmId}`)) return;
+    const cleanGtmId = String(gtmId || "").trim();
+    if (!cleanGtmId || !/^GTM-[A-Z0-9]{4,16}$/i.test(cleanGtmId)) return;
+    if (document.getElementById(`gtm-script-${cleanGtmId}`)) return;
 
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
 
     const script = document.createElement("script");
-    script.id = `gtm-script-${gtmId}`;
+    script.id = `gtm-script-${cleanGtmId}`;
     script.async = true;
-    script.src = `https://www.googletagmanager.com/gtm.js?id=${gtmId}`;
+    script.src = `https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(cleanGtmId)}`;
     document.head.appendChild(script);
 
     const noscript = document.createElement("noscript");
-    noscript.innerHTML = `<iframe src="https://www.googletagmanager.com/ns.html?id=${gtmId}" height="0" width="0" style="display:none;visibility:hidden"></iframe>`;
+    const iframe = document.createElement("iframe");
+    iframe.src = `https://www.googletagmanager.com/ns.html?id=${encodeURIComponent(cleanGtmId)}`;
+    iframe.height = "0";
+    iframe.width = "0";
+    iframe.style.display = "none";
+    iframe.style.visibility = "hidden";
+    noscript.appendChild(iframe);
     document.body.insertBefore(noscript, document.body.firstChild);
   }, [gtmId]);
 

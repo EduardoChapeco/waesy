@@ -44,7 +44,7 @@ async function resolveStoreStageContract(
           .order("sort_order", { ascending: true }),
         supabase
           .from("stores")
-          .select("store_type, category, settings")
+          .select("primary_niche_id, settings")
           .eq("id", storeId)
           .maybeSingle(),
       ]);
@@ -170,15 +170,28 @@ export const listCustomers = createServerFn({ method: "GET" })
  }
  }
 
- // 2. Busca métricas de pedidos (LTV e contagem)
+ // 2. Busca métricas multinicho de pedidos + viagens (tourism_trips + travel_sales) para LTV e contagem real
  const customerIds = list.map((c: any) => c.id);
  const orderStats = new Map();
  if (customerIds.length > 0) {
- const { data: orders } = await supabase
- .from("orders")
- .select("customer_id, total_cents, status")
- .eq("store_id", identity.store_id)
- .in("customer_id", customerIds);
+ const [{ data: orders }, { data: trips }, { data: travelProposals }] = await Promise.all([
+   supabase
+     .from("orders")
+     .select("customer_id, total_cents, status")
+     .eq("store_id", identity.store_id)
+     .in("customer_id", customerIds),
+   supabase
+     .from("tourism_trips")
+     .select("customer_id, total_cents, status")
+     .eq("store_id", identity.store_id)
+     .in("customer_id", customerIds),
+   supabase
+     .from("travel_proposals")
+     .select("customer_id, pricing, status")
+     .eq("store_id", identity.store_id)
+     .eq("status", "approved")
+     .in("customer_id", customerIds),
+ ]);
 
  if (orders) {
  for (const o of orders) {
@@ -186,9 +199,29 @@ export const listCustomers = createServerFn({ method: "GET" })
  const stats = orderStats.get(o.customer_id) || { ltv: 0, count: 0 };
  stats.count += 1;
  if (["paid", "processing", "ready_for_pickup", "shipped", "delivered", "completed"].includes(o.status)) {
- stats.ltv += o.total_cents;
+ stats.ltv += Number(o.total_cents || 0);
  }
  orderStats.set(o.customer_id, stats);
+ }
+ }
+ if (trips) {
+ for (const tr of trips as any[]) {
+ if (!tr.customer_id || ["cancelled", "draft"].includes(String(tr.status || ""))) continue;
+ const stats = orderStats.get(tr.customer_id) || { ltv: 0, count: 0 };
+ stats.count += 1;
+ stats.ltv += Number(tr.total_cents || 0);
+ orderStats.set(tr.customer_id, stats);
+ }
+ }
+ if (travelProposals) {
+ for (const tp of travelProposals as any[]) {
+ if (!tp.customer_id) continue;
+ const propTotal = Number(tp.pricing?.total_cents || tp.pricing?.totalCents || 0);
+ if (propTotal <= 0) continue;
+ const stats = orderStats.get(tp.customer_id) || { ltv: 0, count: 0 };
+ stats.count += 1;
+ stats.ltv += propTotal;
+ orderStats.set(tp.customer_id, stats);
  }
  }
  }
@@ -241,8 +274,11 @@ export const listCustomers = createServerFn({ method: "GET" })
  notes: c.notes || null,
  creditLimitCents: c.credit_limit_cents || 0,
  assignedTo: c.assigned_to || null,
- orderCount: stats.count,
- ltvCents: stats.ltv,
+ orderCount: stats.count || Number(c.total_orders || 0),
+ ltvCents: stats.ltv || Number(c.total_spent_cents || 0),
+ rfvStage: c.rfv_stage || (stats.count >= 2 ? "recurring" : stats.count === 1 ? "first_purchase" : "lead"),
+ rfvScore: Number(c.rfv_score || 0),
+ referralCreditBalanceCents: Number(c.referral_credit_balance_cents || 0),
  joinedAt: c.created_at,
  createdAt: c.created_at,
  docAlerts,
@@ -2204,6 +2240,11 @@ export const updateLeadStatus = createServerFn({ method: "POST" })
        gclid: mergedCf.gclid || null,
        gbraid: mergedCf.gbraid || null,
        wbraid: mergedCf.wbraid || null,
+       ctwaClid: mergedCf.ctwa_clid || mergedCf.attribution?.ctwa_clid || null,
+       campaignId: mergedCf.campaign_id || mergedCf.attribution?.campaign_id || null,
+       adId: mergedCf.ad_id || mergedCf.attribution?.ad_id || null,
+       formId: mergedCf.form_id || mergedCf.attribution?.form_id || null,
+       sourcePixelId: mergedCf.source_pixel_id || mergedCf.attribution?.source_pixel_id || null,
        deviceId: mergedCf.device_id || null,
        conversionValue: (existingLead.estimated_value_cents || 0) / 100,
      },
@@ -3827,6 +3868,11 @@ export const persistLeadMove = createServerFn({ method: "POST" })
           gclid: mergedCf.gclid || null,
           gbraid: mergedCf.gbraid || null,
           wbraid: mergedCf.wbraid || null,
+          ctwaClid: mergedCf.ctwa_clid || mergedCf.attribution?.ctwa_clid || null,
+          campaignId: mergedCf.campaign_id || mergedCf.attribution?.campaign_id || null,
+          adId: mergedCf.ad_id || mergedCf.attribution?.ad_id || null,
+          formId: mergedCf.form_id || mergedCf.attribution?.form_id || null,
+          sourcePixelId: mergedCf.source_pixel_id || mergedCf.attribution?.source_pixel_id || null,
           deviceId: mergedCf.device_id || null,
           conversionValue: (leadRow.estimated_value_cents || 0) / 100,
         },

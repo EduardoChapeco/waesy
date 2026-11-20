@@ -107,12 +107,16 @@ export const Route = createFileRoute("/api/webhooks/meta-ads")({
                 // Identifica a loja pelo anúncio persistido ou pelo vínculo da página Meta.
                 let targetStoreId: string | null = null;
                 if (adId) {
-                  const { data: matchedAd } = await supabase
-                    .from("store_ad_campaigns")
-                    .select("store_id")
-                    .eq("external_campaign_id", adId)
-                    .maybeSingle();
-                  targetStoreId = matchedAd?.store_id || null;
+                  const safeAdId = adId.replace(/[^a-zA-Z0-9_-]/g, "");
+                  if (safeAdId) {
+                    const { data: matchedAd } = await supabase
+                      .from("store_ad_campaigns")
+                      .select("store_id")
+                      .or(`external_ad_id.eq.${safeAdId},external_campaign_id.eq.${safeAdId}`)
+                      .limit(1)
+                      .maybeSingle();
+                    targetStoreId = matchedAd?.store_id || null;
+                  }
                 }
                 if (!targetStoreId && pageId) {
                   const { data: pageIntegration } = await supabase

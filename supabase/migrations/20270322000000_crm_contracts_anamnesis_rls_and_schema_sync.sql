@@ -152,116 +152,150 @@ ALTER POLICY "customers_crm_staff_all" ON public.customers_crm
   USING (public.is_store_staff(store_id))
   WITH CHECK (public.is_store_staff(store_id));
 
-ALTER POLICY "financial_tx_staff_read" ON public.financial_transactions
-  USING (public.has_workspace_role(store_id, ARRAY['owner','admin','manager','finance']));
+DO $$ BEGIN
+  ALTER POLICY "financial_tx_staff_read" ON public.financial_transactions
+    USING (public.has_workspace_role(store_id, ARRAY['owner','admin','manager','finance']));
+EXCEPTION WHEN undefined_object THEN NULL; END $$;
 
-ALTER POLICY "financial_tx_staff_insert" ON public.financial_transactions
-  WITH CHECK (public.has_workspace_role(store_id, ARRAY['owner','admin','manager','finance']));
+DO $$ BEGIN
+  ALTER POLICY "financial_tx_staff_insert" ON public.financial_transactions
+    WITH CHECK (public.has_workspace_role(store_id, ARRAY['owner','admin','manager','finance']));
+EXCEPTION WHEN undefined_object THEN NULL; END $$;
 
-ALTER POLICY "gc_usages_staff_read" ON public.gift_card_usages
-  USING (public.has_workspace_role(store_id, ARRAY['owner','admin','manager','finance']));
+DO $$ BEGIN
+  ALTER POLICY "gc_usages_staff_read" ON public.gift_card_usages
+    USING (public.has_workspace_role(store_id, ARRAY['owner','admin','manager','finance']));
+EXCEPTION WHEN undefined_object THEN NULL; END $$;
 
-ALTER POLICY "lead_activities_staff_all" ON public.lead_activities
-  USING (public.is_store_staff(store_id))
-  WITH CHECK (public.is_store_staff(store_id));
+DO $$ BEGIN
+  ALTER POLICY "lead_activities_staff_all" ON public.lead_activities
+    USING (public.is_store_staff(store_id))
+    WITH CHECK (public.is_store_staff(store_id));
+EXCEPTION WHEN undefined_object THEN NULL; END $$;
 
-ALTER POLICY "lead_meetings_staff_all" ON public.lead_meetings
-  USING (public.is_store_staff(store_id))
-  WITH CHECK (public.is_store_staff(store_id));
+DO $$ BEGIN
+  ALTER POLICY "lead_meetings_staff_all" ON public.lead_meetings
+    USING (public.is_store_staff(store_id))
+    WITH CHECK (public.is_store_staff(store_id));
+EXCEPTION WHEN undefined_object THEN NULL; END $$;
 
-ALTER POLICY "order_events_staff_read" ON public.order_events
-  USING (public.is_store_staff(store_id));
+DO $$ BEGIN
+  ALTER POLICY "order_events_staff_read" ON public.order_events
+    USING (public.is_store_staff(store_id));
+EXCEPTION WHEN undefined_object THEN NULL; END $$;
 
-ALTER POLICY "shipments_staff_manage" ON public.shipments
-  USING (public.is_store_staff(store_id))
-  WITH CHECK (public.is_store_staff(store_id));
+DO $$ BEGIN
+  ALTER POLICY "shipments_staff_manage" ON public.shipments
+    USING (public.is_store_staff(store_id))
+    WITH CHECK (public.is_store_staff(store_id));
+EXCEPTION WHEN undefined_object THEN NULL; END $$;
 
-ALTER POLICY "travel_commercial_contacts_staff_all" ON public.travel_commercial_contacts
-  USING (public.is_store_staff(store_id))
-  WITH CHECK (public.is_store_staff(store_id));
+DO $$ BEGIN
+  ALTER POLICY "travel_commercial_contacts_staff_all" ON public.travel_commercial_contacts
+    USING (public.is_store_staff(store_id))
+    WITH CHECK (public.is_store_staff(store_id));
+EXCEPTION WHEN undefined_object THEN NULL; END $$;
 
-ALTER POLICY "travel_contract_signers_staff_all" ON public.travel_contract_signers
-  USING (public.is_store_staff(store_id))
-  WITH CHECK (public.is_store_staff(store_id));
+DO $$ BEGIN
+  ALTER POLICY "travel_contract_signers_staff_all" ON public.travel_contract_signers
+    USING (public.is_store_staff(store_id))
+    WITH CHECK (public.is_store_staff(store_id));
+EXCEPTION WHEN undefined_object THEN NULL; END $$;
 
-ALTER POLICY "travel_interests_staff_all" ON public.travel_interests
-  USING (public.is_store_staff(store_id))
-  WITH CHECK (public.is_store_staff(store_id));
+DO $$ BEGIN
+  ALTER POLICY "travel_interests_staff_all" ON public.travel_interests
+    USING (public.is_store_staff(store_id))
+    WITH CHECK (public.is_store_staff(store_id));
+EXCEPTION WHEN undefined_object THEN NULL; END $$;
 
-ALTER POLICY "travel_leads_qualification_staff_all" ON public.travel_leads_qualification
-  USING (public.is_store_staff(store_id))
-  WITH CHECK (public.is_store_staff(store_id));
+DO $$ BEGIN
+  ALTER POLICY "travel_leads_qualification_staff_all" ON public.travel_leads_qualification
+    USING (public.is_store_staff(store_id))
+    WITH CHECK (public.is_store_staff(store_id));
+EXCEPTION WHEN undefined_object THEN NULL; END $$;
 
-ALTER POLICY "travel_monthly_closings_staff_all" ON public.travel_monthly_closings
-  USING (public.is_store_staff(store_id))
-  WITH CHECK (public.is_store_staff(store_id));
+DO $$ BEGIN
+  ALTER POLICY "travel_monthly_closings_staff_all" ON public.travel_monthly_closings
+    USING (public.is_store_staff(store_id))
+    WITH CHECK (public.is_store_staff(store_id));
+EXCEPTION WHEN undefined_object THEN NULL; END $$;
 
-ALTER POLICY "travel_opportunity_matches_staff_all" ON public.travel_opportunity_matches
-  USING (public.is_store_staff(store_id))
-  WITH CHECK (public.is_store_staff(store_id));
+DO $$ BEGIN
+  ALTER POLICY "travel_opportunity_matches_staff_all" ON public.travel_opportunity_matches
+    USING (public.is_store_staff(store_id))
+    WITH CHECK (public.is_store_staff(store_id));
+EXCEPTION WHEN undefined_object THEN NULL; END $$;
 
-ALTER POLICY "travel_tax_shield_ledger_staff_all" ON public.travel_tax_shield_ledger
-  USING (public.is_store_staff(store_id))
-  WITH CHECK (public.is_store_staff(store_id));
+DO $$ BEGIN
+  ALTER POLICY "travel_tax_shield_ledger_staff_all" ON public.travel_tax_shield_ledger
+    USING (public.is_store_staff(store_id))
+    WITH CHECK (public.is_store_staff(store_id));
+EXCEPTION WHEN undefined_object THEN NULL; END $$;
 
-ALTER POLICY "Lojista gerencia skills do seu workspace" ON public.workspace_skill_settings
-  USING (public.is_store_staff(store_id))
-  WITH CHECK (public.is_store_staff(store_id));
+DO $$ BEGIN
+  ALTER POLICY "Lojista gerencia skills do seu workspace" ON public.workspace_skill_settings
+    USING (public.is_store_staff(store_id))
+    WITH CHECK (public.is_store_staff(store_id));
+EXCEPTION WHEN undefined_object THEN NULL; END $$;
 
 -- ─── 5. POLÍTICAS DE ACESSO DE EQUIPE EM contracts E contract_versions ───────
 
-ALTER POLICY "contracts_creator_all" ON public.contracts
-  USING (
-    (creator_id = (SELECT auth.uid()))
-    OR (store_id IS NOT NULL AND public.is_store_staff(store_id))
-    OR (
-      (metadata ->> 'store_id') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-      AND public.is_store_staff(((metadata ->> 'store_id')::uuid))
+DO $$ BEGIN
+  ALTER POLICY "contracts_creator_all" ON public.contracts
+    USING (
+      (creator_id = (SELECT auth.uid()))
+      OR (store_id IS NOT NULL AND public.is_store_staff(store_id))
+      OR (
+        (metadata ->> 'store_id') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+        AND public.is_store_staff(((metadata ->> 'store_id')::uuid))
+      )
     )
-  )
-  WITH CHECK (
-    (creator_id = (SELECT auth.uid()))
-    OR (store_id IS NOT NULL AND public.is_store_staff(store_id))
-    OR (
-      (metadata ->> 'store_id') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-      AND public.is_store_staff(((metadata ->> 'store_id')::uuid))
-    )
-  );
+    WITH CHECK (
+      (creator_id = (SELECT auth.uid()))
+      OR (store_id IS NOT NULL AND public.is_store_staff(store_id))
+      OR (
+        (metadata ->> 'store_id') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+        AND public.is_store_staff(((metadata ->> 'store_id')::uuid))
+      )
+    );
+EXCEPTION WHEN undefined_object THEN NULL; END $$;
 
-ALTER POLICY "contract_versions_policy" ON public.contract_versions
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.contracts c
-      WHERE c.id = contract_versions.contract_id
-        AND (
-          c.creator_id = (SELECT auth.uid())
-          OR (c.store_id IS NOT NULL AND public.is_store_staff(c.store_id))
-          OR (
-            (c.metadata ->> 'store_id') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-            AND public.is_store_staff(((c.metadata ->> 'store_id')::uuid))
+DO $$ BEGIN
+  ALTER POLICY "contract_versions_policy" ON public.contract_versions
+    USING (
+      EXISTS (
+        SELECT 1 FROM public.contracts c
+        WHERE c.id = contract_versions.contract_id
+          AND (
+            c.creator_id = (SELECT auth.uid())
+            OR (c.store_id IS NOT NULL AND public.is_store_staff(c.store_id))
+            OR (
+              (c.metadata ->> 'store_id') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+              AND public.is_store_staff(((c.metadata ->> 'store_id')::uuid))
+            )
+            OR EXISTS (
+              SELECT 1 FROM public.signature_envelopes se
+              WHERE se.contract_version_id = contract_versions.id
+                AND se.signer_profile_id = (SELECT auth.uid())
+            )
           )
-          OR EXISTS (
-            SELECT 1 FROM public.signature_envelopes se
-            WHERE se.contract_version_id = contract_versions.id
-              AND se.signer_profile_id = (SELECT auth.uid())
-          )
-        )
+      )
     )
-  )
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.contracts c
-      WHERE c.id = contract_versions.contract_id
-        AND (
-          c.creator_id = (SELECT auth.uid())
-          OR (c.store_id IS NOT NULL AND public.is_store_staff(c.store_id))
-          OR (
-            (c.metadata ->> 'store_id') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-            AND public.is_store_staff(((c.metadata ->> 'store_id')::uuid))
+    WITH CHECK (
+      EXISTS (
+        SELECT 1 FROM public.contracts c
+        WHERE c.id = contract_versions.contract_id
+          AND (
+            c.creator_id = (SELECT auth.uid())
+            OR (c.store_id IS NOT NULL AND public.is_store_staff(c.store_id))
+            OR (
+              (c.metadata ->> 'store_id') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+              AND public.is_store_staff(((c.metadata ->> 'store_id')::uuid))
+            )
           )
-        )
-    )
-  );
+      )
+    );
+EXCEPTION WHEN undefined_object THEN NULL; END $$;
 
 -- ─── 6. RPCS SECURITY DEFINER ATUALIZADAS PARA FLUXOS PÚBLICOS E CRM ─────────
 

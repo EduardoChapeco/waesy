@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Store, ChevronsUpDown, Check, Settings, ExternalLink } from "lucide-react";
+import { Store, ChevronsUpDown, Check, Settings, ExternalLink, Plus } from "lucide-react";
+import { resolveSubsystemFromHost } from "@/lib/vertical-subsystems";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -164,6 +165,23 @@ export function WorkspaceAccountSwitcher({
               <Check className="size-3" />
             </div>
           </div>
+
+          <Link
+            to="/onboarding/empresa"
+            search={(() => {
+              if (typeof window === "undefined") return undefined;
+              const sub = resolveSubsystemFromHost(window.location.host);
+              if (sub && sub.id !== "waesy" && (sub.category === "vertical_workspace" || sub.category === "saas_brand")) {
+                return { vertical: sub.id } as any;
+              }
+              return undefined;
+            })()}
+            onClick={() => setOpen(false)}
+            className="w-full flex items-center justify-center gap-2 h-11 min-h-11 px-3 rounded-xl border border-dashed border-border hover:bg-muted text-xs font-semibold text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Plus className="size-4" />
+            <span>Criar Nova Empresa</span>
+          </Link>
         </div>
       </PopoverContent>
     </Popover>

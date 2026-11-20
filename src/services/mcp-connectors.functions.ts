@@ -184,7 +184,7 @@ export const registerExternalMcpServer = createServerFn({ method: "POST" })
       }
     }
 
-    const storeId = (identity as any)?.activeStoreId || (identity as any)?.storeId || null;
+    const storeId = identity.store_id || (identity as any)?.activeStoreId || (identity as any)?.storeId || null;
     const baseSlug = existingRow?.slug || `${toSlug(data.name)}-${Date.now().toString(36).slice(-4)}`;
 
     const payload = {

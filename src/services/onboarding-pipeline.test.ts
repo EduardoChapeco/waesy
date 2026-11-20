@@ -4,7 +4,14 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { assertSafeUrl, OnboardingInputSchema } from "./onboarding-pipeline.server";
+import fs from "node:fs";
+import path from "node:path";
+import {
+  assertSafeUrl,
+  OnboardingInputSchema,
+  extractInstagramUrlFromContent,
+  extractBestLogoUrl,
+} from "./onboarding-pipeline.server";
 import { ONBOARDING_AI_COST, ONBOARDING_AI_TIME_SAVED_MINUTES, formatPlatformTokens } from "@/config/platform-billing.config";
 
 describe("Onboarding Guiado por IA — Pipeline & Segurança", () => {
@@ -67,6 +74,64 @@ describe("Onboarding Guiado por IA — Pipeline & Segurança", () => {
 
       const result = OnboardingInputSchema.safeParse(invalidPayload);
       expect(result.success).toBe(false);
+    });
+  });
+
+  describe("4. Descoberta de Instagram e Integridade Anti-Simulação", () => {
+    it("extrai perfil válido do Instagram ignorando rotas genéricas (/p/, /reel/, /explore/)", () => {
+      const html = `
+        <a href="https://www.instagram.com/p/ABC123/">Post</a>
+        <a href="https://instagram.com/reel/XYZ999/">Reel</a>
+        <a href="https://www.instagram.com/embarque22oficial/">Siga nosso Instagram</a>
+      `;
+      const found = extractInstagramUrlFromContent(html);
+      expect(found).toEqual({
+        url: "https://www.instagram.com/embarque22oficial/",
+        handle: "embarque22oficial",
+      });
+    });
+
+    it("retorna null quando não há perfil válido do Instagram no conteúdo", () => {
+      const html = `<a href="https://instagram.com/explore/">Explore</a>`;
+      expect(extractInstagramUrlFromContent(html)).toBeNull();
+    });
+
+    it("garante que AiLiveExtractionDisplay não contém simulação via setTimeout", () => {
+      const displaySource = fs.readFileSync(
+        path.resolve("src/components/onboarding/ai-live-extraction-display.tsx"),
+        "utf8"
+      );
+      expect(displaySource).not.toContain("setTimeout");
+    });
+
+    it("extrai logo real em alta resolução ignorando favicons e ícones pequenos", () => {
+      const htmlWithFaviconAndLogo = `
+        <html>
+          <head>
+            <link rel="icon" href="/favicon.ico" sizes="32x32" />
+            <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+          </head>
+          <body>
+            <header>
+              <img src="/assets/brand-logo-hd.png" class="site-logo" alt="Embarque 22 Logo" />
+            </header>
+          </body>
+        </html>
+      `;
+      const logo = extractBestLogoUrl(htmlWithFaviconAndLogo, "https://embarque22.com.br/");
+      expect(logo).toBe("https://embarque22.com.br/assets/brand-logo-hd.png");
+
+      const htmlFaviconOnly = `
+        <html>
+          <head>
+            <link rel="icon" href="/favicon.ico" />
+            <link rel="icon" href="/icon-32x32.png" sizes="32x32" />
+          </head>
+        </html>
+      `;
+      expect(
+        extractBestLogoUrl(htmlFaviconOnly, "https://embarque22.com.br/", "https://cdn.instagram.com/avatar-hd.jpg")
+      ).toBe("https://cdn.instagram.com/avatar-hd.jpg");
     });
   });
 });

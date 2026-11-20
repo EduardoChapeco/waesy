@@ -156,6 +156,9 @@ export const generateAiVoiceAudio = createServerFn({ method: "POST" })
   .handler(async ({ data: { text, persona } }) => {
     const identity = await getServerIdentity();
     if (!identity.id) throw new Error("Não autorizado");
+    if (identity.store_id) {
+      assertStoreAccess(identity);
+    }
 
     // 1. Mapeamento de voz neural OpenAI de acordo com Gênero e Idade
     let mappedVoice = "nova";
@@ -280,11 +283,30 @@ export const sendAiVoiceNoteToWhatsApp = createServerFn({ method: "POST" })
 
     if (!recipientPhone) throw new Error("Número de telefone do destinatário não disponível.");
 
+    // Faz upload do áudio para o bucket privado `chat-media-private` para obter URL HTTPS assinada
+    // (compatível com Meta Cloud API e Evolution API v2 sem estourar payload de banco)
+    let resolvedAudioUrl = audioDataUri;
+    let storagePath: string | null = null;
+    if (audioDataUri.startsWith("data:")) {
+      const { uploadVoiceAudioToPrivateStorage } = await import("./whatsapp-ai-orchestrator.server");
+      const uploaded = await uploadVoiceAudioToPrivateStorage({
+        db,
+        storeId,
+        audioDataUriOrBuffer: audioDataUri,
+        mimeType: "audio/mpeg",
+      });
+      if (uploaded?.signedUrl) {
+        resolvedAudioUrl = uploaded.signedUrl;
+        storagePath = uploaded.storagePath;
+      }
+    }
+
     const payloadObj = {
       media: {
         type: "audio",
-        url: audioDataUri,
-        mimetype: "audio/ogg",
+        url: resolvedAudioUrl,
+        storage_path: storagePath,
+        mimetype: "audio/mpeg",
         caption: text,
       },
       voice_note: true,
@@ -305,7 +327,7 @@ export const sendAiVoiceNoteToWhatsApp = createServerFn({ method: "POST" })
         message_type: "audio",
         is_staff_reply: true,
         delivery_status: "pending",
-        attachments: [audioDataUri],
+        attachments: [resolvedAudioUrl],
         payload: payloadObj,
       })
       .select("id, created_at")
@@ -355,11 +377,11 @@ export const sendAiVoiceNoteToWhatsApp = createServerFn({ method: "POST" })
       recipient_phone: recipientPhone,
       message_type: "audio",
       payload: {
-        media_url: audioDataUri,
+        media_url: resolvedAudioUrl,
         voice_note: true,
         encoding: true,
         text,
-        message_id: insertedMsg.id,
+        chat_message_id: insertedMsg.id,
       },
       status: "pending",
     });

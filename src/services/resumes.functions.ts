@@ -189,30 +189,32 @@ export const saveUserResume = createServerFn({ method: "POST" })
       }
     }
 
-    // Se for novo ou se o update falhou/era sintético, tenta insert
+    // Se for novo ou se o update falhou/era sintético, executa upsert por (profile_id, slug)
     if (!resumeRecord) {
-      const { data: inserted, error: insertErr } = await supabase
+      const { data: upserted, error: upsertErr } = await supabase
         .from("resumes")
-        .insert({
-          profile_id: identity.id!,
-          title: input.title,
-          slug: cleanSlug,
-          is_default: input.isDefault,
-          is_public: input.isPublic,
-          template_id: input.templateId,
-          accent_color: input.accentColor,
-          font_family: input.fontFamily,
-          spacing_density: input.spacingDensity,
-          show_photo: input.showPhoto,
-          data: input.data,
-          created_at: now,
-          updated_at: now,
-        })
+        .upsert(
+          {
+            profile_id: identity.id!,
+            title: input.title,
+            slug: cleanSlug,
+            is_default: input.isDefault,
+            is_public: input.isPublic,
+            template_id: input.templateId,
+            accent_color: input.accentColor,
+            font_family: input.fontFamily,
+            spacing_density: input.spacingDensity,
+            show_photo: input.showPhoto,
+            data: input.data,
+            updated_at: now,
+          },
+          { onConflict: "profile_id,slug" },
+        )
         .select()
         .maybeSingle();
 
-      if (!insertErr) {
-        resumeRecord = inserted;
+      if (!upsertErr) {
+        resumeRecord = upserted;
       }
     }
 

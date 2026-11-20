@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { getServerClient } from "@/lib/supabase";
 import { encryptConversationMessageForThread } from "@/lib/conversation-crypto.server";
-import { sendWithWhatsAppAdapter, OutboundAdapterError, type OutboundInstance } from "./whatsapp-outbound-adapters.server";
+import { sendWithWhatsAppAdapter, sendWhatsAppPresence, OutboundAdapterError, type OutboundInstance } from "./whatsapp-outbound-adapters.server";
 
 const MAX_BACKOFF_SECONDS = 60 * 60;
 
@@ -130,16 +130,8 @@ async function resolveTargetChatMessageId(db: ReturnType<typeof getServerClient>
   if (outboxMeta?.idempotency_key && outboxMeta.idempotency_key.startsWith("chat_msg:")) {
     return outboxMeta.idempotency_key.slice("chat_msg:".length);
   }
-  const { data: fallbackMsg } = await db
-    .from("chat_messages")
-    .select("id")
-    .eq("thread_id", row.thread_id)
-    .eq("is_staff_reply", true)
-    .is("external_message_id", null)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  return fallbackMsg?.id || null;
+  // Não faz fallback cego para a última mensagem da thread para nunca corromper mensagens internas/whispers não relacionadas.
+  return null;
 }
 
 async function finalizeFailure(db: ReturnType<typeof getServerClient>, row: ClaimedOutbox, workerId: string, data: {
@@ -266,11 +258,67 @@ async function processClaimedRow(db: ReturnType<typeof getServerClient>, row: Cl
         return "accepted";
       }
     }
+    // Barreira Absoluta de Opt-Out: nunca enviar campanhas, prospecção, follow-up ou IA para contatos que solicitaram saída
+    const msgOrigin = typeof row.payload?.origin === "string" ? row.payload.origin : "";
+    const isExemptDirectOrTransactional =
+      msgOrigin === "waesy_panel" ||
+      msgOrigin === "opt_out_confirmation" ||
+      msgOrigin === "transactional_otp";
+    if (!isExemptDirectOrTransactional) {
+      let optedOut = false;
+      if (row.thread_id) {
+        const { data: thRow } = await db
+          .from("chat_threads")
+          .select("metadata")
+          .eq("id", row.thread_id)
+          .eq("store_id", row.store_id)
+          .maybeSingle();
+        if ((thRow?.metadata as Record<string, unknown> | null)?.whatsapp_opt_out === true) {
+          optedOut = true;
+        }
+      }
+      const digits = String(row.recipient_phone || "").replace(/\D/g, "");
+      if (!optedOut && digits.length >= 8) {
+        const suffix8 = digits.slice(-8);
+        const [leadOpt, custOpt] = await Promise.all([
+          db
+            .from("leads_crm")
+            .select("id")
+            .eq("store_id", row.store_id)
+            .eq("whatsapp_opt_out", true)
+            .ilike("phone", `%${suffix8}%`)
+            .limit(1),
+          db
+            .from("customers_crm")
+            .select("id")
+            .eq("store_id", row.store_id)
+            .eq("whatsapp_opt_out", true)
+            .ilike("phone", `%${suffix8}%`)
+            .limit(1),
+        ]);
+        if ((leadOpt.data && leadOpt.data.length > 0) || (custOpt.data && custOpt.data.length > 0)) {
+          optedOut = true;
+        }
+      }
+      if (optedOut) {
+        throw new OutboundAdapterError(
+          "OPT_OUT_SUPPRESSED",
+          "Envio bloqueado automaticamente: contato solicitou opt-out/remoção de mensagens.",
+          false,
+        );
+      }
+    }
+
     const instance = await resolveInstance(db, row);
     const permit = await acquireCircuitPermit(db, instance.id, workerId);
     if (!permit.allowed) {
       await deferCircuitOpen(db, row, workerId, permit, Date.now() - startedAt);
       return "skipped";
+    }
+    if (msgOrigin === "ai_autonomous" || msgOrigin === "ai_sandbox" || row.payload?.simulate_presence === true) {
+      const presenceType = row.message_type === "audio" ? "recording" : "composing";
+      const delayMs = typeof row.payload?.typing_delay_ms === "number" ? row.payload.typing_delay_ms : 1600;
+      await sendWhatsAppPresence(instance, row.recipient_phone, presenceType, delayMs).catch(() => false);
     }
     const result = await sendWithWhatsAppAdapter(instance, { recipientPhone: row.recipient_phone, messageType: row.message_type, payload: row.payload });
     await recordCircuitResult(db, instance.id, workerId, true);

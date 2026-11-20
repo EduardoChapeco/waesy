@@ -88,7 +88,11 @@ export const Route = createFileRoute("/painel")({
           session?.role === "stock" ||
           session?.role === "support" ||
           session?.role === "collaborator" ||
-          session?.role === "platform_admin";
+          session?.role === "platform_admin" ||
+          session?.role === "admin_master" ||
+          session?.role === "master" ||
+          session?.role === "superadmin" ||
+          Boolean(session?.isMaster || session?.isPlatformAdmin);
 
         const customReturn = search?.returnUrl;
         if (

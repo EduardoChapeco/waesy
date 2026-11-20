@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { getServerClient } from "@/lib/supabase";
 import { firstNonEmptyString as firstString, noStoreJsonResponse as json } from "@/lib/utils";
-import { decryptSecret } from "@/lib/crypto-vault.server";
+import { decryptSecret, timingSafeCompare } from "@/lib/crypto-vault.server";
 import { decryptConversationMessageForThread, encryptConversationMessageForThread, redactConversationPayload } from "@/lib/conversation-crypto.server";
 import { verifyWebhookSignature } from "@/lib/webhook-signature";
 import { dispatchWhatsAppInboundFlows, resolveWhatsAppIdentity } from "@/services/whatsapp-automation-runtime.server";
@@ -850,14 +850,22 @@ export async function persistInboundMessage(
       }).catch(() => null);
     }
 
+    let audioTranscriptText: string | null = null;
     if (insertedMessageId && message.messageType === "audio") {
       const { transcribeAudioMediaServer } = await import("@/services/whatsapp-media-intelligence.server");
-      await transcribeAudioMediaServer({
+      const transcription = await transcribeAudioMediaServer({
         db,
         storeId,
         threadId: thread.id,
         messageId: insertedMessageId,
       }).catch(() => null);
+      if (transcription && typeof (transcription as any).transcript === "string" && (transcription as any).transcript.trim()) {
+        audioTranscriptText = String((transcription as any).transcript).trim();
+      }
+    }
+    if (audioTranscriptText) {
+      message.text = audioTranscriptText;
+      message.payload = { ...message.payload, transcribed_from_audio: true, audio_transcript: audioTranscriptText };
     }
   }
   if (insertedMessageId) {
@@ -1002,9 +1010,10 @@ async function persistRevokedMessage(
 
   const { data: messages } = await db
     .from("chat_messages")
-    .select("id, thread_id, payload")
+    .select("id, thread_id, payload, thread:chat_threads!inner(store_id)")
     .eq("channel", "whatsapp")
-    .eq("external_message_id", externalMessageId);
+    .eq("external_message_id", externalMessageId)
+    .eq("thread.store_id", storeId);
 
   // Invariante B.33 Anti-Fake & Auditoria SAC:
   // Mensagens excluídas por clientes no WhatsApp NÃO são excluídas no sistema Waesy.
@@ -1058,8 +1067,8 @@ export function verifyUnofficialWebhookAuth(params: {
 
   if (
     receivedApiKey &&
-    ((params.secret && receivedApiKey === params.secret) ||
-      (params.masterApiKey && receivedApiKey === params.masterApiKey))
+    ((params.secret && timingSafeCompare(receivedApiKey, params.secret)) ||
+      (params.masterApiKey && timingSafeCompare(receivedApiKey, params.masterApiKey)))
   ) {
     return true;
   }
@@ -1261,11 +1270,15 @@ export async function handleUnofficialWhatsAppWebhook(request: Request, provider
   let body: JsonObject;
   try { body = JSON.parse(rawBody) as JsonObject; } catch { return json({ error: "Invalid JSON payload" }, 400); }
   const db = getServerClient();
-  const bodyInstanceName = firstString(body.instance, body.data?.instance, body.instanceName);
+  const sanitizeInstanceToken = (val: string | null | undefined) =>
+    String(val || "").trim().replace(/[^a-zA-Z0-9._:@-]/g, "").slice(0, 128);
+  const safeInstanceKey = sanitizeInstanceToken(instanceKey);
+  if (!safeInstanceKey) return json({ error: "Invalid WhatsApp instance key" }, 400);
+  const bodyInstanceName = sanitizeInstanceToken(firstString(body.instance, body.data?.instance, body.instanceName));
   const lookupClauses = [
-    `instance_key.eq.${instanceKey}`,
-    `external_instance_id.eq.${instanceKey}`,
-    ...(bodyInstanceName && bodyInstanceName !== instanceKey
+    `instance_key.eq.${safeInstanceKey}`,
+    `external_instance_id.eq.${safeInstanceKey}`,
+    ...(bodyInstanceName && bodyInstanceName !== safeInstanceKey
       ? [`instance_key.eq.${bodyInstanceName}`, `external_instance_id.eq.${bodyInstanceName}`]
       : []),
   ];

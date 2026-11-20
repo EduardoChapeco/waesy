@@ -65,7 +65,7 @@ export async function processMultiDomainPaymentWebhook(
   if (proposalId) {
     const { data: proposal } = await db
       .from("travel_proposals")
-      .select("id, store_id, lead_id, customer_id, title, destination_city, total_cents, total_value_cents")
+      .select("id, store_id, lead_id, customer_id, title, destination_city, pricing")
       .eq("id", proposalId)
       .maybeSingle();
 
@@ -94,6 +94,8 @@ export async function processMultiDomainPaymentWebhook(
             .from("leads_crm")
             .update({
               status: "won",
+              pipeline_stage: "won",
+              kanban_stage_key: "won",
               custom_fields: {
                 ...prevCustom,
                 online_payment: {
@@ -108,32 +110,54 @@ export async function processMultiDomainPaymentWebhook(
             .eq("id", proposal.lead_id);
         }
 
-        // Se houver contrato pendente, marca como assinado/liberado
+        // Atualiza contrato pendente para 'completed' (valor válido do CHECK de contracts)
         await db
           .from("contracts")
           .update({
-            status: "signed",
+            status: "completed",
             updated_at: new Date().toISOString(),
           })
           .eq("store_id", proposal.store_id)
           .eq("metadata->>proposal_id", proposal.id);
 
-        // Atualiza ou insere transação confirmada em financial_transactions
-        await db.from("financial_transactions").upsert({
-          store_id: proposal.store_id,
-          type: "revenue",
-          status: "confirmed",
-          amount_cents: amountCents,
-          description: `Pagamento Online Aprovado: Proposta ${proposal.title || proposal.destination_city || ""} (${providerRef})`,
-          metadata: {
-            provider,
-            provider_ref: providerRef,
-            webhook_event_id: eventId,
-            proposal_id: proposal.id,
-            gateway_payload: payload,
-          },
-          updated_at: new Date().toISOString(),
-        }, { onConflict: "store_id,description" });
+        // Atualiza ou insere transação confirmada em financial_transactions (enum revenue_sale)
+        const { data: existingTx } = await db
+          .from("financial_transactions")
+          .select("id")
+          .eq("store_id", proposal.store_id)
+          .eq("metadata->>proposal_id", proposal.id)
+          .maybeSingle();
+
+        const txMetadata = {
+          provider,
+          provider_ref: providerRef,
+          webhook_event_id: eventId,
+          proposal_id: proposal.id,
+          gateway_payload: payload,
+        };
+        if (existingTx?.id) {
+          await db
+            .from("financial_transactions")
+            .update({
+              status: "confirmed",
+              amount_cents: amountCents,
+              payment_method: provider,
+              metadata: txMetadata,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", existingTx.id);
+        } else {
+          await db.from("financial_transactions").insert({
+            store_id: proposal.store_id,
+            type: "revenue_sale",
+            status: "confirmed",
+            amount_cents: amountCents,
+            category: "tourism_sales",
+            payment_method: provider,
+            description: `Pagamento Online Aprovado: Proposta ${proposal.title || proposal.destination_city || ""} (${providerRef})`,
+            metadata: txMetadata,
+          });
+        }
 
         // Emite evento no barramento financeiro unificado se houver cliente
         if (proposal.customer_id) {
@@ -239,7 +263,7 @@ export async function processMultiDomainPaymentWebhook(
   if (recId) {
     const { data: receivable } = await db
       .from("receivables")
-      .select("id, store_id, debtor_id, creditor_id, amount_cents, status")
+      .select("id, store_id, debtor_id, creditor_id, total_cents, status")
       .eq("id", recId)
       .maybeSingle();
 
@@ -249,7 +273,7 @@ export async function processMultiDomainPaymentWebhook(
           .from("receivables")
           .update({
             status: "paid",
-            paid_at: new Date().toISOString(),
+            settled_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           })
           .eq("id", receivable.id);

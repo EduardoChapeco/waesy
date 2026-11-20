@@ -1,4 +1,4 @@
-import { CanvasFormat } from "./StudioFrame";
+import type { CanvasFormat } from "./studio-frame";
 import { File, MonitorPlay, Smartphone, Layout } from "lucide-react";
 import { Button } from "@/components/ui/button";
 

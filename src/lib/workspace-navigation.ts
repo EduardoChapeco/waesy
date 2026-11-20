@@ -81,6 +81,18 @@ const GROUP_MASTER_INBOX: NavGroup = {
   ],
 };
 
+const GROUP_TALK_CRM: NavGroup = {
+  id: "crm-clients",
+  label: "CRM & Contatos",
+  icon: Users,
+  section: "master",
+  items: [
+    { path: "/workspace/crm", label: "Funil & Negócios (CRM)", icon: Kanban },
+    { path: "/workspace/clientes", label: "Carteira de Contatos", icon: Users },
+    { path: "/workspace/avaliacoes", label: "Avaliações & NPS", icon: Star },
+  ],
+};
+
 const GROUP_CRM_CLIENTS: NavGroup = {
   id: "crm-clients",
   label: "Relacionamento",
@@ -1003,13 +1015,13 @@ export function resolveWorkspaceNavigation(
           segment:
             brandOrigin === "turis"
               ? "tourism"
-              : brandOrigin === "tableway"
+              : brandOrigin === "wider" || brandOrigin === "tableway"
                 ? "gastronomy"
                 : brandOrigin === "wowbook"
                   ? "beauty_salon"
-                  : brandOrigin === "lexcloud"
+                  : brandOrigin === "juris" || brandOrigin === "lexcloud"
                     ? "law_firm"
-                    : brandOrigin === "passhub"
+                    : brandOrigin === "eventio" || brandOrigin === "passhub"
                       ? "events"
                       : brandOrigin === "talentlink"
                         ? "jobs"
@@ -1019,7 +1031,9 @@ export function resolveWorkspaceNavigation(
                             ? "automotive"
                             : brandOrigin === "imobiliaria"
                               ? "real_estate"
-                              : "services",
+                              : brandOrigin === "store" || brandOrigin === "varejo" || brandOrigin === "mercado"
+                                ? "retail"
+                                : "services",
         }
       : storeData;
 
@@ -1061,13 +1075,22 @@ export function resolveWorkspaceNavigation(
   } else if (brandOrigin === "talk") {
     rawGroups = [
       GROUP_OVERVIEW,
-      GROUP_MASTER_TASKS,
       GROUP_MASTER_INBOX,
+      GROUP_TALK_CRM,
       GROUP_WHATSAPP_AUTOMATIONS,
-      GROUP_CRM_CLIENTS,
       GROUP_COMMERCIAL_SALES,
+      GROUP_CONTRACTS_GLOBAL,
+      GROUP_MASTER_TASKS,
       GROUP_SUPPORT_DESK,
       GROUP_AGENTIC_INTELLIGENCE,
+      GROUP_SETTINGS,
+    ];
+  } else if (brandOrigin === "waesy_copilot" || brandOrigin === "copilot") {
+    rawGroups = [
+      GROUP_OVERVIEW,
+      GROUP_MASTER_TASKS,
+      GROUP_AGENTIC_INTELLIGENCE,
+      GROUP_CRM_CLIENTS,
       GROUP_SETTINGS,
     ];
   } else if (unifiedNicheId === "automotive" || brandOrigin === "autocenter") {
@@ -1932,13 +1955,13 @@ export function getSidebarConfig(
     const inferredSegment =
       explicitBrand === "turis"
         ? "tourism"
-        : explicitBrand === "tableway"
+        : explicitBrand === "wider" || explicitBrand === "tableway"
           ? "gastronomy"
           : explicitBrand === "wowbook"
             ? "beauty_salon"
-            : explicitBrand === "lexcloud"
+            : explicitBrand === "juris" || explicitBrand === "lexcloud"
               ? "law_firm"
-              : explicitBrand === "passhub"
+              : explicitBrand === "eventio" || explicitBrand === "passhub"
                 ? "events"
                 : explicitBrand === "talentlink"
                   ? "jobs"
@@ -1948,7 +1971,9 @@ export function getSidebarConfig(
                       ? "automotive"
                       : explicitBrand === "imobiliaria"
                         ? "real_estate"
-                        : "services";
+                        : explicitBrand === "store" || explicitBrand === "varejo" || explicitBrand === "mercado"
+                          ? "retail"
+                          : "services";
     storeContext = { ...(storeContext || {}), segment: inferredSegment };
   }
 

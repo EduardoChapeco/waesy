@@ -21,6 +21,9 @@ ALTER TABLE public.orders
   ADD COLUMN IF NOT EXISTS channel_origin TEXT NOT NULL DEFAULT 'vitrine_online';
 
 ALTER TABLE public.orders
+  DROP CONSTRAINT IF EXISTS chk_orders_channel_origin;
+
+ALTER TABLE public.orders
   ADD CONSTRAINT chk_orders_channel_origin
   CHECK (channel_origin IN (
     'mercadolivre','amazon','magalu','shopee',

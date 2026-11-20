@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequestHeader } from "@tanstack/start-server-core";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { requirePlatformAdmin } from "@/lib/server-access";
@@ -9,14 +10,25 @@ import type {
 } from "@/lib/vertical-landing-types";
 import {
   CANONICAL_VERTICAL_SUBSYSTEMS,
+  LEGACY_SUBSYSTEM_SLUG_ALIASES,
+  normalizeCanonicalSubsystemId,
   resolveSubsystemBySlug,
   resolveSubsystemFromHost,
 } from "@/lib/vertical-subsystems";
 
-async function resolveSafeRequestHost(): Promise<string> {
+function resolveSafeRequestHost(): string {
   try {
-    const core = await import("@tanstack/start-server-core");
-    return (core.getRequestHeader?.("host") || "").toLowerCase();
+    const forwardedHost = getRequestHeader?.("x-forwarded-host");
+    const host = getRequestHeader?.("host");
+    return String(forwardedHost || host || "").toLowerCase();
+  } catch {
+    return "";
+  }
+}
+
+function resolveSafeRequestSubsystemHeader(): string {
+  try {
+    return String(getRequestHeader?.("x-waesy-subsystem-id") || "").trim().toLowerCase();
   } catch {
     return "";
   }
@@ -106,14 +118,16 @@ export const getPublicVerticalLandingFn = createServerFn({ method: "GET" })
       .parse(input),
   )
   .handler(async ({ data }): Promise<VerticalLandingPageDTO> => {
+    const capturedHost = resolveSafeRequestHost();
+    const capturedSubHeader = resolveSafeRequestSubsystemHeader();
     let targetSlug = (data?.slug || "").trim().toLowerCase();
     if (!targetSlug) {
-      const host = await resolveSafeRequestHost();
-      const hostSub = resolveSubsystemFromHost(host);
+      const hostSub =
+        resolveSubsystemFromHost(capturedHost) || resolveSubsystemBySlug(capturedSubHeader);
       targetSlug = hostSub?.id || "waesy";
     }
     const resolvedSub = resolveSubsystemBySlug(targetSlug);
-    const canonicalSlug = resolvedSub?.id || targetSlug || "waesy";
+    const canonicalSlug = resolvedSub?.id || normalizeCanonicalSubsystemId(targetSlug) || "waesy";
 
     const db = getServerClient();
     try {
@@ -141,8 +155,9 @@ export const getPublicVerticalLandingFn = createServerFn({ method: "GET" })
 
 export const getHostVerticalSubsystemLandingFn = createServerFn({ method: "GET" }).handler(
   async (): Promise<{ subsystemId: string | null; landing: VerticalLandingPageDTO | null }> => {
-    const host = await resolveSafeRequestHost();
-    const hostSub = resolveSubsystemFromHost(host);
+    const host = resolveSafeRequestHost();
+    const subHeader = resolveSafeRequestSubsystemHeader();
+    const hostSub = resolveSubsystemFromHost(host) || resolveSubsystemBySlug(subHeader);
     if (!hostSub || hostSub.id === "waesy") {
       return { subsystemId: hostSub?.id || null, landing: null };
     }
@@ -165,9 +180,23 @@ export const listPublicVerticalSystemsCatalogFn = createServerFn({ method: "GET"
       ]);
 
       const subMap = new Map<string, any>();
-      for (const r of subRows || []) subMap.set(String(r.id), r);
+      for (const r of subRows || []) {
+        const rawId = String(r.id || "");
+        const normId = normalizeCanonicalSubsystemId(rawId);
+        const isLegacy = Boolean(LEGACY_SUBSYSTEM_SLUG_ALIASES[rawId.toLowerCase()]);
+        if (!subMap.has(normId) || !isLegacy) {
+          subMap.set(normId, isLegacy ? { ...r, name: undefined, short_name: undefined } : r);
+        }
+      }
       const landingMap = new Map<string, any>();
-      for (const l of landingRows || []) landingMap.set(String(l.slug), l);
+      for (const l of landingRows || []) {
+        const rawSlug = String(l.slug || "");
+        const normSlug = normalizeCanonicalSubsystemId(rawSlug);
+        const isLegacy = Boolean(LEGACY_SUBSYSTEM_SLUG_ALIASES[rawSlug.toLowerCase()]);
+        if (!landingMap.has(normSlug) || !isLegacy) {
+          landingMap.set(normSlug, l);
+        }
+      }
 
       return activeSubs
         .filter((s) => s.id !== "waesy")

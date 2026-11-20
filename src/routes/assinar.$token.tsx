@@ -26,7 +26,7 @@ import {
 import { toast } from "sonner";
 import { ContractMarkdownRenderer } from "@/components/contracts/contract-markdown-renderer";
 
-import { getEnvelopeByToken, signContractEnvelope, getPublicGovBrSigningConfig, getUserSavedSignature, saveUserSignature } from "@/services/contracts.functions";
+import { getEnvelopeByToken, requestContractEnvelopeOtp, signContractEnvelope, getPublicGovBrSigningConfig, getUserSavedSignature, saveUserSignature } from "@/services/contracts.functions";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -90,9 +90,21 @@ function SignContractPage() {
     return () => clearTimeout(timer);
   }, [otpCooldown]);
 
-  const handleResendOtp = useCallback(() => {
+  const handleResendOtp = useCallback(async () => {
+    if (!envelope?.signing_token) return;
     setOtpCooldown(60);
-    toast.success(`Código de verificação reenviado para ${envelope?.signer_email || envelope?.signer_phone || "seu canal de contato"}.`);
+    try {
+      const res = await requestContractEnvelopeOtp({ data: { signingToken: envelope.signing_token } });
+      if (res.sent) {
+        toast.success(res.message);
+      } else {
+        setOtpCooldown(0);
+        toast.info(res.message);
+      }
+    } catch (err: any) {
+      setOtpCooldown(0);
+      toast.error(err?.message || "Não foi possível enviar o código de verificação.");
+    }
   }, [envelope]);
 
   const generateCursiveSignatureImage = useCallback((name: string, styleIdx = 0) => {
@@ -281,7 +293,7 @@ function SignContractPage() {
       return;
     }
 
-    if (envelope?.auth_level === "advanced" && otpCode.trim().length < 6) {
+    if (envelope?.auth_level === "advanced" && (envelope as any)?.otp_code_hash && otpCode.trim().length < 6) {
       toast.error("Por favor, informe o código de validação OTP de 6 dígitos.");
       return;
     }
@@ -307,6 +319,7 @@ function SignContractPage() {
       data: {
         signingToken: envelope.signing_token,
         consent: true,
+        otpCode: otpCode.trim() || undefined,
         signatureImageBase64: signatureImage || undefined,
         faceImageUrl: faceImageUrl || undefined,
         facialBiometricsHash: facialBiometricsHash || undefined,

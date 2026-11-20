@@ -446,6 +446,7 @@ function RootComponent() {
  useEffect(() => {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
+  let swUpdateInterval: ReturnType<typeof setInterval> | null = null;
   const registerServiceWorker = () => {
     const hadController = Boolean(navigator.serviceWorker.controller);
     navigator.serviceWorker
@@ -453,11 +454,11 @@ function RootComponent() {
      .then((registration) => {
       registration.update().catch(() => {});
 
-      setInterval(() => {
+      swUpdateInterval = setInterval(() => {
        if (typeof document !== "undefined" && document.visibilityState === "visible") {
         registration.update().catch(() => {});
        }
-      }, 180_000);
+      }, 600_000);
 
       if (typeof document !== "undefined") {
        document.addEventListener("visibilitychange", () => {
@@ -504,6 +505,9 @@ function RootComponent() {
   } else {
     window.addEventListener("load", registerServiceWorker, { once: true });
   }
+  return () => {
+    if (swUpdateInterval) clearInterval(swUpdateInterval);
+  };
  }, [queryClient]);
 
  // ── Sentinel de Segurança (passivo, não bloqueia UX) & Higienização de Cookies Auth ──

@@ -33,6 +33,7 @@ import {
   canAccessWorkspaceGroup,
   type SubscriptionTierId,
 } from "@/lib/multi-brand-engine";
+import { checkStoreVerticalAccess } from "@/lib/architecture/vertical-entitlement";
 
 
 function getStoreContextualAction(storeData: any) {
@@ -222,6 +223,9 @@ export function WorkspaceShell({
         ) {
           return false;
         }
+        if (!checkStoreVerticalAccess(rawStoreEntity, { pathname: item.path, isPlatformAdmin }).allowed) {
+          return false;
+        }
         if (activeStoreTier === "starter" && activeEnabledModules.length > 0) {
           return canAccessWorkspaceGroup(rawStoreEntity, group.id);
         }
@@ -230,6 +234,11 @@ export function WorkspaceShell({
     }))
     .filter((group) => group.items.length > 0);
   const currentSemantics = getNicheSemantics(activeStore);
+  const verticalAccess = checkStoreVerticalAccess(rawStoreEntity, {
+    host: typeof window !== "undefined" ? window.location.host : undefined,
+    pathname: currentPath,
+    isPlatformAdmin,
+  });
 
   // Governança Granular de RBAC: Verificação de Permissão de Acesso à Rota Ativa
   const isAuthorized = (() => {
@@ -1124,6 +1133,13 @@ export function WorkspaceShell({
                   </Link>
                 </DropdownMenuItem>
 
+                <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs min-h-11">
+                  <Link to="/onboarding/empresa">
+                    <Plus className="size-3.5 mr-2 text-muted-foreground" />
+                    <span>Criar Nova Empresa</span>
+                  </Link>
+                </DropdownMenuItem>
+
                 {memberships.length > 1 && (
                   <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs min-h-11">
                     <Link to="/auth/portal-selector">
@@ -1176,7 +1192,48 @@ export function WorkspaceShell({
                 : "max-w-none waesy-workspace-main-pad"
             )}
           >
-            {isAuthorized ? (
+            {!activeStore && (
+              <div className="mb-4 rounded-xl border border-border bg-card p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-foreground">Nenhuma empresa vinculada neste espaço</p>
+                  <p className="text-xs text-muted-foreground">Crie sua empresa para liberar catálogo, CRM, atendimento e operação completa.</p>
+                </div>
+                <Button asChild className="h-11 min-h-11 px-4 text-xs font-semibold shrink-0 gap-2">
+                  <Link to="/onboarding/empresa">
+                    <Plus className="size-4" />
+                    <span>Criar Empresa</span>
+                  </Link>
+                </Button>
+              </div>
+            )}
+            {!verticalAccess.allowed ? (
+              <div className="min-h-96 flex items-center justify-center p-4 py-12">
+                <div className="max-w-md w-full rounded-2xl border border-border bg-card p-6 sm:p-8 text-center space-y-4">
+                  <div className="size-12 rounded-xl bg-warning/15 text-warning-strong flex items-center justify-center mx-auto">
+                    <ShieldAlert className="size-6" />
+                  </div>
+                  <div className="space-y-2">
+                    <Badge variant="outline" className="text-2xs font-mono">
+                      {verticalAccess.storePlanLabel}
+                    </Badge>
+                    <h2 className="text-lg font-bold text-foreground">
+                      Plano não ativo em {verticalAccess.targetLabel}
+                    </h2>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {verticalAccess.reason}
+                    </p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-2 pt-2">
+                    <Button asChild variant="default" className="w-full sm:w-auto h-11 min-h-11 px-5 text-xs font-semibold">
+                      <Link to="/workspace/configuracoes/planos">Ativar Waesy Pro</Link>
+                    </Button>
+                    <Button asChild variant="outline" className="w-full sm:w-auto h-11 min-h-11 px-4 text-xs font-semibold">
+                      <Link to="/workspace">Ir para meu Painel</Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : isAuthorized ? (
               children
             ) : (
               <WorkspaceAccessDenied

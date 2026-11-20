@@ -419,7 +419,7 @@ export const listKanbanStages = createServerFn({ method: "GET" })
       try {
         const { data: storeInfo } = await db
           .from("stores")
-          .select("store_type, category, settings")
+          .select("primary_niche_id, settings")
           .eq("id", storeId)
           .maybeSingle();
         if (storeInfo) {

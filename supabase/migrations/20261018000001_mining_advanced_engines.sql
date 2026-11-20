@@ -39,15 +39,26 @@ WHERE NOT EXISTS (
   SELECT 1 FROM api_key_pools WHERE provider = 'places_scraper'
 );
 
--- 5. Seed de agendamento de mineração para processos e empresas locais
-INSERT INTO mining_schedules (job_type, name, schedule_cron, is_active, description)
-SELECT 'datajud-sync', 'Sincronizador Processos DataJud', '0 */6 * * *', true, 'Sincronização periódica de movimentações processuais DataJud'
-WHERE NOT EXISTS (
-  SELECT 1 FROM mining_schedules WHERE job_type = 'datajud-sync'
-);
-
-INSERT INTO mining_schedules (job_type, name, schedule_cron, is_active, description)
-SELECT 'places-discovery', 'Descoberta de Empresas Locais (Places)', '0 2 * * *', true, 'Varredura noturna de novos estabelecimentos comerciais locais'
-WHERE NOT EXISTS (
-  SELECT 1 FROM mining_schedules WHERE job_type = 'places-discovery'
-);
+-- 5. Seed de agendamento de mineração para processos e empresas locais (desativado por padrão: EARS-RES-01)
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'mining_schedules' AND column_name = 'display_name'
+  ) THEN
+    INSERT INTO public.mining_schedules (job_type, display_name, cron_expression, is_active, description)
+    VALUES
+      ('datajud-sync', 'Sincronizador Processos DataJud', '0 */6 * * *', false, 'Sincronização periódica de movimentações processuais DataJud'),
+      ('places-discovery', 'Descoberta de Empresas Locais (Places)', '0 2 * * *', false, 'Varredura noturna de novos estabelecimentos comerciais locais')
+    ON CONFLICT (job_type) DO NOTHING;
+  ELSIF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'mining_schedules' AND column_name = 'schedule_cron'
+  ) THEN
+    INSERT INTO public.mining_schedules (job_type, name, schedule_cron, is_active, description)
+    VALUES
+      ('datajud-sync', 'Sincronizador Processos DataJud', '0 */6 * * *', false, 'Sincronização periódica de movimentações processuais DataJud'),
+      ('places-discovery', 'Descoberta de Empresas Locais (Places)', '0 2 * * *', false, 'Varredura noturna de novos estabelecimentos comerciais locais')
+    ON CONFLICT (job_type) DO NOTHING;
+  END IF;
+END $$;

@@ -1823,7 +1823,7 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
      : Promise.resolve({ data: [] as any[] }),
    db
      .from("stores")
-     .select("id, name, slug, custom_domain, niche, settings")
+     .select("id, name, slug, custom_domain, primary_niche_id, settings")
      .eq("id", storeId)
      .maybeSingle(),
    resolvedCustomerId
@@ -2140,7 +2140,7 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
    isGroupThread && threadId
      ? db
          .from("chat_messages")
-         .select("metadata, created_at")
+         .select("payload, created_at")
          .eq("thread_id", threadId)
          .order("created_at", { ascending: false })
          .limit(60)
@@ -2162,7 +2162,7 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
      });
    }
    for (const msgRow of ((groupMsgsRes?.data as any[]) || [])) {
-     const m = (msgRow?.metadata || {}) as Record<string, any>;
+     const m = (msgRow?.payload || msgRow?.metadata || {}) as Record<string, any>;
      const sPhone = normalizePhoneE164(m.sender_phone || m.sender_jid);
      const sJid = String(m.sender_jid || sPhone || "").trim();
      const sKey = sPhone || sJid;
@@ -3602,10 +3602,12 @@ export const updateThreadAiHandoffMode = createServerFn({ method: "POST" })
       .eq("store_id", identity.store_id)
       .single();
 
+    const reactivatingAi = handoffMode === "ai_triage" || aiAutoReplyEnabled === true;
     const nextMetadata = {
       ...(((current?.metadata as any) || {}) as Record<string, any>),
       handoff_mode: handoffMode,
       ai_auto_reply_enabled: aiAutoReplyEnabled,
+      ...(reactivatingAi ? { ai_consecutive_turns: 0, ai_halted_reason: null } : {}),
       ...(triageSummary ? { ai_triage_summary: triageSummary } : {}),
       handoff_updated_at: new Date().toISOString(),
       handoff_updated_by: identity.id,
@@ -5638,11 +5640,13 @@ export const updateThreadAiAgentConfig = createServerFn({ method: "POST" })
       .maybeSingle();
 
     const curMeta = (((current?.metadata as any) || {}) as Record<string, any>);
+    const reactivatingAi = handoffMode === "ai_triage" || aiAutoReplyEnabled === true;
     const nextMeta = {
       ...curMeta,
       ai_agent_id: aiAgentId,
       ...(handoffMode !== undefined ? { handoff_mode: handoffMode } : {}),
       ...(aiAutoReplyEnabled !== undefined ? { ai_auto_reply_enabled: aiAutoReplyEnabled } : {}),
+      ...(reactivatingAi ? { ai_consecutive_turns: 0, ai_halted_reason: null } : {}),
       ai_agent_updated_at: new Date().toISOString(),
       ai_agent_updated_by: identity.id,
     };
@@ -6253,7 +6257,7 @@ export const createCorporateEmailMailbox = createServerFn({ method: "POST" })
         const params = new URLSearchParams({
           email: cleanLocal,
           domain: effectiveDomain,
-          password: password || `Waesy@${Math.floor(100000 + Math.random() * 900000)}`,
+          password: password || `Waesy@${crypto.randomUUID().slice(0, 12)}`,
           quota: String(quotaMb),
         });
         const cpRes = await fetch(`${uapiUrl}?${params.toString()}`, {
@@ -6438,6 +6442,66 @@ export const deleteCorporateEmailMailbox = createServerFn({ method: "POST" })
       success: true,
       accounts: nextAccounts,
     };
+  });
+
+export const storeAiAutomationConfigSchema = z.object({
+  mode: z.enum(["disabled", "assisted", "sandbox", "autonomous"]).default("disabled"),
+  enabled_agents: z.array(z.string().trim().min(1).max(80)).default([]),
+  sandbox_allowed_phones: z.array(z.string().trim().min(6).max(32)).default([]),
+  max_consecutive_turns: z.number().int().min(1).max(30).default(6),
+  cooldown_seconds: z.number().int().min(0).max(300).default(10),
+  humanize_chunks: z.boolean().default(true),
+  voice_replies_enabled: z.boolean().default(false),
+});
+
+export type StoreAiAutomationConfig = z.infer<typeof storeAiAutomationConfigSchema>;
+
+export const getStoreAiAutomationConfigFn = createServerFn({ method: "GET" })
+  .handler(async (): Promise<{ storeId: string; nicheId: string; config: StoreAiAutomationConfig }> => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity);
+    const db = getServerClient();
+    const { data: store } = await db
+      .from("stores")
+      .select("id, primary_niche_id, settings")
+      .eq("id", identity.store_id)
+      .maybeSingle();
+
+    const raw = (((store?.settings as any)?.ai_automation_config) || {}) as Record<string, unknown>;
+    const parsed = storeAiAutomationConfigSchema.safeParse(raw);
+    return {
+      storeId: identity.store_id,
+      nicheId: String((store as any)?.primary_niche_id || "general"),
+      config: parsed.success ? parsed.data : storeAiAutomationConfigSchema.parse({}),
+    };
+  });
+
+export const saveStoreAiAutomationConfigFn = createServerFn({ method: "POST" })
+  .validator(storeAiAutomationConfigSchema)
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    const db = getServerClient();
+    const { data: store } = await db
+      .from("stores")
+      .select("settings")
+      .eq("id", identity.store_id)
+      .maybeSingle();
+
+    const currentSettings = (((store?.settings as any) || {}) as Record<string, unknown>);
+    const { error } = await db
+      .from("stores")
+      .update({
+        settings: {
+          ...currentSettings,
+          ai_automation_config: data,
+        },
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", identity.store_id);
+
+    if (error) throw new Error(`Falha ao salvar configuração de IA autônoma: ${error.message}`);
+    return { success: true, config: data };
   });
 
 export const _chatOmnichannelReady = (() => { const created = true;

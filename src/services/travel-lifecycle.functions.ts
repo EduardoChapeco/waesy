@@ -2245,10 +2245,11 @@ export const getTravelerTripPortalDossier = createServerFn({ method: "GET" })
     }
 
     const proposalLookupId = (trip as any).source_proposal_id || trip.proposal_id || null;
-    const [paxRes, confRes, vouchersRes, boletosRes, docsRes, incidentsRes, changesRes, legacyCtrRes, canonicalCtrRes] = await Promise.all([
+    const [paxRes, confRes, vouchersRes, studioVouchersRes, boletosRes, docsRes, incidentsRes, changesRes, legacyCtrRes, canonicalCtrRes] = await Promise.all([
       supabase.from("trip_passengers").select("*").eq("trip_id", trip.id).eq("store_id", trip.store_id).order("created_at"),
       supabase.from("trip_confirmation_items").select("*").eq("trip_id", trip.id).eq("store_id", trip.store_id).order("service_date", { ascending: true }),
       supabase.from("tourism_vouchers").select("*").eq("trip_id", trip.id).eq("store_id", trip.store_id).order("created_at", { ascending: false }),
+      supabase.from("travel_vouchers").select("*").eq("trip_id", trip.id).eq("store_id", trip.store_id).order("created_at", { ascending: false }),
       supabase.from("travel_trip_installment_boletos").select("*").eq("trip_id", trip.id).eq("store_id", trip.store_id).order("installment_number"),
       supabase.from("travel_trip_official_documents").select("*").eq("trip_id", trip.id).eq("store_id", trip.store_id).order("created_at", { ascending: false }),
       supabase.from("tourism_incident_tickets").select("*").eq("trip_id", trip.id).eq("store_id", trip.store_id).order("created_at", { ascending: false }),
@@ -2322,6 +2323,30 @@ export const getTravelerTripPortalDossier = createServerFn({ method: "GET" })
     const storeObj = (trip.stores as any) || {};
     const storeSettings = storeObj.settings || {};
 
+    const normalizedStudioVouchers = (studioVouchersRes.data || []).map((sv: any) => ({
+      id: sv.id,
+      trip_id: sv.trip_id,
+      store_id: sv.store_id,
+      voucher_type: sv.voucher_type || "package",
+      title: sv.title,
+      voucher_code: sv.voucher_number,
+      public_token: sv.qr_code_hash || sv.voucher_number || sv.id,
+      passenger_name: sv.passenger_name,
+      status: sv.status || "issued",
+      payload: {
+        flight_data: sv.flight_data || {},
+        hotel_data: sv.hotel_data || {},
+        transfer_data: sv.transfer_data || {},
+      },
+      source_table: "travel_vouchers",
+      created_at: sv.created_at,
+    }));
+    const existingVoucherIds = new Set((vouchersRes.data || []).map((v: any) => v.id));
+    const unifiedVouchers = [
+      ...(vouchersRes.data || []),
+      ...normalizedStudioVouchers.filter((sv: any) => !existingVoucherIds.has(sv.id)),
+    ];
+
     return {
       trip: {
         ...trip,
@@ -2338,7 +2363,7 @@ export const getTravelerTripPortalDossier = createServerFn({ method: "GET" })
       },
       passengers: paxRes.data || [],
       confirmationItems: confRes.data || [],
-      vouchers: vouchersRes.data || [],
+      vouchers: unifiedVouchers,
       boletos: boletosRes.data || [],
       officialDocuments,
       contract: resolvedContract,

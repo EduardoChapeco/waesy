@@ -106,6 +106,11 @@ export const updateCertificateEntityId = createServerFn({ method: "POST" })
  entityId: z.string().uuid(),
  }))
  .handler(async ({ data }) => {
+ const { getServerIdentity } = await import("@/lib/server-access");
+ const identity = await getServerIdentity();
+ if (!identity.id) {
+ throw new Error("Não autenticado para vincular certificado transacional.");
+ }
  const db = getServerClient();
 
  const { error } = await db.rpc("update_certificate_entity_id", {
@@ -169,6 +174,10 @@ export const generateDeliveryPin = createServerFn({ method: "POST" })
  storeId: z.string().uuid(),
  }))
  .handler(async ({ data }) => {
+ const { getServerIdentity, assertStoreAccess } = await import("@/lib/server-access");
+ const identity = await getServerIdentity();
+ const checkAccess: typeof assertStoreAccess = assertStoreAccess;
+ checkAccess(identity, undefined, data.storeId);
  const db = getServerClient();
 
  const { data: result, error } = await db.rpc("generate_delivery_pin", {

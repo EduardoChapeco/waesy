@@ -52,7 +52,8 @@ export interface NormalizedSearchQuery {
 
 export function resolveProviderCodesForSearch(query: Pick<NormalizedSearchQuery, "productType" | "providerCodes">): string[] | undefined {
   if (query.providerCodes?.length) return query.providerCodes;
-  return query.productType === "flight" ? ["wooba"] : undefined;
+  // Permite busca paralela multi-fornecedor (Wooba + InfoTravel) quando ambos estiverem configurados
+  return undefined;
 }
 
 /**

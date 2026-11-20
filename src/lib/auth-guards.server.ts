@@ -212,3 +212,66 @@ export async function requirePlatformAdmin(): Promise<{ id: string; role: Role; 
   throw new Error(`Acesso negado. Apenas administradores globais master podem realizar esta ação (${identity.role}).`);
 }
 
+/**
+ * Exige que a loja ativa do usuário possua plano ou entitlement válido para a vertical solicitada.
+ * Admin Master e lojas com plano Waesy Pro (All-in-One) / Enterprise passam automaticamente.
+ */
+export async function requireStoreVerticalAccess(
+  targetVertical: string,
+  requestedStoreId?: string | null,
+) {
+  const { getServerIdentity } = await import("./identity.server");
+  const { checkStoreVerticalAccess } = await import("./architecture/vertical-entitlement");
+  const identity = await getServerIdentity();
+
+  if (!identity.id) {
+    throw new Error("Não autenticado. Por favor, faça login.");
+  }
+
+  const roleLower = String(identity.role || "").toLowerCase();
+  const isPlatformAdmin = Boolean(
+    (identity as any).isPlatformAdmin ||
+      (identity as any).isMaster ||
+      roleLower === "platform_admin" ||
+      roleLower === "master" ||
+      roleLower === "admin_master" ||
+      roleLower === "superadmin",
+  );
+
+  if (isPlatformAdmin) {
+    return {
+      identity,
+      store: null,
+      access: checkStoreVerticalAccess(null, { targetSubsystemId: targetVertical, isPlatformAdmin: true }),
+    };
+  }
+
+  const targetStoreId = requestedStoreId || identity.store_id;
+  if (!targetStoreId) {
+    throw new Error("Nenhuma empresa ativa encontrada para acessar este módulo.");
+  }
+
+  const { getServerClient } = await import("@/lib/supabase");
+  const db = getServerClient();
+  const { data: store, error } = await db
+    .from("stores")
+    .select("id, is_platform_root, is_active, approval_status, brand_origin, settings")
+    .eq("id", targetStoreId)
+    .maybeSingle();
+
+  if (error || !store) {
+    throw new Error("Empresa ativa não encontrada ou inacessível.");
+  }
+
+  const access = checkStoreVerticalAccess(store, {
+    targetSubsystemId: targetVertical,
+    isPlatformAdmin: false,
+  });
+
+  if (!access.allowed) {
+    throw new Error(access.reason || "Plano não ativo nesta vertical. Faça upgrade para o Waesy Pro.");
+  }
+
+  return { identity, store, access };
+}
+

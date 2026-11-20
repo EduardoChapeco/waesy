@@ -27,9 +27,19 @@ export const Route = createFileRoute("/api/security-telemetry")({
  });
  }
 
- const eventType = (body.eventType as string) || "unknown_event";
- const fingerprint = (body.fingerprint as string) || null;
- const details = (body.details as Record<string, unknown>) || {};
+ const eventType = String((body.eventType as string) || "unknown_event").slice(0, 64);
+ const fingerprint = body.fingerprint ? String(body.fingerprint).slice(0, 128) : null;
+ const rawDetails = (body.details as Record<string, unknown>) || {};
+ let cappedDetails: Record<string, unknown> = { via_api_beacon: true };
+ try {
+   const serialized = JSON.stringify(rawDetails);
+   cappedDetails =
+     serialized.length > 1024
+       ? { _truncated: true, _length: serialized.length, via_api_beacon: true }
+       : { ...rawDetails, via_api_beacon: true };
+ } catch {
+   cappedDetails = { via_api_beacon: true };
+ }
 
  // Fire-and-forget seguro
  try {
@@ -37,9 +47,9 @@ export const Route = createFileRoute("/api/security-telemetry")({
  await db.rpc("report_security_telemetry", {
  p_event_type: eventType,
  p_ip_address: ip,
- p_user_agent: ua,
+ p_user_agent: ua ? ua.slice(0, 256) : null,
  p_device_fingerprint: fingerprint,
- p_details: { ...details, via_api_beacon: true },
+ p_details: cappedDetails,
  });
  } catch (e: unknown) {
  console.warn("[api/security-telemetry] DB error:", e instanceof Error ? e.message : String(e));

@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
+import { clampInstallments, MAX_SUPPORTED_INSTALLMENTS } from "@/lib/tourism/payment-policy";
 
 export type ClassifiedCancellationPolicy = "flexible" | "moderate" | "strict" | "negotiable";
 
@@ -227,32 +228,43 @@ export function ClassifiedPaymentMethodsSection({
 
           {acceptsCard && (
             <div className="pt-2 border-t border-border/40 space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <Label className="text-xs text-foreground font-semibold flex items-center gap-2">
                   <CreditCard className="size-4 text-primary" />
-                  <span>Parcelamento Máximo</span>
+                  <span>Parcelamento Máximo (1x a {MAX_SUPPORTED_INSTALLMENTS}x)</span>
                 </Label>
-                <span className="text-xs font-black text-primary font-mono bg-primary/10 px-2 py-1 rounded-md">
-                  {maxInstallments === 1 ? "À vista" : `Até ${maxInstallments}x`}
-                </span>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min={1}
+                    max={MAX_SUPPORTED_INSTALLMENTS}
+                    value={maxInstallments}
+                    onChange={(e) => onMaxInstallmentsChange(clampInstallments(e.target.value, 1))}
+                    aria-label="Quantidade exata de parcelas no cartão"
+                    className="h-11 min-h-11 w-20 text-center text-xs font-mono font-bold rounded-lg bg-background"
+                  />
+                  <span className="text-xs font-black text-primary font-mono bg-primary/10 px-2 py-1 rounded-md">
+                    {maxInstallments === 1 ? "À vista" : `Até ${maxInstallments}x`}
+                  </span>
+                </div>
               </div>
               <input
                 type="range"
                 min={1}
-                max={24}
+                max={MAX_SUPPORTED_INSTALLMENTS}
                 step={1}
-                value={maxInstallments}
-                onChange={(e) => onMaxInstallmentsChange(Number(e.target.value) || 1)}
+                value={clampInstallments(maxInstallments, 1)}
+                onChange={(e) => onMaxInstallmentsChange(clampInstallments(e.target.value, 1))}
                 className="w-full h-2 rounded-full accent-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 aria-label="Parcelas no Cartão"
               />
               <div className="flex justify-between text-xs text-muted-foreground font-mono">
-                <span>À vista (1x)</span>
-                <span>2x</span>
+                <span>1x</span>
                 <span>6x</span>
                 <span>12x</span>
-                <span>18x</span>
+                <span>16x</span>
                 <span>24x</span>
+                <span>36x</span>
               </div>
 
               <div className="flex items-center justify-between pt-1 text-xs">
@@ -415,17 +427,28 @@ export function ClassifiedPaymentMethodsSection({
 
           {acceptsBoletoInstallments && (
             <div className="pt-2 border-t border-border/40 space-y-3">
-              <div className="flex items-center justify-between">
-                <Label className="text-xs text-foreground font-semibold">Número de Boletos</Label>
-                <span className="text-xs font-black text-primary font-mono">Até {maxBoletoInstallments}x</span>
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-xs text-foreground font-semibold">Número de Boletos (2x a {MAX_SUPPORTED_INSTALLMENTS}x)</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min={2}
+                    max={MAX_SUPPORTED_INSTALLMENTS}
+                    value={maxBoletoInstallments}
+                    onChange={(e) => onMaxBoletoInstallmentsChange(Math.max(2, clampInstallments(e.target.value, 2)))}
+                    aria-label="Quantidade exata de boletos parcelados"
+                    className="h-11 min-h-11 w-20 text-center text-xs font-mono font-bold rounded-lg bg-background"
+                  />
+                  <span className="text-xs font-black text-primary font-mono">Até {maxBoletoInstallments}x</span>
+                </div>
               </div>
               <input
                 type="range"
                 min={2}
-                max={24}
+                max={MAX_SUPPORTED_INSTALLMENTS}
                 step={1}
-                value={maxBoletoInstallments}
-                onChange={(e) => onMaxBoletoInstallmentsChange(Number(e.target.value) || 2)}
+                value={Math.max(2, clampInstallments(maxBoletoInstallments, 2))}
+                onChange={(e) => onMaxBoletoInstallmentsChange(Math.max(2, clampInstallments(e.target.value, 2)))}
                 className="w-full h-2 rounded-full accent-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 aria-label="Número de Boletos"
               />

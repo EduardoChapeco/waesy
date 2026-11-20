@@ -47,11 +47,23 @@ export function TravelProposalCheckoutModal({
     Array.from({ length: Math.max(0, totalPassengers - 1) }, () => ({ name: "", document: "", birthDate: "", roomPreference: "Quarto 1 - Duplo / Casal" })),
   );
   const [paymentPreference, setPaymentPreference] = useState<PaymentPreference | null>(initialPaymentPreference);
+  const maxAllowedInstallments = useMemo(
+    () =>
+      Math.min(
+        36,
+        Math.max(
+          1,
+          resolveMaxInstallmentsFromOptions(proposal.options as any, 36)?.maxInstallments || 36,
+        ),
+      ),
+    [proposal.options],
+  );
   const [paymentInstallments, setPaymentInstallments] = useState(
-    Math.min(12, Math.max(1, initialInstallments || 1)),
+    Math.min(maxAllowedInstallments, Math.max(1, initialInstallments || 1)),
   );
   const [simulationAgreed, setSimulationAgreed] = useState(false);
   const [acceptanceProtocol, setAcceptanceProtocol] = useState<string | null>(null);
+  const [signingUrl, setSigningUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   React.useEffect(() => {
@@ -60,9 +72,9 @@ export function TravelProposalCheckoutModal({
       setPaymentPreference(initialPaymentPreference);
     }
     if (initialInstallments && initialInstallments >= 1) {
-      setPaymentInstallments(Math.min(12, Math.max(1, initialInstallments)));
+      setPaymentInstallments(Math.min(maxAllowedInstallments, Math.max(1, initialInstallments)));
     }
-  }, [isOpen, initialPaymentPreference, initialInstallments]);
+  }, [isOpen, initialPaymentPreference, initialInstallments, maxAllowedInstallments]);
 
   const selectedOption = useMemo(
     () => proposal.options?.find((option) => option.id === selectedOptionId),
@@ -139,6 +151,8 @@ export function TravelProposalCheckoutModal({
         },
       });
       if (!result.success || !result.acceptanceId) throw new Error("O aceite não foi confirmado no sistema.");
+      setAcceptanceProtocol(String(result.acceptanceId).slice(0, 8).toUpperCase());
+      setSigningUrl(result.signingUrl || null);
       setStep("success");
       toast.success(result.message);
       onSuccess?.();
@@ -566,6 +580,23 @@ export function TravelProposalCheckoutModal({
                 A agência recebeu seus dados e já iniciou o processo de bloqueio e confirmação com os fornecedores parceiros.
               </p>
             </div>
+
+            {signingUrl && (
+              <div className="p-4 rounded-xl border border-primary/40 bg-primary/5 space-y-3 max-w-md mx-auto text-left">
+                <div className="flex items-center gap-2 text-sm font-bold text-foreground">
+                  <ShieldCheck className="size-4 text-primary" /> Contrato Digital Pronto
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Assine eletronicamente seu contrato agora para acelerar a emissão e liberação dos vouchers:
+                </p>
+                <Button asChild className="w-full h-11 min-h-11 rounded-xl font-bold gap-2 bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring">
+                  <a href={signingUrl} target="_blank" rel="noopener noreferrer">
+                    <span>Assinar Contrato Agora</span>
+                    <ExternalLink className="size-4" />
+                  </a>
+                </Button>
+              </div>
+            )}
 
             {paymentPreference === "gateway_online" && gatewayUrl && (
               <div className="p-4 rounded-xl border border-primary/40 bg-primary/5 space-y-3 max-w-md mx-auto text-left">

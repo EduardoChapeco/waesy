@@ -271,16 +271,23 @@ export const CANONICAL_VERTICAL_SUBSYSTEMS: VerticalSubsystemDescriptor[] = [
     sortOrder: 110,
   },
   {
-    id: "tableway",
-    name: "TableWay (Gastronomia & KDS)",
-    shortName: "TableWay",
+    id: "wider",
+    name: "Wider (Gastronomia & KDS)",
+    shortName: "Wider",
     category: "saas_brand",
-    subdomain: "tableway",
-    canonicalDomain: "tableway.waesy.com.br",
-    hostAliases: ["tableway.waesy.com.br", "tableway.com.br", "app.tableway"],
-    targetPath: "/painel?vertical=tableway",
-    landingPath: "/sistemas/tableway",
-    brandVerticalId: "tableway",
+    subdomain: "wider",
+    canonicalDomain: "wider.waesy.com.br",
+    hostAliases: [
+      "wider.waesy.com.br",
+      "wider.com.br",
+      "app.wider",
+      "tableway.waesy.com.br",
+      "tableway.com.br",
+      "app.tableway",
+    ],
+    targetPath: "/painel?vertical=wider",
+    landingPath: "/sistemas/wider",
+    brandVerticalId: "wider",
     primaryNicheId: "gastronomy",
     defaultVerticalSku: "waesy_gastro_delivery",
     description: "Vertical para restaurantes e delivery com cardapio digital, comandas, mesas e KDS.",
@@ -315,16 +322,23 @@ export const CANONICAL_VERTICAL_SUBSYSTEMS: VerticalSubsystemDescriptor[] = [
     sortOrder: 130,
   },
   {
-    id: "passhub",
-    name: "PassHub (Eventos & Bilheteria)",
-    shortName: "PassHub",
+    id: "eventio",
+    name: "Eventio (Eventos & Bilheteria)",
+    shortName: "Eventio",
     category: "saas_brand",
-    subdomain: "passhub",
-    canonicalDomain: "passhub.waesy.com.br",
-    hostAliases: ["passhub.waesy.com.br", "passhub.com.br", "app.passhub"],
-    targetPath: "/painel?vertical=passhub",
-    landingPath: "/sistemas/passhub",
-    brandVerticalId: "passhub",
+    subdomain: "eventio",
+    canonicalDomain: "eventio.waesy.com.br",
+    hostAliases: [
+      "eventio.waesy.com.br",
+      "eventio.com.br",
+      "app.eventio",
+      "passhub.waesy.com.br",
+      "passhub.com.br",
+      "app.passhub",
+    ],
+    targetPath: "/painel?vertical=eventio",
+    landingPath: "/sistemas/eventio",
+    brandVerticalId: "eventio",
     primaryNicheId: "events",
     defaultVerticalSku: "waesy_bundle_pro",
     description: "Gestao completa de eventos, lotes de ingressos, QR Code de portaria e promoters.",
@@ -337,16 +351,23 @@ export const CANONICAL_VERTICAL_SUBSYSTEMS: VerticalSubsystemDescriptor[] = [
     sortOrder: 140,
   },
   {
-    id: "lexcloud",
-    name: "LexCloud (Juridico & Processos)",
-    shortName: "LexCloud",
+    id: "juris",
+    name: "Juris (Juridico & Processos)",
+    shortName: "Juris",
     category: "saas_brand",
-    subdomain: "lexcloud",
-    canonicalDomain: "lexcloud.waesy.com.br",
-    hostAliases: ["lexcloud.waesy.com.br", "lexcloud.com.br", "app.lexcloud"],
-    targetPath: "/painel?vertical=lexcloud",
-    landingPath: "/sistemas/lexcloud",
-    brandVerticalId: "lexcloud",
+    subdomain: "juris",
+    canonicalDomain: "juris.waesy.com.br",
+    hostAliases: [
+      "juris.waesy.com.br",
+      "juris.com.br",
+      "app.juris",
+      "lexcloud.waesy.com.br",
+      "lexcloud.com.br",
+      "app.lexcloud",
+    ],
+    targetPath: "/painel?vertical=juris",
+    landingPath: "/sistemas/juris",
+    brandVerticalId: "juris",
     primaryNicheId: "law_firm",
     defaultVerticalSku: "waesy_legal_office",
     description: "Gestao para escritorios de advocacia, prazos processuais, GED e contratos de honorarios.",
@@ -469,26 +490,48 @@ export const CANONICAL_VERTICAL_SUBSYSTEMS: VerticalSubsystemDescriptor[] = [
     sortOrder: 180,
   },
   {
-    id: "varejo",
-    name: "Waesy Varejo & Mercados",
-    shortName: "Varejo",
+    id: "store",
+    name: "Waesy Store (Lojas & Varejo)",
+    shortName: "Store Varejo",
     category: "saas_brand",
-    subdomain: "varejo",
-    canonicalDomain: "varejo.waesy.com.br",
-    hostAliases: ["varejo.waesy.com.br", "mercado.waesy.com.br"],
-    targetPath: "/painel?vertical=varejo",
-    landingPath: "/sistemas/varejo",
+    subdomain: "store",
+    canonicalDomain: "store.waesy.com.br",
+    hostAliases: ["store.waesy.com.br", "varejo.waesy.com.br", "lojas.waesy.com.br"],
+    targetPath: "/painel?vertical=store",
+    landingPath: "/sistemas/store",
     brandVerticalId: "waesy_studio",
     primaryNicheId: "retail",
     defaultVerticalSku: "waesy_retail_commerce",
-    description: "PDV, grade de variacoes por cor e tamanho, reposicao inteligente e entrega local.",
-    howItWorks: "Opera caixa rapido, controle de validade e catalogo sincronizado no app ou vitrine.",
+    description: "PDV, grade de variacoes por cor e tamanho, vitrine online, reposicao inteligente e entrega local.",
+    howItWorks: "Opera caixa rapido, controle de grade/EAN e catalogo sincronizado no app ou vitrine da loja.",
     modulesIncluded: ["catalog", "inventory", "pdv", "orders"],
     isActive: true,
     showInHub: true,
     showOnLanding: true,
     isStandaloneApp: true,
     sortOrder: 185,
+  },
+  {
+    id: "mercado",
+    name: "Waesy Mercado (Supermercados & Mercearias)",
+    shortName: "Mercado",
+    category: "saas_brand",
+    subdomain: "mercado",
+    canonicalDomain: "mercado.waesy.com.br",
+    hostAliases: ["mercado.waesy.com.br", "supermercado.waesy.com.br"],
+    targetPath: "/painel?vertical=mercado",
+    landingPath: "/sistemas/mercado",
+    brandVerticalId: "waesy_studio",
+    primaryNicheId: "retail",
+    defaultVerticalSku: "waesy_retail_commerce",
+    description: "PDV de caixa rapido, produtos pesaveis por balanca, controle de lote/validade, encartes e entregas de mercado.",
+    howItWorks: "Integra balanca e codigo de barras no caixa, controla pereciveis por lote e despacha compras via Waesy Go.",
+    modulesIncluded: ["catalog", "inventory", "pdv", "orders"],
+    isActive: true,
+    showInHub: true,
+    showOnLanding: true,
+    isStandaloneApp: true,
+    sortOrder: 190,
   },
   {
     id: "admin",
@@ -509,6 +552,23 @@ export const CANONICAL_VERTICAL_SUBSYSTEMS: VerticalSubsystemDescriptor[] = [
     sortOrder: 999,
   },
 ];
+
+export const LEGACY_SUBSYSTEM_SLUG_ALIASES: Record<string, string> = {
+  tableway: "wider",
+  passhub: "eventio",
+  lexcloud: "juris",
+  varejo: "store",
+  lojas: "store",
+  supermercado: "mercado",
+  oficinas: "autocenter",
+  imoveis: "imobiliaria",
+};
+
+export function normalizeCanonicalSubsystemId(slugOrId?: string | null): string {
+  const clean = String(slugOrId || "").trim().toLowerCase();
+  if (!clean) return "";
+  return LEGACY_SUBSYSTEM_SLUG_ALIASES[clean] || clean;
+}
 
 /**
  * Resolve o subsistema vertical a partir do Host da requisicao HTTP.
@@ -550,7 +610,7 @@ export function resolveSubsystemFromHost(host?: string | null): VerticalSubsyste
  */
 export function resolveSubsystemBySlug(slug?: string | null): VerticalSubsystemDescriptor | null {
   if (!slug || typeof slug !== "string") return null;
-  const normalized = slug.trim().toLowerCase();
+  const normalized = normalizeCanonicalSubsystemId(slug);
   if (!normalized) return null;
   return (
     CANONICAL_VERTICAL_SUBSYSTEMS.find(
@@ -626,6 +686,16 @@ export function buildGoDaddyDnsRecordsForSubsystems(
       value: pagesOrigin,
       ttl: "1 Hour",
       purpose: "Redirecionamento www.waesy.com.br -> Cloudflare Pages",
+    });
+  }
+
+  if (!seen.has("painel")) {
+    rows.splice(3, 0, {
+      type: "CNAME",
+      host: "painel",
+      value: pagesOrigin,
+      ttl: "1 Hour",
+      purpose: "Acesso Direto ao Painel Empresarial (painel.waesy.com.br -> /painel)",
     });
   }
 

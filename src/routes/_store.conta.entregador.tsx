@@ -162,7 +162,8 @@ function CourierDriverHubPage() {
     queryKey: ["available-mobility-demands"],
     queryFn: () => listAvailableMobilityDemands(),
     initialData: initialDemands,
-    refetchInterval: 8000,
+    refetchInterval: 15000,
+    refetchOnWindowFocus: true,
   });
 
   const { data: invoice, refetch: refetchInvoice } = useQuery({

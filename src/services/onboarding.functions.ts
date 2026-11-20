@@ -968,7 +968,7 @@ export const provisionBusiness = createServerFn({ method: "POST" })
  if (!targetUserId) {
  const { data: newAuth, error: createError } = await db.auth.admin.createUser({
  email: cleanEmail,
- password: `Waesy#${Math.floor(100000 + Math.random() * 900000)}!`,
+ password: `Waesy#${crypto.randomUUID().slice(0, 12)}!`,
  email_confirm: true,
  user_metadata: {
  full_name: member.fullName || cleanEmail.split("@")[0],

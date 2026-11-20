@@ -580,12 +580,14 @@ export const consumeCheckoutWzAtomic = createServerFn({ method: "POST" })
 
     // Prioridade 1: Buckets da loja emissora
     // Prioridade 2: Buckets Globais da Waesy
+    const nowIso = new Date().toISOString();
     const { data: buckets } = await db
       .from("wz_token_buckets")
-      .select("id, scope_type, scope_id, available_balance, consumed_balance")
+      .select("id, scope_type, scope_id, available_balance, consumed_balance, expires_at")
       .eq("user_id", identity.id)
       .eq("status", "active")
-      .gt("available_balance", 0);
+      .gt("available_balance", 0)
+      .or(`expires_at.is.null,expires_at.gt.${nowIso}`);
 
     const storeBuckets = (buckets || []).filter(
       (b: any) => b.scope_type === "MERCHANT" && b.scope_id === storeId

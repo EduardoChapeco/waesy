@@ -89,6 +89,7 @@ import {
   TravelPackageTransfersAndToursSection,
   TravelPackageWebPageSection,
 } from "./travel-package-unified-extensions";
+import { clampInstallments } from "@/lib/tourism/payment-policy";
 
 export interface TravelPackageFormProps {
   value: Partial<TravelPackageData>;
@@ -215,9 +216,9 @@ export function TravelPackageForm({
   const roomRates: TravelRoomRates = value.room_rates || {};
   const boardingDocs: string[] = value.boarding_requirements || [];
 
-  // Condições Comerciais & Parcelamento (Bilateral)
+  // Condições Comerciais & Parcelamento (Bilateral — SSOT 1x..36x contínuo)
   const paymentConditions = value.payment_conditions || {};
-  const maxInstallments = Math.max(1, Math.min(24, paymentConditions.installments_max ?? 12));
+  const maxInstallments = clampInstallments(paymentConditions.installments_max ?? 12, 12);
   const feeFreeInstallments = Math.max(
     1,
     Math.min(maxInstallments, paymentConditions.installments_fee_free ?? maxInstallments)
@@ -225,7 +226,7 @@ export function TravelPackageForm({
   const pixDiscountPercent = paymentConditions.pix_discount_percent ?? 0;
   const depositPercent = paymentConditions.deposit_percent ?? 0;
   const acceptsBoleto = paymentConditions.accepts_boleto ?? true;
-  const boletoInstallments = Math.max(1, Math.min(24, paymentConditions.boleto_installments ?? 12));
+  const boletoInstallments = clampInstallments(paymentConditions.boleto_installments ?? 12, 12);
   const hasBoletoDownpayment = Boolean(paymentConditions.has_boleto_downpayment);
   const boletoDownpaymentType = paymentConditions.boleto_downpayment_type || "percentage";
   const boletoDownpaymentPct = paymentConditions.boleto_downpayment_pct ?? 20;

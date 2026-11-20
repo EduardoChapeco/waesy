@@ -329,6 +329,13 @@ export async function executeSingleScheduledTaskRecord(
     })
     .eq("id", durableTask.id);
 
+  // Expurgar periodicamente snapshots e telemetria expirados (Supabase Nano Free budget protection)
+  try {
+    await (db as any).rpc("purge_expired_travel_snapshots_and_telemetry");
+  } catch {
+    // Non-blocking housekeeping
+  }
+
   const nextRunAt = computeNextRunFromCron(scheduled.cron_expression);
   const completedAt = new Date().toISOString();
   const basePatch = {

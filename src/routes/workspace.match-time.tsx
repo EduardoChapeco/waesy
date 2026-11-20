@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -505,12 +506,13 @@ export default function WorkspaceMatchTimeStudioPage() {
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs font-semibold">URL da Imagem de Capa</Label>
-              <Input
+              <Label className="text-xs font-semibold">Imagem de Capa da Carta</Label>
+              <ImageUpload
                 value={cardCoverUrl}
-                onChange={(e) => setCardCoverUrl(e.target.value)}
-                placeholder="https://cdn.waesy.com.br/capa-card.jpg"
-                className="h-11 min-h-11 text-xs"
+                onChange={(url) => setCardCoverUrl(url)}
+                onRemove={() => setCardCoverUrl("")}
+                bucket="cms-media"
+                aspectPreset="classified"
               />
             </div>
 

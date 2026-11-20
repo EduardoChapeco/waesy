@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity, assertStoreAccess, assertManagerAccess } from "@/lib/server-access";
+import { getServerIdentity, assertStoreAccess, assertManagerAccess, requireStoreVerticalAccess } from "@/lib/server-access";
 import { TOKEN_HEX } from "@/lib/design-tokens";
 import type { 
  KdsStation, 
@@ -18,6 +18,7 @@ export const listKdsStations = createServerFn({ method: "GET" })
  const supabase = getServerClient();
  const identity = await getServerIdentity();
  assertStoreAccess(identity, ["owner", "admin", "manager", "kitchen", "cook", "waiter", "seller"]);
+ await requireStoreVerticalAccess("gastronomy", identity.store_id);
 
  const { data, error } = await supabase
  .from("kds_stations")

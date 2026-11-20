@@ -3,7 +3,11 @@
 -- A política sponsor_placements_staff_all com FOR ALL USING (true)
 -- permitia que qualquer usuário autenticado alterasse/deletasse placements de anúncios.
 
+ALTER TABLE public.sponsor_placements ADD COLUMN IF NOT EXISTS store_id UUID REFERENCES public.stores(id) ON DELETE CASCADE;
+
 DROP POLICY IF EXISTS "sponsor_placements_staff_all" ON public.sponsor_placements;
+DROP POLICY IF EXISTS "sponsor_placements_staff_write" ON public.sponsor_placements;
+DROP POLICY IF EXISTS "sponsor_placements_platform_admin_global" ON public.sponsor_placements;
 
 -- Limite a staff_all para verificação correta de is_store_staff
 CREATE POLICY "sponsor_placements_staff_write" ON public.sponsor_placements

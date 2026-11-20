@@ -243,7 +243,7 @@ export function initSecuritySentinel(): () => void {
   if (_sentinelActive || typeof window === "undefined") return () => {};
   _sentinelActive = true;
 
-  // Checar DevTools periodicamente (a cada 30 segundos, sem flood na CPU)
+  // Checar DevTools periodicamente (a cada 3 minutos, zero consumo ocioso - EARS-RES-01)
   const interval = setInterval(async () => {
     if (typeof document !== "undefined" && document.hidden) return; // Pausa quando aba estiver em segundo plano
     const isOpen = detectByWindowSize() || detectByFirebug() || detectByConsoleProbe();
@@ -258,7 +258,7 @@ export function initSecuritySentinel(): () => void {
       _devtoolsWasOpen = false;
       // Não reportamos "fechamento" para evitar false positives
     }
-  }, 30_000);
+  }, 180_000);
 
   // Detectar automação / headless browsers
   const checkAutomation = async () => {

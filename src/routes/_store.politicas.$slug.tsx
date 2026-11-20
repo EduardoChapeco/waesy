@@ -4,6 +4,7 @@ import { getPageBySlug } from "@/services/cms.functions";
 import { LegalDocumentViewer } from "@/components/legal/legal-document-viewer";
 import { PageHeader } from "@/components/commerce/page-header";
 import { EmptyState } from "@/components/state/states";
+import { sanitizeNarrativeDescription } from "@/lib/ad-engine/content-blocks/sanitizer";
 
 export const Route = createFileRoute("/_store/politicas/$slug")({
  head: ({ loaderData }) => ({
@@ -66,7 +67,7 @@ function PoliticasSlugPage() {
  {page?.sections?.map((section: any) => (
  <div key={section.id}>
  {section.section_type === "text" && (
- <div dangerouslySetInnerHTML={{ __html: section.content?.html || "" }} />
+ <div dangerouslySetInnerHTML={{ __html: sanitizeNarrativeDescription(section.content?.html || "") }} />
  )}
  </div>
  ))}

@@ -92,7 +92,8 @@ function PdvComandasPage() {
   const { data: reservations = [] } = useQuery({
     queryKey: ["salon-reservations-comandas"],
     queryFn: () => listStoreReservations({ data: { filter: "upcoming" } }),
-    refetchInterval: 15000,
+    refetchInterval: 30000,
+    refetchOnWindowFocus: true,
   });
  const [selectedTable, setSelectedTable] = useState<any | null>(null);
  const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
@@ -136,7 +137,8 @@ function PdvComandasPage() {
  queryKey: ["salon-tables-overview"],
  queryFn: () => getSalonTablesOverview(),
  initialData,
- refetchInterval: 5000,
+ refetchInterval: 15000,
+ refetchOnWindowFocus: true,
  });
 
  const { tables = [], summary, store_info, activeComandas = [] } = salonData || {};

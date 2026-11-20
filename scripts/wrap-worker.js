@@ -28,7 +28,7 @@ if (fs.existsSync(secretsPath)) {
   }
 }
 
-const targetSupabaseUrl = secrets.VITE_SUPABASE_URL || secrets.SUPABASE_URL || process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || "https://jfuebqmltksyznovhlwa.supabase.co";
+const targetSupabaseUrl = secrets.VITE_SUPABASE_URL || secrets.SUPABASE_URL || process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || "https://wlxapubsesiwtxzbuygt.supabase.co";
 const targetAnonKey = secrets.VITE_SUPABASE_ANON_KEY || secrets.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "";
 const targetServiceRoleKey = secrets.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 const targetVaultMasterKey = secrets.VAULT_MASTER_KEY || process.env.VAULT_MASTER_KEY || targetServiceRoleKey;
@@ -36,6 +36,13 @@ const targetSiteUrl = secrets.VITE_SITE_URL || process.env.VITE_SITE_URL || "htt
 const targetEvolutionUrl = secrets.EVOLUTION_API_URL || process.env.EVOLUTION_API_URL || "";
 const targetEvolutionKey = secrets.EVOLUTION_API_KEY || process.env.EVOLUTION_API_KEY || "";
 const targetWorkerToken = secrets.WHATSAPP_WORKER_TOKEN || process.env.WHATSAPP_WORKER_TOKEN || "";
+const targetOffloadUrl = secrets.SUPABASE_OFFLOAD_URL || process.env.SUPABASE_OFFLOAD_URL || "";
+const targetOffloadAnonKey = "";
+const targetOffloadServiceKey = secrets.SUPABASE_OFFLOAD_SERVICE_ROLE_KEY || process.env.SUPABASE_OFFLOAD_SERVICE_ROLE_KEY || "";
+const targetArchiveUrl = secrets.SUPABASE_ARCHIVE_URL || process.env.SUPABASE_ARCHIVE_URL || "";
+const targetArchiveServiceKey = secrets.SUPABASE_ARCHIVE_SERVICE_ROLE_KEY || process.env.SUPABASE_ARCHIVE_SERVICE_ROLE_KEY || "";
+const targetRouteMining = secrets.SUPABASE_ROUTE_MINING || process.env.SUPABASE_ROUTE_MINING || "0";
+const targetTopologyMode = secrets.SUPABASE_TOPOLOGY_MODE || process.env.SUPABASE_TOPOLOGY_MODE || (targetOffloadServiceKey || targetArchiveServiceKey ? "auto" : "single");
 
 const fallbackEnv = {
   VITE_SUPABASE_URL: targetSupabaseUrl,
@@ -44,7 +51,13 @@ const fallbackEnv = {
   SUPABASE_ANON_KEY: targetAnonKey,
   VITE_SUPABASE_PUBLISHABLE_KEY: secrets.VITE_SUPABASE_PUBLISHABLE_KEY || targetAnonKey,
   SUPABASE_SERVICE_ROLE_KEY: targetServiceRoleKey,
-  SUPABASE_PROJECT_REF: secrets.SUPABASE_PROJECT_REF || "jfuebqmltksyznovhlwa",
+  SUPABASE_PROJECT_REF: secrets.SUPABASE_PROJECT_REF || secrets.SUPABASE_PRIMARY_REF || "wlxapubsesiwtxzbuygt",
+  SUPABASE_OFFLOAD_URL: targetOffloadUrl,
+  SUPABASE_OFFLOAD_SERVICE_ROLE_KEY: targetOffloadServiceKey,
+  SUPABASE_ARCHIVE_URL: targetArchiveUrl,
+  SUPABASE_ARCHIVE_SERVICE_ROLE_KEY: targetArchiveServiceKey,
+  SUPABASE_ROUTE_MINING: targetRouteMining,
+  SUPABASE_TOPOLOGY_MODE: targetTopologyMode,
   VAULT_MASTER_KEY: targetVaultMasterKey,
   VITE_SITE_URL: targetSiteUrl,
   EVOLUTION_API_URL: targetEvolutionUrl,

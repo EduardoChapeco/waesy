@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-11-17T19:55:07.150Z",
-  "totalFiles": 2965,
-  "totalImported": 2277,
-  "discoveredUnreferencedCount": 59,
-  "intentionalUnreferencedCount": 47,
+  "timestamp": "2026-11-20T17:02:03.493Z",
+  "totalFiles": 3035,
+  "totalImported": 2323,
+  "discoveredUnreferencedCount": 57,
+  "intentionalUnreferencedCount": 46,
   "intentionalUnreferencedFiles": [
     "src/components/ad-engine/public/listing-empty-state.tsx",
     "src/components/admin/services/service-bom-card.tsx",
@@ -44,7 +44,6 @@
     "src/lib/engines/kds.engine.ts",
     "src/lib/financial-receipt-canvas.ts",
     "src/lib/fiscal/ncm-registry.ts",
-    "src/lib/loader-observability.ts",
     "src/lib/media/gallery-manager.ts",
     "src/lib/mining/regional-sources-catalog.ts",
     "src/lib/mining/sitemap-crawler.engine.ts",
@@ -65,8 +64,9 @@
     "src/lib/strategic-frameworks.ts",
     "src/lib/tourism/formatters.ts"
   ],
-  "unreferencedCount": 12,
+  "unreferencedCount": 11,
   "unreferencedFiles": [
+    "src/components/atendimento/ProspectingCsvCampaignPanel.tsx",
     "src/components/commerce/classified-form.tsx",
     "src/components/design-system/ds4-showcase.tsx",
     "src/components/pwa/AppHomeFeed.tsx",
@@ -75,10 +75,8 @@
     "src/components/pwa/QuickCheckoutButton.tsx",
     "src/components/tourism/proposals/ProposalFormFields.tsx",
     "src/components/tourism/studio/StudioFormatPicker.tsx",
-    "src/components/tourism/studio/StudioMapWidget.tsx",
     "src/components/tourism/studio/StudioTemplatePicker.tsx",
-    "src/components/tourism/studio/StudioToolbar.tsx",
-    "src/components/tourism/studio/StudioUnsplashPicker.tsx"
+    "src/components/tourism/studio/StudioToolbar.tsx"
   ],
   "duplicateComponentsCount": 0,
   "duplicateComponents": [],

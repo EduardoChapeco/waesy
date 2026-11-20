@@ -104,6 +104,16 @@ async function sendMeta(instance: OutboundInstance, message: OutboundMessage): P
         ? { messaging_product: "whatsapp", to: message.recipientPhone, type: "text", text: { body: text } }
         : { messaging_product: "whatsapp", to: message.recipientPhone, type: "template", template };
   }
+  const replyToMessageId = stringValue(
+    message.payload.quoted_message_id,
+    (message.payload.quoted as Record<string, unknown> | undefined)?.key &&
+      typeof (message.payload.quoted as Record<string, unknown>).key === "object"
+      ? ((message.payload.quoted as Record<string, any>).key?.id as string | undefined)
+      : undefined,
+  );
+  if (replyToMessageId) {
+    body.context = { message_id: replyToMessageId };
+  }
   const response = await fetch(`https://graph.facebook.com/v20.0/${encodeURIComponent(phoneNumberId)}/messages`, { method: "POST", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(15000) });
   const json = await readJson(response);
   if (!response.ok) throw providerError("Meta Cloud API", response, json);
@@ -159,6 +169,15 @@ async function sendEvolution(instance: OutboundInstance, message: OutboundMessag
     if (!text) throw new OutboundAdapterError("UNSUPPORTED_MESSAGE", "Mensagem de texto vazia", false);
     url = `${root}/message/sendText/${encodeURIComponent(instanceName || "")}`;
     body = { number, text };
+    const q = quoted(message.payload);
+    if (q) {
+      body.quoted = q;
+    } else if (typeof message.payload.quoted_message_id === "string" && message.payload.quoted_message_id.trim()) {
+      body.quoted = { key: { id: message.payload.quoted_message_id.trim() } };
+    }
+    if (typeof message.payload.typing_delay_ms === "number" && message.payload.typing_delay_ms > 0) {
+      body.delay = Math.min(5000, Math.max(500, Math.round(message.payload.typing_delay_ms)));
+    }
   } else if (type === "sticker") {
     url = `${root}/message/sendSticker/${encodeURIComponent(instanceName || "")}`;
     body = { number, sticker: stripDataUriPrefixForGateway(mediaSource(message.payload)) };
@@ -293,4 +312,141 @@ export async function sendWithWhatsAppAdapter(instance: OutboundInstance, messag
   if (instance.provider === "evolution_api") return sendEvolution(instance, message);
   if (instance.provider === "wasender_api") return sendWaSender(instance, message);
   throw new OutboundAdapterError("UNSUPPORTED_PROVIDER", `Nenhum adapter outbound real foi registrado para ${instance.provider}`, false);
+}
+
+/**
+ * Humanização: Envia indicador de presença ("digitando..." / "gravando áudio...")
+ * Best-effort (nunca lança erro fatal no fluxo principal de entrega).
+ */
+export async function sendWhatsAppPresence(
+  instance: OutboundInstance,
+  recipientPhone: string,
+  presence: "composing" | "recording" | "paused",
+  delayMs = 1800,
+): Promise<boolean> {
+  if (instance.provider !== "evolution_api") return false;
+  try {
+    const secret = secrets(instance);
+    const apiKey = stringValue(secret.api_key, secret.access_token, secret.token, getEnvVar("EVOLUTION_API_KEY"));
+    const instanceName = stringValue(instance.external_instance_id, instance.instance_key);
+    if (!apiKey || !instanceName) return false;
+    const root = baseUrl(instance, secret, null);
+    const number = normalizeEvolutionRecipient(recipientPhone);
+    if (!number) return false;
+    const res = await fetch(`${root}/chat/sendPresence/${encodeURIComponent(instanceName)}`, {
+      method: "POST",
+      headers: { apikey: apiKey, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        number,
+        presence,
+        delay: Math.min(5000, Math.max(400, Math.round(delayMs))),
+      }),
+      signal: AbortSignal.timeout(4000),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Humanização: Marca mensagem recebida como lida (ticks azuis) na Evolution ou Meta Cloud API.
+ */
+export async function markWhatsAppMessageAsRead(
+  instance: OutboundInstance,
+  recipientPhone: string,
+  externalMessageId: string,
+): Promise<boolean> {
+  if (!externalMessageId) return false;
+  try {
+    const secret = secrets(instance);
+    if (instance.provider === "meta_cloud_api") {
+      const phoneNumberId = stringValue(instance.phone_number_id, secret.phone_number_id);
+      const accessToken = stringValue(secret.access_token, secret.api_key, secret.token);
+      if (!phoneNumberId || !accessToken) return false;
+      const res = await fetch(`https://graph.facebook.com/v20.0/${encodeURIComponent(phoneNumberId)}/messages`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          status: "read",
+          message_id: externalMessageId,
+        }),
+        signal: AbortSignal.timeout(4000),
+      });
+      return res.ok;
+    }
+    if (instance.provider === "evolution_api") {
+      const apiKey = stringValue(secret.api_key, secret.access_token, secret.token, getEnvVar("EVOLUTION_API_KEY"));
+      const instanceName = stringValue(instance.external_instance_id, instance.instance_key);
+      if (!apiKey || !instanceName) return false;
+      const root = baseUrl(instance, secret, null);
+      const remoteJid = recipientPhone.includes("@") ? recipientPhone : `${normalizeEvolutionRecipient(recipientPhone)}@s.whatsapp.net`;
+      const res = await fetch(`${root}/chat/markMessageAsRead/${encodeURIComponent(instanceName)}`, {
+        method: "POST",
+        headers: { apikey: apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          readMessages: [{ remoteJid, fromMe: false, id: externalMessageId }],
+        }),
+        signal: AbortSignal.timeout(4000),
+      });
+      return res.ok;
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}
+
+/**
+ * Humanização: Reage a uma mensagem específica com emoji (Evolution ou Meta Cloud API).
+ */
+export async function sendWhatsAppReaction(
+  instance: OutboundInstance,
+  recipientPhone: string,
+  externalMessageId: string,
+  reaction: string,
+): Promise<boolean> {
+  if (!externalMessageId || !reaction) return false;
+  try {
+    const secret = secrets(instance);
+    if (instance.provider === "meta_cloud_api") {
+      const phoneNumberId = stringValue(instance.phone_number_id, secret.phone_number_id);
+      const accessToken = stringValue(secret.access_token, secret.api_key, secret.token);
+      if (!phoneNumberId || !accessToken) return false;
+      const res = await fetch(`https://graph.facebook.com/v20.0/${encodeURIComponent(phoneNumberId)}/messages`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
+          to: recipientPhone,
+          type: "reaction",
+          reaction: { message_id: externalMessageId, emoji: reaction },
+        }),
+        signal: AbortSignal.timeout(4000),
+      });
+      return res.ok;
+    }
+    if (instance.provider === "evolution_api") {
+      const apiKey = stringValue(secret.api_key, secret.access_token, secret.token, getEnvVar("EVOLUTION_API_KEY"));
+      const instanceName = stringValue(instance.external_instance_id, instance.instance_key);
+      if (!apiKey || !instanceName) return false;
+      const root = baseUrl(instance, secret, null);
+      const remoteJid = recipientPhone.includes("@") ? recipientPhone : `${normalizeEvolutionRecipient(recipientPhone)}@s.whatsapp.net`;
+      const res = await fetch(`${root}/message/sendReaction/${encodeURIComponent(instanceName)}`, {
+        method: "POST",
+        headers: { apikey: apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          key: { remoteJid, fromMe: false, id: externalMessageId },
+          reaction,
+        }),
+        signal: AbortSignal.timeout(4000),
+      });
+      return res.ok;
+    }
+  } catch {
+    return false;
+  }
+  return false;
 }

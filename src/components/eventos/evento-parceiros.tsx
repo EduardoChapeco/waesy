@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -185,12 +186,13 @@ export function EventoParceiros({ eventId }: EventoParceirosProps) {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs font-bold">URL da Logo (Vetor ou PNG)</Label>
-                <Input
-                  placeholder="https://..."
-                  className="h-11 rounded-lg text-xs"
+                <Label className="text-xs font-bold">Logo do Patrocinador (Upload Nativo)</Label>
+                <ImageUpload
                   value={logoUrl}
-                  onChange={(e) => setLogoUrl(e.target.value)}
+                  onChange={(url) => setLogoUrl(url)}
+                  onRemove={() => setLogoUrl("")}
+                  bucket="store-assets"
+                  aspectPreset="square"
                 />
               </div>
 

@@ -66,14 +66,28 @@ export const Route = createFileRoute("/_store/entrar")({
             throw redirect({ to: returnUrl as any });
           }
         }
-        const membershipsCount = Array.isArray(session?.memberships) ? session.memberships.length : 0;
+        const hostSubId =
+          typeof window !== "undefined"
+            ? (await import("@/lib/vertical-subsystems")).resolveSubsystemFromHost(window.location.host)?.id
+            : undefined;
+        const isDedicatedPortal = Boolean(hostSubId && hostSubId !== "waesy" && hostSubId !== "explorer");
+        const onboardingTarget = isDedicatedPortal ? `/onboarding/empresa?vertical=${hostSubId}` : "/";
+        const membershipsCount = Array.isArray((session as any)?.memberships)
+          ? (session as any).memberships.length
+          : session?.store_id
+            ? 1
+            : 0;
+
         if (membershipsCount > 1) {
           throw redirect({ to: "/auth/portal-selector" });
         }
         if (membershipsCount === 1) {
           throw redirect({ to: "/workspace" });
         }
-        throw redirect({ to: isMaster ? "/admin-master" : "/" });
+        if (isMaster) {
+          throw redirect({ to: isDedicatedPortal ? "/workspace" : "/admin-master" });
+        }
+        throw redirect({ to: onboardingTarget as any });
       }
     } catch (e: any) {
       if (isRedirect(e)) {
@@ -353,7 +367,23 @@ function StepByStepAuthPage() {
    (res as any).role === "platform_admin" ||
    (res as any).role === "master"
  );
- const fallbackDest = hasStore ? "/auth/portal-selector" : isMaster ? "/admin-master" : "/";
+ const hostSub =
+   typeof window !== "undefined"
+     ? (await import("@/lib/vertical-subsystems")).resolveSubsystemFromHost(window.location.host)
+     : null;
+ const isDedicatedPortal = Boolean(
+   hostSub &&
+   (hostSub.category === "vertical_workspace" || hostSub.category === "saas_brand"),
+ );
+ const fallbackDest = hasStore
+   ? "/workspace"
+   : isMaster
+     ? isDedicatedPortal
+       ? "/workspace"
+       : "/admin-master"
+     : isDedicatedPortal
+       ? `/onboarding/empresa?vertical=${hostSub!.id}`
+       : "/";
  const destination = returnUrl && returnUrl !== "/entrar" && returnUrl !== "/" ? returnUrl : fallbackDest;
  await router.invalidate();
  navigate({ to: destination as any, replace: true });

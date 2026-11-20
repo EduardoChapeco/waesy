@@ -84,31 +84,34 @@ export const triggerWorkflowExecution = createServerFn({ method: "POST" })
       .maybeSingle();
 
     if (activeInstance?.id) {
-      const dateKey = new Date().toISOString().slice(0, 13);
-      const cleanRecipientPhone = String(triggerData.recipient_phone || "+5549999999999").replace(/@.*$/, "");
-      const idempotencyKey = `workflow:${id}:${cleanRecipientPhone}:${dateKey}`;
-      const { error: outboxErr } = await supabase
-        .from("whatsapp_outbox")
-        .upsert(
-          {
-            store_id: identity.store_id,
-            channel_instance_id: activeInstance.id,
-            provider: activeInstance.provider || "evolution_api",
-            idempotency_key: idempotencyKey,
-            recipient_phone: cleanRecipientPhone,
-            message_type: "text",
-            payload: {
-              text: renderedMessage,
-              send_time: sendTime,
-              delay_minutes: delayMinutes,
-              trigger_type: wf.trigger_type,
+      const rawRecipient = String(triggerData.recipient_phone || "").replace(/@.*$/, "").trim();
+      const digitsOnly = rawRecipient.replace(/\D/g, "");
+      if (digitsOnly.length >= 10) {
+        const dateKey = new Date().toISOString().slice(0, 13);
+        const idempotencyKey = `workflow:${id}:${rawRecipient}:${dateKey}`;
+        const { error: outboxErr } = await supabase
+          .from("whatsapp_outbox")
+          .upsert(
+            {
+              store_id: identity.store_id,
+              channel_instance_id: activeInstance.id,
+              provider: activeInstance.provider || "evolution_api",
+              idempotency_key: idempotencyKey,
+              recipient_phone: rawRecipient,
+              message_type: "text",
+              payload: {
+                text: renderedMessage,
+                send_time: sendTime,
+                delay_minutes: delayMinutes,
+                trigger_type: wf.trigger_type,
+              },
+              status: "pending",
             },
-            status: "pending",
-          },
-          { onConflict: "store_id,idempotency_key" }
-        );
-      if (!outboxErr) {
-        outboxQueued = true;
+            { onConflict: "store_id,idempotency_key" }
+          );
+        if (!outboxErr) {
+          outboxQueued = true;
+        }
       }
     }
 
@@ -380,10 +383,9 @@ export const triggerTravelReminders24h = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
-
     const targetStoreId = data?.storeId || identity.store_id;
     if (!targetStoreId) return { processed: 0, reminders_sent: 0 };
+    assertStoreAccess(identity, ["owner", "admin", "manager"], targetStoreId);
 
     const now = new Date();
     const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);

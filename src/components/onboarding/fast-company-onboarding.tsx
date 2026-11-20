@@ -40,13 +40,23 @@ import { setTenantContext } from "@/services/identity.functions";
 import { setClientContextCookies } from "@/lib/context-auth";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { CityCombobox } from "@/components/ui/city-combobox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { formatBrazilianCityName, findCityByLabel } from "@/lib/constants/cities";
 import { generateSlug } from "@/lib/slug-utils";
 import { getUnifiedNicheSpec } from "@/lib/niches/niche-ssot";
 import { useMasterLocation, getStoredLocation } from "@/components/location/location-master-pill";
-import { executeMagicOnboarding, type MagicOnboardingResult } from "@/services/magic-onboarding.functions";
+import {
+  startMagicOnboardingJob,
+  runMagicOnboardingJob,
+  getOnboardingJobStatus,
+  type MagicOnboardingResult,
+  type OnboardingLiveLog,
+  type OnboardingEvidenceScreenshot,
+  type OnboardingLiveState,
+} from "@/services/magic-onboarding.functions";
 import { AiLiveExtractionDisplay } from "@/components/onboarding/ai-live-extraction-display";
 import { lookupCep, lookupCnpj, reverseGeocode } from "@/services/public-apis.functions";
-import { formatCep, formatCnpj, cleanDocument } from "@/lib/document-validator";
+import { formatCep, formatCnpj, formatPhone, cleanDocument } from "@/lib/document-validator";
 import { getCanonicalMapStyle, setupMapResizeObserver } from "@/lib/map-styles";
 import type { Map, Marker } from "maplibre-gl";
 import { toast } from "sonner";
@@ -161,6 +171,52 @@ export interface FastCompanyOnboardingProps {
   onSuccess?: (storeId: string) => void;
 }
 
+function resolveCategoryFromCnae(cnaeCode?: string, cnaeDesc?: string): string | null {
+  const code = (cnaeCode || "").replace(/\D/g, "");
+  const desc = (cnaeDesc || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+  if (code.startsWith("79") || desc.includes("turismo") || desc.includes("agencia de viag") || desc.includes("operador turistic")) {
+    return "turismo";
+  }
+  if (code.startsWith("55") || desc.includes("hotel") || desc.includes("pousada") || desc.includes("alojamento")) {
+    return "hospedagem";
+  }
+  if (code.startsWith("56") || desc.includes("restaurante") || desc.includes("lanchonete") || desc.includes("aliment") || desc.includes("pizzaria") || desc.includes("hamburgueria")) {
+    return "gastronomia";
+  }
+  if (code.startsWith("90") || code.startsWith("93") || code.startsWith("8230") || desc.includes("evento") || desc.includes("espetaculo") || desc.includes("bilheteria") || desc.includes("ingresso")) {
+    return "events";
+  }
+  if (code.startsWith("7739") || code.startsWith("7729") || (desc.includes("aluguel") && desc.includes("equipamento"))) {
+    return "equipamentos";
+  }
+  if (code.startsWith("9602") || desc.includes("cabeleireiro") || desc.includes("estetica") || desc.includes("beleza")) {
+    return desc.includes("barbearia") ? "barbearia" : "salao";
+  }
+  if (code.startsWith("86") || code.startsWith("75") || desc.includes("medic") || desc.includes("odontolog") || desc.includes("clinica") || desc.includes("psicolog") || desc.includes("veterinar")) {
+    return "clinica";
+  }
+  if (code.startsWith("45") || desc.includes("oficina") || desc.includes("veiculo") || desc.includes("automov") || desc.includes("autopeca")) {
+    return "oficina";
+  }
+  if (code.startsWith("6920") || desc.includes("contabil")) {
+    return "contabilidade";
+  }
+  if (code.startsWith("6911") || desc.includes("advocac") || desc.includes("juridic")) {
+    return "advocacia";
+  }
+  if (code.startsWith("47") || desc.includes("comercio varejista") || desc.includes("loja")) {
+    return "comercio";
+  }
+  if (code.startsWith("62") || code.startsWith("63") || code.startsWith("70") || code.startsWith("71") || code.startsWith("73") || code.startsWith("74") || code.startsWith("85")) {
+    return "servicos";
+  }
+  return null;
+}
+
 function resolveInitialQuickCategory(vertical?: string, segment?: string): string {
   const byVertical: Record<string, string> = {
     turis: "turismo",
@@ -203,6 +259,7 @@ export function FastCompanyOnboarding({
   const [name, setName] = useState("");
   const [cnpj, setCnpj] = useState("");
   const [isSearchingCnpj, setIsSearchingCnpj] = useState(false);
+  const [detectedCnae, setDetectedCnae] = useState<{ code: string; description: string } | null>(null);
 
   // 2. Segmento & Nicho
   const [category, setCategory] = useState(() =>
@@ -223,6 +280,7 @@ export function FastCompanyOnboarding({
 
   // 4. Canais de Atendimento & Bio
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [bio, setBio] = useState("");
   const [website, setWebsite] = useState("");
   const [instagram, setInstagram] = useState("");
@@ -251,7 +309,10 @@ export function FastCompanyOnboarding({
     return "standard_catalog";
   };
   const [activateBrandedApp, setActivateBrandedApp] = useState(true);
-  const [waesyMarketplaceEnabled, setWaesyMarketplaceEnabled] = useState(true);
+  const isStandaloneVertical = Boolean(
+    initialVertical && initialVertical.toLowerCase() !== "waesy" && initialVertical.toLowerCase() !== "waesy_studio"
+  );
+  const [waesyMarketplaceEnabled, setWaesyMarketplaceEnabled] = useState(!isStandaloneVertical);
   const [appTemplateId, setAppTemplateId] = useState<BrandedAppTemplateId>(() =>
     resolveDefaultTemplate(resolveInitialQuickCategory(initialVertical, initialSegment)),
   );
@@ -271,6 +332,15 @@ export function FastCompanyOnboarding({
   const [aiResult, setAiResult] = useState<MagicOnboardingResult | null>(null);
   const [aiJobId, setAiJobId] = useState<string | null>(null);
   const [showAiDisplay, setShowAiDisplay] = useState(false);
+  const [aiLiveLogs, setAiLiveLogs] = useState<OnboardingLiveLog[]>([]);
+  const [aiLiveScreenshots, setAiLiveScreenshots] = useState<OnboardingEvidenceScreenshot[]>([]);
+  const [aiLiveProgress, setAiLiveProgress] = useState(0);
+  const [aiActiveSquad, setAiActiveSquad] = useState("crawl");
+  const [aiCompletedSquads, setAiCompletedSquads] = useState<string[]>([]);
+  const [aiErrorMessage, setAiErrorMessage] = useState<string | null>(null);
+  const [aiLiveViewerUrl, setAiLiveViewerUrl] = useState<string | null>(null);
+  const [aiCurrentBrowsingUrl, setAiCurrentBrowsingUrl] = useState<string | null>(null);
+  const [aiApplied, setAiApplied] = useState(false);
 
   // Referências para o Mini Mapa MapLibre OSM
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -405,24 +475,50 @@ export function FastCompanyOnboarding({
         setName(res.tradeName || res.corporateName);
       }
       if (res.phone) {
-        setPhone(res.phone);
+        setPhone(formatPhone(res.phone));
+      }
+      if (res.email) {
+        setEmail(res.email);
       }
       if (res.address?.street) setStreet(res.address.street);
       if (res.address?.number) setNumber(res.address.number);
       if (res.address?.complement) setComplement(res.address.complement);
-      if (res.address?.neighborhood) setNeighborhood(res.address.neighborhood);
-      if (res.address?.city) setCity(res.address.city);
-      if (res.address?.state) setState(res.address.state);
+      if (res.address?.neighborhood) setNeighborhood(formatBrazilianCityName(res.address.neighborhood));
+
+      const resolvedCityName = res.address?.city ? formatBrazilianCityName(String(res.address.city)) : "";
+      const resolvedState = res.address?.state ? String(res.address.state).toUpperCase() : "";
+      if (resolvedCityName) setCity(resolvedCityName);
+      if (resolvedState) setState(resolvedState);
+
       if (res.address?.cep) {
-        setCep(formatCep(res.address.cep));
+        setCep(formatCep(String(res.address.cep)));
       }
+
       if (res.address?.latitude && res.address?.longitude) {
         setLatitude(Number(res.address.latitude));
         setLongitude(Number(res.address.longitude));
         updateMapCenter(Number(res.address.latitude), Number(res.address.longitude));
+      } else if (resolvedCityName) {
+        const canonicalMatch = findCityByLabel(`${resolvedCityName} - ${resolvedState}`) || findCityByLabel(resolvedCityName);
+        if (canonicalMatch?.lat && canonicalMatch?.lng) {
+          setLatitude(canonicalMatch.lat);
+          setLongitude(canonicalMatch.lng);
+          updateMapCenter(canonicalMatch.lat, canonicalMatch.lng);
+        }
       }
 
-      toast.success("Dados da empresa importados da Receita Federal!");
+      if (res.mainCnae?.code || res.mainCnae?.description) {
+        setDetectedCnae({
+          code: res.mainCnae.code || "",
+          description: res.mainCnae.description || "",
+        });
+        const mappedCat = resolveCategoryFromCnae(res.mainCnae.code, res.mainCnae.description);
+        if (mappedCat) {
+          setCategory(mappedCat);
+        }
+      }
+
+      toast.success("Dados da empresa e CNAE importados da Receita Federal!");
     } catch (err: any) {
       toast.error(err.message || "Erro ao consultar CNPJ.");
     } finally {
@@ -446,26 +542,87 @@ export function FastCompanyOnboarding({
     }
 
     setAiUrlInput(formattedUrl);
-    setShowAiDisplay(true);
-    setIsExtractingAi(true);
     setAiResult(null);
+    setAiErrorMessage(null);
+    setAiLiveLogs([]);
+    setAiLiveScreenshots([]);
+    setAiLiveProgress(0);
+    setAiActiveSquad("crawl");
+    setAiCompletedSquads([]);
+    setAiLiveViewerUrl(null);
+    setAiCurrentBrowsingUrl(formattedUrl);
+    setAiApplied(false);
+    setIsExtractingAi(true);
+
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
 
     try {
-      toast.loading("Minerando dados do link informado...", { id: "ai-extract" });
-      const res = await executeMagicOnboarding({
-        data: { url: formattedUrl },
+      toast.loading("Verificando provedor de IA e iniciando extração...", { id: "ai-extract" });
+
+      // 1. Pré-flight real: valida chave de IA ativa ANTES de abrir o terminal de extração
+      const { jobId } = await startMagicOnboardingJob({
+        data: {
+          url: formattedUrl,
+          company_name_hint: name || undefined,
+          city_hint: city || undefined,
+          state_hint: state || undefined,
+          instagram_hint: instagram || undefined,
+        },
+      });
+
+      setAiJobId(jobId);
+      setShowAiDisplay(true);
+      setAiLiveProgress(5);
+
+      // 2. Polling real no banco (ai_async_jobs) para exibir logs e prints em tempo real
+      pollInterval = setInterval(async () => {
+        try {
+          const job = await getOnboardingJobStatus({ data: { jobId } });
+          if (typeof job?.progress_percent === "number") {
+            setAiLiveProgress(job.progress_percent);
+          }
+          const liveState = (job?.result as any)?.live_state as OnboardingLiveState | undefined;
+          if (liveState) {
+            if (Array.isArray(liveState.logs)) setAiLiveLogs(liveState.logs);
+            if (Array.isArray(liveState.screenshots)) setAiLiveScreenshots(liveState.screenshots);
+            if (liveState.active_squad) setAiActiveSquad(liveState.active_squad);
+            if (Array.isArray(liveState.completed_squads)) setAiCompletedSquads(liveState.completed_squads);
+            if (liveState.live_viewer_url) setAiLiveViewerUrl(liveState.live_viewer_url);
+            if (liveState.current_browsing_url) setAiCurrentBrowsingUrl(liveState.current_browsing_url);
+          }
+        } catch {
+          // Ignora falha transitória de polling
+        }
+      }, 1000);
+
+      // 3. Executa o pipeline real (Site + Instagram + Google Meu Negócio + Prints + Concílio de IAs)
+      const res = await runMagicOnboardingJob({
+        data: {
+          jobId,
+          url: formattedUrl,
+          company_name_hint: name || undefined,
+          city_hint: city || undefined,
+          state_hint: state || undefined,
+          instagram_hint: instagram || undefined,
+        },
       });
 
       if (res?.result) {
         setAiResult(res.result);
+        setAiLiveProgress(100);
+        if (res.result.logs) setAiLiveLogs(res.result.logs);
+        if (res.result.screenshots) setAiLiveScreenshots(res.result.screenshots);
         if (res.result.job_id) {
           setAiJobId(res.result.job_id);
         }
-        toast.success("Dados minerados com sucesso!", { id: "ai-extract" });
+        toast.success("Dados e prints capturados com sucesso!", { id: "ai-extract" });
       }
     } catch (err: any) {
-      toast.error(err?.message || "Falha na extração de dados.", { id: "ai-extract" });
+      const msg = err?.message || "Falha na extração de dados.";
+      setAiErrorMessage(msg);
+      toast.error(msg, { id: "ai-extract" });
     } finally {
+      if (pollInterval) clearInterval(pollInterval);
       setIsExtractingAi(false);
     }
   };
@@ -487,6 +644,13 @@ export function FastCompanyOnboarding({
       if (match) setCategory(match.id);
     }
 
+    if (extracted.instagram_url) {
+      const igHandle = extracted.instagram_url.split("instagram.com/")[1]?.split("/")[0]?.split("?")[0];
+      if (igHandle) setInstagram(`@${igHandle}`);
+    }
+    if (extracted.logo_url) setLogoUrl(extracted.logo_url);
+    if (extracted.cover_url) setBannerUrl(extracted.cover_url);
+
     if (aiUrlInput) {
       if (aiUrlInput.includes("instagram.com")) {
         const handle = aiUrlInput.split("instagram.com/")[1]?.split("/")[0]?.split("?")[0];
@@ -496,7 +660,7 @@ export function FastCompanyOnboarding({
       }
     }
 
-    setShowAiDisplay(false);
+    setAiApplied(true);
     toast.success("Dados aplicados ao formulário!");
   };
 
@@ -529,11 +693,12 @@ export function FastCompanyOnboarding({
         data: {
           name: name.trim(),
           category,
-          niche: initialSegment || selectedCatObj.niche,
-          primary_niche_id: initialSegment || nicheSpec.id,
+          niche: selectedCatObj.niche,
+          primary_niche_id: nicheSpec.id,
           vertical_sku: initialSku || nicheSpec.defaultVerticalSku,
           brand_origin: initialVertical || undefined,
           phone: phone.trim(),
+          email: email.trim() || undefined,
           city: city.trim(),
           state: state.trim() || "SC",
           address: fullAddress,
@@ -677,7 +842,16 @@ export function FastCompanyOnboarding({
                 <AiLiveExtractionDisplay
                   url={aiUrlInput}
                   isProcessing={isExtractingAi}
+                  progressPercent={aiLiveProgress}
+                  logs={aiLiveLogs}
+                  screenshots={aiLiveScreenshots}
+                  activeSquad={aiActiveSquad}
+                  completedSquads={aiCompletedSquads}
+                  liveViewerUrl={aiLiveViewerUrl}
+                  currentBrowsingUrl={aiCurrentBrowsingUrl}
+                  errorMessage={aiErrorMessage}
                   result={aiResult}
+                  isApplied={aiApplied}
                   onApplyResult={handleApplyAiResult}
                   onCancel={() => setShowAiDisplay(false)}
                 />
@@ -740,51 +914,58 @@ export function FastCompanyOnboarding({
           </div>
 
           {/* ── ETAPA 2: SEGMENTO & NICHO DE ATUAÇÃO ── */}
-          <div className="space-y-4 pt-2">
-            <div className="flex items-center gap-2 border-b border-border/40 pb-2">
-              <Ticket className="size-4 text-primary" />
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
-                2. Segmento & Nicho de Atuação *
-              </h3>
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-2">
+              <div className="flex items-center gap-2">
+                <Ticket className="size-4 text-primary" />
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                  2. Segmento & Nicho de Atuação *
+                </h3>
+              </div>
+              {detectedCnae && (
+                <Badge variant="outline" className="text-2xs font-medium rounded-lg border-primary/30 text-primary bg-primary/5">
+                  CNAE {detectedCnae.code}
+                </Badge>
+              )}
             </div>
 
-            <p className="text-xs text-muted-foreground">
-              Selecione o segmento principal para ativar o menu e as ferramentas correspondentes no Workspace:
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {QUICK_CATEGORIES.map((c) => {
-                const Icon = c.icon;
-                const isSelected = category === c.id;
-                return (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => setCategory(c.id)}
-                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "p-4 rounded-xl border text-left transition-colors duration-200 flex items-start gap-3 cursor-pointer min-h-11",
-                      isSelected
-                        ? "border-primary bg-primary/5 text-foreground shadow-xs ring-1 ring-primary"
-                        : "border-border/60 bg-background/50 hover:bg-muted/40 text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "size-9 rounded-xl flex items-center justify-center shrink-0 mt-1",
-                        isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                      )}
-                    >
-                      <Icon className="size-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <span className="text-xs font-semibold block text-foreground truncate">{c.label}</span>
-                      <span className="text-2xs text-muted-foreground break-words text-wrap leading-tight">
-                        {c.description}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-foreground">
+                Sistema Vertical / Segmento Principal *
+              </label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger className="h-12 min-h-11 rounded-xl text-sm font-medium bg-background border-border/80 focus-visible:ring-2 focus-visible:ring-ring">
+                  <SelectValue placeholder="Selecione o segmento da sua empresa">
+                    <span className="flex items-center gap-3 truncate">
+                      <CatIcon className="size-4 text-primary shrink-0" />
+                      <span className="font-semibold text-foreground truncate">{selectedCat.label}</span>
+                    </span>
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="max-h-80 rounded-xl">
+                  {QUICK_CATEGORIES.map((c) => {
+                    const Icon = c.icon;
+                    return (
+                      <SelectItem key={c.id} value={c.id} className="py-2 cursor-pointer">
+                        <div className="flex items-start gap-3">
+                          <Icon className="size-4 text-primary shrink-0 mt-1" />
+                          <div className="min-w-0">
+                            <span className="text-xs font-semibold text-foreground block">{c.label}</span>
+                            <span className="text-2xs text-muted-foreground block leading-snug">
+                              {c.description}
+                            </span>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+              <p className="text-2xs text-muted-foreground leading-relaxed">
+                {detectedCnae
+                  ? `Identificado via Receita Federal (${detectedCnae.description}). Você pode ajustar manualmente se desejar.`
+                  : selectedCat.description}
+              </p>
             </div>
           </div>
 
@@ -828,12 +1009,15 @@ export function FastCompanyOnboarding({
                 </div>
               </div>
 
-              {/* Cidade e Estado Canônicos */}
+              {/* Cidade e Estado Canônicos (sem duplicação de bairro ou label) */}
               <div className="sm:col-span-6 space-y-2">
                 <label className="text-xs font-semibold text-foreground">Cidade de Atuação *</label>
                 <CityCombobox
                   value={city && state ? `${city} - ${state}` : city}
-                  onChange={(formatted, structured) => {
+                  hideLabel
+                  hideNeighborhood
+                  hideHelperText
+                  onChange={(_formatted, structured) => {
                     if (structured?.city) setCity(structured.city);
                     if (structured?.state) setState(structured.state);
                   }}
@@ -913,18 +1097,31 @@ export function FastCompanyOnboarding({
               </h3>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-foreground flex items-center gap-2">
-                <Phone className="size-4 text-primary" />
-                <span>WhatsApp Comercial de Atendimento *</span>
-              </label>
-              <Input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="(49) 99999-9999"
-                className="h-11 min-h-11 rounded-xl text-base md:text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                required
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-2">
+                  <Phone className="size-4 text-primary" />
+                  <span>WhatsApp Comercial *</span>
+                </label>
+                <Input
+                  value={phone}
+                  onChange={(e) => setPhone(formatPhone(e.target.value))}
+                  placeholder="(49) 99999-9999"
+                  className="h-11 min-h-11 rounded-xl text-base md:text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-foreground">E-mail Comercial</label>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="contato@suaempresa.com.br"
+                  className="h-11 min-h-11 rounded-xl text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -979,13 +1176,14 @@ export function FastCompanyOnboarding({
               </h3>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <div className="space-y-2">
-                <label className="text-2xs font-medium text-muted-foreground">Logotipo da Empresa</label>
-                <div className="size-24 sm:size-28">
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-start">
+              <div className="sm:col-span-4 space-y-2">
+                <label className="text-2xs font-medium text-muted-foreground block">Logotipo (1:1)</label>
+                <div className="size-28">
                   <ImageUpload
                     value={logoUrl}
                     onChange={setLogoUrl}
+                    onRemove={() => setLogoUrl("")}
                     bucket="avatars"
                     aspectPreset="square"
                     variant="avatar"
@@ -994,6 +1192,20 @@ export function FastCompanyOnboarding({
                     helperText="Formato quadrado proporcionalizado"
                   />
                 </div>
+              </div>
+
+              <div className="sm:col-span-8 space-y-2">
+                <label className="text-2xs font-medium text-muted-foreground block">Banner / Capa da Vitrine (Opcional)</label>
+                <ImageUpload
+                  value={bannerUrl}
+                  onChange={setBannerUrl}
+                  onRemove={() => setBannerUrl("")}
+                  bucket="covers"
+                  aspectPreset="banner"
+                  variant="banner"
+                  label="Adicionar Capa"
+                  helperText="Proporção 21:9 (Hero da Vitrine / App)"
+                />
               </div>
             </div>
           </div>
@@ -1146,12 +1358,17 @@ export function FastCompanyOnboarding({
 
         {/* Card do Perfil Público Canônico */}
         <div className="rounded-2xl border border-border/60 bg-card overflow-hidden space-y-0">
+          {bannerUrl && (
+            <div className="w-full aspect-21/9 bg-muted overflow-hidden border-b border-border/40">
+              <img src={bannerUrl} alt="Capa da Empresa" className="size-full object-cover select-none" />
+            </div>
+          )}
           <div className="p-4 sm:p-5 bg-card border-b border-border/40">
             <div className="flex items-center justify-between gap-4">
               {/* Logo Squircle 1:1 */}
-              <div className="size-16 sm:size-20 rounded-xl border-2 border-border/60 bg-background overflow-hidden flex items-center justify-center shrink-0">
+              <div className="size-16 sm:size-20 rounded-xl border-2 border-border/60 bg-background p-1.5 overflow-hidden flex items-center justify-center shrink-0">
                 {logoUrl ? (
-                  <img src={logoUrl} alt={name || "Logo"} className="size-full object-cover select-none" />
+                  <img src={logoUrl} alt={name || "Logo"} className="max-w-full max-h-full object-contain select-none" />
                 ) : (
                   <div className="size-full bg-foreground text-background flex items-center justify-center font-semibold text-xl select-none">
                     {name ? name.charAt(0).toUpperCase() : "E"}

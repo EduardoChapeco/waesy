@@ -5,7 +5,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
-import { getServerIdentity } from "@/lib/server-access";
+import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { getCurrentIdentity } from "@/services/cart-helpers";
 
 export interface WhatsAppLeadDTO {
@@ -453,6 +453,7 @@ export const getStoreWhatsAppAnalytics = createServerFn({ method: "GET" })
         daily_trend: [],
       };
     }
+    assertStoreAccess(identity);
 
     const { data: analytics, error } = await supabase.rpc("get_store_whatsapp_analytics", {
       p_store_id: identity.store_id,
@@ -492,6 +493,7 @@ export const listStoreWhatsAppLeads = createServerFn({ method: "GET" })
     const identity = await getServerIdentity();
 
     if (!identity.store_id) return [];
+    assertStoreAccess(identity);
 
     let query = supabase
       .from("whatsapp_lead_conversions")
@@ -528,6 +530,7 @@ export const updateWhatsAppLeadStatus = createServerFn({ method: "POST" })
     if (!identity.store_id) {
       throw new Error("Não autorizado.");
     }
+    assertStoreAccess(identity);
 
     const { error } = await supabase
       .from("whatsapp_lead_conversions")

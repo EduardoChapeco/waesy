@@ -962,10 +962,10 @@ export const searchCentralOnDemandServices = createServerFn({ method: "GET" })
 
 // ── 17. CALENDÁRIO EDITORIAL & DATAS DE MARKETING SAZONAIS ──
 const getMarketingCalendarSchema = z.object({
-  daysAhead: z.number().optional().default(60),
-  sector: z.string().optional(),
-  stateCode: z.string().optional(),
-  cityName: z.string().optional(),
+  daysAhead: z.number().nullish().transform((v) => v ?? 60),
+  sector: z.string().nullish(),
+  stateCode: z.string().nullish(),
+  cityName: z.string().nullish(),
 });
 
 export const getCentralMarketingCalendar = createServerFn({ method: "GET" })
@@ -974,9 +974,9 @@ export const getCentralMarketingCalendar = createServerFn({ method: "GET" })
     const { daysAhead, sector, stateCode, cityName } = data;
 
     const calendar = getUpcomingMarketingCalendar(daysAhead, {
-      sector,
-      stateCode,
-      cityName,
+      sector: sector ?? undefined,
+      stateCode: stateCode ?? undefined,
+      cityName: cityName ?? undefined,
     });
 
     return {

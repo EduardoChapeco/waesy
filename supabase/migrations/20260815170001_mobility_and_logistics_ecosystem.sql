@@ -208,20 +208,24 @@ ALTER TABLE mobility_stops ENABLE ROW LEVEL SECURITY;
 ALTER TABLE mobility_offers_negotiations ENABLE ROW LEVEL SECURITY;
 
 -- Courier Profiles: Leitura pública de motoristas disponíveis; edição pelo próprio usuário ou loja vinculada
+DROP POLICY IF EXISTS "Public read available courier profiles" ON courier_profiles;
 CREATE POLICY "Public read available courier profiles"
   ON courier_profiles FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Couriers can manage their own profile" ON courier_profiles;
 CREATE POLICY "Couriers can manage their own profile"
   ON courier_profiles FOR ALL
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
 -- Price Tables: Leitura pública para cotações; edição pelo dono da loja ou motorista
+DROP POLICY IF EXISTS "Public read logistics price tables" ON logistics_price_tables;
 CREATE POLICY "Public read logistics price tables"
   ON logistics_price_tables FOR SELECT
   USING (is_active = true);
 
+DROP POLICY IF EXISTS "Store owners can manage price tables" ON logistics_price_tables;
 CREATE POLICY "Store owners can manage price tables"
   ON logistics_price_tables FOR ALL
   USING (store_id IS NOT NULL AND EXISTS (
@@ -229,14 +233,17 @@ CREATE POLICY "Store owners can manage price tables"
   ));
 
 -- Mobility Requests: Leitura pelo cliente que solicitou, pelo motorista atribuído ou pela loja responsável
+DROP POLICY IF EXISTS "Customers can view their own requests" ON mobility_requests;
 CREATE POLICY "Customers can view their own requests"
   ON mobility_requests FOR SELECT
   USING (customer_id = auth.uid() OR magic_token IS NOT NULL);
 
+DROP POLICY IF EXISTS "Customers can create requests" ON mobility_requests;
 CREATE POLICY "Customers can create requests"
   ON mobility_requests FOR INSERT
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Customers can update their own pending requests" ON mobility_requests;
 CREATE POLICY "Customers can update their own pending requests"
   ON mobility_requests FOR UPDATE
   USING (customer_id = auth.uid() OR (courier_profile_id IS NOT NULL AND EXISTS (
@@ -244,6 +251,7 @@ CREATE POLICY "Customers can update their own pending requests"
   )));
 
 -- Mobility Stops: Acesso vinculado ao request
+DROP POLICY IF EXISTS "Access mobility stops via request" ON mobility_stops;
 CREATE POLICY "Access mobility stops via request"
   ON mobility_stops FOR ALL
   USING (EXISTS (
@@ -255,6 +263,7 @@ CREATE POLICY "Access mobility stops via request"
   ));
 
 -- Negotiations: Leitura e criação pelos participantes da negociação
+DROP POLICY IF EXISTS "Participants can view and create negotiations" ON mobility_offers_negotiations;
 CREATE POLICY "Participants can view and create negotiations"
   ON mobility_offers_negotiations FOR ALL
   USING (true)

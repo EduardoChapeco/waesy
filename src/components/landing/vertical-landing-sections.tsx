@@ -89,7 +89,7 @@ export function VerticalLandingSections({
         return (
           <section
             key={section.id}
-            className="rounded-2xl border border-border bg-card p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
+            className="py-8 border-b border-border/50 last:border-b-0 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
           >
             <div
               className={`${hasMedia ? "lg:col-span-6" : "lg:col-span-12"} space-y-4 ${

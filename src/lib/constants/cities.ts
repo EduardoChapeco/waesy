@@ -212,13 +212,38 @@ export function searchCanonicalCities(query: string, limit = 12): CityRecord[] {
  .map((item) => item.city);
 }
 
+function normalizeCityText(str: string): string {
+ return str
+  .toLowerCase()
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .trim();
+}
+
+export function formatBrazilianCityName(city: string): string {
+ if (!city) return "";
+ const prepositions = new Set(["da", "de", "do", "das", "dos", "e"]);
+ return city
+  .trim()
+  .toLowerCase()
+  .split(/\s+/)
+  .map((word, idx) => {
+   if (idx > 0 && prepositions.has(word)) return word;
+   return word.charAt(0).toUpperCase() + word.slice(1);
+  })
+  .join(" ");
+}
+
 export function findCityByLabel(label: string): CityRecord | undefined {
  if (!label) return undefined;
+ const norm = normalizeCityText(label);
+ const cityOnly = norm.split(/\s*[-–—,]\s*/)[0]?.trim() || norm;
  return CANONICAL_CITIES.find(
  (c) =>
- c.label.toLowerCase() === label.toLowerCase() ||
- c.name.toLowerCase() === label.toLowerCase() ||
- c.id.toLowerCase() === label.toLowerCase()
+ normalizeCityText(c.label) === norm ||
+ normalizeCityText(c.name) === norm ||
+ normalizeCityText(c.name) === cityOnly ||
+ normalizeCityText(c.id) === norm
  );
 }
 

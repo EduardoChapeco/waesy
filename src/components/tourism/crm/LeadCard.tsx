@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { MessageSquare, Clock, MapPin, Calendar, Users, CheckCircle2, ChevronRight, ChevronLeft, UserCheck, MoreVertical, Edit3, FileText, Plane, Trash2, AlertTriangle, Paperclip, ShieldCheck, Bell, Sparkles, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { formatMoney } from '@/lib/money';
@@ -443,8 +444,8 @@ export function LeadCard({
         )}
       </div>
 
-      {/* Alerta de Inatividade / Staleness */}
-      {staleness.isStale && (
+      {/* Alerta de Inatividade / Staleness + Status de Proposta Kanban */}
+      {(staleness.isStale || staleness.isCold) && (
         <div
           className={cn(
             'text-2xs font-medium inline-flex items-center gap-2',
@@ -457,6 +458,17 @@ export function LeadCard({
           <span>
             {staleness.isCold ? 'Inativo há' : 'Sem resposta há'} {staleness.days}d
           </span>
+        </div>
+      )}
+      {Boolean(lead.custom_fields?.proposal_status || lead.status === 'proposal' || lead.status === 'qualifying') && (
+        <div className="flex items-center gap-2 flex-wrap">
+          {lead.custom_fields?.proposal_status === 'sent' || lead.custom_fields?.accepted_proposal_id ? (
+            <Badge variant="default" className="text-3xs px-2 py-1">Proposta Enviada</Badge>
+          ) : lead.custom_fields?.proposal_status === 'draft' ? (
+            <Badge variant="secondary" className="text-3xs px-2 py-1">Proposta em Rascunho</Badge>
+          ) : (
+            <Badge variant="outline" className="text-3xs px-2 py-1 border-warning/40 text-warning-strong">Sem Proposta</Badge>
+          )}
         </div>
       )}
 

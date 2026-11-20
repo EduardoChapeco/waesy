@@ -1,5 +1,5 @@
 // motion-reduce: safe
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   MagnifyingGlass,
   MapPin,
@@ -38,6 +38,10 @@ import { toast } from "sonner";
 import { publicTourismAutoServiceSearchFn } from "@/services/infotravel";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
+import {
+  OtaSelfServiceCheckoutModal,
+  type OtaOfferItem,
+} from "@/components/tourism/booking/OtaSelfServiceCheckoutModal";
 
 export interface TourismQuotePrefill {
   origin?: string;
@@ -59,6 +63,7 @@ interface TourismDynamicSearchPanelProps {
   agencyName?: string;
   showCorporateTab?: boolean;
   onCorporateAction?: () => void;
+  initialSeedParams?: TourismQuotePrefill;
   className?: string;
 }
 
@@ -70,18 +75,43 @@ export function TourismDynamicSearchPanel({
   agencyName,
   showCorporateTab = true,
   onCorporateAction,
+  initialSeedParams,
   className,
 }: TourismDynamicSearchPanelProps) {
   // Search state
-  const [origin, setOrigin] = useState("");
-  const [originIata, setOriginIata] = useState("");
-  const [destination, setDestination] = useState("");
-  const [destinationIata, setDestinationIata] = useState("");
+  const [origin, setOrigin] = useState(initialSeedParams?.origin || "");
+  const [originIata, setOriginIata] = useState(initialSeedParams?.originIata || "");
+  const [destination, setDestination] = useState(initialSeedParams?.destination || "");
+  const [destinationIata, setDestinationIata] = useState(initialSeedParams?.destinationIata || "");
   const [tripMode, setTripMode] = useState<"round_trip" | "one_way">("round_trip");
-  const [departureDate, setDepartureDate] = useState("");
-  const [returnDate, setReturnDate] = useState("");
-  const [rooms, setRooms] = useState<GuestRoomOccupancy[]>([{ adults: 2, childrenAges: [] }]);
+  const [departureDate, setDepartureDate] = useState(initialSeedParams?.departureDate || "");
+  const [returnDate, setReturnDate] = useState(initialSeedParams?.returnDate || "");
+  const [rooms, setRooms] = useState<GuestRoomOccupancy[]>(
+    initialSeedParams?.rooms && initialSeedParams.rooms.length > 0
+      ? initialSeedParams.rooms
+      : [{ adults: 2, childrenAges: [] }]
+  );
   const [cabinClass, setCabinClass] = useState<"economy" | "premium_economy" | "business" | "first">("economy");
+
+  // Auto-hidratação via parâmetros de URL para ofertas dinâmicas do Caçador IA (infotravel_seed_params)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sp = new URLSearchParams(window.location.search);
+    const qDest = sp.get("destination") || sp.get("destino");
+    const qOrigin = sp.get("origin") || sp.get("origem");
+    const qDep = sp.get("departureDate") || sp.get("checkIn") || sp.get("saida");
+    const qRet = sp.get("returnDate") || sp.get("checkOut") || sp.get("retorno");
+    const qAdults = sp.get("adults") || sp.get("adultos");
+
+    if (qDest && !destination) setDestination(qDest);
+    if (qOrigin && !origin) setOrigin(qOrigin);
+    if (qDep && !departureDate) setDepartureDate(qDep);
+    if (qRet && !returnDate) setReturnDate(qRet);
+    if (qAdults) {
+      const parsedAdults = Math.max(1, Math.min(8, Number(qAdults) || 2));
+      setRooms([{ adults: parsedAdults, childrenAges: [] }]);
+    }
+  }, []);
 
   // Live Results State
   const [isSearching, setIsSearching] = useState(false);
@@ -89,6 +119,8 @@ export function TourismDynamicSearchPanel({
   const [hasSearched, setHasSearched] = useState(false);
   const [isLiveGdsActive, setIsLiveGdsActive] = useState(false);
   const [isWoobaLiveActive, setIsWoobaLiveActive] = useState(false);
+  const [selectedOfferForCheckout, setSelectedOfferForCheckout] = useState<OtaOfferItem | null>(null);
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
 
   const usesAirportCombobox =
     activeChannel === "aereos" ||
@@ -591,12 +623,17 @@ export function TourismDynamicSearchPanel({
                     <Button
                       type="button"
                       size="sm"
-                      onClick={() =>
-                        onOpenQuote(
-                          item.destination || item.title,
-                          buildPrefillPayload(`Oferta selecionada (${item.source || "vitrine"}): ${item.title}`),
-                        )
-                      }
+                      onClick={() => {
+                        if (item.priceCents > 0) {
+                          setSelectedOfferForCheckout(item);
+                          setIsCheckoutModalOpen(true);
+                        } else {
+                          onOpenQuote(
+                            item.destination || item.title,
+                            buildPrefillPayload(`Oferta selecionada (${item.source || "vitrine"}): ${item.title}`),
+                          );
+                        }
+                      }}
                       className="h-11 min-h-11 px-4 text-xs rounded-lg font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-ring shrink-0"
                     >
                       Reservar
@@ -608,6 +645,15 @@ export function TourismDynamicSearchPanel({
           )}
         </div>
       )}
+
+      {/* ── Modal de Checkout OTA Self-Service ── */}
+      <OtaSelfServiceCheckoutModal
+        open={isCheckoutModalOpen}
+        onOpenChange={setIsCheckoutModalOpen}
+        offer={selectedOfferForCheckout}
+        storeId={storeId}
+        agencyName={agencyName}
+      />
     </div>
   );
 }

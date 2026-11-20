@@ -5,6 +5,10 @@
 -- so every store instance has a luxury storefront layout out of the box.
 -- ============================================================================
 
+ALTER TYPE public.builder_block_type ADD VALUE IF NOT EXISTS 'hero';
+ALTER TYPE public.builder_block_type ADD VALUE IF NOT EXISTS 'category_grid';
+ALTER TYPE public.builder_block_type ADD VALUE IF NOT EXISTS 'product_grid';
+
 DO $$
 DECLARE
   v_store_id UUID := '00000000-0000-0000-0000-000000000002';

@@ -17,6 +17,9 @@ import {
   Wrench,
   Truck,
   Sparkles,
+  Ticket,
+  Scale,
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +36,7 @@ import {
   cleanDocument,
   validateBirthDate,
 } from "@/lib/document-validator";
+import { resolveSubsystemBySlug, resolveSubsystemFromHost } from "@/lib/vertical-subsystems";
 
 type OnboardingEmpresaSearch = {
   vertical?: string;
@@ -72,22 +76,64 @@ export const Route = createFileRoute("/onboarding/empresa")({
 
 const NICHE_OPTIONS = [
   {
+    id: "pro",
+    label: "Waesy Pro (All-in-One)",
+    description: "Acesso irrestrito a todos os sistemas verticais, ERP, CRM, IA e vitrines.",
+    icon: Sparkles,
+  },
+  {
+    id: "talk",
+    label: "Waesy Talk (Atendimento & CRM)",
+    description: "WhatsApp multi-atendente, filas, chat ao vivo, funil CRM e carteira de contatos.",
+    icon: User,
+  },
+  {
+    id: "copilot",
+    label: "Waesy Copilot (IA Autônoma)",
+    description: "Agente autônomo, squads, skills, automações e inteligência de mercado.",
+    icon: ShieldCheck,
+  },
+  {
     id: "turismo",
-    label: "Turismo & Viagens",
+    label: "Turismo & Viagens (Turis)",
     description: "Pacotes, passagens, hotelaria, cotação e propostas digitais.",
     icon: Compass,
   },
   {
     id: "gastronomia",
-    label: "Gastronomia & Delivery",
-    description: "Cardápio digital, mesas, comandas e integração com MotoLink.",
+    label: "Gastronomia & KDS (Wider)",
+    description: "Cardápio digital, mesas, comandas, KDS e entrega local.",
     icon: UtensilsCrossed,
   },
   {
+    id: "eventos",
+    label: "Eventos & Bilheteria (Eventio)",
+    description: "Lotes de ingressos, check-in QR na portaria e promoters.",
+    icon: Ticket,
+  },
+  {
+    id: "juridico",
+    label: "Jurídico & Processos (Juris)",
+    description: "Gestão de casos, prazos forenses, cofre GED e honorários.",
+    icon: Scale,
+  },
+  {
+    id: "beleza_clinica",
+    label: "Agenda, Beleza & Clínicas (WowBook)",
+    description: "Agendamentos, prontuário, salas e rateio Salão-Parceiro.",
+    icon: Calendar,
+  },
+  {
     id: "varejo",
-    label: "Varejo & Comércio",
-    description: "Catálogo de produtos, estoque, controle de pedidos e checkout.",
+    label: "Lojas & Varejo (Waesy Store)",
+    description: "Catálogo com grades, PDV ágil, controle de estoque e vitrine.",
     icon: ShoppingBag,
+  },
+  {
+    id: "mercado",
+    label: "Supermercados & Mercearias (Mercado)",
+    description: "PDV de caixa rápido, produtos pesáveis por balança e lotes.",
+    icon: Store,
   },
   {
     id: "b2b_distribuidora",
@@ -97,28 +143,78 @@ const NICHE_OPTIONS = [
   },
   {
     id: "veiculos",
-    label: "Veículos & Concessionária",
-    description: "Estoque de veículos, ficha técnica e proposta de financiamento.",
+    label: "Oficinas, Autocenters & Veículos",
+    description: "Ordens de serviço por placa, pátio, peças e concessionária.",
     icon: Car,
   },
   {
     id: "imoveis",
     label: "Imóveis & Locação",
-    description: "Portfólio de imóveis, tour fotográfico e atendimento a leads.",
+    description: "Portfólio de imóveis, vistorias fotográficas e contratos.",
     icon: Home,
   },
   {
     id: "servicos",
-    label: "Serviços & Consultoria",
-    description: "Agendamento, ordens de serviço e orçamento para clientes.",
+    label: "Serviços, Contratos & Consultoria",
+    description: "Ordens de serviço, minutas digitais, RH e orçamentos.",
     icon: Wrench,
   },
 ];
 
+function mapInitialVerticalToNicheOption(rawVerticalOrSegment?: string | null): string {
+  const clean = String(rawVerticalOrSegment || "").trim().toLowerCase();
+  if (!clean) return "pro";
+  if (clean === "pro" || clean === "waesy_bundle_pro" || clean === "waesy_studio") return "pro";
+  if (clean === "talk" || clean === "atendimento" || clean === "chat") return "talk";
+  if (clean === "copilot" || clean === "waesy_copilot" || clean === "ia") return "copilot";
+  if (clean === "turis" || clean === "tourism" || clean === "turismo") return "turismo";
+  if (clean === "wider" || clean === "tableway" || clean === "gastronomy" || clean === "gastronomia") return "gastronomia";
+  if (clean === "eventio" || clean === "passhub" || clean === "events" || clean === "eventos") return "eventos";
+  if (clean === "juris" || clean === "lexcloud" || clean === "law_firm" || clean === "juridico") return "juridico";
+  if (clean === "wowbook" || clean === "beauty_salon" || clean === "healthcare" || clean === "beleza_clinica") return "beleza_clinica";
+  if (clean === "mercado" || clean === "supermercado") return "mercado";
+  if (clean === "store" || clean === "varejo" || clean === "retail" || clean === "lojas") return "varejo";
+  if (clean === "autocenter" || clean === "oficinas" || clean === "automotive" || clean === "veiculos") return "veiculos";
+  if (clean === "imobiliaria" || clean === "imoveis" || clean === "real_estate") return "imoveis";
+  if (clean === "b2b_distribuidora") return "b2b_distribuidora";
+  if (clean === "signflow" || clean === "talentlink" || clean === "omnipage" || clean === "services" || clean === "servicos") return "servicos";
+  return "turismo";
+}
+
 function EnterpriseOnboardingPage() {
   const { session } = Route.useLoaderData();
+  const search = Route.useSearch();
   const navigate = useNavigate();
   const [isPending, startTransition] = useTransition();
+
+  const initialVerticalContext = (() => {
+    const hostSub =
+      typeof window !== "undefined" ? resolveSubsystemFromHost(window.location.hostname) : null;
+    let stored: { vertical?: string; niche?: string; sku?: string } | null = null;
+    if (typeof window !== "undefined") {
+      try {
+        const raw = sessionStorage.getItem("waesy_pending_vertical_onboarding");
+        if (raw) stored = JSON.parse(raw);
+      } catch {}
+    }
+    const verticalSlug =
+      search?.vertical || stored?.vertical || (hostSub && hostSub.id !== "waesy" ? hostSub.id : undefined);
+    const resolvedSub = resolveSubsystemBySlug(verticalSlug);
+    const segmentKey =
+      search?.vertical ||
+      search?.segment ||
+      search?.niche ||
+      stored?.vertical ||
+      stored?.niche ||
+      resolvedSub?.id ||
+      resolvedSub?.primaryNicheId;
+    return {
+      nicheOption: mapInitialVerticalToNicheOption(segmentKey),
+      vertical: resolvedSub?.id || verticalSlug,
+      brandOrigin: resolvedSub?.brandVerticalId || resolvedSub?.id,
+      verticalSku: search?.sku || stored?.sku || resolvedSub?.defaultVerticalSku,
+    };
+  })();
 
   const [step, setStep] = useState<1 | 2>(1);
 
@@ -136,7 +232,7 @@ function EnterpriseOnboardingPage() {
   const [tradeName, setTradeName] = useState("");
   const [corporateName, setCorporateName] = useState("");
   const [cnpj, setCnpj] = useState("");
-  const [niche, setNiche] = useState("turismo");
+  const [niche, setNiche] = useState(initialVerticalContext.nicheOption);
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [address, setAddress] = useState("");
@@ -225,6 +321,9 @@ function EnterpriseOnboardingPage() {
             corporateName: corporateName || undefined,
             cnpj: cnpj || undefined,
             niche,
+            vertical: initialVerticalContext.vertical || undefined,
+            brandOrigin: initialVerticalContext.brandOrigin || undefined,
+            verticalSku: initialVerticalContext.verticalSku || undefined,
             city,
             state: state.toUpperCase(),
             address: address || undefined,

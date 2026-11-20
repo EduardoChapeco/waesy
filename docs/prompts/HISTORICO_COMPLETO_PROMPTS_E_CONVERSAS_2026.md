@@ -1,4 +1,4 @@
-# Histórico Canônico de Prompts, Requisitos e Diretrizes das Conversas — Waesy
+﻿# Histórico Canônico de Prompts, Requisitos e Diretrizes das Conversas — Waesy
 
 - **Sessões Catalogadas:** 71
 - **Total de Prompts de Usuário:** 792
@@ -7979,7 +7979,7 @@ CORRIGIU TUDO?
 
 ### Prompt #12 (Step 3684 — 2026-09-13T03:21:36)
 ```text
-Pegue o token abaixo fornecido pelo supabae é o meu personal acess, você vai guardar ele aqui neste maquina/repo de forma que sempre encontre quando precisar, e também que fique aqui guardadinho. sbp_[REDACTED_SUPABASE_TOKEN] a senha do banco de dados é EEaR6399!@#2026  1. Configure MCP
+Pegue o token abaixo fornecido pelo supabae é o meu personal acess, você vai guardar ele aqui neste maquina/repo de forma que sempre encontre quando precisar, e também que fique aqui guardadinho. sbp_[REDACTED_SUPABASE_TOKEN] a senha do banco de dados é [REDACTED_PASSWORD]  1. Configure MCP
 Set up your MCP client.
 Details:
 Add this configuration to ~/.gemini/antigravity/mcp_config.json:
@@ -8111,7 +8111,7 @@ continue as proximas fases, é importante seguir as regras de não hardcodar nad
 
 ### Prompt #3 (Step 242 — 2026-07-14T03:42:13)
 ```text
-Senha: EEaR6399!@#2026
+Senha: [REDACTED_PASSWORD]
 1. Add the Supabase MCP server to Codex
 Run this command to add the server.
 Code:
@@ -8849,7 +8849,7 @@ vamos continuar refatorando tudo completmente recursivamente e garantindo que tu
 
 ### Prompt #17 (Step 2033 — 2026-07-15T04:38:14)
 ```text
-mas eu ja te dei tudo, todas as infos necessarias do supabase Senha: EEaR6399!@#2026
+mas eu ja te dei tudo, todas as infos necessarias do supabase Senha: [REDACTED_PASSWORD]
 1. Add the Supabase MCP server to Codex
 Run this command to add the server.
 Code:
@@ -9126,7 +9126,7 @@ eu preciso que você faça deploy completo, commmit completo, deploy supabase e 
 
 ### Prompt #34 (Step 3635 — 2026-07-16T11:57:51)
 ```text
-Senha: EEaR6399!@#2026
+Senha: [REDACTED_PASSWORD]
 1. Add the Supabase MCP server to Codex
 Run this command to add the server.
 Code:

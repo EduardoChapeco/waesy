@@ -6,7 +6,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity, assertStoreAccess, STAFF_ROLES } from "@/lib/server-access";
+import { getServerIdentity, assertStoreAccess, STAFF_ROLES, requireStoreVerticalAccess } from "@/lib/server-access";
 import { inspectPromptSecurity, buildSandboxedPromptPayload } from "@/lib/ai/prompt-shield";
 import { CANONICAL_ARTIFACT_TYPES, normalizeArtifactType } from "@/lib/ai/artifact-contract";
 import { executeAiCoreGateway } from "./ai-core-gateway.functions";
@@ -2072,6 +2072,7 @@ export const createAiConversationThread = createServerFn({ method: "POST" })
 
     if (resolvedStoreId) {
       assertAiStoreTarget(resolvedStoreId, identity);
+      await requireStoreVerticalAccess("copilot", resolvedStoreId);
     }
 
     const domainType = resolvedStoreId ? "workspace" : "personal";

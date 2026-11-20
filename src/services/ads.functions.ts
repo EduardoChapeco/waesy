@@ -2067,19 +2067,26 @@ export const getExternalAdsOAuthUrl = createServerFn({ method: "POST" })
     const baseOrigin = data.originUrl || process.env.PUBLIC_APP_URL || "https://usewaesy.pages.dev";
     const redirectUri = `${baseOrigin.replace(/\/$/, "")}/api/auth/ads/callback`;
 
-    const statePayload = Buffer.from(
-      JSON.stringify({
-        storeId: identity.store_id,
-        platform: data.platform,
-        returnTo: data.returnTo,
-        ts: Date.now(),
-      }),
-      "utf8"
-    ).toString("base64url");
+    const { signOAuthState } = await import("@/lib/crypto-vault.server");
+    const safeReturnTo =
+      typeof data.returnTo === "string" &&
+      data.returnTo.startsWith("/") &&
+      !data.returnTo.startsWith("//") &&
+      !data.returnTo.includes("\\")
+        ? data.returnTo
+        : "/workspace/marketing/anuncios";
+
+    const statePayload = signOAuthState({
+      storeId: identity.store_id,
+      userId: identity.id,
+      platform: data.platform,
+      returnTo: safeReturnTo,
+    });
 
     const { data: masterStore } = await supabase
       .from("stores")
       .select("settings")
+      .eq("is_platform_root", true)
       .limit(1)
       .maybeSingle();
 

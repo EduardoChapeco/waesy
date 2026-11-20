@@ -215,9 +215,17 @@ CREATE TABLE IF NOT EXISTS public.indexed_businesses (
   UNIQUE(source, external_id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_ib_city ON public.indexed_businesses(city);
-CREATE INDEX IF NOT EXISTS idx_ib_cnpj ON public.indexed_businesses(cnpj);
-CREATE INDEX IF NOT EXISTS idx_ib_quality ON public.indexed_businesses(data_quality_score DESC);
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public' AND c.relname = 'indexed_businesses' AND c.relkind = 'r'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS idx_ib_city ON public.indexed_businesses(city);
+    CREATE INDEX IF NOT EXISTS idx_ib_cnpj ON public.indexed_businesses(cnpj);
+    CREATE INDEX IF NOT EXISTS idx_ib_quality ON public.indexed_businesses(data_quality_score DESC);
+  END IF;
+END $$;
 
 -- 9. indexed_jobs - Vagas Mineradas
 CREATE TABLE IF NOT EXISTS public.indexed_jobs (
@@ -344,10 +352,19 @@ ALTER TABLE public.scraper_configs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.domain_configs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.crawl_seeds ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.scraper_audit_log ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.indexed_businesses ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.indexed_jobs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.indexed_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.indexed_products ENABLE ROW LEVEL SECURITY;
+DO $$
+DECLARE
+  v_rel TEXT;
+BEGIN
+  FOREACH v_rel IN ARRAY ARRAY['indexed_businesses','indexed_jobs','indexed_events','indexed_products'] LOOP
+    IF EXISTS (
+      SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+      WHERE n.nspname = 'public' AND c.relname = v_rel AND c.relkind = 'r'
+    ) THEN
+      EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', v_rel);
+    END IF;
+  END LOOP;
+END $$;
 ALTER TABLE public.mining_schedules ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
@@ -379,37 +396,45 @@ CREATE POLICY "crawl_seeds_staff_all" ON public.crawl_seeds FOR ALL USING (true)
   DROP POLICY IF EXISTS "scraper_audit_log_staff_all" ON public.scraper_audit_log;
 CREATE POLICY "scraper_audit_log_staff_all" ON public.scraper_audit_log FOR ALL USING (true);
 
-  DROP POLICY IF EXISTS "indexed_businesses_read" ON public.indexed_businesses;
-  DROP POLICY IF EXISTS "indexed_businesses_read" ON public.indexed_businesses;
-CREATE POLICY "indexed_businesses_read" ON public.indexed_businesses FOR SELECT USING (true);
+  IF EXISTS (
+    SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public' AND c.relname = 'indexed_businesses' AND c.relkind = 'r'
+  ) THEN
+    DROP POLICY IF EXISTS "indexed_businesses_read" ON public.indexed_businesses;
+    CREATE POLICY "indexed_businesses_read" ON public.indexed_businesses FOR SELECT USING (true);
+    DROP POLICY IF EXISTS "indexed_businesses_write" ON public.indexed_businesses;
+    CREATE POLICY "indexed_businesses_write" ON public.indexed_businesses FOR ALL USING (true);
+  END IF;
 
-  DROP POLICY IF EXISTS "indexed_businesses_write" ON public.indexed_businesses;
-  DROP POLICY IF EXISTS "indexed_businesses_write" ON public.indexed_businesses;
-CREATE POLICY "indexed_businesses_write" ON public.indexed_businesses FOR ALL USING (true);
+  IF EXISTS (
+    SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public' AND c.relname = 'indexed_jobs' AND c.relkind = 'r'
+  ) THEN
+    DROP POLICY IF EXISTS "indexed_jobs_read" ON public.indexed_jobs;
+    CREATE POLICY "indexed_jobs_read" ON public.indexed_jobs FOR SELECT USING (true);
+    DROP POLICY IF EXISTS "indexed_jobs_write" ON public.indexed_jobs;
+    CREATE POLICY "indexed_jobs_write" ON public.indexed_jobs FOR ALL USING (true);
+  END IF;
 
-  DROP POLICY IF EXISTS "indexed_jobs_read" ON public.indexed_jobs;
-  DROP POLICY IF EXISTS "indexed_jobs_read" ON public.indexed_jobs;
-CREATE POLICY "indexed_jobs_read" ON public.indexed_jobs FOR SELECT USING (true);
+  IF EXISTS (
+    SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public' AND c.relname = 'indexed_events' AND c.relkind = 'r'
+  ) THEN
+    DROP POLICY IF EXISTS "indexed_events_read" ON public.indexed_events;
+    CREATE POLICY "indexed_events_read" ON public.indexed_events FOR SELECT USING (true);
+    DROP POLICY IF EXISTS "indexed_events_write" ON public.indexed_events;
+    CREATE POLICY "indexed_events_write" ON public.indexed_events FOR ALL USING (true);
+  END IF;
 
-  DROP POLICY IF EXISTS "indexed_jobs_write" ON public.indexed_jobs;
-  DROP POLICY IF EXISTS "indexed_jobs_write" ON public.indexed_jobs;
-CREATE POLICY "indexed_jobs_write" ON public.indexed_jobs FOR ALL USING (true);
-
-  DROP POLICY IF EXISTS "indexed_events_read" ON public.indexed_events;
-  DROP POLICY IF EXISTS "indexed_events_read" ON public.indexed_events;
-CREATE POLICY "indexed_events_read" ON public.indexed_events FOR SELECT USING (true);
-
-  DROP POLICY IF EXISTS "indexed_events_write" ON public.indexed_events;
-  DROP POLICY IF EXISTS "indexed_events_write" ON public.indexed_events;
-CREATE POLICY "indexed_events_write" ON public.indexed_events FOR ALL USING (true);
-
-  DROP POLICY IF EXISTS "indexed_products_read" ON public.indexed_products;
-  DROP POLICY IF EXISTS "indexed_products_read" ON public.indexed_products;
-CREATE POLICY "indexed_products_read" ON public.indexed_products FOR SELECT USING (true);
-
-  DROP POLICY IF EXISTS "indexed_products_write" ON public.indexed_products;
-  DROP POLICY IF EXISTS "indexed_products_write" ON public.indexed_products;
-CREATE POLICY "indexed_products_write" ON public.indexed_products FOR ALL USING (true);
+  IF EXISTS (
+    SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public' AND c.relname = 'indexed_products' AND c.relkind = 'r'
+  ) THEN
+    DROP POLICY IF EXISTS "indexed_products_read" ON public.indexed_products;
+    CREATE POLICY "indexed_products_read" ON public.indexed_products FOR SELECT USING (true);
+    DROP POLICY IF EXISTS "indexed_products_write" ON public.indexed_products;
+    CREATE POLICY "indexed_products_write" ON public.indexed_products FOR ALL USING (true);
+  END IF;
 
   DROP POLICY IF EXISTS "mining_schedules_staff_all" ON public.mining_schedules;
   DROP POLICY IF EXISTS "mining_schedules_staff_all" ON public.mining_schedules;

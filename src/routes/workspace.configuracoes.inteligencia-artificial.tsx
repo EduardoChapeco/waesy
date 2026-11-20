@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 
 import { getStoreSettings, saveStoreSettings } from "@/services/store.functions";
 import { listTenantAiProviders, saveTenantAiProvider, deleteTenantAiProvider, testAiProviderConnection, type TenantAiProviderItem, type AiProviderType } from "@/services/ai-providers.functions";
+import { AiAutonomousAgentsConfigPanel } from "@/components/atendimento/AiAutonomousAgentsConfigPanel";
 
 export const Route = createFileRoute(
  "/workspace/configuracoes/inteligencia-artificial"
@@ -333,6 +334,8 @@ function WorkspaceAiSettingsPage() {
           </Button>
         </div>
       </div>
+
+      <AiAutonomousAgentsConfigPanel />
 
       {/* ── 4. Modal de Configuração ── */}
  <Dialog open={modalOpen} onOpenChange={setModalOpen}>

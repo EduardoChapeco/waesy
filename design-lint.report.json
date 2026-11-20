@@ -1,20 +1,31 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-11-19T21:11:17.966Z",
-  "inspectedFiles": 2413,
-  "totalViolations": 0,
+  "timestamp": "2026-11-20T17:37:45.915Z",
+  "inspectedFiles": 2431,
+  "totalViolations": 3,
   "summary": {
-    "totalViolations": 0,
+    "totalViolations": 3,
     "bySeverity": {
       "P0": 0,
-      "P1": 0,
+      "P1": 1,
       "P2": 0,
-      "P3": 0
+      "P3": 2
     },
-    "byRule": {},
-    "byModule": {},
-    "filesWithViolations": 0,
-    "filesCount": 2413
+    "byRule": {
+      "DL-27": 2,
+      "DL-03": 1
+    },
+    "byModule": {
+      "components/app": {
+        "total": 3,
+        "P0": 0,
+        "P1": 1,
+        "P2": 0,
+        "P3": 2
+      }
+    },
+    "filesWithViolations": 2,
+    "filesCount": 2431
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -280,5 +291,39 @@
       }
     ]
   },
-  "violationsSample": []
+  "violationsSample": [
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/onboarding/ai-live-extraction-display.tsx",
+      "module": "components/app",
+      "line": 143,
+      "column": 25,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-03",
+      "rule": "DL-03",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/onboarding/ai-live-extraction-display.tsx",
+      "module": "components/app",
+      "line": 154,
+      "column": 53,
+      "severity": "P1",
+      "match": "mt-0.5",
+      "message": "Espaçamento \"mt-0.5\" viola a grade estrita de múltiplos de 4px."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/onboarding/magic-onboarding-card.tsx",
+      "module": "components/app",
+      "line": 174,
+      "column": 48,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    }
+  ]
 }

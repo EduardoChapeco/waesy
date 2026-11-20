@@ -245,15 +245,22 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
     const telemetry = captureRequestTelemetry(req);
     const fingerprint = resolveDeviceFingerprint(data.deviceFingerprint, telemetry.ip, telemetry.userAgent);
 
+    const safeIp = String(telemetry.ip || "").replace(/[^a-zA-Z0-9.:_-]/g, "").slice(0, 80);
+    const safeFp = String(fingerprint || "").replace(/[^a-zA-Z0-9.:_-]/g, "").slice(0, 128);
     // Verificação de Limite de Taxa / Anti-Spam
     const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
     let isSpam = telemetry.threatScore >= 60;
     try {
-      const { count: recentSubmissionsCount } = await supabase
-        .from("lead_form_submissions")
-        .select("id", { count: "exact", head: true })
-        .or(`ip_address.eq.${telemetry.ip},device_fingerprint.eq.${fingerprint}`)
-        .gte("created_at", tenMinutesAgo);
+      const orParts: string[] = [];
+      if (safeIp) orParts.push(`ip_address.eq.${safeIp}`);
+      if (safeFp) orParts.push(`device_fingerprint.eq.${safeFp}`);
+      const { count: recentSubmissionsCount } = orParts.length > 0
+        ? await supabase
+            .from("lead_form_submissions")
+            .select("id", { count: "exact", head: true })
+            .or(orParts.join(","))
+            .gte("created_at", tenMinutesAgo)
+        : { count: 0 };
 
       if ((recentSubmissionsCount || 0) >= 8) {
         isSpam = true;
@@ -819,9 +826,19 @@ export const upsertLeadForm = createServerFn({ method: "POST" })
         };
 
         if (field.id) {
-          await supabase.from("lead_form_fields").update(payload).eq("id", field.id);
+          const { error: fieldUpdateErr } = await supabase
+            .from("lead_form_fields")
+            .update(payload)
+            .eq("id", field.id)
+            .eq("form_id", formId);
+          if (fieldUpdateErr) {
+            throw new Error(`Erro ao atualizar campo "${field.label}": ${fieldUpdateErr.message}`);
+          }
         } else {
-          await supabase.from("lead_form_fields").insert(payload);
+          const { error: fieldInsertErr } = await supabase.from("lead_form_fields").insert(payload);
+          if (fieldInsertErr) {
+            throw new Error(`Erro ao inserir campo "${field.label}": ${fieldInsertErr.message}`);
+          }
         }
       }
     }
@@ -933,8 +950,11 @@ export const listLeadSubmissions = createServerFn({ method: "GET" })
     }
 
     if (data?.search && data.search.trim()) {
-      const q = `%${data.search.trim()}%`;
-      query = query.or(`contact_name.ilike.${q},contact_phone.ilike.${q},contact_email.ilike.${q}`);
+      const sanitizedSearch = data.search.trim().replace(/[,().*%\\]/g, "").slice(0, 80);
+      if (sanitizedSearch) {
+        const q = `%${sanitizedSearch}%`;
+        query = query.or(`contact_name.ilike.${q},contact_phone.ilike.${q},contact_email.ilike.${q}`);
+      }
     }
 
     const page = data?.page || 1;
@@ -1128,15 +1148,22 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
     const telemetry = captureRequestTelemetry(req);
     const fingerprint = resolveDeviceFingerprint(data.deviceFingerprint, telemetry.ip, telemetry.userAgent);
 
+    const safeIp = String(telemetry.ip || "").replace(/[^a-zA-Z0-9.:_-]/g, "").slice(0, 80);
+    const safeFp = String(fingerprint || "").replace(/[^a-zA-Z0-9.:_-]/g, "").slice(0, 128);
     // Verificação de Limite de Taxa / Anti-Spam
     const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
     let isSpam = telemetry.threatScore >= 60;
     try {
-      const { count: recentSubmissionsCount } = await supabase
-        .from("lead_form_submissions")
-        .select("id", { count: "exact", head: true })
-        .or(`ip_address.eq.${telemetry.ip},device_fingerprint.eq.${fingerprint}`)
-        .gte("created_at", tenMinutesAgo);
+      const orParts: string[] = [];
+      if (safeIp) orParts.push(`ip_address.eq.${safeIp}`);
+      if (safeFp) orParts.push(`device_fingerprint.eq.${safeFp}`);
+      const { count: recentSubmissionsCount } = orParts.length > 0
+        ? await supabase
+            .from("lead_form_submissions")
+            .select("id", { count: "exact", head: true })
+            .or(orParts.join(","))
+            .gte("created_at", tenMinutesAgo)
+        : { count: 0 };
 
       if ((recentSubmissionsCount || 0) >= 8) {
         isSpam = true;

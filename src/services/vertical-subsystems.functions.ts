@@ -9,6 +9,8 @@ import { getServerClient } from "@/lib/supabase";
 import { requirePlatformAdmin } from "@/lib/server-access";
 import {
   CANONICAL_VERTICAL_SUBSYSTEMS,
+  LEGACY_SUBSYSTEM_SLUG_ALIASES,
+  normalizeCanonicalSubsystemId,
   type RootExperienceMode,
   type VerticalSubsystemDescriptor,
 } from "@/lib/vertical-subsystems";
@@ -22,25 +24,66 @@ export interface PublicEcosystemConfigDTO {
 }
 
 function mapDbRowToSubsystem(row: Record<string, any>): VerticalSubsystemDescriptor {
-  const canonical = CANONICAL_VERTICAL_SUBSYSTEMS.find((s) => s.id === row.id);
+  const rawId = String(row.id || "");
+  const normalizedId = normalizeCanonicalSubsystemId(rawId);
+  const isLegacyRow = Boolean(LEGACY_SUBSYSTEM_SLUG_ALIASES[rawId.toLowerCase()]);
+  const canonical = CANONICAL_VERTICAL_SUBSYSTEMS.find((s) => s.id === normalizedId);
   return {
-    id: String(row.id),
-    name: String(row.name || canonical?.name || row.id),
-    shortName: String(row.short_name || canonical?.shortName || row.id),
+    id: canonical?.id || normalizedId || rawId,
+    name: isLegacyRow && canonical ? canonical.name : String(row.name || canonical?.name || rawId),
+    shortName:
+      isLegacyRow && canonical ? canonical.shortName : String(row.short_name || canonical?.shortName || rawId),
     category: (row.category || canonical?.category || "public_app") as VerticalSubsystemDescriptor["category"],
-    subdomain: String(row.subdomain || canonical?.subdomain || row.id),
-    canonicalDomain: String(row.canonical_domain || canonical?.canonicalDomain || `${row.id}.waesy.com.br`),
-    hostAliases: canonical?.hostAliases || [String(row.canonical_domain || `${row.id}.waesy.com.br`)],
-    targetPath: String(row.target_path || canonical?.targetPath || "/"),
+    subdomain:
+      isLegacyRow && canonical ? canonical.subdomain : String(row.subdomain || canonical?.subdomain || rawId),
+    canonicalDomain:
+      isLegacyRow && canonical
+        ? canonical.canonicalDomain
+        : String(row.canonical_domain || canonical?.canonicalDomain || `${normalizedId}.waesy.com.br`),
+    hostAliases: canonical?.hostAliases || [
+      String(row.canonical_domain || `${normalizedId}.waesy.com.br`),
+    ],
+    targetPath:
+      isLegacyRow && canonical ? canonical.targetPath : String(row.target_path || canonical?.targetPath || "/"),
+    landingPath: canonical?.landingPath,
+    brandVerticalId: canonical?.brandVerticalId,
+    primaryNicheId: canonical?.primaryNicheId,
+    defaultVerticalSku: canonical?.defaultVerticalSku,
     description: String(row.description || canonical?.description || ""),
     howItWorks: canonical?.howItWorks || String(row.description || ""),
-    modulesIncluded: Array.isArray(row.modules_included) ? row.modules_included : (canonical?.modulesIncluded || []),
+    modulesIncluded: Array.isArray(row.modules_included)
+      ? row.modules_included
+      : canonical?.modulesIncluded || [],
     isActive: row.is_active !== false,
     showInHub: row.show_in_hub !== false,
     showOnLanding: row.show_on_landing !== false,
     isStandaloneApp: row.is_standalone_app !== false,
     sortOrder: typeof row.sort_order === "number" ? row.sort_order : (canonical?.sortOrder ?? 100),
   };
+}
+
+function mergeSubsystemsWithCanonicalCatalog(rows: Record<string, any>[]): VerticalSubsystemDescriptor[] {
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return CANONICAL_VERTICAL_SUBSYSTEMS;
+  }
+  const byId = new Map<string, VerticalSubsystemDescriptor>();
+  for (const row of rows) {
+    const mapped = mapDbRowToSubsystem(row);
+    // Direct canonical match wins over legacy alias row
+    const isDirect = String(row.id || "").toLowerCase() === mapped.id;
+    if (!byId.has(mapped.id) || isDirect) {
+      byId.set(mapped.id, mapped);
+    }
+  }
+  const merged: VerticalSubsystemDescriptor[] = CANONICAL_VERTICAL_SUBSYSTEMS.map(
+    (can) => byId.get(can.id) || can,
+  );
+  for (const [id, sub] of byId.entries()) {
+    if (!merged.some((m) => m.id === id)) {
+      merged.push(sub);
+    }
+  }
+  return merged.sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 export const getPublicEcosystemSubsystemsFn = createServerFn({ method: "GET" }).handler(
@@ -57,10 +100,7 @@ export const getPublicEcosystemSubsystemsFn = createServerFn({ method: "GET" }).
         db.from("platform_modules_config").select("module_key, enabled"),
       ]);
 
-      const subsystems =
-        Array.isArray(subRes.data) && subRes.data.length > 0
-          ? subRes.data.map(mapDbRowToSubsystem)
-          : CANONICAL_VERTICAL_SUBSYSTEMS;
+      const subsystems = mergeSubsystemsWithCanonicalCatalog(subRes.data || []);
 
       const disabledModuleKeys = (modRes.data || [])
         .filter((m: any) => m.enabled === false)

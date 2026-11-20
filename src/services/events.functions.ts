@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { setResponseHeader } from "@tanstack/start-server-core";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { getServerIdentity, assertStoreAccess, requireStoreVerticalAccess } from "@/lib/server-access";
 import { applyServerFnEdgeCache } from "@/lib/cache/edge-cache";
 import { microCache } from "@/lib/cache/micro-cache";
 import { eventSchema, ticketLotSchema } from "@/types/community";
@@ -188,6 +188,7 @@ async function _upsertEvent(data: any) {
  const supabase = getServerClient();
  const identity = await getServerIdentity();
  assertStoreAccess(identity, ["owner", "admin", "manager", "content"]);
+ await requireStoreVerticalAccess("events", identity.store_id);
 
  const { search_vector: _sv, ...safeData } = data || {};
 
